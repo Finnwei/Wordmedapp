@@ -19,7 +19,8 @@
    ============================================================ */
 
 import { readdir, readFile, writeFile, mkdir, copyFile, rm, stat } from "node:fs/promises";
-import { join, extname, basename } from "node:path";
+import { existsSync } from "node:fs";
+import { join, extname, basename, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
 
@@ -260,6 +261,50 @@ ${cuerpo}
 
 /* ---------- publicación ---------- */
 
+/* ---------- red de seguridad ----------
+
+   contenido/ es salida generada: el script la borra y la rehace en cada
+   corrida. Si alguien deja ahí un archivo suyo, se pierde. Ya pasó una
+   vez con los cuadernillos de Obstetricia.
+
+   Antes de borrar nada, comparamos lo que hay con lo que generamos la
+   vez anterior. Cualquier archivo que no reconozcamos frena la corrida. */
+
+async function generadosAntes() {
+  const f = join(DESTINO, "manifest.json");
+  if (!existsSync(f)) return null;
+  try {
+    const m = JSON.parse(await readFile(f, "utf8"));
+    return new Set(
+      m.materias.flatMap((x) => [
+        ...x.temas.map((t) => t.archivo),
+        ...x.recursos.map((r) => r.archivo),
+      ])
+    );
+  } catch {
+    return null;
+  }
+}
+
+async function buscarAjenos() {
+  const conocidos = await generadosAntes();
+  if (conocidos === null) return [];
+
+  const ajenos = [];
+  for (const sub of ["temas", "recursos"]) {
+    const dir = join(DESTINO, sub);
+    if (!existsSync(dir)) continue;
+    const entradas = await readdir(dir, { recursive: true, withFileTypes: true });
+    for (const e of entradas) {
+      if (!e.isFile()) continue;
+      const abs = join(e.parentPath ?? e.path, e.name);
+      const rel = relative(DESTINO, abs).split(sep).join("/");
+      if (!conocidos.has(rel)) ajenos.push(rel);
+    }
+  }
+  return ajenos;
+}
+
 /* La cáscara web vive en web/ y se copia a contenido/ al publicar,
    para que contenido/ sea enteramente generado y se pueda borrar y
    rehacer sin perder nada. */
@@ -272,6 +317,29 @@ async function copiarCascara() {
 }
 
 async function main() {
+  const ajenos = await buscarAjenos();
+  if (ajenos.length > 0 && !process.argv.includes("--forzar")) {
+    const aviso = [
+      "",
+      "  FRENO DE SEGURIDAD",
+      "",
+      "  Hay archivos en contenido/ que este script no generó:",
+      "",
+      ...ajenos.slice(0, 20).map((a) => "    " + a),
+      ajenos.length > 20 ? "    ...y " + (ajenos.length - 20) + " más" : null,
+      "",
+      "  contenido/ se borra y se rehace en cada corrida, así que esos",
+      "  archivos se perderían.",
+      "",
+      "  Si son cuadernillos tuyos, movelos a Materias/<Materia>/ y volvé",
+      "  a correr el script: de ahí salen publicados solos.",
+      "  Si sabés que sobran, corré con --forzar para borrarlos.",
+      "",
+    ].filter((l) => l !== null);
+    for (const l of aviso) console.error(l);
+    process.exit(1);
+  }
+
   await rm(join(DESTINO, "temas"), { recursive: true, force: true });
   await rm(join(DESTINO, "recursos"), { recursive: true, force: true });
   await copiarCascara();
