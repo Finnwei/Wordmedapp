@@ -419,9 +419,11 @@ private fun BoxScope.Panel(estado: Estado, slug: String, alCerrar: () -> Unit) {
                                 .padding(8.dp),
                             contentAlignment = Alignment.Center,
                         ) {
+                            /* miniatura: sin alto mínimo, si no el nombre se corta */
                             Carpeta(
                                 nombre = "Aa", etiqueta = "8 temas", descripcion = null,
                                 color = colorDe(colorActual), estilo = e,
+                                alturaMinima = 0.dp,
                                 modifier = Modifier.fillMaxWidth(),
                             )
                         }

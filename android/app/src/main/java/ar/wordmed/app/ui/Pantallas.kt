@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.layout.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -54,19 +55,18 @@ fun PantallaMaterias(
             item { AvisoEditar() }
         } else {
             recienteDe(estado)?.let { (materia, tema, avance) ->
-                item {
-                    Column(verticalArrangement = Arrangement.spacedBy(9.dp)) {
-                        Text("RECIENTE", style = estiloRotulo, color = t.tintaTenue)
-                        FichaReciente(estado, materia, tema, avance) { alLeer(materia.slug, tema) }
-                    }
-                }
+                /* sin rótulo arriba: la pestaña de la ficha ya dice "Reciente" */
+                item { FichaReciente(estado, materia, tema, avance) { alLeer(materia.slug, tema) } }
             }
         }
 
         item { Text("MATERIAS", style = estiloRotulo, color = t.tintaTenue) }
 
         items(materias.chunked(2)) { fila ->
-            Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+            Row(
+                Modifier.height(IntrinsicSize.Min),
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
+            ) {
                 for (mat in fila) {
                     val cfg = estado.carpetas[mat.slug]
                     val color = colorDe(
@@ -77,7 +77,7 @@ fun PantallaMaterias(
                     val vacia = mat.temas.isEmpty()
                     val bloques = mat.bloques.filterNotNull()
 
-                    Box(Modifier.weight(1f)) {
+                    Box(Modifier.weight(1f).fillMaxHeight()) {
                         Carpeta(
                             nombre = mat.nombre,
                             etiqueta = if (vacia) "Vacía" else "${mat.temas.size} temas",
@@ -89,7 +89,8 @@ fun PantallaMaterias(
                             color = color,
                             estilo = if (vacia) EstiloCarpeta.ORIGINAL else EstiloCarpeta.de(cfg?.estilo),
                             vacia = vacia,
-                            modifier = Modifier.fillMaxWidth(),
+                            espacioRueda = estado.editando,
+                            modifier = Modifier.fillMaxWidth().fillMaxHeight(),
                             alTocar = if (estado.editando) null else ({ alEntrar(mat.slug) }),
                         )
                         if (estado.editando) {
@@ -103,7 +104,7 @@ fun PantallaMaterias(
             }
         }
 
-        if (m == null) {
+        if (m == null && estado.paso !is Deposito.Paso.Bajando) {
             item { EstadoVacio(textoDelPaso(estado.paso)) }
         }
     }

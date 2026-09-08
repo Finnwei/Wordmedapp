@@ -36,6 +36,8 @@ fun Carpeta(
     color: Color,
     estilo: EstiloCarpeta,
     vacia: Boolean = false,
+    espacioRueda: Boolean = false,
+    alturaMinima: androidx.compose.ui.unit.Dp = 132.dp,
     modifier: Modifier = Modifier,
     alTocar: (() -> Unit)? = null,
     adorno: @Composable (BoxScopeLike.() -> Unit)? = null,
@@ -108,13 +110,18 @@ fun Carpeta(
         else -> if (vacia) t.tintaTenue else t.tinta
     }
 
-    Box(caja.defaultMinSize(minHeight = 132.dp)) {
+    Box(caja.defaultMinSize(minHeight = alturaMinima)) {
         PestanaCarpeta(etiqueta, c, enc, estilo, t)
 
         Column(
             Modifier
                 .fillMaxWidth()
-                .padding(start = 14.dp, end = 40.dp, top = 34.dp, bottom = 16.dp),
+                /* En modo editar la rueda ocupa la esquina de arriba, así que el
+                   texto empieza más abajo en vez de angostarse y partirse. */
+                .padding(
+                    start = 14.dp, end = 14.dp,
+                    top = if (espacioRueda) 62.dp else 34.dp, bottom = 16.dp,
+                ),
             verticalArrangement = Arrangement.spacedBy(5.dp),
         ) {
             Text(

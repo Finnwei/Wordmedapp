@@ -57,7 +57,7 @@ fun Buscador(
         buscado = true
     }
 
-    Column(Modifier.fillMaxSize().background(t.papel)) {
+    Column(Modifier.fillMaxSize().background(t.papel).statusBarsPadding()) {
 
         Row(
             Modifier
@@ -96,6 +96,7 @@ fun Buscador(
             estado.buscando -> Mensaje("Preparando el índice…")
             hallazgos.isEmpty() && buscado -> Mensaje("Nada con “${consulta.trim()}”.")
             else -> LazyColumn(
+                Modifier.imePadding(),
                 contentPadding = PaddingValues(16.dp, 14.dp, 16.dp, 40.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {

@@ -7,8 +7,11 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -37,7 +40,18 @@ fun Lector(
     val ctx = LocalContext.current
     BackHandler(onBack = alVolver)
 
-    Box(Modifier.fillMaxSize()) {
+    /* Sin esto el cuadernillo arranca debajo del reloj y el botón de
+       tema queda tapado por la barra de estado. */
+    val t = LocalTinta.current
+    Box(
+        Modifier
+            .fillMaxSize()
+            /* el mismo papel que el cuadernillo, si no la franja de la
+               barra de estado queda de otro color */
+            .background(t.papel)
+            .statusBarsPadding()
+            .navigationBarsPadding()
+    ) {
         AndroidView(
             modifier = Modifier.fillMaxSize(),
             factory = { c ->
