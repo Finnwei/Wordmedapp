@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Síndrome de Cushing</title>
+<link rel="stylesheet" href="../../fuentes/fuentes.css">
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+}
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índice lateral ---------- */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Ficha de sección ---------- */
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.35rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-row:1/3; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+.importante__titulo{
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso{ display:none !important; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+<style>
+/* Fuentes de la capa de contenido. Va después del estilo del
+   cuadernillo para pisar las de Windows, que no se pueden
+   redistribuir y no existen en Android. */
+:root{
+  --f-titulo:'Spectral',Georgia,'Times New Roman',serif;
+  --f-texto:'Open Sans',system-ui,-apple-system,sans-serif;
+  --f-dato:'Cascadia Mono','Cascadia Code',ui-monospace,Consolas,monospace;
+}
+/* Botón de volver, espejo del de tema que ya trae el cuadernillo. */
+.volver{
+  position:fixed; top:.7rem; left:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.volver:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.volver__icono{ width:1.15rem; height:1.15rem; display:block; }
+</style>
+</head>
+<body data-clave="medicina-interna-3/e5-cushing">
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-generalidades"  href="#generalidades">Generalidades &amp; Clasificación</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#fisiopatologia">Fisiopatología</a></li>
+      <li><a class="indice__link i-clinica"        href="#clinica">Cuadro Clínico</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#confirmar">Confirmar el Hipercortisolismo</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#causa">Establecer la Causa</a></li>
+      <li><a class="indice__link i-diferenciales"  href="#tratamiento">Tratamiento</a></li>
+      <li><a class="indice__link i-importantes"    href="#casos">Casos Clínicos &amp; Alertas</a></li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Medicina Interna III · Endocrinología · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Síndrome de Cushing</h1>
+      <p class="portada__bajada">Exposición crónica al exceso de glucocorticoides. Del eje hipotálamo-hipófisis-adrenal a las dos preguntas del diagnóstico: si hay hipercortisolismo y de dónde viene.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">7 secciones</span>
+        <span class="etiqueta s-fisiopatologia">Eje HHA</span>
+        <span class="etiqueta s-diagnostico">Nugent · CLU · saliva</span>
+        <span class="etiqueta s-importantes">3 casos resueltos</span>
+      </div>
+    </header>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="generalidades">
+      <span class="seccion__pestana"><b>01</b> Base</span>
+      <h2 class="seccion__titulo">Generalidades &amp; Clasificación</h2>
+
+      <p>Conjunto de <strong>signos y síntomas de diverso origen</strong> que resultan de la <strong>exposición crónica al exceso de glucocorticoides</strong>. Descrito por primera vez en <strong>1932 por Harvey W. Cushing</strong>.</p>
+
+      <ul>
+        <li>La <strong>causa más frecuente</strong> es el <strong>consumo de glucocorticoides terapéuticos en dosis altas</strong>.</li>
+        <li>En menor proporción, lesiones tumorales <strong>hipofisarias, adrenales</strong> o en otras localizaciones <strong>ectópicas</strong>.</li>
+        <li>Es <strong>poco frecuente</strong>: <span class="dato">0,7 a 2,4</span> casos por millón de personas por año, pero con <strong>morbimortalidad importante</strong>.</li>
+        <li>El estudio diagnóstico <strong>puede llegar a ser un gran dilema</strong>.</li>
+      </ul>
+
+      <h3>Clasificación</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Tipo</th><th>Definición</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>A · Exógeno</strong></td>
+              <td>Consecuencia de un <strong>factor externo</strong>, usualmente el consumo de esteroides con función análoga a la del cortisol. Es <strong>temporal y cede al suspender la terapia</strong></td>
+            </tr>
+            <tr>
+              <td><strong>B · Endógeno</strong></td>
+              <td>Producción de cortisol en exceso dentro del organismo:<br><strong>Dependiente de ACTH: <span class="dato">80 – 85 %</span></strong><br><strong>Independiente de ACTH: <span class="dato">15 – 20 %</span></strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Causas según la clasificación</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Grupo</th><th>Entidades</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Dependiente de ACTH</strong></td>
+              <td><strong>Enfermedad de Cushing</strong> — dependiente de la hipófisis<br><strong>Síndrome de ACTH ectópico</strong><br>Síndrome de CRH ectópico<br>Iatrogénica: tratamiento con ACTH sintética</td>
+            </tr>
+            <tr>
+              <td><strong>Independiente de ACTH</strong></td>
+              <td><strong>Adenoma adrenal</strong> · <strong>carcinoma adrenal</strong><br><strong>Hiperplasia adrenal macronodular</strong><br>Hiperplasia adrenal nodular pigmentada primaria y <strong>complejo de Carney</strong><br>Síndrome de <strong>McCune-Albright</strong><br>Alteraciones en la expresión de receptores<br><strong>Iatrogénica</strong>: glucocorticoides exógenos como prednisolona y dexametasona</td>
+            </tr>
+            <tr>
+              <td><strong>Síndromes seudo-Cushing</strong></td>
+              <td><strong>Alcoholismo</strong> · <strong>obesidad</strong> · <strong>depresión</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Los <strong>seudo-Cushing</strong> merecen atención propia: producen hipercortisolismo real pero <strong>no autónomo</strong>. Son la principal fuente de falsos positivos y la razón por la que ninguna prueba se interpreta aislada.</p>
+
+      <h3>Epidemiología</h3>
+      <ul>
+        <li><strong>Más frecuente en mujeres.</strong></li>
+        <li>Incidencia global de <span class="dato">0,7 a 2,4</span> casos por millón de habitantes por año.</li>
+        <li>La <strong>enfermedad de Cushing</strong> es la <strong>forma endógena más común</strong>, con incidencia de <span class="dato">5 a 25</span> casos por millón. Ocurre principalmente en <strong>mujeres entre 25 y 45 años</strong>.</li>
+        <li>Los <strong>tumores adrenales</strong> que causan síndrome de Cushing representan <strong>menos del 1 %</strong>. La incidencia del <strong>carcinoma adrenal</strong> no se conoce.</li>
+        <li>Los adenomas y carcinomas adrenales <strong>se presentan luego de los 40 años</strong>.</li>
+      </ul>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-fisiopatologia" id="fisiopatologia">
+      <span class="seccion__pestana"><b>02</b> Mecanismo</span>
+      <h2 class="seccion__titulo">Fisiopatología</h2>
+
+      <p>En condiciones normales el eje <strong>hipotálamo-hipófisis-adrenal</strong> funciona con <strong>retroalimentación negativa</strong>: el hipotálamo libera <strong>CRH</strong>, la hipófisis <strong>ACTH</strong>, la corteza suprarrenal <strong>cortisol</strong>, y el cortisol frena a los dos niveles superiores.</p>
+
+      <p>Todo el diagnóstico del síndrome de Cushing se apoya en una idea simple: <strong>según dónde esté el problema, la ACTH sube o baja</strong>. Por eso una sola determinación divide el cuadro en dos mundos.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 340" role="img" aria-label="Matriz comparativa del eje hipotálamo-hipófisis-adrenal en los cuatro escenarios. En el estado normal la CRH, la ACTH y el cortisol son normales y el eje está íntegro. En el Cushing exógeno la CRH y la ACTH están bajas y el cortisol propio está bajo, porque el corticoide externo suprime el eje y la glándula adrenal se atrofia. En el Cushing dependiente de ACTH la CRH está baja, la ACTH alta y el cortisol alto, con hiperplasia adrenal bilateral. En el Cushing independiente de ACTH la CRH y la ACTH están bajas pero el cortisol es alto, por un tumor adrenal autónomo.">
+          <text x="190" y="28" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">NORMAL</text>
+          <text x="333" y="28" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">EXÓGENO</text>
+          <text x="476" y="28" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">ACTH-</text>
+          <text x="476" y="44" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">DEPENDIENTE</text>
+          <text x="619" y="28" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">ACTH-</text>
+          <text x="619" y="44" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">INDEPENDIENTE</text>
+
+          <text x="14" y="92" font-size="12" font-weight="700" fill="currentColor">CRH</text>
+          <rect x="124" y="60" width="133" height="52" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2"></rect>
+          <text x="190" y="92" font-size="12.5" fill="currentColor" opacity="0.8" text-anchor="middle">normal</text>
+          <rect x="267" y="60" width="133" height="52" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2"></rect>
+          <text x="333" y="92" font-size="12.5" fill="currentColor" opacity="0.8" text-anchor="middle">↓ baja</text>
+          <rect x="410" y="60" width="133" height="52" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2"></rect>
+          <text x="476" y="92" font-size="12.5" fill="currentColor" opacity="0.8" text-anchor="middle">↓ baja</text>
+          <rect x="553" y="60" width="133" height="52" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2"></rect>
+          <text x="619" y="92" font-size="12.5" fill="currentColor" opacity="0.8" text-anchor="middle">↓ baja</text>
+
+          <text x="14" y="158" font-size="12" font-weight="700" fill="currentColor">ACTH</text>
+          <rect x="124" y="126" width="133" height="52" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2"></rect>
+          <text x="190" y="158" font-size="12.5" fill="currentColor" opacity="0.8" text-anchor="middle">normal</text>
+          <rect x="267" y="126" width="133" height="52" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="333" y="158" font-size="13" font-weight="700" fill="currentColor" text-anchor="middle">↓ baja</text>
+          <rect x="410" y="126" width="133" height="52" rx="3" fill="var(--c)" fill-opacity="0.26" stroke="var(--c)" stroke-width="2.2"></rect>
+          <text x="476" y="158" font-size="13" font-weight="700" fill="currentColor" text-anchor="middle">↑ alta</text>
+          <rect x="553" y="126" width="133" height="52" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="619" y="158" font-size="13" font-weight="700" fill="currentColor" text-anchor="middle">↓ baja</text>
+
+          <text x="14" y="224" font-size="12" font-weight="700" fill="currentColor">Cortisol</text>
+          <rect x="124" y="192" width="133" height="52" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2"></rect>
+          <text x="190" y="224" font-size="12.5" fill="currentColor" opacity="0.8" text-anchor="middle">normal</text>
+          <rect x="267" y="192" width="133" height="52" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="333" y="218" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">↓ propio</text>
+          <text x="333" y="236" font-size="10" fill="currentColor" opacity="0.7" text-anchor="middle">(corticoide externo alto)</text>
+          <rect x="410" y="192" width="133" height="52" rx="3" fill="var(--c)" fill-opacity="0.26" stroke="var(--c)" stroke-width="2.2"></rect>
+          <text x="476" y="224" font-size="13" font-weight="700" fill="currentColor" text-anchor="middle">↑ alto</text>
+          <rect x="553" y="192" width="133" height="52" rx="3" fill="var(--c)" fill-opacity="0.26" stroke="var(--c)" stroke-width="2.2"></rect>
+          <text x="619" y="224" font-size="13" font-weight="700" fill="currentColor" text-anchor="middle">↑ alto</text>
+
+          <text x="14" y="290" font-size="12" font-weight="700" fill="currentColor">Clave</text>
+          <rect x="124" y="258" width="133" height="64" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.25" stroke-width="1.2" stroke-dasharray="4 3"></rect>
+          <text x="138" y="282" font-size="10.5" fill="currentColor" opacity="0.8">Eje íntegro</text>
+          <rect x="267" y="258" width="133" height="64" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.25" stroke-width="1.2" stroke-dasharray="4 3"></rect>
+          <text x="281" y="282" font-size="10.5" fill="currentColor" opacity="0.8">Corticoide externo</text>
+          <text x="281" y="300" font-size="10.5" fill="currentColor" opacity="0.8">Adrenal atrófica</text>
+          <rect x="410" y="258" width="133" height="64" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.25" stroke-width="1.2" stroke-dasharray="4 3"></rect>
+          <text x="424" y="282" font-size="10.5" fill="currentColor" opacity="0.8">Hiperplasia adrenal</text>
+          <text x="424" y="300" font-size="10.5" fill="currentColor" opacity="0.8">bilateral</text>
+          <rect x="553" y="258" width="133" height="64" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.25" stroke-width="1.2" stroke-dasharray="4 3"></rect>
+          <text x="567" y="282" font-size="10.5" fill="currentColor" opacity="0.8">Tumor adrenal</text>
+          <text x="567" y="300" font-size="10.5" fill="currentColor" opacity="0.8">autónomo</text>
+        </svg>
+        <figcaption>La <strong>ACTH baja</strong> aparece en dos escenarios opuestos —el exógeno y el adrenal—, y lo que los separa es el <strong>cortisol propio</strong>: bajo en uno, alto en el otro.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-clinica" id="clinica">
+      <span class="seccion__pestana"><b>03</b> Clínica</span>
+      <h2 class="seccion__titulo">Cuadro Clínico</h2>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>Ninguno de los signos o síntomas asociados con el síndrome de Cushing es patognomónico</strong> de esta entidad. El diagnóstico nunca se hace por la clínica sola.</p>
+      </div>
+
+      <h3>Qué determina la intensidad de los síntomas</h3>
+      <ul>
+        <li>La <strong>magnitud y la duración</strong> del hipercortisolismo.</li>
+        <li>La <strong>presencia o ausencia de exceso de andrógenos</strong> — hirsutismo, acné.</li>
+        <li>La <strong>causa</strong> del hipercortisolismo.</li>
+        <li>La <strong>edad</strong>: los síntomas son <strong>menos severos en mayores de 50 años</strong>.</li>
+      </ul>
+
+      <h3>Manifestaciones por aparato</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Sistema</th><th>Manifestaciones</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Distribución de la grasa</strong></td>
+              <td><strong>Obesidad central</strong> · <strong>fascies de luna llena</strong> con <strong>plétora facial</strong> · <strong>giba dorsocervical</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Piel y faneras</strong></td>
+              <td><strong>Estrías rojo-vinosas o púrpuras</strong>, anchas · <strong>piel delgada</strong> · <strong>equimosis</strong> · <strong>úlceras de piel</strong> y mala cicatrización · <strong>acné</strong> · <strong>hirsutismo</strong> · alopecia · <strong>infecciones fúngicas</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Musculoesquelético</strong></td>
+              <td><strong>Debilidad muscular proximal y atrofia</strong> — la miopatía esteroidea · <strong>osteoporosis</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Cardiovascular y metabólico</strong></td>
+              <td><strong>Hipertensión arterial</strong> con <strong>hipertrofia cardíaca</strong> · <strong>diabetes o intolerancia a la glucosa</strong> · dislipidemia · <strong>hipokalemia</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Gonadal</strong></td>
+              <td><strong>Amenorrea</strong> · hipogonadismo</td>
+            </tr>
+            <tr>
+              <td><strong>Neuropsiquiátrico</strong></td>
+              <td><strong>Alteraciones emocionales</strong>: irritabilidad, depresión, insomnio</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>De todos ellos, los que tienen <strong>mayor valor discriminante</strong> —los que más orientan porque son raros en la obesidad común— son la <strong>debilidad muscular proximal</strong>, las <strong>estrías rojo-vinosas anchas</strong>, la <strong>plétora facial</strong> y las <strong>equimosis fáciles</strong>.</p>
+
+      <h3>A quiénes hay que estudiar</h3>
+      <p>La regla práctica es buscar Cushing en quien tenga <strong>una enfermedad poco frecuente para su edad</strong>:</p>
+      <ul>
+        <li><strong>Osteoporosis</strong> en un paciente joven.</li>
+        <li><strong>Hipertensión arterial en adultos jóvenes.</strong></li>
+        <li><strong>Talla baja y sobrepeso en niños.</strong></li>
+        <li><strong>Incidentaloma adrenal.</strong></li>
+        <li>Pacientes con <strong>hallazgos múltiples y progresivos</strong> muy sugestivos de Cushing.</li>
+      </ul>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-diagnostico" id="confirmar">
+      <span class="seccion__pestana"><b>04</b> Confirmar</span>
+      <h2 class="seccion__titulo">Confirmar el Hipercortisolismo</h2>
+
+      <p>El diagnóstico por laboratorio tiene <strong>tres objetivos, en este orden</strong>:</p>
+      <ol>
+        <li><strong>Diagnosticar un estado de hipercortisolismo autónomo.</strong></li>
+        <li><strong>Intentar determinar su causa.</strong></li>
+        <li><strong>Evitar un diagnóstico errado y un tratamiento inapropiado.</strong></li>
+      </ol>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>Ninguna de las pruebas por sí sola es diagnóstica.</strong> Se requieren al menos dos resultados concordantes, y siempre después de haber excluido el consumo exógeno de glucocorticoides.</p>
+      </div>
+
+      <h3>Primero: descartar el Cushing iatrogénico</h3>
+      <p>Antes de cualquier prueba, la <strong>historia farmacológica</strong>. Hay que preguntar por administración de esteroides <strong>por cualquier vía</strong>: oral, intravenosa, <strong>inhalatoria, tópica</strong> e inyecciones de depósito, entre otras; y por otros medicamentos como el <strong>acetato de megestrol</strong> o la <strong>medroxiprogesterona</strong>.</p>
+      <p>En estos casos el <strong>cortisol sérico se encuentra suprimido</strong> — excepto si el fármaco utilizado es <strong>cortisona o hidrocortisona</strong>, situación en la que el cortisol plasmático estará elevado porque el ensayo lo detecta como propio.</p>
+
+      <h3>Pruebas de tamización</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Prueba</th><th>Umbral positivo</th><th>Rendimiento</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Cortisol libre urinario</strong><br>Al menos 2 – 3 muestras de orina de 24 h</td>
+              <td><strong>&gt; 2 – 3 veces el valor superior de referencia</strong><br><em>(valor normal entre 10 y 50 µg/día)</em></td>
+              <td>Falsos positivos en <strong>embarazo</strong>, <strong>síndrome de ovario poliquístico</strong> y estados de <strong>seudo-Cushing</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Supresión con 1 mg de dexametasona</strong><br>Test de Nugent</td>
+              <td>Cortisol sérico <strong>&gt; <span class="dato">1,8 µg/dL</span></strong> a la mañana siguiente</td>
+              <td>Sensibilidad <span class="dato">88 – 100 %</span><br>Especificidad <span class="dato">80 %</span></td>
+            </tr>
+            <tr>
+              <td><strong>Cortisol salival a las 11 PM</strong></td>
+              <td><strong>&gt; <span class="dato">145 ng/dL</span></strong> (4 nmol/L; 0,144 µg/dL)</td>
+              <td>Sensibilidad <span class="dato">90 %</span><br>Especificidad <span class="dato">95 %</span></td>
+            </tr>
+            <tr>
+              <td><strong>Cortisol sérico a las 11 PM</strong></td>
+              <td><strong>&gt; <span class="dato">1,8 µg/dL</span></strong> (50 nmol/L) <strong>dormido</strong><br><strong>&gt; <span class="dato">8,3 µg/dL</span></strong> (229 nmol/L) <strong>despierto</strong></td>
+              <td>Dormido: sensibilidad cercana al <span class="dato">100 %</span><br>Despierto: sensibilidad <span class="dato">92 %</span>, especificidad <span class="dato">96,4 %</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Detalles que hacen a la interpretación</h3>
+      <ul>
+        <li><strong>Cortisol libre urinario</strong>: el cortisol circula <strong>90 % unido a proteínas</strong> y <strong>10 % libre</strong>; de ese libre, un <strong>9 % se reabsorbe</strong> y sólo un <strong>1 % se elimina</strong>. Eso es lo que mide la orina de 24 h.</li>
+        <li><strong>Test de Nugent</strong>: 1 mg de dexametasona por vía oral a las 11 PM y medición del cortisol sérico a la mañana siguiente <strong>entre las 8 y las 9 AM</strong>. En condiciones normales habrá supresión de ACTH y cortisol. <strong>Falsos positivos</strong> en síndromes de malabsorción, metabolismo basal acelerado, medicamentos que inducen enzimas hepáticas y estados de hiperestrogenismo.</li>
+        <li><strong>Cortisol salival</strong>: alternativa a la medición sérica, de <strong>gran utilidad en el Cushing cíclico y en niños</strong>. Se recolecta en tubo plástico o almohadilla de algodón. <strong>Falsos positivos</strong> por derivados del <strong>regaliz</strong> o <strong>exposición al cigarrillo</strong> en los días previos.</li>
+      </ul>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 320" role="img" aria-label="Curva del ritmo circadiano del cortisol salival a lo largo de veinticuatro horas. En el sujeto normal el cortisol tiene su valor mínimo cerca de las tres de la madrugada, alcanza un pico marcado a las ocho de la mañana y desciende progresivamente hasta valores muy bajos a la medianoche. En el Cushing leve el ritmo se conserva pero está desplazado hacia arriba, de modo que el valor nocturno ya no baja. En el Cushing severo la curva es plana y elevada durante todo el día, con pérdida completa del ritmo circadiano. Esa pérdida del descenso nocturno es lo que detecta la muestra de las once de la noche.">
+          <text x="14" y="26" font-size="11.5" font-weight="700" fill="currentColor">Cortisol salival (µg/dL)</text>
+
+          <line x1="90" y1="40" x2="90" y2="260" stroke="currentColor" stroke-width="1.2" stroke-opacity="0.5"></line>
+          <line x1="90" y1="260" x2="662" y2="260" stroke="currentColor" stroke-width="1.2" stroke-opacity="0.5"></line>
+
+          <line x1="86" y1="260" x2="90" y2="260" stroke="currentColor" stroke-width="1.2" stroke-opacity="0.5"></line>
+          <line x1="86" y1="197" x2="90" y2="197" stroke="currentColor" stroke-width="1.2" stroke-opacity="0.5"></line>
+          <line x1="86" y1="134" x2="90" y2="134" stroke="currentColor" stroke-width="1.2" stroke-opacity="0.5"></line>
+          <line x1="86" y1="71" x2="90" y2="71" stroke="currentColor" stroke-width="1.2" stroke-opacity="0.5"></line>
+          <text x="80" y="264" font-size="10.5" fill="currentColor" opacity="0.7" text-anchor="end">0</text>
+          <text x="80" y="201" font-size="10.5" fill="currentColor" opacity="0.7" text-anchor="end">10</text>
+          <text x="80" y="138" font-size="10.5" fill="currentColor" opacity="0.7" text-anchor="end">20</text>
+          <text x="80" y="75" font-size="10.5" fill="currentColor" opacity="0.7" text-anchor="end">30</text>
+
+          <polyline points="90,71 185,65 280,59 375,68 470,78 565,65 660,71" fill="none" stroke="currentColor" stroke-width="3"></polyline>
+          <polyline points="90,203 185,194 280,97 375,134 470,166 565,197 660,203" fill="none" stroke="currentColor" stroke-width="2.2" stroke-dasharray="7 4" opacity="0.8"></polyline>
+          <polyline points="90,247 185,238 280,103 375,166 470,197 565,229 660,247" fill="none" stroke="currentColor" stroke-width="1.8" opacity="0.45"></polyline>
+
+          <text x="390" y="48" font-size="11.5" font-weight="700" fill="currentColor">Cushing severo</text>
+          <text x="575" y="185" font-size="11.5" font-weight="700" fill="currentColor" opacity="0.85">Cushing leve</text>
+          <text x="575" y="222" font-size="11.5" font-weight="700" fill="currentColor" opacity="0.6">Normal</text>
+
+          <text x="90" y="278" font-size="10.5" fill="currentColor" opacity="0.7" text-anchor="middle">12 AM</text>
+          <text x="185" y="278" font-size="10.5" fill="currentColor" opacity="0.7" text-anchor="middle">4 AM</text>
+          <text x="280" y="278" font-size="10.5" fill="currentColor" opacity="0.7" text-anchor="middle">8 AM</text>
+          <text x="375" y="278" font-size="10.5" fill="currentColor" opacity="0.7" text-anchor="middle">12 PM</text>
+          <text x="470" y="278" font-size="10.5" fill="currentColor" opacity="0.7" text-anchor="middle">4 PM</text>
+          <text x="565" y="278" font-size="10.5" fill="currentColor" opacity="0.7" text-anchor="middle">8 PM</text>
+          <text x="660" y="278" font-size="10.5" fill="currentColor" opacity="0.7" text-anchor="middle">12 AM</text>
+          <text x="375" y="302" font-size="11" fill="currentColor" opacity="0.7" text-anchor="middle">Hora del día</text>
+        </svg>
+        <figcaption>Lo que se pierde en el Cushing <strong>no es el pico matinal sino el valle nocturno</strong>. Por eso la muestra que diagnostica es la de las <strong>11 PM</strong>, y no la de la mañana.</figcaption>
+      </figure>
+
+      <h3>Prueba confirmatoria: supresión con dosis bajas de dexametasona</h3>
+      <p><strong>Test de Liddle.</strong> Se mide el cortisol libre urinario antes y durante la prueba. Se administran <strong>8 dosis bajas de dexametasona (0,5 mg)</strong> durante <strong>2 días</strong>, comenzando el día 1 a las 12 del mediodía, y <strong>dos horas después de la última dosis</strong> se mide la cortisolemia.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Resultado</th><th>Interpretación</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Cortisol <strong>&lt; <span class="dato">1,8 µg/dL</span></strong></td><td><strong>Normal</strong> — eje suprimido</td></tr>
+            <tr><td>Cortisol <strong><span class="dato">1,8 – 5 µg/dL</span></strong></td><td><strong>Sospechoso</strong></td></tr>
+            <tr><td>Cortisol <strong>&gt; <span class="dato">5 µg/dL</span></strong></td><td><strong>Alto riesgo de Cushing</strong></td></tr>
+            <tr><td>Cortisol urinario libre basal</td><td>&lt; 100 µg/24 h — puede variar según el laboratorio</td></tr>
+            <tr><td>Cortisol urinario libre tras dexametasona</td><td>&lt; 50 µg/24 h, o descenso <strong>≥ 50 %</strong> respecto del basal</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Sensibilidad del <span class="dato">98 – 100 %</span> y especificidad del <span class="dato">96 – 100 %</span>. Es la prueba <strong>utilizada para el Cushing leve</strong>, donde el Nugent puede quedar corto.</p>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-tratamiento" id="causa">
+      <span class="seccion__pestana"><b>05</b> Causa</span>
+      <h2 class="seccion__titulo">Establecer la Causa</h2>
+
+      <p>Confirmada la hiperproducción autónoma, la <strong>medición de la ACTH</strong> permite clasificar el síndrome en <strong>tres categorías</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>ACTH plasmática</th><th>Categoría</th><th>Causas</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>&lt; <span class="dato">5 pg/mL</span></strong></td>
+              <td><strong>Independiente de ACTH</strong><br><span class="dato">15 – 20 %</span></td>
+              <td><strong>Adenoma adrenal</strong>, hiperplasia adrenal micro o macronodular y, en casos raros, <strong>carcinoma</strong></td>
+            </tr>
+            <tr>
+              <td><strong>&gt; <span class="dato">20 pg/mL</span></strong></td>
+              <td><strong>Dependiente de ACTH</strong></td>
+              <td><strong>Adenomas hipofisarios</strong> — el <span class="dato">60 – 80 %</span> de los casos, la <strong>enfermedad de Cushing</strong> — y <strong>tumores ectópicos productores de ACTH</strong>, en los que la <strong>ACTH suele superar los 200 pg/mL</strong>. En menor proporción, tumores productores de CRH</td>
+            </tr>
+            <tr>
+              <td><strong><span class="dato">5 – 20 pg/mL</span></strong></td>
+              <td><strong>Zona gris</strong></td>
+              <td>Pueden encontrarse tanto pacientes con <strong>tumores hipofisarios</strong> como con algunos <strong>ectópicos</strong> o con <strong>lesiones adrenales</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 400" role="img" aria-label="Algoritmo para establecer la causa del síndrome de Cushing una vez confirmado. Se mide la ACTH plasmática. Por debajo de 5 picogramos por mililitro se trata de un Cushing independiente de ACTH, y corresponde tomografía o resonancia de adrenales: una lesión unilateral orienta a adenoma o carcinoma y una bilateral a hiperplasia. Entre 5 y 20 picogramos por mililitro se está en zona gris y hacen falta pruebas dinámicas con dosis altas de dexametasona o estímulo con hormona liberadora de corticotropina. Por encima de 20 picogramos por mililitro se trata de un Cushing dependiente de ACTH, y corresponde resonancia de hipófisis más dosis altas de dexametasona: el ochenta por ciento es hipofisario y el resto ectópico. Para separarlos, el origen hipofisario muestra adenoma de al menos seis milímetros, suprime más del cincuenta por ciento con dosis altas y responde a la hormona liberadora, mientras que el ectópico no suprime, no responde, suele tener ACTH mayor a doscientos y requiere cateterismo del seno petroso.">
+          <defs>
+            <marker id="pta-cush" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="180" y="8" width="340" height="44" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--ct)" stroke-width="1.5"></rect>
+          <text x="350" y="36" font-size="13" font-weight="700" fill="currentColor" text-anchor="middle">Síndrome de Cushing confirmado</text>
+
+          <line x1="350" y1="52" x2="350" y2="70" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-cush)"></line>
+
+          <rect x="250" y="72" width="200" height="44" rx="3" fill="var(--c)" fill-opacity="0.26" stroke="var(--ct)" stroke-width="2.5"></rect>
+          <text x="350" y="100" font-size="13" font-weight="700" fill="currentColor" text-anchor="middle">ACTH plasmática</text>
+
+          <line x1="350" y1="116" x2="350" y2="140" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="120" y1="140" x2="580" y2="140" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="120" y1="140" x2="120" y2="166" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-cush)"></line>
+          <line x1="350" y1="140" x2="350" y2="166" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-cush)"></line>
+          <line x1="580" y1="140" x2="580" y2="166" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-cush)"></line>
+          <text x="128" y="160" font-size="11" font-weight="700" fill="currentColor">&lt; 5</text>
+          <text x="358" y="160" font-size="11" font-weight="700" fill="currentColor">5 – 20</text>
+          <text x="588" y="160" font-size="11" font-weight="700" fill="currentColor">&gt; 20</text>
+
+          <rect x="14" y="172" width="212" height="118" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="28" y="196" font-size="11.5" font-weight="700" fill="currentColor">INDEPENDIENTE de ACTH</text>
+          <text x="28" y="218" font-size="10.5" fill="currentColor" opacity="0.8">TC o RM de adrenales</text>
+          <text x="28" y="238" font-size="10.5" fill="currentColor" opacity="0.8">Unilateral: adenoma o</text>
+          <text x="28" y="256" font-size="10.5" fill="currentColor" opacity="0.8">carcinoma</text>
+          <text x="28" y="276" font-size="10.5" fill="currentColor" opacity="0.8">Bilateral: hiperplasia</text>
+
+          <rect x="244" y="172" width="212" height="118" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="258" y="196" font-size="11.5" font-weight="700" fill="currentColor">ZONA GRIS</text>
+          <text x="258" y="218" font-size="10.5" fill="currentColor" opacity="0.8">Pruebas dinámicas:</text>
+          <text x="258" y="238" font-size="10.5" fill="currentColor" opacity="0.8">dosis altas de DXM</text>
+          <text x="258" y="256" font-size="10.5" fill="currentColor" opacity="0.8">y/o estímulo con CRH</text>
+          <text x="258" y="276" font-size="10.5" fill="currentColor" opacity="0.8">Puede ser cualquiera</text>
+
+          <rect x="474" y="172" width="212" height="118" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="488" y="196" font-size="11.5" font-weight="700" fill="currentColor">DEPENDIENTE de ACTH</text>
+          <text x="488" y="218" font-size="10.5" fill="currentColor" opacity="0.8">RM de hipófisis +</text>
+          <text x="488" y="238" font-size="10.5" fill="currentColor" opacity="0.8">dosis altas de DXM</text>
+          <text x="488" y="256" font-size="10.5" fill="currentColor" opacity="0.8">Hipofisario 60 – 80 %</text>
+          <text x="488" y="276" font-size="10.5" fill="currentColor" opacity="0.8">o ectópico</text>
+
+          <rect x="14" y="310" width="672" height="80" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.25" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="30" y="332" font-size="11.5" font-weight="700" fill="currentColor">Cómo separar hipofisario de ectópico dentro del ACTH-dependiente</text>
+          <text x="30" y="354" font-size="11" fill="currentColor" opacity="0.8">Hipofisario: adenoma ≥ 6 mm en RM · suprime &gt; 50 % con dosis altas de DXM · responde a CRH</text>
+          <text x="30" y="374" font-size="11" fill="currentColor" opacity="0.8">Ectópico: no suprime · no responde a CRH · ACTH suele ser &gt; 200 → cateterismo del seno petroso</text>
+        </svg>
+        <figcaption>La <strong>ACTH parte el diagnóstico en dos</strong>. Dentro del brazo dependiente, la clave es que el <strong>tumor hipofisario conserva algo de regulación</strong> y el ectópico no.</figcaption>
+      </figure>
+
+      <h3>Pruebas dinámicas</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Prueba</th><th>Fundamento y técnica</th><th>Interpretación</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Supresión con dosis altas de dexametasona</strong></td>
+              <td>Los tumores hipofisarios son <strong>los menos autónomos</strong> de los tumores causantes del síndrome. Por eso las dosis altas suprimen su secreción, mientras que <strong>el 90 % de los ectópicos no se deja suprimir</strong>.<br><strong>2 mg de dexametasona cada 6 horas, por 8 dosis</strong>, midiendo cortisol plasmático o urinario antes, durante y después</td>
+              <td>Disminución <strong>&gt; 50 % → causa hipofisaria</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Estímulo con CRH</strong></td>
+              <td>Los <strong>tumores ectópicos no expresan receptores para CRH</strong>, de modo que la prueba ayuda a diferenciarlos de la enfermedad de Cushing</td>
+              <td>Aumento de la ACTH <strong>&gt; 35 % a los 15 – 30 minutos → causa hipofisaria</strong><br><strong>No disponible en Argentina</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Imágenes</h3>
+      <ul>
+        <li><strong>Resonancia magnética</strong> de hipófisis: permite la detección de la lesión en <strong>sólo el <span class="dato">60 %</span> de los pacientes</strong>. Los <strong>microadenomas son hipointensos en T1</strong> y por lo general <strong>no captan el medio de contraste</strong>.</li>
+        <li><strong>Tomografía</strong> de adrenales: la mayoría de las lesiones causantes son <strong>adenomas</strong>, de <strong>tamaño menor a 4 cm</strong> y con un <strong>realce inferior a 10 unidades Hounsfield</strong> en la tomografía simple, lo que indica <strong>alto contenido lipídico</strong>.</li>
+        <li><strong>Medicina nuclear</strong>: gammagrafía adrenal con <strong>NP-59</strong> ([131I] 6-yodometilnorcolesterol), [131I]-19-yodocolesterol o [75Se]-seleniometil-norcolesterol; y <strong>PET con 18-fluorodeoxiglucosa</strong>.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>El <strong>cateterismo del seno petroso</strong> es el método disponible en la actualidad <strong>con mayor capacidad de diferenciar un tumor hipofisario de uno ectópico</strong>, con una <strong>eficacia cercana al 100 %</strong>. Se considera positivo para origen hipofisario un <strong>gradiente de ACTH central/periférico &gt; 2 sin estímulo</strong> o <strong>&gt; 3 tras CRH</strong>.</p>
+      </div>
+
+      <p>Una advertencia que se desprende del 60 % de rendimiento de la resonancia: <strong>una RM normal no descarta la enfermedad de Cushing</strong>, y a la inversa, los <strong>incidentalomas hipofisarios son frecuentes</strong> en la población general. La imagen nunca reemplaza al laboratorio.</p>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-diferenciales" id="tratamiento">
+      <span class="seccion__pestana"><b>06</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Tratamiento</h2>
+
+      <h3>Medidas generales</h3>
+      <p>El <strong>trastorno metabólico y la miopatía esteroidea predisponen a complicaciones</strong>, de modo que el control de las comorbilidades es parte del tratamiento y no un accesorio:</p>
+      <ul>
+        <li>Control de la <strong>hipertensión arterial</strong>, la <strong>diabetes</strong>, la <strong>dislipidemia</strong> y la <strong>hipokalemia</strong>.</li>
+        <li><strong>Eliminación de focos de infección</strong>: boca, urinarios, pulmonares y cutáneos.</li>
+        <li><strong>Tratamiento preventivo de la osteoporosis.</strong></li>
+      </ul>
+
+      <h3>Tratamiento quirúrgico</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Procedimiento</th><th>Indicación y resultado</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Cirugía hipofisaria transesfenoidal</strong></td>
+              <td>Tratamiento de elección de la <strong>enfermedad de Cushing</strong>. Tasa de remisión entre <strong><span class="dato">42 y 86 %</span></strong></td>
+            </tr>
+            <tr>
+              <td><strong>Cirugía adrenal laparoscópica</strong></td>
+              <td>Para las causas <strong>independientes de ACTH</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Cirugía del tumor ectópico</strong></td>
+              <td>El tipo de cirugía dependerá de la <strong>localización del tumor y su pronóstico</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Adrenalectomía bilateral total</strong></td>
+              <td><strong>Reservada</strong> para pacientes con enfermedad de Cushing luego del <strong>fracaso y/o contraindicación del resto de las modalidades</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Radioterapia</h3>
+      <p><strong>Radiante convencional</strong> o <strong>radiocirugía estereotáctica</strong>, cuando el hipercortisolismo <strong>no ha sido completamente controlado por la cirugía hipofisaria</strong>. Las tasas de remisión reportadas varían de <span class="dato">53 a 100 %</span> con las técnicas convencionales y son del orden del <span class="dato">76 %</span> con <em>gamma knife</em>.</p>
+
+      <h3>Tratamiento farmacológico</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Estrategia</th><th>Fármacos</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Modulación de receptores</strong><br><em>en la enfermedad de Cushing</em></td>
+              <td><strong>Cabergolina</strong> — inhibidor de receptores dopaminérgicos: logra control del hipercortisolismo en aproximadamente el <span class="dato">25 – 30 %</span><br><strong>Pasireotida</strong> — análogo de la somatostatina con efecto sobre los receptores 1, 2, 3 y <strong>especialmente el 5</strong>, que se expresa abundantemente en los corticotropinomas</td>
+            </tr>
+            <tr>
+              <td><strong>Inhibidores de la esteroidogénesis</strong></td>
+              <td><strong>Ketoconazol</strong> — buena eficacia y fácil disponibilidad<br><strong>Osilodrostat</strong> — inhibe la <strong>11-beta hidroxilasa</strong>, aprobado en 2020<br><strong>Metopirona</strong> y <strong>mitotano</strong> — caros e inexistentes en nuestro medio</td>
+            </tr>
+            <tr>
+              <td><strong>Antagonista del receptor</strong></td>
+              <td><strong>Mifepristona</strong> — ha demostrado utilidad en casos de síndrome de Cushing graves</td>
+            </tr>
+            <tr>
+              <td>Otros</td>
+              <td><strong>Temozolomida</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Las tres indicaciones principales del <strong>ketoconazol</strong> conviene tenerlas ordenadas: para obtener <strong>eucortisolismo como preparación antes de la cirugía</strong>; en pacientes que <strong>rechazan la cirugía o son de alto riesgo</strong> para ella; y como <strong>complemento</strong> para controlar el hipercortisolismo persistente luego de la cirugía o mientras se espera el efecto de la radioterapia.</p>
+
+      <h3>Síndrome de Nelson</h3>
+      <p>Al extirpar las glándulas suprarrenales —a causa de un síndrome de Cushing u otras causas— se crea una <strong>importante depleción de cortisol</strong> en sangre. Con eso <strong>se elimina el mecanismo que inhibe a las células productoras de ACTH</strong> de la hipófisis, que <strong>proliferan y crecen</strong> hasta formar un verdadero <strong>tumor productor de ACTH</strong>.</p>
+      <p>Aunque son <strong>tumores benignos</strong>, su <strong>crecimiento es rápido</strong> y pueden alcanzar un gran tamaño. Es la complicación que explica por qué la <strong>adrenalectomía bilateral está reservada como último recurso</strong>.</p>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-importantes" id="casos">
+      <span class="seccion__pestana"><b>07</b> Casos</span>
+      <h2 class="seccion__titulo">Casos Clínicos &amp; Alertas</h2>
+
+      <p>Los tres casos del material, resueltos. Conviene leer primero los datos y responder antes de abrir el razonamiento.</p>
+
+      <h3>Caso 1 — Mujer de 52 años</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Datos</th><th>Examen físico y estudios</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Aumento de peso progresivo y debilidad muscular<br><strong>Artritis reumatoidea tratada con prednisona 10 mg/día por más de 1 año</strong><br>Aumento de peso en abdomen y rostro en los últimos 6 meses<br><strong>Amenorrea</strong> desde hace 8 meses<br>Debilidad proximal en brazos y muslos</td>
+              <td>Obesidad central · cara de luna llena · giba dorsocervical<br>Estrías violáceas en abdomen · HTA 145/90<br>Glucemia en ayunas 132 mg/dL · TSH normal<br><strong>Cortisol plasmático matutino: bajo</strong><br><strong>ACTH: baja</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="repaso">
+        <details class="fc s-importantes">
+          <summary>¿Cuál es la causa más probable y por qué el cortisol está bajo si hay signos de hipercortisolismo?</summary>
+          <div class="fc__r"><strong>Síndrome de Cushing exógeno (iatrogénico)</strong> por la prednisona. El cortisol propio y la ACTH están <strong>suprimidos</strong> porque el corticoide externo frena el eje por retroalimentación negativa, y <strong>la prednisona no se mide como cortisol</strong> en el ensayo. El hipercortisolismo es clínico, no de laboratorio. La excepción son la <strong>cortisona y la hidrocortisona</strong>, que sí elevan el cortisol plasmático medido.</div>
+        </details>
+        <details class="fc s-importantes">
+          <summary>¿Qué estudios lo confirman y cuál es la conducta?</summary>
+          <div class="fc__r">La <strong>historia farmacológica</strong> más el patrón de <strong>cortisol y ACTH bajos</strong>. <strong>No corresponde hacer pruebas de tamizaje</strong>: el eje ya está frenado y darían resultados sin valor. Conducta: <strong>descenso gradual de la prednisona</strong> —nunca brusco, por riesgo de insuficiencia suprarrenal aguda—, control de HTA e hiperglucemia, prevención de osteoporosis, y evaluar fármacos ahorradores de corticoide para la artritis reumatoidea.</div>
+        </details>
+      </div>
+
+      <h3>Caso 2 — Hombre de 28 años</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Datos</th><th>Examen físico y estudios</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Cefaleas frecuentes y acné severo<br>Aumento de peso en tronco y cara<br>Irritable y deprimido<br><strong>Cefaleas diarias que no responden a analgésicos</strong><br>Debilidad muscular al subir escaleras · piel fina</td>
+              <td>IMC 31 · cara de luna llena · giba de búfalo<br>Estrías violáceas · HTA 150/95<br><strong>Cortisol libre urinario 24 h: elevado × 3</strong><br><strong>Nugent: no suprime</strong> · <strong>ACTH: elevada</strong><br><strong>RM de hipófisis: microadenoma de 6 mm</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="repaso">
+        <details class="fc s-importantes">
+          <summary>¿Diagnóstico, y qué lo diferencia del Cushing ectópico?</summary>
+          <div class="fc__r"><strong>Enfermedad de Cushing</strong>: adenoma hipofisario productor de ACTH. Encaja todo — hipercortisolismo confirmado por dos pruebas, <strong>ACTH elevada</strong> y <strong>adenoma ≥ 6 mm</strong> en la RM. Frente al <strong>ectópico</strong>: el hipofisario <strong>conserva regulación parcial</strong>, por lo que <strong>suprime &gt; 50 % con dosis altas de dexametasona</strong> y <strong>responde al estímulo con CRH</strong>. El ectópico no suprime, no responde, la <strong>ACTH suele superar los 200 pg/mL</strong> y el cuadro es más agudo, con hipokalemia e hiperpigmentación marcadas.</div>
+        </details>
+        <details class="fc s-importantes">
+          <summary>¿Siguiente paso y qué complicaciones esperarías sin tratamiento?</summary>
+          <div class="fc__r"><strong>Cirugía transesfenoidal</strong> con adenomectomía, con remisión del 42 al 86 %. Sin tratamiento: <strong>diabetes, hipertensión, osteoporosis con fracturas, miopatía, infecciones, eventos trombóticos, hipogonadismo</strong> y trastornos psiquiátricos, con aumento de la <strong>mortalidad cardiovascular</strong>.</div>
+        </details>
+      </div>
+
+      <h3>Caso 3 — Mujer de 44 años</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Datos</th><th>Examen físico y estudios</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Hipertensión arterial de difícil manejo</strong><br>HTA y diabetes diagnosticadas hace 1 año<br>Gana peso sin cambiar la alimentación<br>Fatiga, insomnio y cambios de humor<br><strong>No usa corticoides</strong></td>
+              <td>Cara de luna llena · obesidad troncular<br>Estrías abdominales anchas · HTA 160/100<br>Hirsutismo leve<br><strong>Cortisol: alto</strong> · <strong>ACTH: baja</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="repaso">
+        <details class="fc s-importantes">
+          <summary>¿Causa más probable y por qué la ACTH está suprimida?</summary>
+          <div class="fc__r"><strong>Síndrome de Cushing independiente de ACTH</strong> por una <strong>lesión adrenal</strong> — con mayor probabilidad un <strong>adenoma</strong>, y menos frecuentemente un carcinoma. La ACTH está suprimida porque el <strong>cortisol autónomo del tumor frena por retroalimentación negativa</strong> la CRH hipotalámica y la ACTH hipofisaria. Corresponde <strong>TC de adrenales</strong>.</div>
+        </details>
+        <details class="fc s-importantes">
+          <summary>¿Tratamiento, y cómo se confirma que el adenoma es funcional?</summary>
+          <div class="fc__r"><strong>Adrenalectomía unilateral laparoscópica</strong>, con <strong>cobertura glucocorticoidea en el posoperatorio</strong> porque la adrenal contralateral está atrofiada por la supresión crónica. Que el adenoma es <strong>funcional</strong> se establece por el conjunto —<strong>hipercortisolismo confirmado</strong> más <strong>ACTH suprimida</strong> más <strong>lesión adrenal en la imagen</strong>—, nunca por la imagen sola: un <strong>incidentaloma no funcionante no suprime la ACTH</strong>.</div>
+        </details>
+      </div>
+
+      <h3>Las alertas de este cuadernillo</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Situación</th><th>Qué recordar</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Sospecha de Cushing</strong></td><td>Lo primero es la <strong>historia farmacológica</strong>: la causa más frecuente es el corticoide exógeno, por cualquier vía</td></tr>
+            <tr><td><strong>Una sola prueba positiva</strong></td><td><strong>Ninguna prueba por sí sola es diagnóstica.</strong> Hacen falta al menos dos concordantes</td></tr>
+            <tr><td><strong>Cortisol matinal normal</strong></td><td>No descarta nada: lo que se pierde es el <strong>valle nocturno</strong>. La muestra útil es la de las <strong>11 PM</strong></td></tr>
+            <tr><td><strong>RM de hipófisis normal</strong></td><td>Detecta sólo el <strong>60 %</strong> de las lesiones. No descarta enfermedad de Cushing</td></tr>
+            <tr><td><strong>ACTH baja</strong></td><td>Puede ser <strong>exógeno o adrenal</strong>. Los separa el <strong>cortisol propio</strong></td></tr>
+            <tr><td><strong>Adrenalectomía bilateral</strong></td><td>Último recurso: riesgo de <strong>síndrome de Nelson</strong></td></tr>
+            <tr><td><strong>Posoperatorio de adrenalectomía</strong></td><td><strong>Cobertura con glucocorticoides</strong>: la glándula contralateral está atrofiada</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ Repaso activo ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>¿Cuál es la causa más frecuente del síndrome de Cushing y cuál la endógena más común?</summary>
+          <div class="fc__r">La más frecuente en general es el <strong>consumo de glucocorticoides terapéuticos</strong> (exógeno). La <strong>endógena</strong> más común es la <strong>enfermedad de Cushing</strong> —adenoma hipofisario—, con incidencia de 5 a 25 casos por millón, principalmente en mujeres de 25 a 45 años.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Repartí el Cushing endógeno en porcentajes.</summary>
+          <div class="fc__r"><strong>Dependiente de ACTH: 80 – 85 %</strong> (de ellos, 60 – 80 % hipofisarios). <strong>Independiente de ACTH: 15 – 20 %</strong>.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Nombrá los tres síndromes de seudo-Cushing.</summary>
+          <div class="fc__r"><strong>Alcoholismo, obesidad y depresión.</strong> Producen hipercortisolismo real pero <strong>no autónomo</strong>, y son la principal fuente de falsos positivos.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>ACTH baja: ¿qué dos escenarios opuestos puede ser y cómo los separás?</summary>
+          <div class="fc__r"><strong>Cushing exógeno</strong> y <strong>Cushing adrenal</strong> (independiente de ACTH). Los separa el <strong>cortisol propio</strong>: <strong>bajo</strong> en el exógeno —el eje está frenado— y <strong>alto</strong> en el adrenal, por producción autónoma del tumor.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Cuáles son los signos con mayor valor discriminante?</summary>
+          <div class="fc__r"><strong>Debilidad muscular proximal</strong>, <strong>estrías rojo-vinosas anchas</strong>, <strong>plétora facial</strong> y <strong>equimosis fáciles</strong> — son los raros en la obesidad común. Ningún signo es patognomónico.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿A quiénes hay que estudiar por sospecha de Cushing?</summary>
+          <div class="fc__r">A quien tenga <strong>una enfermedad poco frecuente para su edad</strong>: <strong>osteoporosis</strong> en joven, <strong>HTA en adulto joven</strong>, <strong>talla baja con sobrepeso</strong> en niños, <strong>incidentaloma adrenal</strong>, o hallazgos múltiples y progresivos sugestivos.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Nombrá las tres pruebas de tamización y sus umbrales.</summary>
+          <div class="fc__r"><strong>Cortisol libre urinario</strong> (2 – 3 muestras): <strong>&gt; 2 – 3 veces</strong> el valor de referencia. <strong>Test de Nugent</strong> (1 mg DXM a las 11 PM): cortisol <strong>&gt; 1,8 µg/dL</strong> a la mañana. <strong>Cortisol salival 11 PM</strong>: <strong>&gt; 145 ng/dL</strong> (0,144 µg/dL).</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Por qué la muestra diagnóstica es la de las 11 PM y no la de la mañana?</summary>
+          <div class="fc__r">Porque en el Cushing <strong>se pierde el ritmo circadiano</strong>: lo que desaparece no es el pico matinal sino el <strong>valle nocturno</strong>. El cortisol de la mañana puede ser normal aun con enfermedad.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Falsos positivos del test de Nugent y del cortisol salival.</summary>
+          <div class="fc__r"><strong>Nugent</strong>: síndromes de malabsorción, metabolismo basal acelerado, fármacos inductores de enzimas hepáticas e hiperestrogenismo. <strong>Salival</strong>: derivados del <strong>regaliz</strong> y <strong>exposición al cigarrillo</strong> en los días previos.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Interpretá los tres rangos de ACTH plasmática.</summary>
+          <div class="fc__r"><strong>&lt; 5 pg/mL</strong>: independiente de ACTH — adenoma, carcinoma o hiperplasia adrenal. <strong>&gt; 20 pg/mL</strong>: dependiente de ACTH — hipofisario o ectópico, este último habitualmente <strong>&gt; 200</strong>. <strong>5 – 20 pg/mL</strong>: <strong>zona gris</strong>, requiere pruebas dinámicas.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Por qué las dosis altas de dexametasona separan hipofisario de ectópico?</summary>
+          <div class="fc__r">Porque los <strong>tumores hipofisarios son los menos autónomos</strong> y conservan algo de retroalimentación: <strong>suprimen &gt; 50 %</strong>. El <strong>90 % de los ectópicos no se deja suprimir</strong>. Lo mismo con el CRH: los ectópicos <strong>no expresan sus receptores</strong>.</div>
+        </details>
+
+        <details class="fc s-diferenciales">
+          <summary>¿Qué es el síndrome de Nelson y por qué aparece?</summary>
+          <div class="fc__r">Tras la <strong>adrenalectomía bilateral</strong>, la depleción de cortisol <strong>elimina la inhibición sobre las células productoras de ACTH</strong> de la hipófisis, que proliferan hasta formar un <strong>tumor productor de ACTH</strong>. Es benigno pero de <strong>crecimiento rápido</strong>. Por eso la adrenalectomía bilateral es el último recurso.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Cuadro clave</dt>
+        <dd><strong>Obesidad central + cara de luna llena + giba + estrías rojo-vinosas anchas + debilidad proximal</strong>, con HTA y diabetes. Ningún signo es patognomónico; los más discriminantes son la <strong>miopatía proximal</strong> y las <strong>estrías anchas</strong>.</dd>
+
+        <dt class="r-gold">Estudio de elección</dt>
+        <dd>Primero <strong>excluir el corticoide exógeno</strong>. Luego tamizar con <strong>cortisol libre urinario</strong>, <strong>Nugent (1 mg DXM → &gt; 1,8 µg/dL)</strong> o <strong>cortisol salival de las 11 PM (&gt; 145 ng/dL)</strong>: hacen falta <strong>dos concordantes</strong>. Después, <strong>ACTH</strong> para la causa.</dd>
+
+        <dt class="r-tto">Tratamiento de 1ª línea</dt>
+        <dd><strong>Enfermedad de Cushing</strong>: cirugía transesfenoidal (remisión 42 – 86 %). <strong>Adrenal</strong>: adrenalectomía laparoscópica. <strong>Farmacológico</strong>: ketoconazol, osilodrostat, cabergolina, pasireotida. <strong>Radioterapia</strong> si la cirugía no controló.</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd><strong>ACTH baja aparece tanto en el exógeno como en el adrenal</strong> — los separa el cortisol propio. <strong>RM normal no descarta</strong> (rinde 60 %). Tras adrenalectomía bilateral, vigilar <strong>síndrome de Nelson</strong>; tras adrenalectomía unilateral, <strong>cubrir con glucocorticoides</strong>.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir del material de cátedra «Síndrome de Cushing» del Dr. Malco Rubin (Medicina Interna III, 2026), complementado con Harrison, Principios de Medicina Interna. Material de estudio: no reemplaza el criterio clínico ni la guía institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link'));
+
+  function porMeta(hash){
+    for (var i = 0; i < enlaces.length; i++){
+      if (enlaces[i].getAttribute('href') === '#' + hash) return enlaces[i];
+    }
+    return null;
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var enlace = porMeta(e.target.id);
+        if (!enlace) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          enlace.setAttribute('aria-current', 'true');
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>
+<script>
+(function(){
+  "use strict";
+  var clave = document.body.dataset.clave || "";
+  var enApp = typeof window.WordmedApp !== "undefined";
+  var MEM = "wordmed:progreso";
+
+  function leer(){ try{ return JSON.parse(localStorage.getItem(MEM)) || {}; }catch(e){ return {}; } }
+  function guardar(m){ try{ localStorage.setItem(MEM, JSON.stringify(m)); }catch(e){} }
+
+  function alto(){
+    return Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+  }
+
+  /* retomar donde quedó */
+  if (clave) {
+    var m = leer()[clave];
+    if (m && m.y > 0) {
+      window.addEventListener("load", function(){
+        window.scrollTo(0, Math.min(m.y, alto()));
+      });
+    }
+  }
+
+  /* anotar el avance, sin ahogar el scroll */
+  var pendiente = false;
+  window.addEventListener("scroll", function(){
+    if (pendiente || !clave) return;
+    pendiente = true;
+    requestAnimationFrame(function(){
+      pendiente = false;
+      var y = window.scrollY;
+      var pct = Math.round((y / alto()) * 100);
+      pct = Math.max(0, Math.min(100, pct));
+      var m = leer();
+      m[clave] = { y: y, pct: pct, ts: Date.now() };
+      guardar(m);
+      if (enApp && window.WordmedApp.progreso) window.WordmedApp.progreso(clave, pct, y);
+    });
+  }, { passive: true });
+
+  /* volver: solo cuando vinimos de la cáscara web */
+  if (!enApp && document.referrer && document.referrer.indexOf(location.origin) === 0) {
+    var b = document.createElement("button");
+    b.className = "volver";
+    b.type = "button";
+    b.setAttribute("aria-label", "Volver");
+    b.innerHTML = '<svg class="volver__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg>';
+    b.addEventListener("click", function(){ history.back(); });
+    document.body.appendChild(b);
+  }
+})();
+</script>
+</body>
+</html>

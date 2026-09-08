@@ -1,0 +1,1237 @@
+<title>Anemias Megaloblásticas y Hemolíticas</title>
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+}
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índice lateral ---------- */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Ficha de sección ---------- */
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.35rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-row:1/3; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+.importante__titulo{
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso{ display:none !important; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-generalidades"  href="#megaloblasticas">Megaloblásticas: Base</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#b12">Déficit de B12 y Perniciosa</a></li>
+      <li><a class="indice__link i-clinica"        href="#folato">Folato y Tratamiento</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#hemoliticas">Hemolíticas: Base</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#corpusculares">Corpusculares</a></li>
+      <li><a class="indice__link i-diferenciales"  href="#autoinmunes">Autoinmunes</a></li>
+      <li><a class="indice__link i-importantes"    href="#otras">Otras Extracorpusculares</a></li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Medicina Interna III · Hematología · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Anemias Megaloblásticas y Hemolíticas</h1>
+      <p class="portada__bajada">Segunda parte del tema Anemia. Del defecto en la síntesis del ADN a la destrucción acelerada del eritrocito.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">7 secciones</span>
+        <span class="etiqueta s-fisiopatologia">B12 y folato</span>
+        <span class="etiqueta s-diferenciales">Coombs directa</span>
+        <span class="etiqueta s-importantes">AHAI caliente y fría</span>
+      </div>
+    </header>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="megaloblasticas">
+      <span class="seccion__pestana"><b>01</b> Base</span>
+      <h2 class="seccion__titulo">Anemias Megaloblásticas: Base</h2>
+
+      <p>Anomalía en la <strong>maduración de los precursores de la serie eritroide</strong> como consecuencia de una <strong>alteración en la síntesis del ADN</strong> en la médula ósea.</p>
+
+      <ul>
+        <li>Hay <strong>disminución de la producción hematopoyética</strong> —anemia, leucopenia y trombocitopenia— de acuerdo a la severidad. En los casos graves, <strong>pancitopenia</strong>.</li>
+        <li>Se debe a <strong>déficit de B12 o de folato</strong>.</li>
+        <li><strong>Hematopoyesis ineficaz</strong>: el <span class="dato">80 – 90 %</span> de los megaloblastos <strong>son destruidos dentro de la médula ósea</strong>.</li>
+        <li><strong>Asincronía madurativa núcleo-citoplasmática</strong> en los progenitores eritroides: el núcleo madura más lento que el citoplasma, y esa disociación define al <strong>megaloblasto</strong>.</li>
+      </ul>
+
+      <p>La hematopoyesis ineficaz explica una paradoja del cuadro: hay <strong>médula hipercelular</strong> con <strong>reticulocitos bajos</strong> en sangre. La médula produce, pero lo producido no sale.</p>
+
+      <h3>Hallazgos de laboratorio</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Frotis de sangre periférica</th><th>Frotis de médula ósea</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <strong>Macrocitosis</strong><br>
+                <strong>Hipersegmentación de neutrófilos</strong><br>
+                <strong>Anillos de Cabot</strong><br>
+                <strong>Reticulocitos bajos</strong><br>
+                Anisocitosis y poiquilocitosis
+              </td>
+              <td>
+                <strong>Hipercelular y polimorfa</strong><br>
+                <strong>Megaloblastos</strong> — eritrocitos con disociación núcleo-citoplasmática<br>
+                Mielocitos y metamielocitos, <strong>neutrófilos cayados gigantes</strong><br>
+                <strong>Megacariocitos poliploides</strong><br>
+                Depósitos de hierro normales o elevados
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Nota: la diapositiva incluye «hipocromía» entre los hallazgos del frotis. Las anemias megaloblásticas son en rigor <strong>normocrómicas</strong>: la CHCM es normal y la HCM está <strong>elevada</strong>, porque el eritrocito es grande y contiene más hemoglobina en términos absolutos. Fuente: Harrison, Principios de Medicina Interna, capítulo de anemias megaloblásticas.</p>
+
+      <h3>Tipos de anemia megaloblástica</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Tipo</th><th>Detalle</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Por déficit de cobalamina</strong></td><td>Vitamina B12</td></tr>
+            <tr><td><strong>Por déficit de ácido fólico</strong></td><td>Es <strong>la causa más frecuente</strong></td></tr>
+            <tr><td>Por otras alteraciones de la síntesis del ADN</td><td><strong>Congénitas</strong>: oroticoaciduria, síndrome de Lesch-Nyhan<br><strong>Adquiridas</strong>: citostáticos</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-fisiopatologia" id="b12">
+      <span class="seccion__pestana"><b>02</b> B12</span>
+      <h2 class="seccion__titulo">Déficit de B12 y Anemia Perniciosa</h2>
+
+      <h3>Cobalamina</h3>
+      <ul>
+        <li><strong>El ser humano no la sintetiza.</strong> La sintetizan <strong>exclusivamente los microorganismos</strong>.</li>
+        <li>Se adquiere por los alimentos: <strong>leche, huevos, carne y pescados</strong>. <strong>No se ha encontrado en vegetales</strong> — de ahí el riesgo del veganismo estricto.</li>
+        <li>En condiciones normales se necesita absorber <span class="dato">2 – 5 µg/día</span>. Los depósitos alcanzan <span class="dato">2 – 5 mg</span>, la mayoría en <strong>hígado y riñón</strong>.</li>
+        <li>Formas <em>in vivo</em>: <strong>metilcobalamina</strong> (forma circulante) y <strong>adenosilcobalamina</strong> (forma de depósito).</li>
+        <li>Formas farmacéuticas: <strong>hidroxicobalamina</strong> (uso terapéutico) y <strong>cianocobalamina</strong> (uso diagnóstico, prueba de Schilling).</li>
+      </ul>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 390" role="img" aria-label="Cadena de absorción de la cobalamina y dónde se rompe en cada eslabón. La dieta aporta leche, huevos, carne y pescado, y falla en el veganismo estricto. En el estómago las células parietales secretan el factor intrínseco que protege a la vitamina del ácido, y falla en la anemia perniciosa y la gastrectomía. En la luz intestinal el complejo de vitamina B12 y factor intrínseco viaja hasta el íleon, y falla en el asa ciega, la diverticulosis y las parasitosis. El íleon terminal es el sitio de absorción, y falla en la enfermedad de Crohn, la celiaquía y la resección ileal. El hígado almacena de dos a cinco miligramos, y por ese depósito tan grande el déficit tarda más de dos años en manifestarse.">
+          <defs>
+            <marker id="pta-b12" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <text x="14" y="38" font-size="11" font-weight="700" fill="currentColor" opacity="0.7">Eslabón</text>
+          <text x="320" y="38" font-size="11" font-weight="700" fill="currentColor" opacity="0.7">Qué hace y dónde se rompe</text>
+
+          <rect x="14" y="52" width="250" height="56" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="86" font-size="12.5" font-weight="700" fill="currentColor">1 · Dieta</text>
+          <line x1="264" y1="80" x2="314" y2="80" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-b12)"></line>
+          <text x="266" y="72" font-size="10.5" fill="currentColor" opacity="0.65">falla</text>
+          <rect x="320" y="52" width="366" height="56" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="336" y="74" font-size="11.5" fill="currentColor" opacity="0.8">Leche, huevos, carne y pescado</text>
+          <text x="336" y="94" font-size="11.5" font-weight="700" fill="currentColor">Falla en: veganismo estricto</text>
+
+          <rect x="14" y="118" width="250" height="56" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2.2"></rect>
+          <text x="30" y="152" font-size="12.5" font-weight="700" fill="currentColor">2 · Estómago</text>
+          <line x1="264" y1="146" x2="314" y2="146" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-b12)"></line>
+          <text x="266" y="138" font-size="10.5" fill="currentColor" opacity="0.65">falla</text>
+          <rect x="320" y="118" width="366" height="56" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="336" y="140" font-size="11.5" fill="currentColor" opacity="0.8">Factor intrínseco de las células parietales</text>
+          <text x="336" y="160" font-size="11.5" font-weight="700" fill="currentColor">Falla en: anemia perniciosa, gastrectomía</text>
+
+          <rect x="14" y="184" width="250" height="56" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="218" font-size="12.5" font-weight="700" fill="currentColor">3 · Luz intestinal</text>
+          <line x1="264" y1="212" x2="314" y2="212" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-b12)"></line>
+          <text x="266" y="204" font-size="10.5" fill="currentColor" opacity="0.65">falla</text>
+          <rect x="320" y="184" width="366" height="56" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="336" y="206" font-size="11.5" fill="currentColor" opacity="0.8">El complejo B12–FI viaja hasta el íleon</text>
+          <text x="336" y="226" font-size="11.5" font-weight="700" fill="currentColor">Falla en: asa ciega, diverticulosis, parásitos</text>
+
+          <rect x="14" y="250" width="250" height="56" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2.2"></rect>
+          <text x="30" y="284" font-size="12.5" font-weight="700" fill="currentColor">4 · Íleon terminal</text>
+          <line x1="264" y1="278" x2="314" y2="278" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-b12)"></line>
+          <text x="266" y="270" font-size="10.5" fill="currentColor" opacity="0.65">falla</text>
+          <rect x="320" y="250" width="366" height="56" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="336" y="272" font-size="11.5" fill="currentColor" opacity="0.8">Sitio donde ocurre la absorción</text>
+          <text x="336" y="292" font-size="11.5" font-weight="700" fill="currentColor">Falla en: Crohn, celiaquía, resección ileal</text>
+
+          <rect x="14" y="316" width="250" height="56" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="350" font-size="12.5" font-weight="700" fill="currentColor">5 · Hígado</text>
+          <line x1="264" y1="344" x2="314" y2="344" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-b12)"></line>
+          <text x="266" y="336" font-size="10.5" fill="currentColor" opacity="0.65">acumula</text>
+          <rect x="320" y="316" width="366" height="56" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="336" y="338" font-size="11.5" fill="currentColor" opacity="0.8">Depósito de 2 – 5 mg · pérdida de 1 – 2 µg/día</text>
+          <text x="336" y="358" font-size="11.5" font-weight="700" fill="currentColor">Por eso el déficit tarda más de 2 años</text>
+        </svg>
+        <figcaption>El depósito hepático es tan grande frente a la pérdida diaria que, aunque la causa se instale hoy, la anemia recién aparece <strong>dos años después</strong>. Esa latencia es lo que hace tan traicionero al déficit de B12.</figcaption>
+      </figure>
+
+      <h3>Causas del déficit de B12</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Mecanismo</th><th>Causas</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Descenso de la ingesta</strong></td>
+              <td>Dieta inadecuada: <strong>vegetarianos estrictos</strong> y veganismo</td>
+            </tr>
+            <tr>
+              <td><strong>Alteración de la absorción</strong></td>
+              <td><strong>Déficit de factor intrínseco</strong>: anemia perniciosa, gastrectomía, formas congénitas<br><strong>Déficit de enzimas pancreáticas</strong>: pancreatitis crónica, síndrome de Zollinger-Ellison</td>
+            </tr>
+            <tr>
+              <td><strong>Alteraciones del intestino delgado</strong></td>
+              <td><strong>Esprúe y enfermedad celíaca</strong> · <strong>enfermedad de Crohn</strong><br><strong>Infiltración de la pared</strong>: linfoma, amiloidosis, esclerodermia<br><strong>Proliferación bacteriana</strong>: asa ciega, diverticulosis, hipogammaglobulinemia<br><strong>Parasitosis</strong>: <em>Ancylostoma duodenale</em><br><strong>Fármacos</strong> que alteran los receptores de absorción: fenitoína, colchicina, anticonceptivos orales</td>
+            </tr>
+            <tr>
+              <td><strong>Alteraciones del transporte</strong><br><em>(raras)</em></td>
+              <td>Déficit congénito de <strong>transcobalamina II</strong> · déficit funcional (<strong>enfermedad de Cardeza</strong>) · mutaciones cblA a cblJ<br><strong>Adquirida</strong>: uso de <strong>óxido nitroso</strong>, que inactiva la cobalamina por oxidación irreversible</td>
+            </tr>
+            <tr>
+              <td><strong>Aumento de los requerimientos</strong></td>
+              <td><strong>Fisiológicos</strong>: embarazo y lactancia<br><strong>Patológicos</strong>: hipertiroidismo, leucemias, anemias hemolíticas</td>
+            </tr>
+            <tr>
+              <td>Alteraciones metabólicas</td>
+              <td>La célula no logra emplear la cobalamina</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Anemia perniciosa</h3>
+      <ul>
+        <li>Es una <strong>gastritis atrófica autoinmune crónica</strong>.</li>
+        <li>Es <strong>la causa más frecuente de déficit de vitamina B12 en el adulto</strong>.</li>
+        <li>Se detectan <strong>autoanticuerpos anti-factor intrínseco y anti-células parietales</strong>.</li>
+        <li>La <strong>aclorhidria</strong> es una característica acompañante, porque las células parietales también secretan H⁺.</li>
+        <li>Se asocia con <strong>enfermedad tiroidea autoinmune</strong>, y suele haber <strong>antecedentes familiares</strong> de anemia perniciosa o de patología tiroidea.</li>
+        <li>Conlleva <strong>mayor riesgo de carcinoma gástrico</strong>.</li>
+      </ul>
+
+      <h3>Manifestaciones clínicas del déficit de B12</h3>
+      <ul>
+        <li><strong>Color amarillo limón de la piel</strong> — la combinación de <strong>palidez e ictericia</strong> por hematopoyesis ineficaz.</li>
+        <li><strong>Glositis</strong> y trastornos digestivos.</li>
+        <li><strong>Pérdida de peso.</strong></li>
+        <li><strong>Alteraciones neurológicas</strong>: neuropatía periférica.</li>
+        <li><strong>Trastornos psiquiátricos.</strong></li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>El <strong>compromiso neurológico es exclusivo del déficit de B12</strong>: el folato no lo produce. Y puede <strong>preceder a la anemia</strong>. Por eso, ante una megaloblástica, <strong>nunca tratar con folato solo sin haber descartado déficit de B12</strong>: el folato corrige la anemia pero <strong>deja progresar la neuropatía</strong>.</p>
+      </div>
+
+      <p class="cita">Profundización sobre el compromiso neurológico: la forma clásica es la <strong>degeneración combinada subaguda</strong> de los cordones posteriores y laterales de la médula, con parestesias, ataxia sensitiva y signo de Romberg. Fuente: Harrison, Principios de Medicina Interna.</p>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-clinica" id="folato">
+      <span class="seccion__pestana"><b>03</b> Folato y Tto</span>
+      <h2 class="seccion__titulo">Déficit de Folato y Tratamiento</h2>
+
+      <h3>Causas del déficit de folato</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Mecanismo</th><th>Causas</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Reducción del consumo</strong></td><td>Dieta pobre en folatos — están en las <strong>verduras verdes</strong> y el <strong>hígado</strong></td></tr>
+            <tr><td><strong>Reducción de la absorción</strong></td><td><strong>Enfermedad celíaca</strong></td></tr>
+            <tr><td><strong>Aumento del consumo</strong></td><td><strong>Neoplasias malignas</strong> · <strong>anemia hemolítica</strong> · <strong>embarazo</strong> · prematuros</td></tr>
+            <tr><td><strong>Aumento de las pérdidas</strong></td><td><strong>Diálisis</strong></td></tr>
+            <tr><td><strong>Fármacos</strong></td><td><strong>Metotrexato</strong> · <strong>trimetoprima</strong> · antiepilépticos</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>El <strong>consumo excesivo de alcohol</strong> puede dar lugar a déficit de folato por una combinación de <strong>malabsorción, malnutrición y aumento de la utilización</strong>. A diferencia de la B12, los depósitos de folato son pequeños y el déficit aparece en <strong>meses</strong>, no en años.</p>
+
+      <h3>Macrocitosis no megaloblásticas</h3>
+      <p>Un VCM alto no siempre es déficit vitamínico. Estas cursan con macrocitosis <strong>sin</strong> los cambios megaloblásticos de la médula:</p>
+      <ul>
+        <li><strong>Enfermedad hepática crónica.</strong></li>
+        <li><strong>Anemia aplásica.</strong></li>
+        <li><strong>Mielodisplasia.</strong></li>
+        <li><strong>Posterior a esplenectomía.</strong></li>
+        <li><strong>Reticulocitosis</strong> — por ejemplo, en la anemia hemolítica grave.</li>
+      </ul>
+
+      <h3>Tratamiento del déficit de B12</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Escenario</th><th>Esquema</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Medidas generales</strong></td>
+              <td><strong>Corregir la dieta</strong> y <strong>corregir o eliminar la causa</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Vía oral</strong></td>
+              <td>1 comprimido o ampolla bebible por día, <strong>en ayunas</strong>. Es eficaz y logra reposición inmediata.<br><strong>La vitamina C inhibe su absorción.</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Anemia perniciosa</strong><br><em>Vía intramuscular</em></td>
+              <td><strong>1 ampolla diaria por una semana</strong><br>luego <strong>1 ampolla semanal por 1 mes</strong><br>finalmente <strong>1 ampolla cada 2 a 3 meses, toda la vida</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>En la <strong>anemia perniciosa el tratamiento es de por vida</strong>: el defecto es la ausencia de factor intrínseco y no se corrige. Además, por el <strong>mayor riesgo de carcinoma gástrico</strong>, estos pacientes requieren vigilancia.</p>
+      </div>
+
+      <h3>Tratamiento del déficit de folato</h3>
+      <ul>
+        <li><strong>Corregir la dieta</strong> y <strong>corregir o eliminar la causa</strong>.</li>
+        <li><strong>Vía oral</strong>: <strong>ácido fólico <span class="dato">5 a 10 mg/día</span></strong>.</li>
+        <li><strong>Vía endovenosa</strong>: <strong>ácido folínico</strong>, ampollas de <span class="dato">15 mg/día</span>.</li>
+      </ul>
+      <p>El <strong>ácido folínico</strong> es la forma ya reducida y por eso <strong>no requiere de la dihidrofolato reductasa</strong>: es el antídoto del metotrexato.</p>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-diagnostico" id="hemoliticas">
+      <span class="seccion__pestana"><b>04</b> Hemolíticas</span>
+      <h2 class="seccion__titulo">Anemias Hemolíticas: Base</h2>
+
+      <p>Se deben a una <strong>mayor destrucción de eritrocitos</strong>: la vida del glóbulo rojo se acorta porque es destruido a velocidad acelerada.</p>
+      <ul>
+        <li>Eso estimula una mayor producción de <strong>eritropoyetina</strong> y lleva a una <strong>eritropoyesis compensadora</strong>.</li>
+        <li>El aumento de la eritropoyesis hace que haya <strong>más reticulocitos</strong> en circulación, <strong>lo que aumenta el VCM</strong>.</li>
+        <li>La reducción de la vida del eritrocito puede deberse a <strong>defectos del propio eritrocito</strong> (corpusculares) o a <strong>defectos extracorpusculares</strong>.</li>
+      </ul>
+
+      <h3>Extravascular e intravascular</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Tipo</th><th>Dónde ocurre y qué la caracteriza</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Extravascular</strong></td>
+              <td>Es la <strong>vía normal</strong> de destrucción de los eritrocitos: ocurre en los <strong>macrófagos del bazo, la médula ósea y el hígado</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Intravascular</strong></td>
+              <td>Destrucción <strong>dentro de la circulación</strong>. Suma a las manifestaciones de la extravascular:<br><strong>Hemoglobinemia</strong> — se libera Hb al torrente sanguíneo<br><strong>Ausencia de haptoglobinas plasmáticas</strong> — removidas por los macrófagos<br><strong>Hemoglobinuria</strong> y <strong>hemosiderinuria</strong><br><strong>Metahemalbuminemia</strong> — parte de la Hb se oxida y se une a la albúmina</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Manifestaciones clínicas y su mecanismo</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Causa</th><th>Clínica</th><th>Mecanismo</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td rowspan="6"><strong>Aumento de la destrucción de eritrocitos</strong></td>
+              <td>Falta de haptoglobinas plasmáticas</td>
+              <td>La Hb se une a las haptoglobinas y el complejo lo eliminan los macrófagos</td>
+            </tr>
+            <tr><td><strong>Palidez de mucosas</strong></td><td>↓ Hemoglobina</td></tr>
+            <tr><td><strong>Ictericia</strong></td><td>↑ <strong>Bilirrubina sérica no conjugada</strong></td></tr>
+            <tr><td>La orina se oscurece al dejarla reposar</td><td>↑ Urobilinógeno</td></tr>
+            <tr><td><strong>Cálculos pigmentarios</strong></td><td>↑ Bilirrubina en bilis</td></tr>
+            <tr><td><strong>Esplenomegalia</strong> · <strong>reticulocitosis</strong></td><td>↑ Destrucción de eritrocitos · precursores eritrocitarios entran en la sangre</td></tr>
+            <tr>
+              <td rowspan="2"><strong>Aumento de la producción de eritrocitos</strong></td>
+              <td><strong>Déficit de folato</strong></td>
+              <td>Aumento de la eritropoyesis, que consume folato</td>
+            </tr>
+            <tr><td><strong>Deformidades óseas</strong></td><td>La hiperplasia eritroide <strong>expande las cavidades medulares</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Laboratorio de la hemólisis</h3>
+      <p><strong>Bilirrubina y LDH elevadas</strong> · <strong>descenso de la haptoglobina</strong> · aumento del urobilinógeno · hemoglobinuria · <strong>reticulocitos aumentados</strong> · <strong>Coombs directa positiva</strong> en las autoinmunes · crioaglutininas positivas en la AHAI fría.</p>
+      <p>Clínicamente: <strong>anemia, ictericia y esplenomegalia</strong>. Cuando coexisten una <strong>AHAI caliente</strong> y una <strong>púrpura trombocitopénica inmune</strong>, se denomina <strong>síndrome de Evans</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 380" role="img" aria-label="Clasificación de las anemias hemolíticas. Las corpusculares, por defecto del propio eritrocito, se dividen en tres grupos: de membrana, que incluyen esferocitosis hereditaria, eliptocitosis hereditaria y hemoglobinuria paroxística nocturna; enzimáticas, que incluyen el déficit de glucosa-6-fosfato deshidrogenasa y el de piruvato-cinasa; y de la hemoglobina, que incluyen los síndromes falciformes y la talasemia. Las extracorpusculares se dividen en inmunes, con transfusiones incompatibles, anemia hemolítica autoinmune y hemólisis asociada a fármacos; infecciosas, con paludismo y septicemia; mecánicas, con hemólisis microangiopática por coagulación intravascular diseminada, síndrome urémico hemolítico y púrpura trombótica trombocitopénica, además de válvulas protésicas, hemólisis de la marcha y mielofibrosis; y por fármacos e hiperesplenismo, con dapsona y sulfasalazina.">
+          <text x="14" y="36" font-size="11.5" font-weight="700" fill="currentColor" opacity="0.75">CORPUSCULARES — defecto del eritrocito</text>
+          <text x="364" y="36" font-size="11.5" font-weight="700" fill="currentColor" opacity="0.75">EXTRACORPUSCULARES</text>
+
+          <rect x="14" y="52" width="330" height="96" rx="3" fill="var(--c)" fill-opacity="0.18" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="30" y="76" font-size="12.5" font-weight="700" fill="currentColor">Membrana</text>
+          <text x="30" y="98" font-size="11" fill="currentColor" opacity="0.8">Esferocitosis hereditaria</text>
+          <text x="30" y="116" font-size="11" fill="currentColor" opacity="0.8">Eliptocitosis hereditaria</text>
+          <text x="30" y="134" font-size="11" fill="currentColor" opacity="0.8">Hemoglobinuria paroxística nocturna</text>
+
+          <rect x="14" y="158" width="330" height="96" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="182" font-size="12.5" font-weight="700" fill="currentColor">Enzima</text>
+          <text x="30" y="204" font-size="11" fill="currentColor" opacity="0.8">Déficit de G6PD</text>
+          <text x="30" y="222" font-size="11" fill="currentColor" opacity="0.8">Déficit de piruvato-cinasa</text>
+
+          <rect x="14" y="264" width="330" height="96" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="288" font-size="12.5" font-weight="700" fill="currentColor">Hemoglobina</text>
+          <text x="30" y="310" font-size="11" fill="currentColor" opacity="0.8">Síndromes falciformes</text>
+          <text x="30" y="328" font-size="11" fill="currentColor" opacity="0.8">Talasemia</text>
+
+          <rect x="364" y="52" width="322" height="72" rx="3" fill="var(--c)" fill-opacity="0.18" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="380" y="74" font-size="12.5" font-weight="700" fill="currentColor">Inmune</text>
+          <text x="380" y="94" font-size="11" fill="currentColor" opacity="0.8">Transfusiones incompatibles · AHAI</text>
+          <text x="380" y="112" font-size="11" fill="currentColor" opacity="0.8">Hemólisis asociada a fármacos</text>
+
+          <rect x="364" y="130" width="322" height="72" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="380" y="152" font-size="12.5" font-weight="700" fill="currentColor">Infección</text>
+          <text x="380" y="172" font-size="11" fill="currentColor" opacity="0.8">Paludismo · septicemia</text>
+
+          <rect x="364" y="208" width="322" height="72" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="380" y="230" font-size="12.5" font-weight="700" fill="currentColor">Mecánicas</text>
+          <text x="380" y="250" font-size="11" fill="currentColor" opacity="0.8">Microangiopática: CID, SHU, PTT</text>
+          <text x="380" y="268" font-size="11" fill="currentColor" opacity="0.8">Válvulas protésicas · marcha · mielofibrosis</text>
+
+          <rect x="364" y="286" width="322" height="72" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="380" y="308" font-size="12.5" font-weight="700" fill="currentColor">Fármacos e hiperesplenismo</text>
+          <text x="380" y="328" font-size="11" fill="currentColor" opacity="0.8">Dapsona · sulfasalazina</text>
+        </svg>
+        <figcaption>La división es práctica, no académica: en las <strong>corpusculares</strong> el problema viaja con el glóbulo rojo, así que una transfusión sobrevive normal; en las <strong>extracorpusculares</strong> el medio destruye también a los eritrocitos transfundidos.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-tratamiento" id="corpusculares">
+      <span class="seccion__pestana"><b>05</b> Corpusculares</span>
+      <h2 class="seccion__titulo">Hemolíticas Corpusculares</h2>
+
+      <h3>Esferocitosis hereditaria</h3>
+      <ul>
+        <li>Trastorno <strong>autosómico dominante</strong>.</li>
+        <li>Alteración de la <strong>membrana</strong> del glóbulo rojo por deficiencia en las proteínas del citoesqueleto, <strong>principalmente la espectrina</strong>.</li>
+        <li><strong>Menor deformabilidad</strong> de los eritrocitos, lo que provoca <strong>hemólisis extravascular</strong> al quedar retenidos en el bazo.</li>
+        <li><strong>Mayor fragilidad osmótica</strong> — el esferocito se lisa antes en medio hipotónico.</li>
+        <li>Puede ser <strong>asintomática</strong> o presentar hemólisis desde el nacimiento; durante la lactancia, <strong>crisis de hemólisis</strong>.</li>
+        <li>Clínica: <strong>ictericia y esplenomegalia</strong>.</li>
+        <li>Tratamiento: <strong>esplenectomía</strong> para evitar las crisis.</li>
+      </ul>
+
+      <p class="cita">Corrección respecto del material de cátedra: la diapositiva indica «menor fragilidad osmótica». Es al revés — en la esferocitosis hereditaria la <strong>fragilidad osmótica está aumentada</strong>. El esferocito perdió superficie de membrana en relación a su volumen, de modo que <strong>tolera menos la entrada de agua</strong> y se lisa a concentraciones salinas más altas que un eritrocito normal. Sobre ese principio se basa justamente la <strong>prueba de fragilidad osmótica</strong>, que es diagnóstica. Fuente: Harrison, Principios de Medicina Interna, capítulo de anemias hemolíticas.</p>
+
+      <h3>Eliptocitosis hereditaria</h3>
+      <ul>
+        <li>Trastorno <strong>autosómico dominante</strong>.</li>
+        <li>Proteínas del <strong>citoesqueleto defectuosas</strong>.</li>
+        <li>Se observa una <strong>elevada proporción de eritrocitos elípticos</strong> en la extensión de sangre periférica.</li>
+      </ul>
+
+      <h3>Déficit de glucosa-6-fosfato deshidrogenasa</h3>
+      <ul>
+        <li>Trastorno <strong>ligado al cromosoma X</strong> que afecta la <strong>vía de las hexosas monofosfato</strong> —la vía de las pentosas fosfato—, encargada de generar <strong>NADPH</strong> y proteger al eritrocito del estrés oxidativo.</li>
+        <li>Las <strong>mujeres portadoras</strong> tienen déficit; <strong>padecen la enfermedad los varones</strong>.</li>
+        <li>Dos tipos: <strong>africano</strong> y <strong>mediterráneo</strong>. <strong>El mediterráneo es más grave.</strong></li>
+        <li>Los pacientes son <strong>generalmente asintomáticos</strong> hasta que un <strong>factor oxidante precipita la hemólisis</strong>, que es <strong>intravascular</strong>.</li>
+        <li>Tratamiento: <strong>eliminar el desencadenante</strong>.</li>
+      </ul>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Desencadenantes de la crisis</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Infección</strong></td></tr>
+            <tr><td><strong>Acidosis</strong> — por ejemplo, cetoacidosis diabética</td></tr>
+            <tr><td><strong>Fármacos</strong> — por ejemplo, <strong>sulfamidas</strong></td></tr>
+            <tr><td><strong>Habas</strong> — «fabismo», <strong>sólo en el tipo mediterráneo</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>En el frotis aparecen los <strong>cuerpos de Heinz</strong>: precipitados de hemoglobina desnaturalizada por la oxidación, que el bazo arranca dejando las células «mordidas».</p>
+
+      <p class="cita">Corrección respecto del material de cátedra: la diapositiva describe la enzima como localizada «en el retículo endoplásmico de las células de los islotes de Langerhans, hígado y riñón». Esa descripción corresponde a la <strong>glucosa-6-fosfatasa</strong>, cuyo déficit causa la <strong>enfermedad de von Gierke</strong> (glucogenosis tipo I). La <strong>glucosa-6-fosfato deshidrogenasa</strong> es una enzima <strong>citosólica</strong> presente en todas las células y especialmente relevante en el eritrocito, que carece de núcleo y mitocondrias y depende de ella para regenerar glutatión reducido. El resto de la diapositiva —herencia ligada al X, tipos africano y mediterráneo, mayor gravedad del mediterráneo— es correcto.</p>
+
+      <h3>Déficit de piruvato-cinasa</h3>
+      <ul>
+        <li>Trastorno <strong>autosómico recesivo</strong> infrecuente.</li>
+        <li>Afecta la <strong>vía glucolítica</strong>, con lo que <strong>no se produce ATP</strong>.</li>
+        <li>Los eritrocitos <strong>se hacen rígidos y se destruyen</strong>.</li>
+        <li>La <strong>esplenectomía podría mejorar, pero no cura</strong>.</li>
+        <li>En el frotis de sangre periférica, <strong>acantocitos</strong> — descritos también como equinocitos o «células en espina» en otras fuentes.</li>
+      </ul>
+
+      <p>La comparación entre las dos enzimopatías se resuelve por la vía afectada: <strong>G6PD</strong> falla en la defensa <strong>antioxidante</strong> y da hemólisis <strong>episódica ante oxidantes</strong>; <strong>piruvato-cinasa</strong> falla en la producción de <strong>energía</strong> y da hemólisis <strong>crónica</strong>.</p>
+
+      <h3>Hemoglobinuria paroxística nocturna</h3>
+      <ul>
+        <li><strong>Defecto adquirido</strong> e infrecuente de la <strong>membrana del eritrocito</strong>.</li>
+        <li>Faltan las proteínas que normalmente <strong>impiden la lisis de las células sanguíneas por el complemento</strong>.</li>
+        <li>Esa falta lleva a una <strong>hemólisis intravascular crónica</strong>.</li>
+        <li>Es un <strong>trastorno de la célula madre</strong>, de modo que los pacientes pueden tener <strong>anemia, leucopenia y trombocitopenia</strong>.</li>
+        <li>Diagnóstico: clínica, laboratorio clínico y hematológico, y <strong>citometría de flujo</strong>.</li>
+        <li>Tratamiento: <strong>eculizumab</strong>, que inhibe la hemólisis intravascular mediada por complemento.</li>
+      </ul>
+      <p>Es la única de las corpusculares que es <strong>adquirida</strong>: por eso aparece en el grupo de las de membrana pero se comporta como un trastorno clonal.</p>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-diferenciales" id="autoinmunes">
+      <span class="seccion__pestana"><b>06</b> Autoinmunes</span>
+      <h2 class="seccion__titulo">Anemias Hemolíticas Autoinmunes</h2>
+
+      <p><strong>Autoanticuerpos contra los eritrocitos</strong> causan la hemólisis. La <strong>prueba de Coombs directa es positiva</strong>, y ese es el dato que las separa de todo el resto.</p>
+      <p>Hay <strong>tres tipos</strong>: <strong>AHAI caliente</strong>, que se produce a temperatura corporal; <strong>AHAI fría</strong>, que suele producirse por debajo de la temperatura ambiente; y la <strong>hemoglobinuria paroxística a frigore</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 345" role="img" aria-label="Enfoque diagnóstico de la anemia hemolítica. Confirmada la hemólisis por reticulocitos altos, elevación de la lactato deshidrogenasa y de la bilirrubina indirecta y descenso de la haptoglobina, se solicita la prueba de Coombs directa. Si es positiva, se trata de una anemia hemolítica autoinmune: la caliente es por inmunoglobulina G a 37 grados y sobre todo extravascular, la fría es por inmunoglobulina M con complemento por debajo de 32 grados y sobre todo intravascular, y el tratamiento incluye esteroides y rituximab. Si la prueba es negativa, la causa no es inmune y se examina el frotis: la presencia de esquistocitos indica hemólisis microangiopática por coagulación intravascular diseminada, síndrome urémico hemolítico, púrpura trombótica trombocitopénica o válvulas protésicas; su ausencia orienta a una causa corpuscular de membrana, enzima o hemoglobina.">
+          <defs>
+            <marker id="pta-coo" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="110" y="8" width="480" height="54" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="350" y="30" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">Hemólisis confirmada</text>
+          <text x="350" y="50" font-size="11" fill="currentColor" opacity="0.8" text-anchor="middle">Reticulocitos ↑ · LDH y bilirrubina indirecta ↑ · haptoglobina ↓</text>
+
+          <line x1="350" y1="62" x2="350" y2="84" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-coo)"></line>
+
+          <rect x="250" y="86" width="200" height="44" rx="3" fill="var(--c)" fill-opacity="0.26" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="350" y="114" font-size="13" font-weight="700" fill="currentColor" text-anchor="middle">¿Coombs directa?</text>
+
+          <line x1="350" y1="130" x2="350" y2="156" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="165" y1="156" x2="535" y2="156" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="165" y1="156" x2="165" y2="182" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-coo)"></line>
+          <line x1="535" y1="156" x2="535" y2="182" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-coo)"></line>
+          <text x="173" y="174" font-size="11" font-weight="700" fill="currentColor">positiva</text>
+          <text x="543" y="174" font-size="11" font-weight="700" fill="currentColor">negativa</text>
+
+          <rect x="20" y="188" width="290" height="140" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="36" y="212" font-size="12.5" font-weight="700" fill="currentColor">AHAI — autoinmune</text>
+          <text x="36" y="234" font-size="11" fill="currentColor" opacity="0.8">Caliente: IgG, 37 °C</text>
+          <text x="36" y="252" font-size="11" fill="currentColor" opacity="0.8">sobre todo extravascular</text>
+          <text x="36" y="274" font-size="11" fill="currentColor" opacity="0.8">Fría: IgM + complemento, &lt; 32 °C</text>
+          <text x="36" y="292" font-size="11" fill="currentColor" opacity="0.8">sobre todo intravascular</text>
+          <text x="36" y="314" font-size="11" font-weight="700" fill="currentColor">Esteroides · rituximab</text>
+
+          <rect x="390" y="188" width="290" height="140" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="406" y="212" font-size="12.5" font-weight="700" fill="currentColor">NO INMUNE</text>
+          <text x="406" y="234" font-size="11" font-weight="700" fill="currentColor">¿Esquistocitos en el frotis?</text>
+          <text x="406" y="256" font-size="11" fill="currentColor" opacity="0.8">Sí → microangiopática</text>
+          <text x="406" y="274" font-size="11" fill="currentColor" opacity="0.8">CID · SHU · PTT · válvulas</text>
+          <text x="406" y="296" font-size="11" fill="currentColor" opacity="0.8">No → corpuscular: membrana,</text>
+          <text x="406" y="314" font-size="11" fill="currentColor" opacity="0.8">enzima o hemoglobina</text>
+        </svg>
+        <figcaption>La <strong>Coombs directa</strong> parte el diagnóstico en dos, y el <strong>frotis</strong> resuelve la rama negativa. Con esos dos estudios se ordena casi toda la hemólisis.</figcaption>
+      </figure>
+
+      <h3>Etiología de cada tipo</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Tipo</th><th>Causas</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>AHAI caliente</strong></td>
+              <td><strong>Idiopática</strong><br><strong>Secundaria</strong> a enfermedad autoinmune —<strong>lupus eritematoso sistémico</strong>—, <strong>leucemias</strong> (leucemia linfocítica crónica), <strong>linfomas</strong> y <strong>fármacos</strong> (ácido mefenámico, fludarabina)</td>
+            </tr>
+            <tr>
+              <td><strong>AHAI fría</strong></td>
+              <td><strong>Idiopática</strong><br><strong>Secundaria</strong> a linfoma o leucemia, <strong>neumonía por micoplasma</strong> y <strong>virus de Epstein-Barr</strong><br>Clínica: los síntomas <strong>empeoran con el clima frío</strong>, con <strong>acrocianosis</strong> y <strong>fenómeno de Raynaud</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Comparación de los tres tipos</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Característica</th><th>AHAI caliente</th><th>AHAI fría</th><th>Hemoglobinuria paroxística a frigore</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Clase de anticuerpo</strong></td><td><strong>IgG</strong></td><td><strong>IgM</strong></td><td><strong>IgG</strong> (Donath-Landsteiner)</td></tr>
+            <tr><td><strong>Especificidad</strong></td><td>Puede ser Rhesus</td><td>Antígeno <strong>I o i</strong></td><td>Antígeno <strong>P</strong> del eritrocito</td></tr>
+            <tr><td><strong>Temperatura de unión</strong></td><td><strong>37 °C</strong></td><td><strong>&lt; 32 °C</strong></td><td><strong>&lt; 32 °C</strong></td></tr>
+            <tr><td><strong>Aglutinación de eritrocitos</strong></td><td>No</td><td><strong>Sí</strong></td><td><strong>Sí</strong></td></tr>
+            <tr><td><strong>Fijación del complemento</strong></td><td>No</td><td><strong>Sí</strong></td><td><strong>Sí</strong></td></tr>
+            <tr><td><strong>Mecanismo de destrucción</strong></td><td>Sobre todo <strong>extravascular</strong></td><td>Sobre todo <strong>intravascular</strong></td><td>Sobre todo <strong>intravascular</strong></td></tr>
+            <tr><td><strong>Coombs directa</strong></td><td>Positiva para <strong>IgG y complemento</strong></td><td>Positiva para <strong>complemento</strong></td><td>Positiva para <strong>IgG y complemento</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>La lógica de la tabla es una sola: la <strong>IgM</strong> es un pentámero, aglutina y <strong>fija complemento</strong>, y por eso la fría destruye <strong>dentro del vaso</strong>; la <strong>IgG</strong> es monomérica, no aglutina, y el eritrocito opsonizado termina fagocitado en el <strong>bazo</strong>.</p>
+
+      <h3>Tratamiento</h3>
+      <ul>
+        <li><strong>Eliminación de la causa.</strong></li>
+        <li><strong>Mantener al paciente a temperatura cálida</strong> — fundamental en las formas frías.</li>
+        <li><strong>Esteroides.</strong></li>
+        <li><strong>Inmunosupresores</strong>, por ejemplo azatioprina.</li>
+        <li><strong>Rituximab</strong>, anticuerpo monoclonal anti-CD20, en la AHAI asociada a síndromes <strong>linfoproliferativos B</strong>.</li>
+        <li><strong>Esplenectomía.</strong></li>
+      </ul>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-importantes" id="otras">
+      <span class="seccion__pestana"><b>07</b> Otras</span>
+      <h2 class="seccion__titulo">Otras Extracorpusculares &amp; Alertas</h2>
+
+      <h3>Anemias hemolíticas aloinmunes</h3>
+      <p>Se deben a una <strong>reacción entre anticuerpos y células sanguíneas de personas diferentes</strong> — no son autoanticuerpos.</p>
+      <ul>
+        <li><strong>Transfusión de sangre ABO incompatible.</strong></li>
+        <li><strong>Enfermedad hemolítica del recién nacido.</strong></li>
+        <li><strong>Trasplante alogénico de médula ósea.</strong></li>
+      </ul>
+
+      <h3>Otras causas de hemólisis</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Grupo</th><th>Entidades</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Microangiopática</strong></td>
+              <td><strong>Síndrome urémico hemolítico</strong> · <strong>púrpura trombótica trombocitopénica</strong> · <strong>CID</strong> · carcinoma diseminado · <strong>hipertensión maligna</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Mecánica</strong></td>
+              <td><strong>Válvulas cardíacas mecánicas</strong> · <strong>hemoglobinuria de la marcha</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Tóxicos e infecciones</strong></td>
+              <td><strong>Intoxicación por plomo</strong> · venenos de serpientes · <strong>paludismo</strong> · quemaduras</td>
+            </tr>
+            <tr>
+              <td><strong>Hemoglobinopatías</strong></td>
+              <td>Síndromes falciformes · talasemias</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>Esquistocitos en el frotis con plaquetopenia es una urgencia.</strong> Obliga a pensar en <strong>microangiopatía trombótica</strong> —PTT, SHU o CID— y a actuar de inmediato: la PTT no tratada tiene mortalidad muy alta y el tratamiento es el <strong>recambio plasmático</strong>, no la transfusión de plaquetas.</p>
+      </div>
+
+      <h3>Las alertas de este cuadernillo</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Situación</th><th>Qué recordar</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Megaloblástica sin dosar B12</strong></td><td><strong>Nunca dar folato solo</strong>: corrige la anemia pero <strong>deja progresar la neuropatía</strong> del déficit de B12</td></tr>
+            <tr><td><strong>Anemia perniciosa</strong></td><td>B12 <strong>intramuscular de por vida</strong> + vigilancia por <strong>riesgo de carcinoma gástrico</strong></td></tr>
+            <tr><td><strong>Déficit de G6PD</strong></td><td>Evitar los oxidantes: <strong>sulfamidas y habas</strong>. El tratamiento es <strong>eliminar el desencadenante</strong></td></tr>
+            <tr><td><strong>Esferocitosis hereditaria</strong></td><td><strong>Mayor</strong> fragilidad osmótica. Antes de la esplenectomía, <strong>vacunar contra gérmenes capsulados</strong></td></tr>
+            <tr><td><strong>Esquistocitos + plaquetopenia</strong></td><td><strong>Urgencia</strong>: PTT, SHU o CID</td></tr>
+            <tr><td><strong>Hemólisis crónica</strong></td><td>Consume folato: puede sumarse un <strong>déficit de folato</strong> y agravar la anemia</td></tr>
+            <tr><td><strong>Coombs directa positiva</strong></td><td>Define la <strong>autoinmunidad</strong>. Negativa, mirar el <strong>frotis</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">La recomendación de vacunar contra neumococo, meningococo y <em>H. influenzae</em> tipo b antes de una esplenectomía programada proviene de las recomendaciones del ACIP y no figura en el material de cátedra; se incluye por su relevancia práctica y por conectar con el cuadernillo de infecciones en huéspedes especiales.</p>
+    </section>
+
+    <!-- ============ Repaso activo ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>¿Por qué la médula está hipercelular pero los reticulocitos bajos en la megaloblástica?</summary>
+          <div class="fc__r">Por la <strong>hematopoyesis ineficaz</strong>: el <strong>80 – 90 % de los megaloblastos se destruye dentro de la médula</strong>. La médula produce, pero lo producido no llega a la sangre.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Hallazgos del frotis de sangre periférica en la megaloblástica.</summary>
+          <div class="fc__r"><strong>Macrocitosis</strong>, <strong>hipersegmentación de neutrófilos</strong>, <strong>anillos de Cabot</strong>, <strong>reticulocitos bajos</strong>, anisocitosis y poiquilocitosis.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Por qué el déficit de B12 tarda más de dos años en dar anemia?</summary>
+          <div class="fc__r">Porque los <strong>depósitos hepáticos son grandes</strong> (2 – 5 mg) frente a una <strong>pérdida diaria mínima</strong> (1 – 2 µg). Hacen falta años para agotarlos.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Dónde se absorbe la B12 y qué necesita para lograrlo?</summary>
+          <div class="fc__r">En la <strong>porción terminal del íleon</strong>, y requiere el <strong>factor intrínseco</strong> secretado por las <strong>células parietales gástricas</strong>, que la protege de la degradación por el ácido.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué es la anemia perniciosa y qué anticuerpos la definen?</summary>
+          <div class="fc__r"><strong>Gastritis atrófica autoinmune crónica</strong>, la causa más frecuente de déficit de B12 en el adulto. Anticuerpos <strong>anti-factor intrínseco</strong> y <strong>anti-células parietales</strong>. Cursa con <strong>aclorhidria</strong>, se asocia a tiroidopatía autoinmune y aumenta el riesgo de <strong>carcinoma gástrico</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Megaloblástica confirmada: ¿podés empezar con folato mientras esperás el dosaje de B12?</summary>
+          <div class="fc__r"><strong>No.</strong> El folato <strong>corrige la anemia pero no la neuropatía</strong>, que puede seguir progresando de forma irreversible. El compromiso neurológico es <strong>exclusivo del déficit de B12</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Esquema de tratamiento de la anemia perniciosa.</summary>
+          <div class="fc__r">B12 <strong>intramuscular</strong>: <strong>1 ampolla diaria por una semana</strong> → <strong>1 ampolla semanal por un mes</strong> → <strong>1 ampolla cada 2 – 3 meses de por vida</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Qué agrega la hemólisis intravascular a la extravascular?</summary>
+          <div class="fc__r"><strong>Hemoglobinemia</strong>, <strong>ausencia de haptoglobinas</strong>, <strong>hemoglobinuria</strong>, <strong>hemosiderinuria</strong> y <strong>metahemalbuminemia</strong>. La extravascular ocurre en los macrófagos de bazo, médula e hígado.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Por qué una hemólisis crónica puede producir déficit de folato?</summary>
+          <div class="fc__r">Porque el <strong>aumento de la eritropoyesis compensadora consume folato</strong>. Es una de las manifestaciones del aumento de producción, junto con las <strong>deformidades óseas</strong> por expansión de las cavidades medulares.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Esferocitosis hereditaria: herencia, proteína afectada y fragilidad osmótica.</summary>
+          <div class="fc__r"><strong>Autosómica dominante</strong>, por déficit de proteínas del citoesqueleto, <strong>principalmente espectrina</strong>. La <strong>fragilidad osmótica está aumentada</strong>. Hemólisis extravascular; tratamiento con <strong>esplenectomía</strong>.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Varón con hemólisis aguda tras comer habas: ¿diagnóstico y conducta?</summary>
+          <div class="fc__r"><strong>Déficit de G6PD, tipo mediterráneo</strong> — el fabismo es exclusivo de ese tipo. Herencia <strong>ligada al X</strong>. Frotis con <strong>cuerpos de Heinz</strong>. Tratamiento: <strong>eliminar el desencadenante</strong>.</div>
+        </details>
+
+        <details class="fc s-diferenciales">
+          <summary>Diferenciá AHAI caliente de fría por anticuerpo, temperatura y mecanismo.</summary>
+          <div class="fc__r"><strong>Caliente</strong>: <strong>IgG</strong>, se une a <strong>37 °C</strong>, no aglutina ni fija complemento, destrucción <strong>extravascular</strong>, Coombs positiva para IgG y complemento. <strong>Fría</strong>: <strong>IgM</strong>, se une a <strong>&lt; 32 °C</strong>, aglutina y <strong>fija complemento</strong>, destrucción <strong>intravascular</strong>, Coombs positiva sólo para complemento.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Qué es la HPN y cuál es su tratamiento?</summary>
+          <div class="fc__r"><strong>Hemoglobinuria paroxística nocturna</strong>: defecto <strong>adquirido</strong> de la membrana, con falta de las proteínas que impiden la lisis por complemento → <strong>hemólisis intravascular crónica</strong>. Es un trastorno de <strong>célula madre</strong>, por lo que puede haber pancitopenia. Diagnóstico por <strong>citometría de flujo</strong>; tratamiento con <strong>eculizumab</strong>.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Los dos mecanismos</dt>
+        <dd><strong>Megaloblástica</strong> = falla la síntesis de ADN → asincronía núcleo-citoplasma, <strong>hematopoyesis ineficaz</strong>, médula hipercelular con reticulocitos <strong>bajos</strong>. <strong>Hemolítica</strong> = destrucción acelerada → reticulocitos <strong>altos</strong>, LDH y bilirrubina indirecta altas, haptoglobina baja.</dd>
+
+        <dt class="r-gold">Estudio de elección</dt>
+        <dd>En la megaloblástica, <strong>dosar B12 y folato antes de tratar</strong>. En la hemolítica, <strong>Coombs directa</strong> —separa autoinmune de no autoinmune— y <strong>frotis</strong> —esquistocitos indican microangiopatía—.</dd>
+
+        <dt class="r-tto">Tratamiento de 1ª línea</dt>
+        <dd><strong>B12</strong>: vía oral en ayunas; en <strong>perniciosa, IM de por vida</strong>. <strong>Folato</strong>: ácido fólico 5 – 10 mg/día. <strong>AHAI</strong>: esteroides, rituximab si hay linfoproliferativo B, esplenectomía. <strong>HPN</strong>: eculizumab. <strong>Esferocitosis</strong>: esplenectomía.</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd><strong>Nunca folato solo sin descartar déficit de B12</strong> — la neuropatía progresa. <strong>Esquistocitos con plaquetopenia</strong> → PTT, SHU o CID, urgencia. En <strong>G6PD</strong>, evitar sulfamidas y habas.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir del material de cátedra «Anemia 2» de la Dra. Susana Tortosa (Medicina Interna III, Hematología), complementado con Harrison, Principios de Medicina Interna. Material de estudio: no reemplaza el criterio clínico ni la guía institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link'));
+
+  function porMeta(hash){
+    for (var i = 0; i < enlaces.length; i++){
+      if (enlaces[i].getAttribute('href') === '#' + hash) return enlaces[i];
+    }
+    return null;
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var enlace = porMeta(e.target.id);
+        if (!enlace) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          enlace.setAttribute('aria-current', 'true');
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>

@@ -1,0 +1,2609 @@
+<title>Trastornos de la Coagulación</title>
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-bloque:1.95rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+
+  /* Que la barra de desplazamiento y los controles nativos acompanen al tema */
+  color-scheme: light dark;
+}
+
+/* Eleccion explicita de claro: solo hace falta para el color-scheme, los
+   tokens claros ya son la base sin estampar. */
+:root[data-theme="light"]{ color-scheme: light; }
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* Interruptor de tema claro / oscuro.
+   El estampado `data-theme` en la raíz ya lo respetan los bloques de tokens de
+   arriba; este botón sólo lo pone y lo guarda. Sin elección estampada mandan
+   las preferencias del sistema, que es el comportamiento por defecto. */
+.tema{
+  position:fixed; top:.7rem; right:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.tema:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.tema__icono{ width:1.15rem; height:1.15rem; display:block; }
+
+/* Se muestra el icono del tema al que se va a cambiar, no el actual.
+   Mismo escalonado que los tokens: base clara · sistema oscuro · elección explícita. */
+.tema__sol{ display:none; }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .tema__sol{ display:block; }
+  :root:not([data-theme="light"]) .tema__luna{ display:none; }
+}
+:root[data-theme="dark"] .tema__sol{ display:block; }
+:root[data-theme="dark"] .tema__luna{ display:none; }
+:root[data-theme="light"] .tema__sol{ display:none; }
+:root[data-theme="light"] .tema__luna{ display:block; }
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índices ---------- */
+/* Dos piezas complementarias y deliberadamente redundantes:
+   · .indice        — barra lateral fija, sólo en pantalla ancha, navegación permanente.
+   · .indice-rapido — tarjeta compacta al principio del cuerpo, visible en TODO ancho.
+   La lateral desaparece por debajo de 64rem, que es justo el ancho del panel de
+   Artifacts y del celular; sin la compacta el cuadernillo publicado se queda sin
+   índice. Las dos apuntan a los mismos anclajes y se resaltan juntas al desplazar. */
+
+/* 6.1 · Barra lateral */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+/* Rótulo de bloque intercalado en la lista lateral: no es un enlace, sólo
+   separa grupos de secciones para que 30 entradas no sean una tira plana. */
+.indice__bloque{
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+  margin:.9rem 0 .2rem; padding:0 .55rem;
+}
+.indice__bloque:first-child{ margin-top:0; }
+
+/* 6.2 · Índice compacto (va después de la portada, dentro del cuerpo) */
+.indice-rapido{
+  background:var(--hoja-hund);
+  border:1px solid var(--linea);
+  border-radius:var(--radio);
+  padding:1.1rem 1.2rem 1.2rem;
+}
+.indice-rapido__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .85rem;
+}
+/* auto-fit: una columna en el panel angosto, dos o tres en pantalla ancha */
+.indice-rapido__bloques{
+  list-style:none; margin:0; padding:0;
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(15rem, 1fr));
+  gap:1rem 2rem; align-items:start;
+}
+.ir-bloque{
+  display:block; margin-bottom:.4rem;
+  font-family:var(--f-titulo); font-size:.98rem; font-weight:700; line-height:1.3;
+  color:var(--tinta); text-decoration:none;
+  padding-bottom:.3rem; border-bottom:1px solid var(--linea-fuerte);
+}
+.ir-bloque:hover{ color:var(--cli-t); }
+.ir-secciones{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.05rem; }
+.ir-link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.55rem 1fr; align-items:baseline; gap:.4rem;
+  padding:.2rem .35rem; border-radius:2px;
+  font-size:.86rem; line-height:1.4; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.ir-link > b{
+  font-family:var(--f-dato); font-size:.76rem; font-weight:700;
+  font-variant-numeric:tabular-nums; color:var(--ct); opacity:.85;
+}
+.ir-link:hover{ background:var(--hoja); color:var(--tinta); }
+.ir-link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Título de bloque y ficha de sección ---------- */
+
+/* Anuncia un grupo de secciones. Neutro en color a propósito: los siete colores
+   tienen significado clínico fijo y un bloque agrupa secciones de varios. La
+   regla de abajo lleva el degradado completo de la paleta, igual que la pestaña
+   de repaso y la cabecera de la ficha relámpago.
+   Sin <svg> adentro: el exportador a Word aparea los diagramas con las figuras
+   por contador posicional sobre el HTML crudo (ver exportar_docx.py). */
+.bloque{
+  margin:1.4rem 0 0; padding:0;
+  text-align:center; scroll-margin-top:2.5rem;
+  display:flex; flex-direction:column; align-items:center; gap:.3rem;
+  font-weight:400;
+}
+.bloque:first-child{ margin-top:0; }
+.bloque__rotulo{
+  font-family:var(--f-texto);
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+}
+.bloque__nombre{
+  font-family:var(--f-titulo); font-size:var(--t-bloque); font-weight:700; line-height:1.15;
+  letter-spacing:-.01em; color:var(--tinta); text-wrap:balance; max-width:32ch;
+}
+.bloque::after{
+  content:""; width:7rem; height:2.5px; margin-top:.5rem; border-radius:2px;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+}
+
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.35rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-row:1/3; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+.importante__titulo{
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso, .tema{ display:none !important; }
+  /* La lateral no se imprime, pero la compacta sí: en papel es la tabla de
+     contenidos del cuadernillo. */
+  .indice-rapido{ display:block; break-inside:avoid; page-break-inside:avoid; margin-bottom:1.2rem; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .bloque{
+    margin:1.6rem 0 1rem;
+    break-after:avoid; page-break-after:avoid;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+
+<script>
+/* Aplica el tema guardado antes de pintar. Va aca arriba a proposito: si
+   esperara al script del final, el documento parpadearia en el tema del
+   sistema antes de corregirse. */
+(function(){
+  try {
+    var guardado = localStorage.getItem('wordmed-tema');
+    if (guardado === 'dark' || guardado === 'light') {
+      document.documentElement.setAttribute('data-theme', guardado);
+    }
+  } catch (e) { /* almacenamiento bloqueado: manda el sistema */ }
+})();
+</script>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<button class="tema" id="tema" type="button" aria-pressed="false" aria-label="Cambiar a modo oscuro">
+  <svg class="tema__icono tema__sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.2"></circle>
+    <path d="M12 2.6v2.1M12 19.3v2.1M5.1 5.1l1.5 1.5M17.4 17.4l1.5 1.5M2.6 12h2.1M19.3 12h2.1M5.1 18.9l1.5-1.5M17.4 6.6l1.5-1.5"></path>
+  </svg>
+  <svg class="tema__icono tema__luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20.4 14.2A8.6 8.6 0 0 1 9.8 3.6a8.6 8.6 0 1 0 10.6 10.6z"></path>
+  </svg>
+</button>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li class="indice__bloque">A · Bases</li>
+      <li><a class="indice__link i-generalidades"  href="#hemostasia">Hemostasia normal</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#modelo">Modelo celular</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#laboratorio">El laboratorio</a></li>
+
+      <li class="indice__bloque">B · Hemofilia</li>
+      <li><a class="indice__link i-generalidades"  href="#hemofilia-general">Genética y severidad</a></li>
+      <li><a class="indice__link i-clinica"        href="#hemofilia-clinica">Cuadro clínico</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#hemofilia-dx">Diagnóstico</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#hemofilia-tto">Tratamiento</a></li>
+
+      <li class="indice__bloque">C · von Willebrand</li>
+      <li><a class="indice__link i-generalidades"  href="#vw-general">Generalidades y clínica</a></li>
+      <li><a class="indice__link i-importantes"    href="#vw-clasificacion">Clasificación</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#vw-tto">Tratamiento</a></li>
+
+      <li class="indice__bloque">D · PTI</li>
+      <li><a class="indice__link i-generalidades"  href="#pti-general">Definición</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#pti-dx">Diagnóstico</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#pti-tto">Decisión de tratar</a></li>
+
+      <li class="indice__bloque">E · Adquiridas</li>
+      <li><a class="indice__link i-generalidades"  href="#hepatopatia">Enfermedad hepática</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#hemofilia-adquirida">Hemofilia adquirida</a></li>
+
+      <li class="indice__bloque">F · CID</li>
+      <li><a class="indice__link i-fisiopatologia" href="#cid-fisio">Fisiopatología</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#cid-dx">Score ISTH</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#cid-tto">Tratamiento</a></li>
+
+      <li class="indice__bloque">Cierre</li>
+      <li><a class="indice__link i-diferenciales"  href="#diferenciales">Diferenciales</a></li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Medicina Interna III · Hematología · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Trastornos de la Coagulación</h1>
+      <p class="portada__bajada">Abordaje diagnóstico del paciente que sangra: de la hemostasia normal al patrón de laboratorio que identifica cada entidad. Seis coagulopatías hemorrágicas, hereditarias y adquiridas.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">19 secciones</span>
+        <span class="etiqueta s-fisiopatologia">Modelo celular</span>
+        <span class="etiqueta s-diagnostico">Mapa TP / APTT</span>
+        <span class="etiqueta s-importantes">Score ISTH</span>
+      </div>
+    </header>
+
+    <nav class="indice-rapido" aria-label="Contenido del cuadernillo">
+      <p class="indice-rapido__rotulo">Contenido</p>
+      <ol class="indice-rapido__bloques">
+        <li>
+          <a class="ir-bloque" href="#bloque-a">Bloque A · Bases de la hemostasia</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades"  href="#hemostasia"><b>01</b> Hemostasia normal y clasificación de los trastornos</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#modelo"><b>02</b> Del modelo clásico al modelo celular</a></li>
+            <li><a class="ir-link i-diagnostico"    href="#laboratorio"><b>03</b> El laboratorio de la hemostasia</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-b">Bloque B · Hemofilia A y B</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades"  href="#hemofilia-general"><b>04</b> Definición, genética y severidad</a></li>
+            <li><a class="ir-link i-clinica"        href="#hemofilia-clinica"><b>05</b> Cuadro clínico</a></li>
+            <li><a class="ir-link i-diagnostico"    href="#hemofilia-dx"><b>06</b> Diagnóstico</a></li>
+            <li><a class="ir-link i-tratamiento"    href="#hemofilia-tto"><b>07</b> Tratamiento</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-c">Bloque C · Enfermedad de von Willebrand</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades"  href="#vw-general"><b>08</b> Generalidades y cuadro clínico</a></li>
+            <li><a class="ir-link i-importantes"    href="#vw-clasificacion"><b>09</b> Clasificación y laboratorio por subtipo</a></li>
+            <li><a class="ir-link i-tratamiento"    href="#vw-tto"><b>10</b> Tratamiento y desmopresina</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-d">Bloque D · Trombocitopenia inmune</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades"  href="#pti-general"><b>11</b> Definición y fisiopatología</a></li>
+            <li><a class="ir-link i-diagnostico"    href="#pti-dx"><b>12</b> Diagnóstico de exclusión</a></li>
+            <li><a class="ir-link i-tratamiento"    href="#pti-tto"><b>13</b> Decisión de tratar y primera línea</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-e">Bloque E · Coagulopatías adquiridas</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades"  href="#hepatopatia"><b>14</b> Enfermedad hepática y sangrado</a></li>
+            <li><a class="ir-link i-diagnostico"    href="#hemofilia-adquirida"><b>15</b> Hemofilia adquirida: inhibidor de FVIII</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-f">Bloque F · Coagulación intravascular diseminada</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-fisiopatologia" href="#cid-fisio"><b>16</b> Fisiopatología</a></li>
+            <li><a class="ir-link i-diagnostico"    href="#cid-dx"><b>17</b> Condiciones asociadas y score ISTH</a></li>
+            <li><a class="ir-link i-tratamiento"    href="#cid-tto"><b>18</b> Tratamiento</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#diferenciales">Cierre</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-diferenciales" href="#diferenciales"><b>19</b> Diagnósticos diferenciales</a></li>
+            <li><a class="ir-link i-clinica"       href="#repaso"><b>·</b> Repaso activo</a></li>
+            <li><a class="ir-link i-importantes"   href="#relampago"><b>⚡</b> Ficha Relámpago</a></li>
+          </ul>
+        </li>
+      </ol>
+    </nav>
+
+    <h2 class="bloque" id="bloque-a">
+      <span class="bloque__rotulo">Bloque A</span>
+      <span class="bloque__nombre">Bases de la hemostasia</span>
+    </h2>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="hemostasia">
+      <span class="seccion__pestana"><b>01</b> Base</span>
+      <h2 class="seccion__titulo">Hemostasia normal y clasificación de los trastornos</h2>
+
+      <p>La <strong>hemostasia</strong> es el proceso fisiológico que detiene el sangrado. No es una sola reacción sino un <strong>equilibrio</strong> entre fuerzas que forman el coágulo y fuerzas que lo limitan y lo disuelven: iniciación y propagación por un lado, inhibición por el otro.</p>
+
+      <h3>Las tres etapas</h3>
+      <ol>
+        <li><strong>Hemostasia primaria:</strong> formación del <strong>tapón plaquetario</strong>. Es un tapón temporal.</li>
+        <li><strong>Hemostasia secundaria:</strong> activación de la cascada de coagulación para formar el <strong>coágulo de fibrina</strong>, que es el tapón definitivo y estable.</li>
+        <li><strong>Fibrinólisis:</strong> proceso que disuelve el coágulo una vez que la lesión cicatrizó, y devuelve la integridad vascular.</li>
+      </ol>
+
+      <p>Los actores son cuatro: la <strong>pared vascular</strong> con su endotelio, las <strong>plaquetas</strong>, el <strong>sistema de coagulación</strong> y el sistema <strong>plasminógeno-plasmina</strong> que se encarga de la disolución.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>&nbsp;</th><th>Hemostasia primaria</th><th>Hemostasia secundaria</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Protagonista</strong></td><td>Plaquetas y VWF</td><td>Factores de la coagulación</td></tr>
+            <tr><td><strong>Producto</strong></td><td>Tapón plaquetario <strong>temporal</strong></td><td>Coágulo <strong>estable</strong> de fibrina</td></tr>
+            <tr><td><strong>Cómo se explora</strong></td><td>Recuento de plaquetas y <strong>tiempo de sangría</strong></td><td><strong>TP y APTT</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Clasificación de los trastornos de la coagulación</h3>
+      <p>Se dividen en <strong>hemorrágicos</strong> y <strong>trombóticos</strong>. Este cuadernillo desarrolla los <strong>hemorrágicos</strong>, que son los que cubre la clase.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Grupo</th><th>Entidades</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>De factores</strong></td><td>Hemofilia A (FVIII) y hemofilia B (FIX)</td></tr>
+            <tr><td><strong>Plaquetarios</strong></td><td><em>Cuantitativos</em>: plaquetas disminuidas (PTI). <em>Cualitativos</em>: función alterada — trombastenia de Glanzmann, síndrome de Bernard-Soulier</td></tr>
+            <tr><td><strong>Vasculares</strong></td><td>Rendu-Osler (telangiectasia hemorrágica hereditaria), Ehlers-Danlos</td></tr>
+            <tr><td><strong>Mixtos</strong></td><td>Enfermedad de von Willebrand — combina defecto plaquetario y de factor</td></tr>
+            <tr><td><strong>Adquiridos</strong></td><td>CID, hepatopatía, hemofilia adquirida, déficit de vitamina K</td></tr>
+            <tr><td><strong>Raros</strong></td><td>Déficit de I, II, V, VII, XI, XIII; desórdenes de la fibrinólisis</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Los factores: vida media y nivel hemostático</h3>
+      <p>Dos columnas explican casi toda la clínica y casi todo el laboratorio. La <strong>vida media</strong> dice qué factor cae primero cuando se detiene la síntesis; el <strong>nivel hemostático</strong> dice cuánto factor hace falta para no sangrar.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Factor</th><th>Vida media</th><th>Nivel hemostático</th><th>Da hemorragia</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Fibrinógeno</strong> (I)</td><td><span class="dato">72 – 120 h</span></td><td><span class="dato">50 – 80 mg/dL</span></td><td>Sí</td></tr>
+            <tr><td><strong>Protrombina</strong> (II)</td><td><span class="dato">50 – 72 h</span></td><td><span class="dato">40 %</span></td><td>Sí</td></tr>
+            <tr><td>Factor V</td><td><span class="dato">12 – 36 h</span></td><td><span class="dato">10 – 20 %</span></td><td>Sí</td></tr>
+            <tr><td><strong>Factor VII</strong></td><td><span class="dato">4 – 6 h</span> — la más corta</td><td><span class="dato">25 %</span></td><td>Sí</td></tr>
+            <tr><td><strong>Factor VIII</strong></td><td><span class="dato">10 – 14 h</span></td><td><span class="dato">22 – 40 %</span></td><td><strong>Sí, intensa</strong></td></tr>
+            <tr><td><strong>Factor IX</strong></td><td><span class="dato">16 – 20 h</span></td><td><span class="dato">20 – 25 %</span></td><td><strong>Sí, intensa</strong></td></tr>
+            <tr><td>Factor X</td><td><span class="dato">20 – 60 h</span></td><td><span class="dato">20 – 25 %</span></td><td>Sí</td></tr>
+            <tr><td>Factor XI</td><td><span class="dato">48 – 72 h</span></td><td><span class="dato">20 %</span></td><td>Variable</td></tr>
+            <tr><td><strong>Factor XII</strong></td><td><span class="dato">60 – 80 h</span></td><td><span class="dato">15 – 20 %</span></td><td><strong>No</strong></td></tr>
+            <tr><td>Factor XIII</td><td><span class="dato">72 – 200 h</span></td><td><span class="dato">3 – 5 %</span></td><td>Sí</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Dos lecturas de esa tabla se preguntan siempre. El <strong>factor XII prolonga el APTT pero no produce hemorragia</strong>: un APTT largo aislado, en alguien que nunca sangró ni siquiera en cirugías, apunta a déficit de FXII antes que a hemofilia. Y el <strong>FVII tiene la vida media más corta</strong> — por eso el <strong>TP es el primer test que se altera</strong> cuando se interrumpe la síntesis hepática o el aporte de vitamina K.</p>
+
+      <h3>Factores dependientes de la vitamina K</h3>
+      <p>Son seis, y conviene saberlos de memoria porque definen el efecto de los anticoagulantes orales:</p>
+      <ul>
+        <li><strong>Procoagulantes:</strong> factores <strong>II, VII, IX y X</strong>.</li>
+        <li><strong>Anticoagulantes naturales:</strong> <strong>proteína C</strong> y <strong>proteína S</strong>.</li>
+      </ul>
+      <p>La vitamina K actúa como cofactor de la <strong>γ-carboxilación</strong> de residuos de glutámico, que es lo que permite a estos factores unirse a las superficies fosfolipídicas. En el ciclo, la vitamina K se oxida a epóxido y debe ser regenerada por la <strong>epóxido reductasa</strong>: esa enzima es el blanco del <strong>anticoagulante oral</strong> (dicumarínicos).</p>
+
+      <p class="cita">Fuente: contenido de la clase «Abordaje diagnóstico de los trastornos de coagulación», Dr. N. R. Mamaní, Servicio de Hematología, Hospital T. J. Schestakow — Cátedra de Medicina Interna III, 2025.</p>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-fisiopatologia" id="modelo">
+      <span class="seccion__pestana"><b>02</b> Mecanismo</span>
+      <h2 class="seccion__titulo">Del modelo clásico al modelo celular</h2>
+
+      <h3>La descripción clásica: tres vías, dos tests</h3>
+      <p>El esquema de vías intrínseca y extrínseca <strong>no describe lo que pasa en el paciente</strong>: describe lo que pasa en el tubo de ensayo. Se construyó a partir de los tests de coagulación <em>in vitro</em>, y por eso sigue siendo insustituible para interpretar el laboratorio.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Vía</th><th>Cómo se inicia</th><th>Factores</th><th>Test que la mide</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Intrínseca</strong></td><td>Activación de la <strong>fase de contacto</strong></td><td>Precalicreína, QAPM, XII → XI → IX + VIII</td><td><strong>APTT</strong></td></tr>
+            <tr><td><strong>Extrínseca</strong></td><td>Activación del <strong>FVII por el factor tisular</strong></td><td>FT + VII</td><td><strong>TP</strong></td></tr>
+            <tr><td><strong>Común</strong></td><td>Confluencia de ambas</td><td>X, V y II → trombina → fibrina</td><td><strong>TP y APTT</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Por qué el modelo clásico es insuficiente</h3>
+      <p>Si las dos vías fueran realmente independientes y redundantes, la activación de una debería compensar el fallo de la otra. La clínica dice que no:</p>
+      <ul>
+        <li>¿Por qué <strong>sangran los hemofílicos A y B</strong>, si tienen la vía extrínseca intacta?</li>
+        <li>¿Por qué sangran los deficientes severos de <strong>factor VII</strong>, si tienen la vía intrínseca intacta?</li>
+        <li>Y en el sentido inverso: ¿por qué el deficiente de <strong>factor XII</strong>, con un APTT muy prolongado, <strong>no sangra nunca</strong>?</li>
+      </ul>
+
+      <h3>El modelo celular</h3>
+      <p>Incorpora a las <strong>células</strong> como parte activa del proceso. Requiere al menos <strong>dos células distintas</strong>: una que aporte <strong>factor tisular</strong> y la <strong>plaqueta</strong>. Los factores son indispensables, pero son las superficies celulares las que determinan <strong>dónde, cuándo y cuánta trombina</strong> se genera — y las funciones de la trombina dependen de su concentración.</p>
+
+      <ol>
+        <li><strong>Iniciación</strong> — sobre la célula que expresa factor tisular (fibroblasto de la adventicia, monocito activado, micropartículas). El complejo <strong>FT/FVIIa</strong> activa FIX y FX, y se generan <strong>pequeñas cantidades de trombina</strong>: no alcanzan para formar fibrina.</li>
+        <li><strong>Amplificación</strong> — esa poca trombina hace de mensajero: <strong>activa la plaqueta</strong> adherida al subendotelio y activa los cofactores. Convierte V en Va, libera el <strong>FVIII de su transportador el VWF</strong> y lo activa a VIIIa, y activa XI a XIa.</li>
+        <li><strong>Propagación</strong> — sobre la <strong>plaqueta activada</strong> se ensamblan los complejos <strong>tenasa (FIXa/FVIIIa)</strong> y <strong>protrombinasa (FXa/FVa)</strong>. El resultado es el <strong>estallido de trombina</strong> que convierte el fibrinógeno en fibrina y consolida el coágulo.</li>
+      </ol>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 372" role="img" aria-label="Modelo celular de la coagulación en tres etapas superpuestas: iniciación sobre la célula que expresa factor tisular con generación de pequeñas cantidades de trombina, amplificación sobre la plaqueta donde esa trombina activa los cofactores V y VIII y el factor XI, y propagación sobre la plaqueta activada donde se ensamblan los complejos tenasa y protrombinasa y se produce el estallido de trombina. El esquema señala que el hemofílico inicia normalmente pero no puede amplificar, y que el deficiente de factor XII prolonga el APTT sin sangrar.">
+          <defs>
+            <marker id="pta-mod" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="14" y="8" width="272" height="70" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="31" font-size="13" font-weight="700" fill="currentColor">1 · Iniciación</text>
+          <text x="30" y="50" font-size="11.5" fill="currentColor" opacity="0.75">Célula con factor tisular</text>
+          <text x="30" y="68" font-size="11.5" fill="currentColor" opacity="0.75">FT/FVIIa activan IX y X</text>
+
+          <line x1="150" y1="78" x2="150" y2="98" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-mod)"></line>
+          <text x="162" y="93" font-size="11" fill="currentColor" opacity="0.65">poca trombina</text>
+
+          <rect x="14" y="100" width="272" height="70" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="123" font-size="13" font-weight="700" fill="currentColor">2 · Amplificación</text>
+          <text x="30" y="142" font-size="11.5" fill="currentColor" opacity="0.75">Activa la plaqueta y los cofactores</text>
+          <text x="30" y="160" font-size="11.5" fill="currentColor" opacity="0.75">V → Va · VIII → VIIIa · XI → XIa</text>
+
+          <line x1="150" y1="170" x2="150" y2="190" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-mod)"></line>
+          <text x="162" y="185" font-size="11" fill="currentColor" opacity="0.65">cofactores listos</text>
+
+          <rect x="14" y="192" width="272" height="70" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="30" y="215" font-size="13" font-weight="700" fill="currentColor">3 · Propagación</text>
+          <text x="30" y="234" font-size="11.5" fill="currentColor" opacity="0.75">Tenasa IXa/VIIIa + protrombinasa Xa/Va</text>
+          <text x="30" y="252" font-size="11.5" fill="currentColor" opacity="0.75">sobre la plaqueta activada</text>
+
+          <line x1="150" y1="262" x2="150" y2="282" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-mod)"></line>
+
+          <rect x="14" y="284" width="272" height="54" rx="3" fill="var(--c)" fill-opacity="0.28" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="30" y="307" font-size="13" font-weight="700" fill="currentColor">Estallido de trombina</text>
+          <text x="30" y="326" font-size="11.5" fill="currentColor" opacity="0.75">Fibrinógeno → fibrina · coágulo estable</text>
+
+          <line x1="286" y1="227" x2="330" y2="227" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#pta-mod)"></line>
+          <text x="292" y="219" font-size="10.5" fill="currentColor" opacity="0.6">explica</text>
+
+          <rect x="336" y="88" width="350" height="96" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="352" y="111" font-size="12.5" font-weight="700" fill="currentColor">Por qué sangra el hemofílico</text>
+          <text x="352" y="131" font-size="11.5" fill="currentColor" opacity="0.75">Inicia normal: el complejo FT/FVIIa está intacto.</text>
+          <text x="352" y="148" font-size="11.5" fill="currentColor" opacity="0.75">Pero sin tenasa IXa/VIIIa no hay estallido.</text>
+          <text x="352" y="165" font-size="11.5" fill="currentColor" opacity="0.75">Coágulo friable → resangrado tardío.</text>
+
+          <rect x="336" y="196" width="350" height="96" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="352" y="219" font-size="12.5" font-weight="700" fill="currentColor">Por qué no sangra el deficiente de FXII</text>
+          <text x="352" y="239" font-size="11.5" fill="currentColor" opacity="0.75">La fase de contacto prolonga el APTT en el tubo,</text>
+          <text x="352" y="256" font-size="11.5" fill="currentColor" opacity="0.75">pero no participa de la hemostasia in vivo.</text>
+          <text x="352" y="273" font-size="11.5" fill="currentColor" opacity="0.75">APTT largo, paciente que nunca sangró.</text>
+        </svg>
+        <figcaption>La secuencia importa: el hemofílico no tiene un problema para <em>arrancar</em> la coagulación sino para <em>amplificarla</em>. Por eso hace hemostasia primaria normal y sangra después, cuando el tapón plaquetario cede sin haber sido consolidado por fibrina.</figcaption>
+      </figure>
+
+      <p class="cita">Fuente: Hoffman M, Monroe DM. A cell-based model of hemostasis. Arterioscler Thromb Vasc Biol 2005;25:2463 y Thromb Haemost 2001;85:958 — las dos referencias citadas en la clase.</p>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-diagnostico" id="laboratorio">
+      <span class="seccion__pestana"><b>03</b> Laboratorio</span>
+      <h2 class="seccion__titulo">El laboratorio de la hemostasia</h2>
+
+      <p>Frente a un paciente que sangra, cuatro estudios ordenan el razonamiento. La clave es saber <strong>qué explora cada uno</strong>: un test alterado no nombra la enfermedad, nombra el <strong>compartimento</strong> donde está el problema.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Estudio</th><th>Qué explora</th><th>Qué lo altera</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Recuento de plaquetas</strong> + frotis</td><td>Hemostasia primaria, cantidad</td><td>PTI, CID, hipoesplenismo, seudotrombocitopenia</td></tr>
+            <tr><td><strong>Tiempo de sangría</strong></td><td>Hemostasia primaria, función</td><td>Trombocitopatías, enfermedad de von Willebrand</td></tr>
+            <tr><td><strong>TP</strong> (tiempo de Quick / RIN)</td><td>Vía <strong>extrínseca</strong> + común</td><td>FVII, X, V, II, fibrinógeno</td></tr>
+            <tr><td><strong>APTT</strong> (KPTT)</td><td>Vía <strong>intrínseca</strong> + común</td><td>XII, XI, IX, VIII, X, V, II, fibrinógeno</td></tr>
+            <tr><td><strong>Tiempo de trombina</strong></td><td>Paso final: fibrinógeno → fibrina</td><td>Hipofibrinogenemia y <strong>disfibrinogenemia</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Los cuatro patrones del coagulograma</h3>
+      <p>Cruzar TP con APTT deja cuatro casilleros, y cada uno tiene una lista corta de sospechosos. Este mapa es el esqueleto de todo el abordaje diagnóstico.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 372" role="img" aria-label="Mapa diagnóstico que cruza el tiempo de protrombina con el APTT en cuatro casilleros. Con ambos normales y sangrado, el problema es de hemostasia primaria. Con APTT prolongado y TP normal, la vía intrínseca: factores ocho, nueve, once, doce o un inhibidor. Con TP prolongado y APTT normal, el factor siete. Con ambos prolongados, vía común o déficit múltiple como coagulación intravascular diseminada y hepatopatía avanzada.">
+          <defs>
+            <marker id="pta-lab" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <text x="284" y="26" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">APTT normal</text>
+          <text x="556" y="26" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">APTT prolongado</text>
+
+          <text x="140" y="105" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="end">TP normal</text>
+          <text x="140" y="258" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="end">TP prolongado</text>
+
+          <rect x="152" y="38" width="264" height="130" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="168" y="60" font-size="12" font-weight="700" fill="currentColor">Todo normal, pero sangra</text>
+          <text x="168" y="80" font-size="11.5" fill="currentColor" opacity="0.75">Problema de hemostasia primaria</text>
+          <text x="168" y="100" font-size="11.5" fill="currentColor" opacity="0.75">· Plaquetopenia · trombocitopatía</text>
+          <text x="168" y="118" font-size="11.5" fill="currentColor" opacity="0.75">· von Willebrand leve</text>
+          <text x="168" y="136" font-size="11.5" fill="currentColor" opacity="0.75">· Déficit de FXIII</text>
+          <text x="168" y="154" font-size="11.5" fill="currentColor" opacity="0.75">· Trastornos vasculares</text>
+
+          <rect x="424" y="38" width="262" height="130" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--ct)" stroke-width="2"></rect>
+          <text x="440" y="60" font-size="12" font-weight="700" fill="currentColor">Vía intrínseca</text>
+          <text x="440" y="80" font-size="11.5" fill="currentColor" opacity="0.75">· FVIII → hemofilia A y von Willebrand</text>
+          <text x="440" y="98" font-size="11.5" fill="currentColor" opacity="0.75">· FIX → hemofilia B</text>
+          <text x="440" y="116" font-size="11.5" fill="currentColor" opacity="0.75">· FXI → sangrado variable</text>
+          <text x="440" y="134" font-size="11.5" fill="currentColor" opacity="0.75">· FXII → APTT largo sin sangrado</text>
+          <text x="440" y="152" font-size="11.5" fill="currentColor" opacity="0.75">· Inhibidor · heparina</text>
+
+          <rect x="152" y="190" width="264" height="130" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="168" y="212" font-size="12" font-weight="700" fill="currentColor">Vía extrínseca — FVII</text>
+          <text x="168" y="232" font-size="11.5" fill="currentColor" opacity="0.75">Es el primero en caer: vida media 4 – 6 h</text>
+          <text x="168" y="252" font-size="11.5" fill="currentColor" opacity="0.75">· Déficit de vitamina K inicial</text>
+          <text x="168" y="270" font-size="11.5" fill="currentColor" opacity="0.75">· Dicumarínicos al comenzar</text>
+          <text x="168" y="288" font-size="11.5" fill="currentColor" opacity="0.75">· Hepatopatía incipiente</text>
+          <text x="168" y="306" font-size="11.5" fill="currentColor" opacity="0.75">· Déficit congénito de FVII</text>
+
+          <rect x="424" y="190" width="262" height="130" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--ct)" stroke-width="2"></rect>
+          <text x="440" y="212" font-size="12" font-weight="700" fill="currentColor">Vía común o déficit múltiple</text>
+          <text x="440" y="232" font-size="11.5" fill="currentColor" opacity="0.75">· CID</text>
+          <text x="440" y="250" font-size="11.5" fill="currentColor" opacity="0.75">· Hepatopatía avanzada</text>
+          <text x="440" y="268" font-size="11.5" fill="currentColor" opacity="0.75">· Déficit severo de vitamina K</text>
+          <text x="440" y="286" font-size="11.5" fill="currentColor" opacity="0.75">· Déficit de X, V, II o fibrinógeno</text>
+          <text x="440" y="304" font-size="11.5" fill="currentColor" opacity="0.75">· Anticoagulación en rango alto</text>
+
+          <rect x="152" y="332" width="534" height="32" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.25" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="168" y="353" font-size="11.5" fill="currentColor" opacity="0.8">Paso siguiente obligado ante cualquier test prolongado: <tspan font-weight="700">prueba de mezcla con plasma normal</tspan>.</text>
+        </svg>
+        <figcaption>El casillero de arriba a la izquierda es el más peligroso: coagulograma normal no descarta un trastorno hemorrágico, sólo descarta la hemostasia secundaria.</figcaption>
+      </figure>
+
+      <h3>La prueba de mezcla</h3>
+      <p>Es el segundo paso obligatorio y el que separa dos mundos. Se mezcla el plasma del paciente con plasma normal en proporción <strong>1:1</strong> y se repite el test prolongado:</p>
+      <ul>
+        <li><strong>Corrige</strong> (el tiempo se acorta y se acerca al normal) → <strong>déficit de factor</strong>. El plasma normal aportó lo que faltaba.</li>
+        <li><strong>No corrige</strong> → hay un <strong>inhibidor</strong> circulante, un anticuerpo que neutraliza también al factor aportado.</li>
+      </ul>
+      <p>El ejemplo de la clase: paciente con APTT de <span class="dato">90 s</span>, plasma normal <span class="dato">32 s</span>, mezcla <span class="dato">37 s</span>. Corrigió — es un déficit, no un inhibidor.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>El <strong>déficit de factor XIII no altera el TP ni el APTT</strong>: estos tests miden hasta la formación de fibrina, y el XIII actúa después, entrecruzándola. Un paciente con <strong>sangrado tardío tras cirugía o trauma, mala cicatrización y coagulograma normal</strong> obliga a dosarlo específicamente. Su nivel hemostático es de apenas <span class="dato">3 – 5 %</span>, así que el déficit tiene que ser severo para manifestarse.</p>
+      </div>
+
+      <p class="cita">Fuente: Harrison, Principios de Medicina Interna — capítulo de trastornos de la coagulación. El déficit de FXIII no se detecta con los tests globales de coagulación.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-b">
+      <span class="bloque__rotulo">Bloque B</span>
+      <span class="bloque__nombre">Hemofilia A y B</span>
+    </h2>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-generalidades" id="hemofilia-general">
+      <span class="seccion__pestana"><b>04</b> Base</span>
+      <h2 class="seccion__titulo">Definición, genética y severidad</h2>
+
+      <p>La hemofilia es una <strong>alteración genética ligada al sexo</strong> caracterizada por la disminución o ausencia de un factor de la coagulación. El resultado es una tendencia a la <strong>hemorragia prolongada</strong>, espontánea o traumática.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Tipo</th><th>Factor deficiente</th><th>Vía afectada</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Hemofilia A</strong></td><td>Factor <strong>VIII</strong></td><td>Intrínseca → APTT prolongado</td></tr>
+            <tr><td><strong>Hemofilia B</strong></td><td>Factor <strong>IX</strong></td><td>Intrínseca → APTT prolongado</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Severidad según el nivel de factor</h3>
+      <p>La severidad no la define la clínica sino el <strong>porcentaje de actividad</strong> del factor, y predice bastante bien el patrón de sangrado:</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Categoría</th><th>Nivel de factor</th><th>Patrón de sangrado</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Severa</strong></td><td><span class="dato">&lt; 1 %</span></td><td>Hemorragias <strong>espontáneas</strong>, hemartrosis a repetición</td></tr>
+            <tr><td><strong>Moderada</strong></td><td><span class="dato">1 – 5 %</span></td><td>Sangrado ante traumatismos menores</td></tr>
+            <tr><td><strong>Leve</strong></td><td><span class="dato">&gt; 5 %</span></td><td>Sangrado sólo ante trauma importante o cirugía</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Herencia ligada al cromosoma X</h3>
+      <p>El gen está en el cromosoma X. La mujer, con dos X, casi siempre es <strong>portadora</strong> sana porque el X normal compensa; el varón, con un solo X, expresa la enfermedad. De ahí las dos reglas que se preguntan siempre:</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 340" role="img" aria-label="Dos cruzamientos de herencia ligada al cromosoma X. En el primero, un hombre con hemofilia y una mujer sana tienen todas las hijas portadoras y todos los hijos sanos. En el segundo, una mujer portadora y un hombre sano tienen la mitad de los hijos varones con hemofilia y la mitad de las hijas portadoras.">
+          <defs>
+            <marker id="pta-her" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <text x="172" y="22" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">Padre con hemofilia × madre sana</text>
+          <text x="528" y="22" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">Madre portadora × padre sano</text>
+
+          <line x1="350" y1="34" x2="350" y2="200" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></line>
+
+          <rect x="108" y="42" width="30" height="30" fill="var(--c)" fill-opacity="0.65" stroke="currentColor" stroke-width="1.5"></rect>
+          <circle cx="222" cy="57" r="15" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
+          <line x1="138" y1="57" x2="207" y2="57" stroke="currentColor" stroke-width="1.5"></line>
+          <text x="123" y="90" font-size="10.5" fill="currentColor" opacity="0.75" text-anchor="middle">hemofilia</text>
+          <text x="222" y="90" font-size="10.5" fill="currentColor" opacity="0.75" text-anchor="middle">sana</text>
+
+          <line x1="172" y1="57" x2="172" y2="112" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="118" y1="112" x2="226" y2="112" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="118" y1="112" x2="118" y2="140" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-her)"></line>
+          <line x1="226" y1="112" x2="226" y2="140" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-her)"></line>
+
+          <rect x="103" y="146" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.5"></rect>
+          <circle cx="226" cy="161" r="15" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
+          <circle cx="226" cy="161" r="4.5" fill="currentColor"></circle>
+          <text x="118" y="194" font-size="10.5" fill="currentColor" opacity="0.75" text-anchor="middle">hijo sano</text>
+          <text x="226" y="194" font-size="10.5" fill="currentColor" opacity="0.75" text-anchor="middle">hija portadora</text>
+
+          <rect x="24" y="214" width="296" height="58" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="40" y="236" font-size="11.5" font-weight="700" fill="currentColor">Todas las hijas, portadoras</text>
+          <text x="40" y="256" font-size="11.5" fill="currentColor" opacity="0.75">Ningún hijo varón afectado: recibe el Y del padre</text>
+
+          <rect x="464" y="42" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.5"></rect>
+          <circle cx="578" cy="57" r="15" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
+          <circle cx="578" cy="57" r="4.5" fill="currentColor"></circle>
+          <line x1="494" y1="57" x2="563" y2="57" stroke="currentColor" stroke-width="1.5"></line>
+          <text x="479" y="90" font-size="10.5" fill="currentColor" opacity="0.75" text-anchor="middle">sano</text>
+          <text x="578" y="90" font-size="10.5" fill="currentColor" opacity="0.75" text-anchor="middle">portadora</text>
+
+          <line x1="528" y1="57" x2="528" y2="112" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="412" y1="112" x2="644" y2="112" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="412" y1="112" x2="412" y2="140" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-her)"></line>
+          <line x1="489" y1="112" x2="489" y2="140" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-her)"></line>
+          <line x1="566" y1="112" x2="566" y2="140" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-her)"></line>
+          <line x1="644" y1="112" x2="644" y2="140" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-her)"></line>
+
+          <rect x="397" y="146" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.5"></rect>
+          <rect x="474" y="146" width="30" height="30" fill="var(--c)" fill-opacity="0.65" stroke="currentColor" stroke-width="1.5"></rect>
+          <circle cx="566" cy="161" r="15" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
+          <circle cx="644" cy="161" r="15" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
+          <circle cx="644" cy="161" r="4.5" fill="currentColor"></circle>
+
+          <text x="412" y="194" font-size="10.5" fill="currentColor" opacity="0.75" text-anchor="middle">hijo sano</text>
+          <text x="489" y="194" font-size="10.5" fill="currentColor" opacity="0.75" text-anchor="middle">hemofilia</text>
+          <text x="566" y="194" font-size="10.5" fill="currentColor" opacity="0.75" text-anchor="middle">hija sana</text>
+          <text x="644" y="194" font-size="10.5" fill="currentColor" opacity="0.75" text-anchor="middle">portadora</text>
+
+          <rect x="380" y="214" width="296" height="58" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="396" y="236" font-size="11.5" font-weight="700" fill="currentColor">50 % de los varones, con hemofilia</text>
+          <text x="396" y="256" font-size="11.5" fill="currentColor" opacity="0.75">50 % de las hijas, portadoras</text>
+
+          <rect x="24" y="286" width="652" height="30" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.25" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="40" y="306" font-size="11" fill="currentColor" opacity="0.75">Cuadrado = varón · círculo = mujer · relleno = afectado · punto central = portadora</text>
+        </svg>
+        <figcaption>La regla se deduce sola: el padre le pasa su único X a todas las hijas y ningún X a los hijos. Por eso un varón con hemofilia no puede transmitirla a sus hijos varones, pero todas sus hijas serán portadoras.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-clinica" id="hemofilia-clinica">
+      <span class="seccion__pestana"><b>05</b> Clínica</span>
+      <h2 class="seccion__titulo">Cuadro clínico</h2>
+
+      <p>El sangrado de la hemofilia es <strong>profundo y tardío</strong>: no petequias ni sangrado mucoso, sino articulaciones y músculos, y con frecuencia horas después del traumatismo. Es la firma de un defecto de hemostasia <strong>secundaria</strong>.</p>
+
+      <h3>Hemartrosis — la manifestación característica</h3>
+      <ul>
+        <li>La hemorragia <strong>comienza en la membrana sinovial</strong> y progresa hasta llenar la cavidad articular.</li>
+        <li>Aparecen cuando el niño <strong>comienza a caminar</strong>.</li>
+        <li>Muchos pacientes tienen sangrados repetidos en una misma articulación: la <strong>articulación blanco</strong>.</li>
+        <li>Las hemartrosis repetidas producen <strong>sinovitis crónica</strong> y daño articular permanente — la <strong>artropatía hemofílica</strong>, de evolución irreversible.</li>
+        <li>Localización por frecuencia: <strong>rodilla</strong>, tobillo, codo, hombro, muñeca y cadera.</li>
+      </ul>
+
+      <h3>Hematomas musculares — el segundo sitio en frecuencia</h3>
+      <ul>
+        <li>Puede afectarse <strong>cualquier músculo</strong>; la hemorragia puede ser severa y producir <strong>anemia</strong>.</li>
+        <li>En brazos o piernas puede comprimir vasos y nervios y generar un <strong>síndrome compartimental</strong>, con riesgo de pérdida definitiva de la función.</li>
+        <li>El hematoma del <strong>psoas ilíaco</strong> produce <strong>dolor abdominal intenso con incapacidad para extender el muslo</strong>. Se confirma con tomografía de pelvis.</li>
+      </ul>
+
+      <h3>Otros sitios de sangrado</h3>
+      <p>Hematomas subcutáneos, epistaxis, hemorragia bucal (lengua, mucosa yugal, encías, corte de frenillo) y hematuria.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Tres localizaciones se manejan siempre como <strong>emergencia</strong>, con reposición de factor <strong>antes</strong> de cualquier estudio: hemorragia del <strong>sistema nervioso central</strong>, <strong>obstrucción de la vía aérea</strong> y <strong>hemorragia gastrointestinal</strong>. En hemofilia, la conducta es tratar primero y confirmar después.</p>
+      </div>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-diagnostico" id="hemofilia-dx">
+      <span class="seccion__pestana"><b>06</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">Diagnóstico</h2>
+
+      <h3>El patrón de laboratorio</h3>
+      <ul>
+        <li><strong>APTT prolongado que corrige</strong> con plasma normal — el dato que abre el diagnóstico.</li>
+        <li><strong>TP normal</strong>, recuento de plaquetas normal y tiempo de sangría normal.</li>
+        <li><strong>Dosaje de FVIII o FIX disminuido</strong>: confirma el tipo y define la severidad.</li>
+      </ul>
+
+      <p>El ejemplo de la clase muestra la prueba de mezcla con números: paciente <span class="dato">90 s</span> · plasma normal <span class="dato">32 s</span> · mezcla 1:1 <span class="dato">37 s</span>. El acortamiento indica <strong>corrección del defecto</strong>, es decir un déficit de factor y no un inhibidor.</p>
+
+      <h3>Estudio genético y diagnóstico prenatal</h3>
+      <ul>
+        <li><strong>Detección de mutaciones</strong> por Southern blot y PCR — permite además identificar portadoras en la familia.</li>
+        <li><strong>Diagnóstico prenatal</strong>: biopsia de vellosidades coriónicas, amniocentesis.</li>
+      </ul>
+
+      <p>Si el APTT <strong>no corrige</strong>, el diagnóstico deja de ser hemofilia congénita y pasa a ser un <strong>inhibidor</strong> — sea un aloanticuerpo en un hemofílico ya tratado, sea una <a href="#hemofilia-adquirida">hemofilia adquirida</a>. Son escenarios con un tratamiento distinto del reemplazo simple.</p>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-tratamiento" id="hemofilia-tto">
+      <span class="seccion__pestana"><b>07</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Tratamiento</h2>
+
+      <p>El objetivo es <strong>reemplazar el factor deficiente ante el primer signo de hemorragia</strong>, para detenerla y evitar las complicaciones — sobre todo la artropatía, que es acumulativa e irreversible.</p>
+
+      <h3>Modalidades</h3>
+      <ul>
+        <li><strong>A demanda:</strong> se infunde factor cuando aparece el episodio hemorrágico.</li>
+        <li><strong>Profilaxis:</strong> infusión regular para prevenir el sangrado. Puede ser <strong>primaria</strong> (antes del daño articular) o <strong>secundaria</strong>, y en régimen <strong>continuo</strong> o <strong>intermitente</strong>.</li>
+      </ul>
+      <p>Los concentrados disponibles son <strong>derivados de plasma humano</strong> o <strong>recombinantes</strong>.</p>
+
+      <h3>Dosificación según la magnitud del episodio</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Episodio</th><th>Dosis de FVIII o FIX</th><th>Conducta</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Menor</strong></td><td><span class="dato">15 – 30 UI/kg</span></td><td>Ambulatorio + medidas complementarias</td></tr>
+            <tr><td><strong>Mayor</strong></td><td><span class="dato">50 – 100 UI/kg</span></td><td><strong>Hospitalizar</strong> + infusión continua <span class="dato">2 – 4 UI/kg/hora</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Las <strong>medidas complementarias</strong> acompañan siempre al factor: reposo, valva, hielo, analgésicos, dieta y ácido ε-aminocaproico.</p>
+
+      <h3>Cuánto tiempo sostener el tratamiento</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Localización</th><th>Duración y objetivo</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Sistema nervioso central</strong></td>
+              <td><span class="dato">7 – 10 días</span> en infusión continua manteniendo niveles <span class="dato">&gt; 70 %</span>. Repetir tomografía a las <span class="dato">48 – 72 h</span> para evaluar estabilidad de la lesión. Luego pasar a bolo diario por <span class="dato">7 – 10 días</span> más y continuar con <strong>profilaxis al menos 6 meses</strong>.</td>
+            </tr>
+            <tr>
+              <td><strong>Gastrointestinal</strong></td>
+              <td>Hasta <span class="dato">48 h</span> posteriores a la presencia de deposiciones normales.</td>
+            </tr>
+            <tr>
+              <td><strong>Piso de boca</strong></td>
+              <td>Hasta la resolución completa de los síntomas.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Recomendaciones generales</h3>
+      <ul>
+        <li><strong>Evitar el AAS.</strong> Los AINEs sólo por períodos limitados.</li>
+        <li><strong>No aplicar inyecciones intramusculares.</strong></li>
+        <li>Punciones arteriales, vías centrales y <strong>todo procedimiento invasivo</strong> deben realizarse <strong>previo tratamiento sustitutivo</strong>.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">Actualización posterior a la clase</p>
+        <p>La guía <strong>WFH 2020 (3ª edición)</strong> incorporó el <strong>emicizumab</strong>, un anticuerpo biespecífico que imita la función del FVIII uniendo FIXa con FX. Se administra por <strong>vía subcutánea</strong> y se usa como profilaxis en hemofilia A <strong>con y sin inhibidores</strong>. No figura en la clase, que trabaja sólo con concentrados de factor.</p>
+      </div>
+
+      <p class="cita">Fuente: Srivastava A et al. WFH Guidelines for the Management of Hemophilia, 3rd edition. Haemophilia 2020;26(Suppl 6):1-158. Las dosis y duraciones de la tabla son las de la clase.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-c">
+      <span class="bloque__rotulo">Bloque C</span>
+      <span class="bloque__nombre">Enfermedad de von Willebrand</span>
+    </h2>
+
+    <!-- ============ 8 ============ -->
+    <section class="seccion s-generalidades" id="vw-general">
+      <span class="seccion__pestana"><b>08</b> Base</span>
+      <h2 class="seccion__titulo">Generalidades y cuadro clínico</h2>
+
+      <p>Es la <strong>coagulopatía hereditaria más frecuente</strong>: afecta alrededor del <span class="dato">1 %</span> de la población. Consiste en una alteración <strong>cuantitativa o cualitativa</strong> del factor de von Willebrand (VWF).</p>
+
+      <p>Tres rasgos la vuelven difícil de diagnosticar: la presentación clínica es <strong>heterogénea</strong>, los parámetros hemostáticos <strong>fluctúan</strong> en el mismo paciente, y el patrón de herencia es <strong>complejo</strong>.</p>
+
+      <h3>El factor de von Willebrand</h3>
+      <ul>
+        <li>Es una <strong>glicoproteína multimérica</strong>, con multímeros de hasta 20 millones de daltons.</li>
+        <li>Se sintetiza en <strong>células endoteliales y megacariocitos</strong>.</li>
+        <li>Se deposita en los <strong>cuerpos de Weibel-Palade</strong> del endotelio y en los <strong>gránulos α</strong> de las plaquetas.</li>
+        <li>Circula en plasma y está presente además en plaquetas y matriz subendotelial.</li>
+      </ul>
+
+      <h3>Dos funciones, dos patrones de sangrado</h3>
+      <p>Esta es la clave de toda la enfermedad: el VWF hace dos trabajos distintos, y su déficit produce las dos clínicas a la vez. Por eso se clasifica como trastorno <strong>mixto</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Función del VWF</th><th>Qué falla al faltar</th><th>Patrón clínico</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Mediar la <strong>adhesión plaquetaria</strong> al subendotelio</td>
+              <td>Adhesión plaquetaria</td>
+              <td><strong>Hemorragias mucosas</strong> — típico de trombocitopatía</td>
+            </tr>
+            <tr>
+              <td><strong>Transportar y proteger al FVIII</strong></td>
+              <td>Generación de fibrina, por déficit secundario de FVIII</td>
+              <td><strong>Sangrado excesivo y prolongado post cirugía</strong> — típico de coagulopatía</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Manifestaciones clínicas</h3>
+      <ul>
+        <li><strong>Equimosis fáciles</strong> y <strong>epistaxis</strong>.</li>
+        <li>Sangrado gastrointestinal.</li>
+        <li>Pérdida excesiva de sangre durante <strong>trauma y cirugía</strong>, <strong>extracciones dentarias</strong> y <strong>parto</strong>.</li>
+      </ul>
+
+      <h3>Menorragia</h3>
+      <p>Es la manifestación que más oportunidades diagnósticas se pierden, por los tres números de la clase:</p>
+      <ul>
+        <li>La menorragia representa el <span class="dato">12 %</span> de las consultas obstétrico-ginecológicas.</li>
+        <li>El <span class="dato">25 %</span> de las menorragias tienen enfermedad de von Willebrand.</li>
+        <li>El <span class="dato">60 %</span> de las pacientes con von Willebrand tienen menorragia.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Una de cada cuatro mujeres con menorragia tiene enfermedad de von Willebrand. Ante <strong>menorragia desde la menarca</strong> — sobre todo si se suma epistaxis, equimosis fáciles o sangrado tras extracciones dentarias — el estudio de hemostasia es obligatorio antes de atribuirla a una causa ginecológica.</p>
+      </div>
+    </section>
+
+    <!-- ============ 9 ============ -->
+    <section class="seccion s-importantes" id="vw-clasificacion">
+      <span class="seccion__pestana"><b>09</b> Clasificación</span>
+      <h2 class="seccion__titulo">Clasificación y laboratorio por subtipo</h2>
+
+      <p>La clasificación se organiza con una sola pregunta: <strong>¿falta VWF o el VWF que hay funciona mal?</strong> Los tipos 1 y 3 son defectos <strong>cuantitativos</strong>; el tipo 2, <strong>cualitativo</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Tipo</th><th>Defecto</th><th>Detalle</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Tipo 1</strong></td><td>Cuantitativo <strong>parcial</strong></td><td>Concentración disminuida de un VWF normal o casi normal</td></tr>
+            <tr><td><strong>Tipo 2</strong></td><td><strong>Cualitativo</strong></td><td>VWF estructural y funcionalmente anormal, por mutaciones puntuales del gen</td></tr>
+            <tr><td><strong>Tipo 3</strong></td><td>Cuantitativo <strong>total</strong></td><td>VWF ausente</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Tipo 1 — el más frecuente</h3>
+      <ul>
+        <li>Representa el <span class="dato">70 – 80 %</span> de todos los casos.</li>
+        <li>Herencia en general <strong>autosómica dominante</strong>.</li>
+        <li>Tendencia al sangrado <strong>leve o moderada</strong>.</li>
+        <li><strong>Diagnóstico dificultoso</strong>: hay superposición con la población normal.</li>
+        <li>El VWF:Ag y el VWF:RCo disminuyen <strong>en paralelo</strong> → cociente <strong>RCo/Ag &gt; 0,7</strong>.</li>
+        <li>Frecuentemente <strong>sin anomalías identificables</strong> en el gen del VWF.</li>
+        <li>Generalmente <strong>responde a la desmopresina</strong>.</li>
+      </ul>
+
+      <h3>Tipo 2 — los cuatro subtipos</h3>
+      <p>El denominador común es que la <strong>función cae más que la cantidad</strong>: el cociente RCo/Ag baja de 0,7. Lo que los separa entre sí es cuál función está rota.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Subtipo</th><th>Qué está roto</th><th>Marca que lo identifica</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>2A</strong></td>
+              <td>Pérdida de multímeros grandes e intermedios</td>
+              <td>El más común de los tipo 2. VWF:RCo marcadamente reducido, cociente <span class="dato">&lt; 0,7 – 0,6</span></td>
+            </tr>
+            <tr>
+              <td><strong>2B</strong></td>
+              <td>Afinidad <em>aumentada</em> por la plaqueta: el VWF se une y se consume</td>
+              <td><strong>RIPA a baja dosis presente</strong> y <strong>trombocitopenia</strong>. Ausencia de multímeros de alto peso</td>
+            </tr>
+            <tr>
+              <td><strong>2M</strong></td>
+              <td>Unión defectuosa a la plaqueta sin pérdida multimérica</td>
+              <td>Bandas multiméricas anormales con patrón conservado</td>
+            </tr>
+            <tr>
+              <td><strong>2N</strong></td>
+              <td>Unión defectuosa <strong>al FVIII</strong></td>
+              <td>FVIII bajo con VWF normal, cociente <strong>FVIII/VWF &lt; 0,6</strong>. <strong>Imita una hemofilia A</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Tipo 2A en detalle</h3>
+      <ul>
+        <li>Reducciones <strong>variables</strong> del VWF:Ag, pero reducción <strong>marcada</strong> del VWF:RCo.</li>
+        <li>Laboratorio: VWF:RCo/VWF:Ag <span class="dato">&lt; 0,6</span> y <strong>pérdida de multímeros grandes</strong>.</li>
+        <li>Clínica: <strong>sangran más que el tipo 1</strong>, <strong>responden menos a la DDAVP</strong> y suelen requerir concentrados.</li>
+        <li>La severidad de los síntomas guarda bastante relación con los niveles de VWF:RCo.</li>
+      </ul>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 384" role="img" aria-label="Árbol de clasificación de la enfermedad de von Willebrand. La primera pregunta separa el defecto cuantitativo del cualitativo. Si el factor está ausente es tipo 3; si está disminuido con cociente actividad sobre antígeno mayor a cero coma siete es tipo 1. Si el cociente es menor a cero coma siete el defecto es cualitativo, tipo 2, y se subdivide en 2A por pérdida de multímeros grandes, 2B por afinidad aumentada con RIPA a baja dosis presente y trombocitopenia, 2M por unión defectuosa a la plaqueta sin pérdida multimérica, y 2N por unión defectuosa al factor ocho.">
+          <defs>
+            <marker id="pta-vw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="252" y="8" width="196" height="42" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--ct)" stroke-width="2.5"></rect>
+          <text x="350" y="34" font-size="13" font-weight="700" fill="currentColor" text-anchor="middle">von Willebrand confirmada</text>
+
+          <line x1="350" y1="50" x2="350" y2="72" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="160" y1="72" x2="540" y2="72" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="160" y1="72" x2="160" y2="96" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-vw)"></line>
+          <line x1="540" y1="72" x2="540" y2="96" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-vw)"></line>
+
+          <text x="168" y="90" font-size="11" font-weight="700" fill="currentColor">RCo/Ag &gt; 0,7</text>
+          <text x="548" y="90" font-size="11" font-weight="700" fill="currentColor">RCo/Ag &lt; 0,7</text>
+
+          <rect x="24" y="100" width="272" height="60" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="40" y="122" font-size="12.5" font-weight="700" fill="currentColor">Defecto CUANTITATIVO</text>
+          <text x="40" y="142" font-size="11.5" fill="currentColor" opacity="0.75">Hay poco VWF, pero el que hay funciona</text>
+
+          <rect x="404" y="100" width="272" height="60" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="420" y="122" font-size="12.5" font-weight="700" fill="currentColor">Defecto CUALITATIVO — tipo 2</text>
+          <text x="420" y="142" font-size="11.5" fill="currentColor" opacity="0.75">Hay VWF, pero funciona mal</text>
+
+          <line x1="100" y1="160" x2="100" y2="186" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-vw)"></line>
+          <line x1="220" y1="160" x2="220" y2="186" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-vw)"></line>
+          <text x="108" y="178" font-size="10.5" fill="currentColor" opacity="0.7">parcial</text>
+          <text x="228" y="178" font-size="10.5" fill="currentColor" opacity="0.7">ausente</text>
+
+          <rect x="24" y="190" width="120" height="56" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.2"></rect>
+          <text x="84" y="212" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">Tipo 1</text>
+          <text x="84" y="232" font-size="11" fill="currentColor" opacity="0.75" text-anchor="middle">70 – 80 % de casos</text>
+
+          <rect x="164" y="190" width="132" height="56" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.2"></rect>
+          <text x="230" y="212" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">Tipo 3</text>
+          <text x="230" y="232" font-size="11" fill="currentColor" opacity="0.75" text-anchor="middle">VWF &lt; 5 % · el más grave</text>
+
+          <line x1="540" y1="160" x2="540" y2="180" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="440" y1="180" x2="640" y2="180" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="440" y1="180" x2="440" y2="196" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-vw)"></line>
+          <line x1="640" y1="180" x2="640" y2="196" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-vw)"></line>
+
+          <rect x="404" y="200" width="272" height="46" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.2"></rect>
+          <text x="418" y="218" font-size="12" font-weight="700" fill="currentColor">2A</text>
+          <text x="446" y="218" font-size="11" fill="currentColor" opacity="0.75">pierde multímeros grandes e intermedios</text>
+          <text x="418" y="238" font-size="12" font-weight="700" fill="currentColor">2B</text>
+          <text x="446" y="238" font-size="11" fill="currentColor" opacity="0.75">RIPA baja dosis (+) · trombocitopenia</text>
+
+          <rect x="404" y="254" width="272" height="46" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.2"></rect>
+          <text x="418" y="272" font-size="12" font-weight="700" fill="currentColor">2M</text>
+          <text x="446" y="272" font-size="11" fill="currentColor" opacity="0.75">no une a la plaqueta · multímeros conservados</text>
+          <text x="418" y="292" font-size="12" font-weight="700" fill="currentColor">2N</text>
+          <text x="446" y="292" font-size="11" fill="currentColor" opacity="0.75">no une al FVIII · FVIII/VWF &lt; 0,6</text>
+
+          <rect x="24" y="318" width="652" height="52" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.25" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="40" y="339" font-size="11.5" font-weight="700" fill="currentColor">Las dos trampas</text>
+          <text x="40" y="358" font-size="11" fill="currentColor" opacity="0.8">El 2N imita una hemofilia A, pero su herencia es autosómica — descartarlo en una mujer con FVIII bajo. El 2B da trombocitopenia y contraindica la desmopresina.</text>
+        </svg>
+        <figcaption>Un solo cociente ordena la clasificación: RCo/Ag compara cuánta actividad hay contra cuánto factor hay. Si caen juntos el problema es de cantidad; si la actividad cae más, es de calidad.</figcaption>
+      </figure>
+
+      <h3>Laboratorio por subtipo</h3>
+      <p>La tabla de la clase, que es la referencia para diferenciarlos. <strong>N</strong> = normal, <strong>↑</strong> = aumentado, <strong>↓</strong> = disminuido.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Test</th><th>Tipo 1</th><th>Tipo 2A</th><th>Tipo 2B</th><th>Tipo 2N</th><th>Tipo 2M</th><th>Tipo 3</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>TP</strong></td><td>N</td><td>N</td><td>N</td><td>N</td><td>N</td><td>N</td></tr>
+            <tr><td><strong>APTT</strong></td><td>↑ / N</td><td>↑ / N</td><td>N / ↑</td><td>↑ / N</td><td>N / ↑</td><td>↑</td></tr>
+            <tr><td><strong>Recuento plaquetario</strong></td><td>N</td><td>N</td><td><strong>N / ↓</strong></td><td>N</td><td>N</td><td>N</td></tr>
+            <tr><td><strong>FVIII:c</strong></td><td>↓ / N</td><td>↓ / N</td><td>↓ / N</td><td><strong>↓</strong></td><td>N / ↓</td><td><span class="dato">&lt; 20 %</span></td></tr>
+            <tr><td><strong>VWF:Ag</strong></td><td><span class="dato">&lt; 50 %</span></td><td>↓ / N</td><td>↓ / N</td><td>N / ↓</td><td>↓ / N</td><td><span class="dato">&lt; 5 %</span></td></tr>
+            <tr><td><strong>VWF:RCo</strong></td><td><span class="dato">&lt; 50 %</span></td><td><span class="dato">&lt; 30 %</span></td><td>↓</td><td>N</td><td>↓</td><td><span class="dato">&lt; 5 %</span></td></tr>
+            <tr><td><strong>VWF:CB</strong></td><td><span class="dato">&lt; 50 %</span></td><td><span class="dato">&lt; 15 %</span></td><td><span class="dato">&lt; 40 %</span></td><td>N</td><td>↓</td><td><span class="dato">&lt; 5 %</span></td></tr>
+            <tr><td><strong>RCo / Ag</strong></td><td><span class="dato">&gt; 0,7</span></td><td><span class="dato">&lt; 0,7</span></td><td><span class="dato">&lt; 0,7</span></td><td><span class="dato">&gt; 0,7</span></td><td><span class="dato">&lt; 0,7</span> / N</td><td>No usar</td></tr>
+            <tr><td><strong>CB / Ag</strong></td><td><span class="dato">&gt; 0,7</span></td><td><span class="dato">&lt; 0,7</span></td><td><span class="dato">&lt; 0,7</span></td><td><span class="dato">&gt; 0,7</span></td><td><span class="dato">&lt; 0,7</span> / N</td><td>No usar</td></tr>
+            <tr><td><strong>FVIII / VWF</strong></td><td>N</td><td>N</td><td>N</td><td><strong><span class="dato">&lt; 0,6</span></strong></td><td>N</td><td>No usar</td></tr>
+            <tr><td><strong>RIPA a baja dosis</strong></td><td>Ausente</td><td>Ausente</td><td><strong>Presente</strong></td><td>Ausente</td><td>Ausente</td><td>Ausente</td></tr>
+            <tr><td><strong>Multímeros</strong></td><td>Patrón normal</td><td>Ausentes los grandes e intermedios</td><td>Ausentes los grandes</td><td>Patrón normal</td><td>Bandas anormales</td><td>Ausentes</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ 10 ============ -->
+    <section class="seccion s-tratamiento" id="vw-tto">
+      <span class="seccion__pestana"><b>10</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Tratamiento y desmopresina</h2>
+
+      <h3>Objetivos</h3>
+      <ul>
+        <li><strong>Normalizar la actividad del VWF.</strong></li>
+        <li>Llevar el <strong>FVIII por encima del 50 %</strong>.</li>
+        <li><strong>Corregir el tiempo de sangría.</strong></li>
+      </ul>
+
+      <h3>Qué mira uno antes de elegir</h3>
+      <ul>
+        <li><strong>Naturaleza del sangrado:</strong> gravedad y sitio.</li>
+        <li><strong>Niveles de VWF y subtipo</strong> de la enfermedad.</li>
+        <li>Historia personal y respuesta a terapias previas.</li>
+        <li><strong>Respuesta a la prueba de DDAVP.</strong></li>
+        <li>Riesgos potenciales a corto y largo plazo.</li>
+        <li>En el <strong>tipo 3</strong>, la posibilidad de desarrollar <strong>inhibidores</strong>.</li>
+      </ul>
+
+      <h3>Arsenal disponible</h3>
+      <ul>
+        <li><strong>Aumentar VWF y FVIII:</strong> desmopresina (DDAVP), crioprecipitados, concentrados de FVIII/VWF.</li>
+        <li><strong>Antifibrinolíticos.</strong></li>
+        <li><strong>Hormonas.</strong></li>
+        <li><strong>Nuevos tratamientos:</strong> VWF recombinante, IL-11, ARC1779.</li>
+      </ul>
+
+      <h3>Desmopresina (DDAVP)</h3>
+      <p>Análogo sintético de la vasopresina, <strong>agonista V2</strong>. Su perfil se entiende por lo que <em>no</em> hace: <strong>sin efecto presor</strong> y <strong>sin efecto sobre músculo liso</strong> — por eso tiene menor actividad útero-tónica que la ADH — pero con <strong>mayor efecto antidiurético</strong>. Vida media de <span class="dato">55 minutos</span>.</p>
+
+      <p><strong>Mecanismo de acción:</strong> libera VWF de sus sitios de depósito en las células endoteliales — los cuerpos de Weibel-Palade — y moviliza el FVIII. Es decir: <strong>no aporta factor, vacía la reserva propia del paciente</strong>. De ahí se deducen sus dos límites: no sirve si no hay reserva (tipo 3) y se agota si se repite (taquifilaxia).</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Vía</th><th>Dosis</th><th>Cuándo administrarla</th><th>Pico</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Endovenosa</strong></td><td><span class="dato">0,3 µg/kg</span> en 50 mL, en 20 min</td><td>Efecto inmediato</td><td><span class="dato">60 min</span></td></tr>
+            <tr><td><strong>Subcutánea</strong></td><td><span class="dato">0,3 µg/kg</span></td><td><span class="dato">1 hora antes</span></td><td><span class="dato">90 – 120 min</span></td></tr>
+            <tr><td><strong>Intranasal</strong></td><td><span class="dato">300 µg</span> adultos · <span class="dato">150 µg</span> niños (equivale a 0,2 µg/kg)</td><td colspan="2"><strong>No disponible en nuestro país</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Taquifilaxia</h3>
+      <ul>
+        <li>En infusiones cada 24 horas, la respuesta del <strong>FVIII a la segunda dosis es un 30 % menor</strong>.</li>
+        <li>El <strong>tiempo de sangría, en cambio, mantiene su respuesta</strong>.</li>
+        <li><strong>No hacer infusiones con intervalos menores a 12 horas</strong>: se pierde el efecto hemostático pero <strong>persiste el efecto antidiurético</strong>.</li>
+      </ul>
+
+      <h3>Respuesta según el tipo</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Tipo</th><th>Respuesta a la desmopresina</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Tipo 1</strong></td><td><strong>Buena</strong>, pero depende del valor basal</td></tr>
+            <tr><td><strong>Tipo 2A</strong></td><td>Puede <strong>no corregir</strong> la anomalía multimérica</td></tr>
+            <tr><td><strong>Tipo 2B</strong></td><td>Corrige transitoriamente la anomalía multimérica y puede corregir el tiempo de sangría, pero <strong>produce trombocitopenia</strong></td></tr>
+            <tr><td><strong>Tipo 2M</strong></td><td>Suele <strong>no alcanzar</strong> el nivel hemostático</td></tr>
+            <tr><td><strong>Tipo 2N</strong></td><td>Respuesta <strong>impredecible</strong></td></tr>
+            <tr><td><strong>Tipo 3</strong></td><td><strong>Sin respuesta</strong> — no hay depósito que liberar</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Sobre la prueba de DDAVP</h3>
+      <ul>
+        <li>Los resultados <strong>no son predecibles</strong>, ni siquiera entre miembros de la misma familia.</li>
+        <li><strong>No es necesario repetirla</strong>: son consistentes en el mismo paciente.</li>
+        <li><strong>No realizarla durante una hemorragia aguda ni durante el embarazo.</strong></li>
+        <li>La respuesta biológica y clínica puede variar según el momento de la infusión, la dosis, el reposo del paciente, el tiempo y la vía de administración.</li>
+      </ul>
+
+      <h3>Terapia transfusional — cuándo</h3>
+      <ul>
+        <li><strong>Von Willebrand tipo 3.</strong></li>
+        <li><strong>Tipo 2B</strong>, por la trombocitopenia.</li>
+        <li>Tipos 1 y 2 que <strong>no responden</strong> a la DDAVP.</li>
+        <li><strong>Contraindicación</strong> para la DDAVP.</li>
+        <li><strong>Cirugías prolongadas.</strong></li>
+      </ul>
+      <p>Las modalidades son: a demanda, profilaxis en cirugía y profilaxis a largo plazo.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Dos riesgos concretos de la desmopresina. En el <strong>tipo 2B agrava la trombocitopenia</strong>, por eso ese subtipo va directo a terapia transfusional. Y como conserva el efecto antidiurético incluso cuando ya perdió el hemostático, repetirla a intervalos cortos expone a <strong>retención hídrica e hiponatremia</strong>: por eso el intervalo mínimo de 12 horas no es una recomendación blanda.</p>
+      </div>
+    </section>
+
+    <h2 class="bloque" id="bloque-d">
+      <span class="bloque__rotulo">Bloque D</span>
+      <span class="bloque__nombre">Trombocitopenia inmune (PTI)</span>
+    </h2>
+
+    <!-- ============ 11 ============ -->
+    <section class="seccion s-generalidades" id="pti-general">
+      <span class="seccion__pestana"><b>11</b> Base</span>
+      <h2 class="seccion__titulo">Definición y fisiopatología</h2>
+
+      <p>Es una <strong>trombocitopenia aislada de causa inmune</strong>, con <strong>hemograma y frotis normales</strong> en todo lo demás, y <strong>en ausencia de otras condiciones</strong> que se asocien o que causen trombocitopenia. Hasta un <span class="dato">20 %</span> de los casos son <strong>secundarios</strong>.</p>
+
+      <p>El umbral es <strong>menos de 100.000 plaquetas</strong>.</p>
+
+      <h3>Qué hacer con los recuentos «algo bajos»</h3>
+      <p>Entre <span class="dato">100.000</span> y <span class="dato">150.000</span> la conducta cambia, porque el pronóstico es benigno: <strong>sólo el 7 % hará una plaquetopenia más severa a 10 años</strong>. Antes de rotularlo, considerar:</p>
+      <ul>
+        <li>Variación <strong>fisiológica</strong>.</li>
+        <li><strong>Poblaciones no occidentales</strong>, donde el rango normal es más bajo.</li>
+        <li><strong>Embarazadas.</strong></li>
+        <li>PTI <strong>leve o inicial</strong>.</li>
+      </ul>
+      <p>La conducta va de <strong>no hacer nada</strong> a un <strong>estudio mínimo</strong>: colagenograma, serologías virales, frotis y coagulograma. Si aparece <strong>otra citopenia</strong>, corresponde estudiar la <strong>médula ósea</strong>.</p>
+
+      <h3>Fisiopatología</h3>
+      <p>Dos mecanismos inmunológicos:</p>
+      <ul>
+        <li><strong>Pérdida de la tolerancia</strong> B y T.</li>
+        <li><strong>Mimetismo molecular</strong> entre epítopes de antígenos propios y extraños — lo que explica los casos que siguen a una infección viral.</li>
+      </ul>
+
+      <h3>Evolución en el tiempo</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Fase</th><th>Duración</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Reciente</strong></td><td>Hasta 3 meses desde el diagnóstico</td></tr>
+            <tr><td><strong>Persistente</strong></td><td><span class="dato">&gt; 3 meses</span></td></tr>
+            <tr><td><strong>Crónica</strong></td><td><span class="dato">&gt; 12 meses</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>La <strong>remisión espontánea es posible</strong> incluso al año o más, pero la diferencia por edad es enorme: ocurre en <strong>menos del 15 % de los adultos</strong> frente a un <strong>80 – 90 % de los niños</strong>. Aun así, el <strong>85 % de los adultos mantendrá más de 30.000 plaquetas sin tratamiento</strong>, con cierto grado de sangrado menor.</p>
+    </section>
+
+    <!-- ============ 12 ============ -->
+    <section class="seccion s-diagnostico" id="pti-dx">
+      <span class="seccion__pestana"><b>12</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">Diagnóstico de exclusión</h2>
+
+      <p>No hay criterios diagnósticos positivos: la PTI es un <strong>diagnóstico de exclusión</strong>. Se apoya en tres pilares — descartar otras trombocitopenias <strong>no autoinmunes</strong>, descartar las <strong>secundarias</strong>, y observar la <strong>respuesta al tratamiento</strong>.</p>
+
+      <h3>Piense PTI · piense otra cosa</h3>
+      <p>La tabla de la clase resume el razonamiento clínico completo en cuatro filas:</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>&nbsp;</th><th>Piense PTI</th><th>Piense otra cosa</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Anamnesis</strong></td>
+              <td>Historia de sangrado</td>
+              <td><strong>Síntomas constitucionales</strong>, dolor óseo, historia familiar</td>
+            </tr>
+            <tr>
+              <td><strong>Examen físico</strong></td>
+              <td>Púrpura</td>
+              <td><strong>Adenopatías</strong>, hepatoesplenomegalia, circulación colateral, estigmas de condición genética</td>
+            </tr>
+            <tr>
+              <td><strong>Laboratorio</strong></td>
+              <td>Plaquetopenia aislada, <strong>macroplaquetas</strong></td>
+              <td><strong>Otras citopenias</strong>, blastos, <strong>microplaquetas</strong>, cuerpos de inclusión en leucocitos</td>
+            </tr>
+            <tr>
+              <td><strong>Respuesta al tratamiento</strong></td>
+              <td>Responde a la primera línea</td>
+              <td><strong>Refractaria</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Estudios a solicitar</h3>
+      <ul>
+        <li><strong>Serologías virales:</strong> HIV, HCV, HBV, CMV, VEB.</li>
+        <li><strong><em>Helicobacter pylori</em></strong>: en áreas de alta prevalencia, ante síntomas gastrointestinales o si falla la primera línea (recomendación 2C).</li>
+        <li><strong>ATPO</strong>, colagenograma y coagulograma.</li>
+      </ul>
+
+      <h3>Punción-aspiración de médula ósea (PAMO)</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>No indicarla</th><th>Sí indicarla</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                No de rutina · no de inicio · no si los hallazgos son típicos (2C)
+              </td>
+              <td>
+                Hallazgos <strong>atípicos</strong> u <strong>otra citopenia</strong> · mala respuesta a la terapia de primera línea · <strong>mayores de 60 años</strong> · <strong>previo a esplenectomía</strong>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">Actualización posterior a la clase</p>
+        <p>Los criterios de arriba provienen de las guías <strong>ASH 2011</strong> (Provan 2010, Neunert 2011), que son las que cita la clase. La <strong>ASH publicó una actualización en 2019</strong> que mantiene que la <strong>PAMO no es necesaria en la presentación típica</strong> y no la indica por la edad de forma aislada. Conviene contrastar con esa versión los umbrales y las indicaciones antes de aplicarlos en la práctica.</p>
+      </div>
+
+      <p class="cita">Fuente: Provan D et al. Blood 2010 y Neunert C et al. Blood 2011 — las citadas en la clase. Actualización: Neunert C et al. American Society of Hematology 2019 guidelines for immune thrombocytopenia. Blood Adv 2019;3:3829-3866.</p>
+    </section>
+
+    <!-- ============ 13 ============ -->
+    <section class="seccion s-tratamiento" id="pti-tto">
+      <span class="seccion__pestana"><b>13</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Decisión de tratar y primera línea</h2>
+
+      <p>La pregunta no es <em>cómo</em> tratar sino <strong>si</strong> tratar. El objetivo no es normalizar el recuento sino <strong>alcanzar un recuento hemostáticamente seguro</strong>, y por debajo de <span class="dato">30.000</span> hay <strong>riesgo permanente de sangrado</strong> — especialmente si baja de <span class="dato">20.000</span>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 336" role="img" aria-label="Escala de decisión de tratamiento en trombocitopenia inmune según el recuento de plaquetas. Por encima de cincuenta mil no se trata salvo excepciones. Entre treinta y cincuenta mil sólo si sangra o antes de procedimientos. Por debajo de treinta mil la guía ASH 2011 indica tratar a todos. Por debajo de veinte mil se trata incluso a los asintomáticos, y por debajo de diez mil el riesgo es inminente.">
+          <defs>
+            <marker id="pta-pti" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <line x1="112" y1="14" x2="112" y2="266" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-pti)"></line>
+          <text x="104" y="20" font-size="11" fill="currentColor" opacity="0.7" text-anchor="end">recuento</text>
+          <text x="104" y="262" font-size="11" fill="currentColor" opacity="0.7" text-anchor="end">riesgo</text>
+
+          <rect x="128" y="14" width="548" height="52" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="144" y="34" font-size="12.5" font-weight="700" fill="currentColor">&gt; 50.000 — no tratar</text>
+          <text x="144" y="54" font-size="11" fill="currentColor" opacity="0.75">Excepto trombocitopatía, trauma, cirugía, comorbilidad (insuficiencia renal, diálisis), necesidad de anticoagulación o estilo de vida de riesgo</text>
+
+          <rect x="128" y="74" width="548" height="52" rx="3" fill="var(--c)" fill-opacity="0.08" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="144" y="94" font-size="12.5" font-weight="700" fill="currentColor">30.000 – 50.000 — sólo si sangra o pre-procedimiento</text>
+          <text x="144" y="114" font-size="11" fill="currentColor" opacity="0.75">Bajar el umbral en pacientes bajo tratamiento antitrombótico y en ancianos</text>
+
+          <rect x="128" y="134" width="548" height="52" rx="3" fill="var(--c)" fill-opacity="0.18" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="144" y="154" font-size="12.5" font-weight="700" fill="currentColor">&lt; 30.000 — tratar</text>
+          <text x="144" y="174" font-size="11" fill="currentColor" opacity="0.75">Guía ASH 2011: tratar a todos (recomendación 2C)</text>
+
+          <rect x="128" y="194" width="548" height="60" rx="3" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="144" y="214" font-size="12.5" font-weight="700" fill="currentColor">&lt; 20.000 — tratar a todos, aun asintomáticos</text>
+          <text x="144" y="234" font-size="11" fill="currentColor" opacity="0.8">Por debajo de 10.000 el riesgo de sangrado es inminente</text>
+
+          <rect x="128" y="274" width="548" height="52" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.25" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="144" y="294" font-size="11.5" font-weight="700" fill="currentColor">Por qué la edad cambia la conducta</text>
+          <text x="144" y="313" font-size="11" fill="currentColor" opacity="0.8">Con menos de 30.000: sangrado fatal 0,5 % anual antes de los 40 años, frente a 13 % anual después de los 60.</text>
+        </svg>
+        <figcaption>La misma cifra de plaquetas significa cosas distintas según la edad. Es la razón por la que el anciano se trata antes y más decididamente que el joven.</figcaption>
+      </figure>
+
+      <h3>Riesgo de sangrado con menos de 30.000 plaquetas</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Edad</th><th>Sangrado fatal (% anual)</th><th>Sangrado no fatal (% anual)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>&lt; 40 años</strong></td><td><span class="dato">0,5 %</span></td><td><span class="dato">3 %</span></td></tr>
+            <tr><td><strong>&gt; 60 años</strong></td><td><span class="dato">13 %</span></td><td><span class="dato">71 %</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Tratamiento</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Escalón</th><th>Opción</th><th>Dosis</th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="3"><strong>Inicial</strong></td><td><strong>Meprednisona</strong></td><td><span class="dato">1 mg/kg/día</span></td></tr>
+            <tr><td><strong>Metilprednisolona</strong></td><td><span class="dato">1 g/día × 3 días</span></td></tr>
+            <tr><td><strong>Gammaglobulina EV</strong></td><td><span class="dato">1 g/kg/día × 2 días</span></td></tr>
+            <tr><td rowspan="3"><strong>Siguientes</strong></td><td><strong>Esplenectomía</strong></td><td>—</td></tr>
+            <tr><td><strong>Rituximab</strong></td><td>—</td></tr>
+            <tr><td><strong>Agonistas trombopoyéticos</strong> (eltrombopag)</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>La diapositiva agrupa las seis opciones bajo el rótulo de «primera línea». En la práctica, los <strong>corticoides y la gammaglobulina</strong> son el tratamiento inicial —la gammaglobulina cuando se necesita subir el recuento rápido, porque actúa en horas— y la <strong>esplenectomía, el rituximab y los agonistas trombopoyéticos</strong> son las opciones para el paciente que no responde o recae.</p>
+
+      <p class="cita">Fuente: Spahn, Am J Hematol 2008; Salama, Ann Hematol 2009; Provan, ICR 2010; Neunert, ASH 2011 — las referencias de la clase.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-e">
+      <span class="bloque__rotulo">Bloque E</span>
+      <span class="bloque__nombre">Coagulopatías adquiridas</span>
+    </h2>
+
+    <!-- ============ 14 ============ -->
+    <section class="seccion s-generalidades" id="hepatopatia">
+      <span class="seccion__pestana"><b>14</b> Base</span>
+      <h2 class="seccion__titulo">Enfermedad hepática y sangrado</h2>
+
+      <p>El hígado fabrica casi todos los factores de la coagulación, así que la hepatopatía produce un trastorno hemostático <strong>por varios mecanismos a la vez</strong>. El sangrado puede ser generalizado o localizado, y el patrón depende de cuál mecanismo predomine.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Patrón de sangrado</th><th>Mecanismo responsable</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Mucocutáneo</strong></td>
+              <td><strong>Trombocitopenia</strong> y <strong>alteración de la función plaquetaria</strong></td>
+            </tr>
+            <tr>
+              <td><strong>De partes blandas</strong></td>
+              <td><strong>Disfunción o déficit de factores</strong> de la coagulación</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Los tres factores que hay que mirar</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Factor</th><th>Por qué importa</th><th>Traducción en el laboratorio</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Factor VII</strong></td>
+              <td>Vida media de <span class="dato">3 – 5 h</span>: es el <strong>primero en disminuir</strong> su actividad</td>
+              <td><strong>TP levemente prolongado</strong> — el hallazgo más precoz</td>
+            </tr>
+            <tr>
+              <td><strong>Factor V</strong></td>
+              <td><strong>Marcador específico de síntesis hepática</strong>, porque <strong>no depende de la vitamina K</strong></td>
+              <td>Separa hepatopatía (FV bajo) de déficit de vitamina K (FV normal)</td>
+            </tr>
+            <tr>
+              <td><strong>Fibrinógeno</strong></td>
+              <td>Reactante de fase aguda: puede estar <strong>elevado</strong>. El exceso de residuos siálicos produce <strong>disfibrinogenemia</strong></td>
+              <td><strong>Tiempo de trombina prolongado</strong>. Un valor <span class="dato">&lt; 100 mg/dL</span> es marcador de <strong>falla hepática terminal</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Tratamiento del sangrado en la cirrosis</h3>
+      <p>La regla que ordena todo: <strong>no se tratan los datos del laboratorio</strong>, excepto que existan manifestaciones clínicas que lo justifiquen. El sangrado espontáneo es <strong>infrecuente</strong> incluso en la enfermedad hepática avanzada, y corregir las anormalidades hemostáticas generalmente <strong>no es necesario</strong>.</p>
+
+      <p>La corrección se lleva a cabo sólo en cuatro situaciones:</p>
+      <ul>
+        <li><strong>Sangrado activo persistente.</strong></li>
+        <li>Antes de un <strong>procedimiento invasivo</strong> diagnóstico o terapéutico.</li>
+        <li>Previo a una <strong>cirugía mayor</strong>.</li>
+        <li>Pacientes con <strong>falla hepática aguda</strong>.</li>
+      </ul>
+
+      <h3>Soporte transfusional con hemoderivados</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Hemoderivado</th><th>Rendimiento</th><th>Indicación y límites</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Glóbulos rojos</strong></td>
+              <td>1 unidad aumenta <span class="dato">1 g/dL</span> la hemoglobina</td>
+              <td>Soporte de la anemia</td>
+            </tr>
+            <tr>
+              <td><strong>Plaquetas</strong></td>
+              <td>1 unidad de donante cada <span class="dato">10 kg</span> de peso corporal</td>
+              <td>Soporte de la plaquetopenia</td>
+            </tr>
+            <tr>
+              <td><strong>Plasma fresco congelado</strong></td>
+              <td>Por cada <span class="dato">1 mL/kg</span> se incrementa <span class="dato">1 %</span> el nivel del factor</td>
+              <td>Sangrado persistente, con objetivo de corregir el TP prolongado (&lt; 50 %) en más de 4 segundos; y antes de biopsia hepática. Corrección <strong>rápida pero de duración corta</strong>; limitación de volumen (&gt; 1500 mL), contraindicado en algunos pacientes</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>El <strong>TP prolongado del cirrótico no predice sangrado</strong>. El hígado enfermo deja de producir también los <strong>anticoagulantes naturales</strong> — proteína C, proteína S y antitrombina —, de modo que la hemostasia queda <strong>rebalanceada</strong> en un equilibrio nuevo y frágil, pero equilibrio al fin. Transfundir plasma para «normalizar» un TP en un paciente que no sangra sobrecarga de volumen sin ganar hemostasia.</p>
+      </div>
+
+      <p class="cita">Fuente: contenido de la clase. El concepto de hemostasia rebalanceada en la enfermedad hepática está desarrollado en Harrison, Principios de Medicina Interna, capítulo de coagulopatías adquiridas.</p>
+    </section>
+
+    <!-- ============ 15 ============ -->
+    <section class="seccion s-diagnostico" id="hemofilia-adquirida">
+      <span class="seccion__pestana"><b>15</b> Inhibidor</span>
+      <h2 class="seccion__titulo">Hemofilia adquirida: inhibidor de FVIII</h2>
+
+      <p>Es la aparición de <strong>anticuerpos neutralizantes</strong> contra el factor VIII en una persona <strong>sin hemofilia congénita</strong>. Los niveles de FVIII están disminuidos y su vida media, acortada.</p>
+
+      <p>El dato que la define en el laboratorio: <strong>los estudios de mezcla con plasma normal la diferencian de la hemofilia hereditaria</strong>. En el déficit congénito la mezcla corrige el APTT; con un inhibidor presente, <strong>no corrige</strong>, porque el anticuerpo neutraliza también el factor aportado por el plasma normal.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 306" role="img" aria-label="Algoritmo de la prueba de mezcla. Ante un APTT prolongado se mezcla el plasma del paciente con plasma normal en proporción uno a uno. Si el tiempo corrige, se trata de un déficit de factor: hemofilia A o B, enfermedad de von Willebrand, déficit de vitamina K o hepatopatía. Si no corrige, hay un inhibidor circulante: hemofilia adquirida por anticuerpo anti factor ocho, o anticoagulante lúpico.">
+          <defs>
+            <marker id="pta-mez" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="14" y="112" width="164" height="52" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--ct)" stroke-width="1.5"></rect>
+          <text x="30" y="134" font-size="12.5" font-weight="700" fill="currentColor">APTT prolongado</text>
+          <text x="30" y="153" font-size="11" fill="currentColor" opacity="0.75">con TP normal</text>
+
+          <line x1="178" y1="138" x2="204" y2="138" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-mez)"></line>
+
+          <rect x="208" y="106" width="180" height="64" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--ct)" stroke-width="2.5"></rect>
+          <text x="224" y="128" font-size="12.5" font-weight="700" fill="currentColor">Mezcla 1:1 con</text>
+          <text x="224" y="146" font-size="12.5" font-weight="700" fill="currentColor">plasma normal</text>
+          <text x="224" y="163" font-size="10.5" fill="currentColor" opacity="0.7">y se repite el test</text>
+
+          <polyline points="388,138 414,138 414,58 442,58" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-mez)"></polyline>
+          <polyline points="388,138 414,138 414,220 442,220" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-mez)"></polyline>
+          <text x="420" y="100" font-size="11" font-weight="700" fill="currentColor">corrige</text>
+          <text x="420" y="192" font-size="11" font-weight="700" fill="currentColor">no corrige</text>
+
+          <rect x="446" y="14" width="240" height="88" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.2"></rect>
+          <text x="462" y="36" font-size="12.5" font-weight="700" fill="currentColor">DÉFICIT de factor</text>
+          <text x="462" y="56" font-size="11" fill="currentColor" opacity="0.75">Hemofilia A y B</text>
+          <text x="462" y="73" font-size="11" fill="currentColor" opacity="0.75">von Willebrand</text>
+          <text x="462" y="90" font-size="11" fill="currentColor" opacity="0.75">Déficit de vitamina K · hepatopatía</text>
+
+          <rect x="446" y="176" width="240" height="88" rx="3" fill="var(--c)" fill-opacity="0.18" stroke="var(--ct)" stroke-width="2"></rect>
+          <text x="462" y="198" font-size="12.5" font-weight="700" fill="currentColor">INHIBIDOR circulante</text>
+          <text x="462" y="218" font-size="11" fill="currentColor" opacity="0.75">Hemofilia adquirida (anti-FVIII)</text>
+          <text x="462" y="235" font-size="11" fill="currentColor" opacity="0.75">Aloanticuerpo en el hemofílico tratado</text>
+          <text x="462" y="252" font-size="11" fill="currentColor" opacity="0.75">Anticoagulante lúpico</text>
+
+          <rect x="14" y="212" width="374" height="76" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.25" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="30" y="234" font-size="11.5" font-weight="700" fill="currentColor">El ejemplo de la clase</text>
+          <text x="30" y="253" font-size="11" fill="currentColor" opacity="0.8">Paciente 90 s · plasma normal 32 s · mezcla 37 s</text>
+          <text x="30" y="272" font-size="11" fill="currentColor" opacity="0.8">El tiempo se acortó: corrigió. Es un déficit, no un inhibidor.</text>
+        </svg>
+        <figcaption>Una sola pregunta parte el diagnóstico en dos mundos con tratamientos opuestos: al déficit se le repone el factor que falta; al inhibidor hay que erradicarlo, porque reponer factor sin frenar el anticuerpo es alimentarlo.</figcaption>
+      </figure>
+
+      <h3>Condiciones clínicas asociadas</h3>
+      <p>Serie combinada de cuatro cohortes, <span class="dato">n = 410</span> pacientes:</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Condición</th><th>Frecuencia</th><th>Ejemplos</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Idiopático</strong></td><td><span class="dato">48,1 %</span></td><td>Casi la mitad de los casos</td></tr>
+            <tr><td><strong>Enfermedad autoinmune</strong></td><td><span class="dato">19,0 %</span></td><td>Artritis reumatoidea, LES, colitis ulcerosa, dermatomiositis, Sjögren, crioglobulinemia</td></tr>
+            <tr><td><strong>Embarazo y puerperio</strong></td><td><span class="dato">12,0 %</span></td><td>Puede remitir espontáneamente en el posparto</td></tr>
+            <tr><td><strong>Neoplasias</strong></td><td><span class="dato">10,7 %</span></td><td>LLA, LLC, tricoleucemia, linfoma; cáncer de pulmón, ovario, próstata y riñón</td></tr>
+            <tr><td><strong>Otras</strong></td><td><span class="dato">7,1 %</span></td><td>Enfermedades cutáneas: psoriasis, pénfigo, eritema multiforme</td></tr>
+            <tr><td><strong>Relacionada a drogas</strong></td><td><span class="dato">2,8 %</span></td><td>Ampicilina, fenitoína, sulfas, quinolonas</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Cuadro clínico — no se parece al de la hemofilia congénita</h3>
+      <ul>
+        <li><strong>Grandes hematomas</strong>, con <strong>síndrome compartimental</strong> por hematomas profundos.</li>
+        <li><strong>Equimosis extensas.</strong></li>
+        <li><strong>Sangrado mucoso extenso</strong>: epistaxis, sangrado digestivo, hematuria.</li>
+        <li><strong>Hemartrosis poco frecuente</strong> — a diferencia de la forma hereditaria, donde es la manifestación característica.</li>
+        <li>A veces se observa en <strong>estados posquirúrgicos</strong>.</li>
+        <li>El sangrado es <strong>a menudo severo</strong>: entre el <span class="dato">75 – 87 %</span> de los pacientes con sangrado mayor requirió soporte transfusional.</li>
+        <li><strong>Mortalidad del <span class="dato">14 – 22 %</span></strong> por complicaciones directas o indirectas relacionadas al inhibidor.</li>
+        <li>Se pueden ver <strong>remisiones espontáneas</strong> en el posparto y en los casos secundarios a drogas.</li>
+      </ul>
+
+      <h3>Tratamiento — dos frentes simultáneos</h3>
+      <p>El manejo depende de la <strong>severidad del sangrado</strong> y del <strong>título del inhibidor</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>1 · Control del sangrado</th><th>2 · Control y erradicación del inhibidor</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                Transfusión de glóbulos rojos · <strong>evitar intramusculares y punciones</strong> · evitar AAS, AINEs y antiagregantes (clopidogrel) · desmopresina · concentrados de FVIII humano o porcino · <strong>concentrado de complejo protrombínico activado (FEIBA)</strong> · <strong>factor VIIa recombinante</strong>
+              </td>
+              <td>
+                <strong>Corticoides</strong> · ciclofosfamida · ciclosporina · <strong>rituximab</strong> · gammaglobulina
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>El escenario típico: <strong>adulto mayor, sin ningún antecedente hemorrágico personal ni familiar</strong>, que aparece con <strong>equimosis extensas y hematomas profundos</strong> y tiene un <strong>APTT prolongado que no corrige</strong>. Con una mortalidad del 14 – 22 %, es una urgencia hematológica: no alcanza con reponer factor, hay que <strong>erradicar el inhibidor</strong> al mismo tiempo.</p>
+      </div>
+    </section>
+
+    <h2 class="bloque" id="bloque-f">
+      <span class="bloque__rotulo">Bloque F</span>
+      <span class="bloque__nombre">Coagulación intravascular diseminada</span>
+    </h2>
+
+    <!-- ============ 16 ============ -->
+    <section class="seccion s-fisiopatologia" id="cid-fisio">
+      <span class="seccion__pestana"><b>16</b> Mecanismo</span>
+      <h2 class="seccion__titulo">Fisiopatología</h2>
+
+      <p>La CID es un <strong>síndrome clínico y de laboratorio</strong> desencadenado por la <strong>activación sistémica de la coagulación</strong>. Nunca es una enfermedad primaria: siempre es la consecuencia de otra cosa.</p>
+
+      <p>Se caracteriza por dos fenómenos que ocurren <strong>al mismo tiempo</strong> en el mismo paciente:</p>
+      <ul>
+        <li><strong>Trombosis extensa en la microcirculación</strong>, que compromete el aporte de sangre a diversos órganos con el consiguiente <strong>fallo orgánico</strong>.</li>
+        <li><strong>Deterioro de la síntesis y aumento de la degradación</strong> de factores e inhibidores, con <strong>consumo de factores y plaquetas</strong> y el consiguiente <strong>sangrado</strong>.</li>
+      </ul>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 320" role="img" aria-label="Doble vía de la coagulación intravascular diseminada. La activación sistémica de la coagulación se bifurca: por un lado produce depósito intravascular de fibrina que lleva a trombosis de pequeños y medianos vasos y de ahí a insuficiencia orgánica; por otro lado produce depleción de plaquetas y factores de la coagulación que lleva a sangrado. La fibrinólisis deficiente por PAI-1 agrava la rama trombótica.">
+          <defs>
+            <marker id="pta-cid" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="196" y="8" width="308" height="48" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="350" y="29" font-size="13" font-weight="700" fill="currentColor" text-anchor="middle">Activación sistémica de la coagulación</text>
+          <text x="350" y="47" font-size="11" fill="currentColor" opacity="0.75" text-anchor="middle">Factor tisular → generación masiva de trombina</text>
+
+          <line x1="350" y1="56" x2="350" y2="76" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="160" y1="76" x2="540" y2="76" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="160" y1="76" x2="160" y2="98" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-cid)"></line>
+          <line x1="540" y1="76" x2="540" y2="98" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-cid)"></line>
+
+          <rect x="30" y="102" width="260" height="44" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="160" y="129" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">Depósito intravascular de fibrina</text>
+
+          <rect x="410" y="102" width="260" height="44" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="540" y="122" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">Depleción de plaquetas y</text>
+          <text x="540" y="139" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">factores de la coagulación</text>
+
+          <line x1="160" y1="146" x2="160" y2="168" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-cid)"></line>
+          <line x1="540" y1="146" x2="540" y2="222" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-cid)"></line>
+          <text x="170" y="162" font-size="10.5" fill="currentColor" opacity="0.65">ocluye</text>
+          <text x="550" y="190" font-size="10.5" fill="currentColor" opacity="0.65">consume</text>
+
+          <rect x="30" y="172" width="260" height="44" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="160" y="192" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">Trombosis de pequeños</text>
+          <text x="160" y="209" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">y medianos vasos</text>
+
+          <line x1="160" y1="216" x2="160" y2="238" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-cid)"></line>
+          <text x="170" y="232" font-size="10.5" fill="currentColor" opacity="0.65">isquemia</text>
+
+          <rect x="30" y="242" width="260" height="46" rx="3" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="160" y="270" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">Insuficiencia orgánica</text>
+
+          <rect x="410" y="226" width="260" height="46" rx="3" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="540" y="254" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">Sangrado</text>
+
+          <polyline points="350,176 350,124 296,124" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#pta-cid)"></polyline>
+          <text x="358" y="158" font-size="10.5" fill="currentColor" opacity="0.65">impide removerla</text>
+
+          <rect x="300" y="176" width="100" height="68" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="350" y="196" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">Fibrinólisis</text>
+          <text x="350" y="212" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">deficiente</text>
+          <text x="350" y="230" font-size="10.5" fill="currentColor" opacity="0.7" text-anchor="middle">PAI-1 elevado</text>
+        </svg>
+        <figcaption>La paradoja de la CID vive en este dibujo: la misma activación que tapa la microcirculación consume los factores que hacían falta para hemostasiar. El paciente trombosa y sangra por la misma causa.</figcaption>
+      </figure>
+
+      <h3>Los tres mecanismos</h3>
+      <ol>
+        <li><strong>Iniciación de la coagulación:</strong> el <strong>factor tisular</strong> dispara la generación de trombina.</li>
+        <li><strong>Amplificación de la generación de trombina:</strong> los <strong>mecanismos anticoagulantes fisiológicos están defectuosos</strong> y no logran frenarla.</li>
+        <li><strong>Propagación de los depósitos de fibrina:</strong> hay <strong>deficiencia de la fibrinólisis</strong>, de modo que la fibrina formada tampoco se remueve.</li>
+      </ol>
+
+      <h3>El eje inflamatorio</h3>
+      <p>En la CID de la sepsis, el vínculo entre infección y coagulación pasa por la inflamación. La <strong>endotoxina</strong> activa <strong>monocitos</strong> (vía CD14 y NF-κB) y <strong>células endoteliales</strong> → liberación de <strong>citoquinas proinflamatorias</strong> → tres efectos convergentes:</p>
+      <ul>
+        <li><strong>Expresión de factor tisular</strong> → más formación intravascular de fibrina.</li>
+        <li><strong>Deterioro de los mecanismos anticoagulantes.</strong></li>
+        <li><strong>Inhibición de la fibrinólisis mediada por PAI-1</strong> → remoción insuficiente de fibrina.</li>
+      </ul>
+      <p>El resultado neto es <strong>depósito de fibrina</strong>: se forma de más y se remueve de menos.</p>
+
+      <h3>Hallazgos morfológicos</h3>
+      <ul>
+        <li><strong>Esquistocitos</strong> en el frotis de sangre periférica: fragmentos de eritrocitos que se rompieron al atravesar las mallas de fibrina de la microcirculación.</li>
+        <li><strong>Microtrombos</strong> con depósitos de fibrina intravasculares, visibles por ejemplo en las arteriolas renales.</li>
+      </ul>
+    </section>
+
+    <!-- ============ 17 ============ -->
+    <section class="seccion s-diagnostico" id="cid-dx">
+      <span class="seccion__pestana"><b>17</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">Condiciones asociadas y score ISTH</h2>
+
+      <h3>Condiciones clínicas asociadas</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Grupo</th><th>Entidades</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Sepsis / infección severa</strong></td><td>La causa más habitual en la sala</td></tr>
+            <tr><td><strong>Trauma / quemaduras</strong></td><td>Por liberación masiva de factor tisular</td></tr>
+            <tr><td><strong>Complicaciones obstétricas</strong></td><td><strong>Desprendimiento normoplacentario</strong>, <strong>embolismo de líquido amniótico</strong>, feto muerto y retenido</td></tr>
+            <tr><td><strong>Neoplasias</strong></td><td>Tumores sólidos y <strong>leucemias agudas — especialmente la promielocítica (LMA M3)</strong></td></tr>
+            <tr><td><strong>Anomalías vasculares</strong></td><td>Síndrome de <strong>Kasabach-Merritt</strong>, grandes aneurismas</td></tr>
+            <tr><td><strong>Reacciones tóxicas o inmunológicas severas</strong></td><td>Mordeduras de serpientes, reacciones transfusionales</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Diagnóstico</h3>
+      <p>Se apoya en dos patas que deben darse juntas: <strong>trastorno subyacente asociable</strong> <strong>+</strong> <strong>alteraciones de laboratorio características</strong>.</p>
+      <ul>
+        <li><strong>Trombocitopenia.</strong></li>
+        <li><strong>Prolongación del tiempo de Quick y del KPTT.</strong></li>
+        <li>Descenso de los <strong>factores de la coagulación</strong>.</li>
+        <li>Aumento de los <strong>productos de degradación de la fibrina (dímero D)</strong>.</li>
+        <li>Descenso de los <strong>inhibidores naturales</strong> de la coagulación.</li>
+      </ul>
+
+      <h3>Sistema de puntaje del Subcomité de Estandarización en CID de la ISTH</h3>
+      <p>El algoritmo tiene cuatro pasos, y el primero es un <strong>filtro</strong>, no un trámite:</p>
+      <ol>
+        <li><strong>Determinación del riesgo:</strong> ¿tiene el paciente un trastorno subyacente asociable con CID manifiesta? <strong>Sí</strong> → continuar con el algoritmo. <strong>No</strong> → <strong>no usar este algoritmo</strong>.</li>
+        <li><strong>Solicitar estudios de coagulación globales:</strong> recuento de plaquetas, tiempo de Quick, fibrinógeno, y dímero D o PDF.</li>
+        <li><strong>Puntuar</strong> los resultados.</li>
+        <li><strong>Calcular el puntaje total</strong> e interpretarlo.</li>
+      </ol>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Parámetro</th><th>0 puntos</th><th>1 punto</th><th>2 puntos</th><th>3 puntos</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Recuento de plaquetas</strong></td>
+              <td><span class="dato">&gt; 100 ×10⁹/L</span></td>
+              <td><span class="dato">&lt; 100 ×10⁹/L</span></td>
+              <td><span class="dato">&lt; 50 ×10⁹/L</span></td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td><strong>Dímero D o PDF</strong></td>
+              <td>Sin aumento</td>
+              <td>—</td>
+              <td>Aumento <strong>moderado</strong></td>
+              <td>Aumento <strong>fuerte</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Tiempo de Quick</strong> (prolongación)</td>
+              <td><span class="dato">&lt; 3 seg</span></td>
+              <td><span class="dato">3 – 6 seg</span></td>
+              <td><span class="dato">&gt; 6 seg</span></td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td><strong>Fibrinógeno</strong></td>
+              <td><span class="dato">&gt; 1,0 g/L</span></td>
+              <td><span class="dato">&lt; 1,0 g/L</span></td>
+              <td>—</td>
+              <td>—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Puntaje total</th><th>Interpretación</th><th>Conducta</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>≥ 5</strong></td><td><strong>Compatible con CID manifiesta</strong></td><td>Repetir el puntaje <strong>diariamente</strong></td></tr>
+            <tr><td><strong>&lt; 5</strong></td><td>Sugestivo, <strong>no afirmativo</strong>, de CID manifiesta</td><td>Repetir en los próximos <strong>1 – 2 días</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>El paso 1 <strong>no se saltea</strong>: sin una condición subyacente compatible, <strong>el score no se aplica</strong>. Un dímero D alto con plaquetas bajas tiene muchas otras explicaciones, y puntuar a ciegas fabrica diagnósticos de CID donde no los hay. Además, un puntaje menor a 5 <strong>no descarta</strong>: obliga a repetirlo, porque la CID es un proceso dinámico.</p>
+      </div>
+    </section>
+
+    <!-- ============ 18 ============ -->
+    <section class="seccion s-tratamiento" id="cid-tto">
+      <span class="seccion__pestana"><b>18</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Tratamiento</h2>
+
+      <p>Todo lo que sigue es <strong>tratamiento de soporte</strong>: acompaña, pero no reemplaza, al tratamiento de la <strong>causa desencadenante</strong>. Sin controlar el disparador, el consumo se perpetúa.</p>
+
+      <h3>Tratamiento sustitutivo transfusional</h3>
+      <p>La primera decisión es <em>cuándo</em>, y la respuesta se define por la clínica, no por el laboratorio:</p>
+      <ul>
+        <li><strong>NO</strong> transfundir sólo en base a los resultados de los estudios de laboratorio.</li>
+        <li><strong>SÍ</strong> en pacientes <strong>con sangrado activo</strong>, <strong>con alto riesgo de sangrado</strong> o <strong>con requerimiento de un procedimiento invasivo</strong>.</li>
+      </ul>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Hemoderivado</th><th>Cuándo indicarlo</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Plaquetas</strong></td><td>Sangrado <strong>+</strong> plaquetas <span class="dato">&lt; 50.000/mm³</span></td></tr>
+            <tr><td><strong>Plasma fresco congelado</strong></td><td>Pueden requerirse <strong>grandes volúmenes</strong></td></tr>
+            <tr><td><strong>CCP</strong> (complejo protrombínico)</td><td>En pacientes con <strong>riesgo de sobrecarga de volumen</strong></td></tr>
+            <tr><td><strong>Crioprecipitado</strong></td><td><strong>Hipofibrinogenemia</strong></td></tr>
+            <tr><td><strong>Concentrado de fibrinógeno</strong></td><td>Fibrinógeno <span class="dato">&lt; 1,5 g/L</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Tratamiento anticoagulante</h3>
+      <ul>
+        <li><strong>Heparina:</strong> uso <strong>controvertido</strong>. Hay beneficio en <strong>carcinoma metastásico</strong>, <strong>púrpura fulminans</strong>, <strong>aneurisma aórtico</strong> y en el tratamiento y profilaxis de la <strong>enfermedad tromboembólica venosa</strong>.</li>
+        <li><strong>Trombomodulina soluble recombinante:</strong> la clase la presenta en estudios de fase 3, con mejor efecto que la heparina.</li>
+      </ul>
+
+      <h3>Fármacos antifibrinolíticos</h3>
+      <ul>
+        <li><strong>No se recomienda su uso en general</strong> en los pacientes con CID — bloquear la fibrinólisis en un cuadro que ya deposita fibrina agrava la trombosis.</li>
+        <li>Pueden ser útiles en tres situaciones puntuales: <strong>leucemia promielocítica aguda</strong>, <strong>hemangioma cavernoso gigante</strong> y <strong>carcinoma de próstata metastático</strong>.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">Actualización posterior a la clase</p>
+        <p>La <strong>trombomodulina soluble recombinante (ART-123)</strong> ya completó su fase 3. El ensayo <strong>SCARLET</strong> la evaluó en sepsis con coagulopatía y <strong>no alcanzó significación estadística</strong> en la reducción de la mortalidad a 28 días (26,8 % frente a 29,4 %). Por eso <strong>no se incorporó como tratamiento estándar</strong> de la CID, a diferencia de lo que sugería la expectativa en el momento de la clase.</p>
+      </div>
+
+      <p class="cita">Fuente de la actualización: Vincent JL et al. Effect of a Recombinant Human Soluble Thrombomodulin on Mortality in Patients With Sepsis-Associated Coagulopathy: The SCARLET Randomized Clinical Trial. JAMA 2019;321(20):1993-2002.</p>
+    </section>
+
+    <!-- ============ 19 ============ -->
+    <section class="seccion s-diferenciales" id="diferenciales">
+      <span class="seccion__pestana"><b>19</b> Diferenciales</span>
+      <h2 class="seccion__titulo">Diagnósticos diferenciales: cómo distinguirlas</h2>
+
+      <p>El abordaje ordenado empieza <strong>antes</strong> del laboratorio. El <strong>patrón de sangrado</strong> ya divide el problema en dos mitades, y recién después el coagulograma nombra la entidad.</p>
+
+      <h3>Primer corte: ¿primaria o secundaria?</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>&nbsp;</th><th>Hemostasia primaria</th><th>Hemostasia secundaria</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Lesiones</strong></td><td><strong>Petequias</strong>, púrpura, equimosis superficiales</td><td><strong>Hematomas profundos</strong>, <strong>hemartrosis</strong></td></tr>
+            <tr><td><strong>Sitios</strong></td><td><strong>Mucosas</strong>: epistaxis, gingivorragia, menorragia</td><td>Músculos, articulaciones, retroperitoneo</td></tr>
+            <tr><td><strong>Cronología</strong></td><td><strong>Inmediato</strong> al trauma</td><td><strong>Tardío</strong>, horas después; resangrado</td></tr>
+            <tr><td><strong>Compresión local</strong></td><td>Suele controlarlo</td><td>No lo controla</td></tr>
+            <tr><td><strong>Entidades</strong></td><td>PTI, trombocitopatías, von Willebrand, vasculares</td><td>Hemofilias, déficit de factores, hemofilia adquirida</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 360" role="img" aria-label="Árbol discriminante del paciente con sangrado. La primera pregunta separa el patrón mucocutáneo inmediato, que indica hemostasia primaria, del patrón profundo y tardío, que indica hemostasia secundaria. En la rama primaria se pregunta por el recuento de plaquetas: si está bajo, PTI, CID o hepatopatía; si es normal, von Willebrand o trombocitopatía. En la rama secundaria se pregunta si el APTT corrige con plasma normal: si corrige, hemofilia A o B y von Willebrand tipo 2N o 3; si no corrige, hemofilia adquirida.">
+          <defs>
+            <marker id="pta-ddx" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="266" y="8" width="168" height="42" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="350" y="34" font-size="13" font-weight="700" fill="currentColor" text-anchor="middle">Paciente que sangra</text>
+
+          <line x1="350" y1="50" x2="350" y2="70" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="170" y1="70" x2="530" y2="70" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="170" y1="70" x2="170" y2="92" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ddx)"></line>
+          <line x1="530" y1="70" x2="530" y2="92" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ddx)"></line>
+
+          <rect x="24" y="96" width="292" height="58" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="40" y="118" font-size="12" font-weight="700" fill="currentColor">Mucocutáneo e inmediato</text>
+          <text x="40" y="137" font-size="11" fill="currentColor" opacity="0.75">Petequias · epistaxis · menorragia → primaria</text>
+
+          <rect x="384" y="96" width="292" height="58" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="400" y="118" font-size="12" font-weight="700" fill="currentColor">Profundo y tardío</text>
+          <text x="400" y="137" font-size="11" fill="currentColor" opacity="0.75">Hemartrosis · hematomas → secundaria</text>
+
+          <line x1="170" y1="154" x2="170" y2="176" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ddx)"></line>
+          <line x1="530" y1="154" x2="530" y2="176" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ddx)"></line>
+
+          <rect x="46" y="180" width="248" height="36" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.5" stroke-width="1.5"></rect>
+          <text x="170" y="203" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">¿Recuento de plaquetas?</text>
+
+          <rect x="406" y="180" width="248" height="36" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.5" stroke-width="1.5"></rect>
+          <text x="530" y="203" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">¿El APTT corrige con plasma normal?</text>
+
+          <line x1="170" y1="216" x2="170" y2="232" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="90" y1="232" x2="250" y2="232" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="90" y1="232" x2="90" y2="252" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ddx)"></line>
+          <line x1="250" y1="232" x2="250" y2="252" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ddx)"></line>
+          <text x="60" y="247" font-size="10.5" font-weight="700" fill="currentColor">bajo</text>
+          <text x="256" y="247" font-size="10.5" font-weight="700" fill="currentColor">normal</text>
+
+          <line x1="530" y1="216" x2="530" y2="232" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="450" y1="232" x2="610" y2="232" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="450" y1="232" x2="450" y2="252" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ddx)"></line>
+          <line x1="610" y1="232" x2="610" y2="252" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ddx)"></line>
+          <text x="424" y="247" font-size="10.5" font-weight="700" fill="currentColor">sí</text>
+          <text x="616" y="247" font-size="10.5" font-weight="700" fill="currentColor">no</text>
+
+          <rect x="24" y="256" width="140" height="72" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.2"></rect>
+          <text x="94" y="277" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">PTI</text>
+          <text x="94" y="295" font-size="10.5" fill="currentColor" opacity="0.75" text-anchor="middle">CID</text>
+          <text x="94" y="312" font-size="10.5" fill="currentColor" opacity="0.75" text-anchor="middle">Hepatopatía</text>
+
+          <rect x="176" y="256" width="140" height="72" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.2"></rect>
+          <text x="246" y="277" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">von Willebrand</text>
+          <text x="246" y="295" font-size="10.5" fill="currentColor" opacity="0.75" text-anchor="middle">Trombocitopatías</text>
+          <text x="246" y="312" font-size="10.5" fill="currentColor" opacity="0.75" text-anchor="middle">Vasculares</text>
+
+          <rect x="384" y="256" width="140" height="72" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.2"></rect>
+          <text x="454" y="277" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">Hemofilia A / B</text>
+          <text x="454" y="295" font-size="10.5" fill="currentColor" opacity="0.75" text-anchor="middle">von Willebrand 2N / 3</text>
+          <text x="454" y="312" font-size="10.5" fill="currentColor" opacity="0.75" text-anchor="middle">Déficit de factor</text>
+
+          <rect x="536" y="256" width="140" height="72" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="606" y="277" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">Hemofilia</text>
+          <text x="606" y="294" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">adquirida</text>
+          <text x="606" y="313" font-size="10.5" fill="currentColor" opacity="0.75" text-anchor="middle">Inhibidor circulante</text>
+        </svg>
+        <figcaption>Dos preguntas clínicas y dos de laboratorio alcanzan para ubicar casi cualquier paciente. La primera no cuesta nada y se hace en la cama: mirar dónde y cuándo sangra.</figcaption>
+      </figure>
+
+      <h3>Tabla maestra del coagulograma</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Entidad</th><th>Plaquetas</th><th>TP</th><th>APTT</th><th>Mezcla</th><th>Clave que la distingue</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Hemofilia A / B</strong></td><td>Normal</td><td>Normal</td><td>↑</td><td>Corrige</td>
+              <td>Varón, hemartrosis, FVIII o FIX bajo</td>
+            </tr>
+            <tr>
+              <td><strong>von Willebrand</strong></td><td>Normal (↓ en 2B)</td><td>Normal</td><td>↑ o normal</td><td>Corrige</td>
+              <td>Sangrado mucoso, menorragia, <strong>VWF:RCo bajo</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Hemofilia adquirida</strong></td><td>Normal</td><td>Normal</td><td>↑</td><td><strong>No corrige</strong></td>
+              <td>Añoso sin antecedentes, equimosis extensas</td>
+            </tr>
+            <tr>
+              <td><strong>PTI</strong></td><td><strong>↓↓</strong></td><td>Normal</td><td>Normal</td><td>—</td>
+              <td>Plaquetopenia <strong>aislada</strong>, frotis normal</td>
+            </tr>
+            <tr>
+              <td><strong>Hepatopatía</strong></td><td>↓</td><td>↑</td><td>↑</td><td>Corrige</td>
+              <td><strong>FV bajo</strong>; fibrinógeno &lt; 100 mg/dL en la etapa terminal</td>
+            </tr>
+            <tr>
+              <td><strong>Déficit de vitamina K</strong></td><td>Normal</td><td><strong>↑ primero</strong></td><td>↑ tardío</td><td>Corrige</td>
+              <td><strong>FV normal</strong> — es lo que lo separa de la hepatopatía</td>
+            </tr>
+            <tr>
+              <td><strong>CID</strong></td><td>↓</td><td>↑</td><td>↑</td><td>—</td>
+              <td><strong>Dímero D muy alto</strong>, fibrinógeno bajo, <strong>esquistocitos</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Dos pares se confunden en el examen y en la sala. <strong>Hepatopatía frente a déficit de vitamina K</strong>: los separa el <strong>factor V</strong>, que baja en la primera y se mantiene normal en el segundo porque no depende de la vitamina K. <strong>Hemofilia A frente a von Willebrand tipo 2N</strong>: los dos tienen FVIII bajo y APTT prolongado, pero la herencia del 2N es <strong>autosómica</strong> — ante una <strong>mujer con FVIII bajo</strong>, pensar en 2N antes que en hemofilia.</p>
+      </div>
+    </section>
+
+    <!-- ============ Repaso activo ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>¿Cuáles son las tres etapas de la hemostasia y qué produce cada una?</summary>
+          <div class="fc__r"><strong>Primaria</strong>: tapón plaquetario temporal. <strong>Secundaria</strong>: coágulo estable de fibrina. <strong>Fibrinólisis</strong>: disuelve el coágulo una vez cicatrizada la lesión.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Qué factor prolonga el APTT pero nunca produce hemorragia?</summary>
+          <div class="fc__r">El <strong>factor XII</strong>. Su déficit alarga el APTT en el tubo porque la fase de contacto es artificial, pero <strong>no participa de la hemostasia in vivo</strong>.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Cuáles son los seis factores dependientes de la vitamina K?</summary>
+          <div class="fc__r">Procoagulantes <strong>II, VII, IX y X</strong>; anticoagulantes <strong>proteína C</strong> y <strong>proteína S</strong>. El anticoagulante oral bloquea la <strong>epóxido reductasa</strong> del ciclo.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Por qué sangra el hemofílico si tiene la vía extrínseca intacta?</summary>
+          <div class="fc__r">Porque <strong>inicia</strong> la coagulación normalmente pero <strong>no puede amplificarla</strong>: sin el complejo tenasa <strong>FIXa/FVIIIa</strong> no hay estallido de trombina. El coágulo que forma es friable y resangra tarde.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>Nombrá las tres etapas del modelo celular y sobre qué superficie ocurre cada una.</summary>
+          <div class="fc__r"><strong>Iniciación</strong> sobre la célula que expresa factor tisular · <strong>amplificación</strong> sobre la plaqueta que se está activando · <strong>propagación</strong> sobre la plaqueta ya activada, donde se ensamblan tenasa y protrombinasa.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Coagulograma normal en un paciente que sangra: ¿qué queda por descartar?</summary>
+          <div class="fc__r">Un problema de <strong>hemostasia primaria</strong>: plaquetopenia, trombocitopatía, von Willebrand leve, trastornos vasculares — y el <strong>déficit de FXIII</strong>, que no altera TP ni APTT porque actúa después de formada la fibrina.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>APTT prolongado con TP normal: ¿cuál es el paso siguiente y qué significa cada resultado?</summary>
+          <div class="fc__r"><strong>Prueba de mezcla 1:1 con plasma normal.</strong> Si <strong>corrige</strong> → déficit de factor. Si <strong>no corrige</strong> → <strong>inhibidor</strong> circulante.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Un hombre con hemofilia tiene hijos con una mujer sana. ¿Qué se espera?</summary>
+          <div class="fc__r"><strong>Todas las hijas portadoras</strong> y <strong>todos los hijos varones sanos</strong>: el padre le pasa su único X a las hijas y el Y a los varones.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Cómo se define la severidad de la hemofilia?</summary>
+          <div class="fc__r">Por el <strong>nivel de actividad del factor</strong>: severa <span class="dato">&lt; 1 %</span> (sangrado espontáneo), moderada <span class="dato">1 – 5 %</span>, leve <span class="dato">&gt; 5 %</span>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué es una articulación blanco y a qué conduce?</summary>
+          <div class="fc__r">La articulación donde se repiten las hemartrosis. Los sangrados repetidos producen <strong>sinovitis crónica</strong> y daño permanente: la <strong>artropatía hemofílica</strong>, de evolución irreversible.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Hemofílico con dolor abdominal intenso e incapacidad para extender el muslo: ¿qué pensás?</summary>
+          <div class="fc__r"><strong>Hematoma del psoas ilíaco.</strong> Se confirma con tomografía de pelvis. Los hematomas musculares son el <strong>segundo sitio</strong> de sangrado en frecuencia.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Dosis de factor en un episodio mayor y en uno menor.</summary>
+          <div class="fc__r">Mayor: <span class="dato">50 – 100 UI/kg</span>, hospitalizar e infusión continua <span class="dato">2 – 4 UI/kg/hora</span>. Menor: <span class="dato">15 – 30 UI/kg</span>.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Por qué la enfermedad de von Willebrand da dos patrones de sangrado distintos?</summary>
+          <div class="fc__r">Porque el VWF cumple <strong>dos funciones</strong>: media la <strong>adhesión plaquetaria</strong> — su falla da <strong>sangrado mucoso</strong> — y <strong>transporta al FVIII</strong> — su falla da <strong>sangrado post quirúrgico</strong>. Por eso es un trastorno <strong>mixto</strong>.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Qué cociente separa el defecto cuantitativo del cualitativo en von Willebrand?</summary>
+          <div class="fc__r"><strong>VWF:RCo / VWF:Ag.</strong> Si es <span class="dato">&gt; 0,7</span> caen juntos: defecto de <strong>cantidad</strong> (tipo 1). Si es <span class="dato">&lt; 0,7</span> la actividad cae más: defecto de <strong>calidad</strong> (tipo 2).</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Qué subtipo de von Willebrand tiene RIPA a baja dosis presente y por qué importa?</summary>
+          <div class="fc__r">El <strong>2B</strong>. Importa porque cursa con <strong>trombocitopenia</strong> y la <strong>desmopresina la agrava</strong>: ese subtipo va directo a terapia transfusional.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Cuál es el mecanismo de la desmopresina y qué dos límites se deducen de él?</summary>
+          <div class="fc__r">Libera VWF de los <strong>cuerpos de Weibel-Palade</strong> y moviliza FVIII: <strong>vacía la reserva propia</strong>, no aporta factor. De ahí que <strong>no sirva en el tipo 3</strong> (no hay reserva) y que produzca <strong>taquifilaxia</strong> al repetirse.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Por qué no se repite la desmopresina antes de las 12 horas?</summary>
+          <div class="fc__r">Porque a intervalos cortos <strong>se pierde el efecto hemostático pero persiste el antidiurético</strong>, con riesgo de retención hídrica e hiponatremia. A las 24 h la respuesta del FVIII ya es un <strong>30 % menor</strong>.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Cuál es el umbral de plaquetas que define la PTI y qué más exige el diagnóstico?</summary>
+          <div class="fc__r"><strong>Menos de 100.000</strong>, con <strong>hemograma y frotis normales</strong> en todo lo demás y <strong>en ausencia de otras causas</strong>. Hasta un 20 % son secundarias.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Cuándo sí está indicada la punción de médula ósea en la PTI?</summary>
+          <div class="fc__r">Hallazgos <strong>atípicos</strong> u <strong>otra citopenia</strong>, mala respuesta a la primera línea, <strong>mayores de 60 años</strong> y <strong>previo a esplenectomía</strong>. No de rutina ni de inicio.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿A partir de qué recuento se trata a todo paciente con PTI, aun asintomático?</summary>
+          <div class="fc__r">Por debajo de <span class="dato">20.000</span> se trata a todos; por debajo de <span class="dato">10.000</span> el riesgo es inminente. Entre 30.000 y 50.000, sólo si sangra o antes de un procedimiento.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Qué factor distingue la hepatopatía del déficit de vitamina K?</summary>
+          <div class="fc__r">El <strong>factor V</strong>: es marcador específico de síntesis hepática porque <strong>no depende de la vitamina K</strong>. Baja en la hepatopatía y se mantiene normal en el déficit vitamínico.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Añoso sin antecedentes, equimosis extensas y APTT que no corrige: ¿diagnóstico y conducta?</summary>
+          <div class="fc__r"><strong>Hemofilia adquirida</strong> por inhibidor de FVIII. Mortalidad del <span class="dato">14 – 22 %</span>. Se tratan <strong>dos frentes a la vez</strong>: controlar el sangrado (FEIBA, FVIIa recombinante) y <strong>erradicar el inhibidor</strong> (corticoides, rituximab, ciclofosfamida).</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Por qué el paciente con CID trombosa y sangra al mismo tiempo?</summary>
+          <div class="fc__r">La <strong>activación sistémica</strong> deposita fibrina en la microcirculación → trombosis y <strong>fallo orgánico</strong>; y ese mismo proceso <strong>consume plaquetas y factores</strong> → <strong>sangrado</strong>. Una sola causa, dos consecuencias opuestas.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Qué cuatro parámetros puntúa el score ISTH y cuál es el punto de corte?</summary>
+          <div class="fc__r"><strong>Recuento de plaquetas, dímero D o PDF, tiempo de Quick y fibrinógeno.</strong> Con <strong>≥ 5 puntos</strong>: compatible con CID manifiesta, repetir a diario. Con &lt; 5: sugestivo, repetir en 1 – 2 días.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Cuál es el paso 1 del algoritmo de la ISTH y por qué no se puede saltear?</summary>
+          <div class="fc__r">Preguntar si hay un <strong>trastorno subyacente asociable</strong> con CID. Si no lo hay, <strong>no se usa el algoritmo</strong>: puntuar a ciegas fabrica diagnósticos falsos.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Cuándo se transfunde en la CID y cuándo no?</summary>
+          <div class="fc__r"><strong>No</strong> sólo por el laboratorio. <strong>Sí</strong> con sangrado activo, alto riesgo de sangrado o necesidad de procedimiento invasivo. Plaquetas si sangra y están <span class="dato">&lt; 50.000/mm³</span>.</div>
+        </details>
+
+        <details class="fc s-diferenciales">
+          <summary>Mujer con FVIII bajo y APTT prolongado: ¿qué hay que descartar antes de decir hemofilia A?</summary>
+          <div class="fc__r"><strong>Enfermedad de von Willebrand tipo 2N</strong>, cuya herencia es <strong>autosómica</strong> y que imita la hemofilia A. El cociente <strong>FVIII/VWF &lt; 0,6</strong> la identifica.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Triada clave del abordaje</dt>
+        <dd><strong>Patrón de sangrado</strong> (mucocutáneo inmediato frente a profundo y tardío) + <strong>recuento de plaquetas</strong> + <strong>TP / APTT</strong>. Con esos tres datos casi todo paciente queda ubicado.</dd>
+
+        <dt class="r-gold">Estudio de elección</dt>
+        <dd><strong>Coagulograma con prueba de mezcla 1:1.</strong> Si el test prolongado <strong>corrige</strong> es un <strong>déficit</strong>; si <strong>no corrige</strong> hay un <strong>inhibidor</strong>. Es la bisagra de todo el diagnóstico.</dd>
+
+        <dt class="r-tto">Tratamiento de 1ª línea</dt>
+        <dd><strong>Hemofilia</strong>: factor VIII o IX — mayor 50 – 100 UI/kg, menor 15 – 30 UI/kg. <strong>von Willebrand</strong>: desmopresina 0,3 µg/kg (salvo tipos 2B y 3). <strong>PTI</strong>: meprednisona 1 mg/kg/día o IGEV 1 g/kg/día × 2. <strong>CID</strong>: tratar la causa + soporte según sangrado.</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd>Hemorragia de <strong>SNC, vía aérea o digestiva</strong> en hemofilia → reponer factor <strong>antes</strong> de estudiar. <strong>Score ISTH ≥ 5</strong> → CID manifiesta. <strong>APTT que no corrige</strong> en un añoso sin antecedentes → hemofilia adquirida, mortalidad 14 – 22 %.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir de la clase «Abordaje diagnóstico de los trastornos de coagulación» del Dr. N. R. Mamaní (Servicio de Hematología, Hospital T. J. Schestakow — Cátedra de Medicina Interna III, 2025). Las cajas rotuladas «Actualización posterior a la clase» señalan puntos donde la evidencia cambió después del dictado y están citadas por separado. Material de estudio: no reemplaza el criterio clínico ni la guía institucional vigente.</p>
+
+
+
+  </main>
+</div>
+
+<script>
+(function(){
+
+  // ---- Tema claro / oscuro ----
+  // Sin eleccion estampada manda el sistema; el boton la estampa y la guarda.
+  var raiz = document.documentElement;
+  var boton = document.getElementById('tema');
+
+  function temaActual(){
+    var estampado = raiz.getAttribute('data-theme');
+    if (estampado) return estampado;
+    return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+
+  if (boton){
+    var rotular = function(){
+      var actual = temaActual();
+      boton.setAttribute('aria-pressed', actual === 'dark' ? 'true' : 'false');
+      boton.setAttribute('aria-label', actual === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+    };
+    boton.addEventListener('click', function(){
+      var nuevo = temaActual() === 'dark' ? 'light' : 'dark';
+      raiz.setAttribute('data-theme', nuevo);
+      try { localStorage.setItem('wordmed-tema', nuevo); } catch (e) { /* sin persistencia */ }
+      rotular();
+    });
+    rotular();
+  }
+
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link, .ir-link'));
+
+  // Devuelve TODOS los enlaces al ancla: la misma seccion figura en el indice
+  // lateral y en el compacto, y los dos tienen que encenderse juntos.
+  function porMeta(hash){
+    return enlaces.filter(function(l){ return l.getAttribute('href') === '#' + hash; });
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var activos = porMeta(e.target.id);
+        if (!activos.length) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          activos.forEach(function(l){ l.setAttribute('aria-current', 'true'); });
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>

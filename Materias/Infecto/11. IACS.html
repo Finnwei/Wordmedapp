@@ -1,0 +1,1547 @@
+<title>Infecciones Asociadas al Cuidado de la Salud</title>
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+}
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índice lateral ---------- */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Ficha de sección ---------- */
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.35rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-row:1/3; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+.importante__titulo{
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso{ display:none !important; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-generalidades"  href="#generalidades">Generalidades &amp; Impacto</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#cadena">Cadena de Transmisión</a></li>
+      <li><a class="indice__link i-clinica"        href="#aislamientos">Aislamientos</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#navm">Neumonía Asociada al Ventilador</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#iacvc">Infección Asociada a Catéter</a></li>
+      <li><a class="indice__link i-diferenciales"  href="#cauti">Infección Urinaria por Sonda</a></li>
+      <li><a class="indice__link i-importantes"    href="#importantes">Multirresistentes &amp; Alertas</a></li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Infectología · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Infecciones Asociadas al Cuidado de la Salud</h1>
+      <p class="portada__bajada">Infecciones que aparecen ≥ 48 h después de la prestación sanitaria. De la cadena epidemiológica y su interrupción a las tres infecciones asociadas a dispositivo que se vigilan.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">7 secciones</span>
+        <span class="etiqueta s-clinica">Contacto · gota · aéreo</span>
+        <span class="etiqueta s-diagnostico">NAVM · IACVC · CAUTI</span>
+        <span class="etiqueta s-importantes">Multirresistentes</span>
+      </div>
+    </header>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="generalidades">
+      <span class="seccion__pestana"><b>01</b> Base</span>
+      <h2 class="seccion__titulo">Generalidades &amp; Impacto</h2>
+
+      <p>Son aquellas infecciones que se producen en un paciente <strong>durante el proceso asistencial</strong>, que <strong>no estaban presentes ni en período de incubación</strong> en el momento de la atención sanitaria, sino que la sintomatología se presenta <strong>≥ <span class="dato">48 horas</span></strong> luego de haber recibido la prestación.</p>
+
+      <p>La definición es más amplia de lo que parece. También incluye:</p>
+      <ul>
+        <li>Las que se contraen en el hospital pero <strong>se manifiestan tras el alta hospitalaria</strong>.</li>
+        <li>Las <strong>infecciones profesionales</strong> entre el personal del centro sanitario.</li>
+      </ul>
+
+      <p>Y no ocurren sólo en el hospital de agudos: pueden producirse en <strong>todo tipo de entorno sanitario</strong>, incluidos centros de rehabilitación, <strong>centros de hemodiálisis</strong> y centros quirúrgicos ambulatorios.</p>
+
+      <h3>Impacto</h3>
+      <ul>
+        <li>Se estima que más de <strong><span class="dato">100 millones</span> de personas</strong> en el mundo adquieren al menos una IACS por año, y que más de <strong>20 millones fallecerán</strong> a causa de ellas.</li>
+        <li>En países desarrollados, entre el <span class="dato">5 %</span> y el <span class="dato">10 %</span> de los pacientes ingresados en centros de internación de agudos adquieren <strong>uno o más episodios</strong> de IACS.</li>
+        <li>En Argentina se estima que, en promedio, las IACS incrementan los días de internación en <strong><span class="dato">6,4 días</span></strong>, con una <strong>mortalidad atribuible del <span class="dato">11,5 %</span></strong>. A nivel nacional eso representa <strong>1.600.000 días extras</strong> de internación y <strong>29.000 muertes atribuibles</strong>.</li>
+      </ul>
+
+      <h3>Las cinco IACS más importantes</h3>
+      <p>A los fines epidemiológicos, las IACS se clasifican como <strong>asociadas y no asociadas a procedimientos vigilados</strong>, y como <strong>precoces y tardías</strong>. Las cinco que concentran la vigilancia son:</p>
+      <ol>
+        <li><strong>Neumonía asociada a los cuidados de la salud</strong> (NACS).</li>
+        <li><strong>Infección primaria de la sangre asociada a catéter central</strong> (IPS-CC).</li>
+        <li><strong>Infecciones asociadas a catéter urinario.</strong></li>
+        <li>Infecciones por <strong><em>Clostridioides difficile</em></strong> (ICD) — diarrea nosocomial.</li>
+        <li><strong>Infección de sitio quirúrgico</strong> (ISQ).</li>
+      </ol>
+
+      <p>Las tres primeras son <strong>infecciones asociadas a dispositivo</strong> y son las que este cuadernillo desarrolla en detalle, porque son las que se vigilan con tasas.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 250" role="img" aria-label="Tasas de infecciones asociadas a procedimientos vigilados en la unidad de cuidados intensivos polivalente de Mendoza en 2025, expresadas como incidencia cada mil días de uso del dispositivo. La neumonía asociada a la ventilación mecánica alcanza 14,92; la infección primaria de la sangre asociada a catéter central 5,46; y la infección urinaria asociada a sonda vesical 1,06.">
+          <text x="14" y="30" font-size="11.5" font-weight="700" fill="currentColor">Incidencia cada 1000 días de uso del dispositivo · UCI polivalente</text>
+
+          <rect x="205" y="60" width="403" height="34" rx="2" fill="var(--c)" fill-opacity="0.42" stroke="var(--c)" stroke-width="1.2"></rect>
+          <text x="14" y="82" font-size="11.5" fill="currentColor">NAVM · ARM</text>
+          <text x="616" y="82" font-size="12.5" font-weight="700" fill="currentColor">14,92</text>
+
+          <rect x="205" y="112" width="147" height="34" rx="2" fill="var(--c)" fill-opacity="0.26" stroke="var(--c)" stroke-width="1.2"></rect>
+          <text x="14" y="134" font-size="11.5" fill="currentColor">IPS · catéter central</text>
+          <text x="360" y="134" font-size="12.5" font-weight="700" fill="currentColor">5,46</text>
+
+          <rect x="205" y="164" width="29" height="34" rx="2" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="1.2"></rect>
+          <text x="14" y="186" font-size="11.5" fill="currentColor">ITU · sonda vesical</text>
+          <text x="242" y="186" font-size="12.5" font-weight="700" fill="currentColor">1,06</text>
+
+          <text x="14" y="228" font-size="11" fill="currentColor" opacity="0.7">ARM: asistencia respiratoria mecánica · IPS: infección primaria de la sangre · ITU: infección del tracto urinario</text>
+        </svg>
+        <figcaption>La neumonía asociada al ventilador es, por lejos, la IACS más frecuente del país y de la provincia: casi tres veces la tasa de la bacteriemia por catéter y catorce veces la de la infección urinaria por sonda.</figcaption>
+      </figure>
+
+      <p class="cita">Fuente: material de cátedra — Dra. Claudia Cabello, Cátedra de Enfermedades Infecciosas, Universidad de Mendoza, Sede San Rafael. Tasas del Reporte de IACS en Mendoza 2025.</p>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-fisiopatologia" id="cadena">
+      <span class="seccion__pestana"><b>02</b> Mecanismo</span>
+      <h2 class="seccion__titulo">Cadena de Transmisión &amp; Precauciones</h2>
+
+      <p>La <strong>cadena epidemiológica</strong> es el marco que organiza toda la prevención: de acuerdo a ella se establecen las intervenciones, <strong>orientadas a la interrupción de la cadena en uno o más de sus eslabones</strong>. No hace falta romperlos todos — basta con cortar uno.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 420" role="img" aria-label="Los seis eslabones de la cadena epidemiológica y la intervención que corta cada uno. El agente causal se corta con uso racional de antimicrobianos. El reservorio, con limpieza y desinfección del entorno y equipos no críticos de uso exclusivo. La vía de salida, con manejo seguro de secreciones y fluidos. El mecanismo de transmisión, con higiene de manos, equipo de protección personal y aislamientos: es el eslabón donde más se interviene. La vía de entrada, con técnica aséptica y retiro precoz de los dispositivos. El huésped susceptible, con vacunación, nutrición y control de comorbilidades.">
+          <defs>
+            <marker id="pta-cad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <text x="14" y="38" font-size="11" font-weight="700" fill="currentColor" opacity="0.7">Eslabón</text>
+          <text x="312" y="38" font-size="11" font-weight="700" fill="currentColor" opacity="0.7">Cómo se interrumpe</text>
+
+          <rect x="14" y="52" width="230" height="52" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="83" font-size="12.5" font-weight="700" fill="currentColor">1 · Agente causal</text>
+          <line x1="244" y1="78" x2="306" y2="78" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-cad)"></line>
+          <text x="246" y="70" font-size="10.5" fill="currentColor" opacity="0.65">se corta</text>
+          <rect x="312" y="52" width="374" height="52" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="328" y="73" font-size="11.5" font-weight="700" fill="currentColor">Uso racional de antimicrobianos</text>
+          <text x="328" y="92" font-size="11.5" fill="currentColor" opacity="0.75">Menos presión de selección, menos multirresistencia</text>
+
+          <rect x="14" y="112" width="230" height="52" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="143" font-size="12.5" font-weight="700" fill="currentColor">2 · Reservorio</text>
+          <line x1="244" y1="138" x2="306" y2="138" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-cad)"></line>
+          <text x="246" y="130" font-size="10.5" fill="currentColor" opacity="0.65">se corta</text>
+          <rect x="312" y="112" width="374" height="52" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="328" y="133" font-size="11.5" font-weight="700" fill="currentColor">Limpieza y desinfección del entorno</text>
+          <text x="328" y="152" font-size="11.5" fill="currentColor" opacity="0.75">Equipos no críticos de uso exclusivo del paciente</text>
+
+          <rect x="14" y="172" width="230" height="52" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="203" font-size="12.5" font-weight="700" fill="currentColor">3 · Vía de salida</text>
+          <line x1="244" y1="198" x2="306" y2="198" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-cad)"></line>
+          <text x="246" y="190" font-size="10.5" fill="currentColor" opacity="0.65">se corta</text>
+          <rect x="312" y="172" width="374" height="52" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="328" y="193" font-size="11.5" font-weight="700" fill="currentColor">Manejo seguro de secreciones y fluidos</text>
+          <text x="328" y="212" font-size="11.5" fill="currentColor" opacity="0.75">Higiene respiratoria · descarte de cortopunzantes</text>
+
+          <rect x="14" y="232" width="230" height="52" rx="3" fill="var(--c)" fill-opacity="0.26" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="30" y="263" font-size="12.5" font-weight="700" fill="currentColor">4 · Mecanismo de transmisión</text>
+          <line x1="244" y1="258" x2="306" y2="258" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-cad)"></line>
+          <text x="246" y="250" font-size="10.5" fill="currentColor" opacity="0.65">se corta</text>
+          <rect x="312" y="232" width="374" height="52" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-opacity="0.5" stroke-width="1.5"></rect>
+          <text x="328" y="253" font-size="11.5" font-weight="700" fill="currentColor">Higiene de manos · EPP · aislamientos</text>
+          <text x="328" y="272" font-size="11.5" fill="currentColor" opacity="0.75">El eslabón donde más se interviene y más se falla</text>
+
+          <rect x="14" y="292" width="230" height="52" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="323" font-size="12.5" font-weight="700" fill="currentColor">5 · Vía de entrada</text>
+          <line x1="244" y1="318" x2="306" y2="318" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-cad)"></line>
+          <text x="246" y="310" font-size="10.5" fill="currentColor" opacity="0.65">se corta</text>
+          <rect x="312" y="292" width="374" height="52" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="328" y="313" font-size="11.5" font-weight="700" fill="currentColor">Técnica aséptica en cada procedimiento</text>
+          <text x="328" y="332" font-size="11.5" fill="currentColor" opacity="0.75">Retiro precoz de todo dispositivo invasivo</text>
+
+          <rect x="14" y="352" width="230" height="52" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="383" font-size="12.5" font-weight="700" fill="currentColor">6 · Huésped susceptible</text>
+          <line x1="244" y1="378" x2="306" y2="378" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-cad)"></line>
+          <text x="246" y="370" font-size="10.5" fill="currentColor" opacity="0.65">se corta</text>
+          <rect x="312" y="352" width="374" height="52" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="328" y="373" font-size="11.5" font-weight="700" fill="currentColor">Vacunación · nutrición · control glucémico</text>
+          <text x="328" y="392" font-size="11.5" fill="currentColor" opacity="0.75">Menos comorbilidad, menos riesgo de infección</text>
+        </svg>
+        <figcaption>La cadena se cierra sobre sí misma: el huésped susceptible que se infecta pasa a ser el reservorio del siguiente. Cortar cualquier eslabón detiene el ciclo — y el más accesible, con diferencia, es el cuarto.</figcaption>
+      </figure>
+
+      <p class="cita">Fuente: material de cátedra. La figura original de la cátedra rotula dos veces «vía de salida»; el eslabón inferior corresponde a la <strong>vía de entrada</strong>, que es como se representa acá. La asignación de cada medida preventiva a su eslabón sigue el esquema clásico de la cadena epidemiológica.</p>
+
+      <h3>Precauciones estándar</h3>
+      <p>Son un conjunto de medidas que se aplican a <strong>todos los pacientes</strong>, <strong>independientemente del diagnóstico</strong> o de la presencia de infección o de colonización. Su fin es reducir la transmisión de microorganismos patógenos <strong>al prevenir la exposición a fluidos corporales</strong>.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>Todo paciente es infectocontagioso hasta que se demuestre lo contrario.</strong> Ese es el principio entero de las precauciones estándar: no se aplican según lo que el paciente tiene, sino según <strong>lo que uno va a tocar</strong>.</p>
+      </div>
+
+      <p>Sus componentes son <strong>higiene de manos, camisolín, antiparras, barbijo, guantes</strong> y <strong>manejo de cortopunzantes</strong>.</p>
+
+      <h3>Precauciones basadas en el mecanismo de transmisión</h3>
+      <p>Se aplican cuando <strong>se sospecha o se sabe</strong> que un paciente tiene una enfermedad infecciosa contagiosa y se encuentra <strong>en período infectante</strong>, y también cuando se sabe que el paciente está <strong>colonizado con un agente resistente</strong> de importancia en salud pública.</p>
+      <p>Son los comúnmente llamados <strong>aislamientos</strong>, y <strong>se suman</strong> a las precauciones estándar — nunca las reemplazan.</p>
+
+      <h3>Higiene de manos</h3>
+      <p>Es una <strong>cuestión de actitud y de hábito</strong> que debe practicarse frecuentemente, y un elemento preciso que forma parte de la <strong>calidad de atención</strong> que se brinda a los pacientes.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Método</th><th>Cuándo</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Solución alcohólica</strong></td>
+              <td><strong>Medio habitual preferente</strong>, cuando las manos <strong>no</strong> estén visiblemente sucias. Es <strong>más rápido, más eficaz y mejor tolerado</strong> por las manos que el lavado con agua y jabón</td>
+            </tr>
+            <tr>
+              <td><strong>Agua y jabón</strong></td>
+              <td>Cuando estén <strong>visiblemente sucias</strong>, manchadas de sangre u otros fluidos corporales, o <strong>después de usar el inodoro</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>No realizar la higiene de manos cómo y cuándo corresponde constituye un error profesional.</strong> Y el uso de guantes <strong>no excluye</strong> la necesidad de higiene de manos: se hace antes de colocarlos y después de retirarlos.</p>
+      </div>
+
+      <h3>Equipo de protección personal</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Elemento</th><th>Como precaución estándar</th><th>Como precaución de aislamiento</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Camisolín</strong></td>
+              <td>Cuando se anticipa contacto con sangre o fluidos: maniobras con <strong>aerosolización</strong>, con <strong>riesgo de salpicaduras</strong>, maniobras <strong>invasivas</strong>, limpieza de la habitación, y tareas de cuidado diario con mayor contacto como el <strong>baño del paciente</strong> o el <strong>cuidado de heridas</strong></td>
+              <td>En precauciones de contacto: colocarlo <strong>siempre antes de ingresar</strong> a la habitación, para evitar el contacto con el entorno contaminado, y <strong>retirarlo antes de salir</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Guantes</strong></td>
+              <td>Cuando se anticipa contacto con sangre, fluidos corporales, <strong>membranas mucosas, piel no intacta</strong> u otros materiales potencialmente infectantes; y antes de tocar superficies visiblemente contaminadas</td>
+              <td>En aislamiento de contacto: <strong>antes de tocar al paciente o su entorno</strong> cuando está colonizado o infectado por patógenos de transmisión por contacto</td>
+            </tr>
+            <tr>
+              <td><strong>Barbijo y gafas</strong></td>
+              <td>La mucosa oral y nasal son <strong>puertas de entrada</strong>. Protegen todo el rostro de sangre y fluidos en procedimientos que generan <strong>salpicaduras o aerosoles</strong></td>
+              <td>Según el mecanismo: barbijo quirúrgico en gota, barbijo de alta eficiencia en aéreo</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Reglas de uso de guantes</h3>
+      <ul>
+        <li><strong>Un solo par</strong>, nunca doble par.</li>
+        <li>Los <strong>guantes sucios no deben tocar superficies limpias</strong>.</li>
+        <li>Deben ajustarse cómodamente. Si se usan con camisolín, deben quedar <strong>por encima del puño</strong> y generar una <strong>barrera continua</strong> para brazos, muñecas y manos.</li>
+        <li><strong>Guantes nuevos</strong> al atender a un nuevo paciente y al pasar de tareas «sucias» a tareas «limpias» en el mismo paciente, <strong>previa higiene de manos</strong>.</li>
+        <li>Pueden ser estériles o no estériles, según la <strong>pirámide de uso de guantes de la OMS</strong>.</li>
+      </ul>
+
+      <p>Los tres objetivos del barbijo, que conviene distinguir porque no son el mismo: <strong>prevenir la transmisión</strong> por inhalación de gotitas, <strong>proteger la mucosa respiratoria</strong> ante salpicaduras de sangre o fluidos, y <strong>evitar la contaminación</strong> del área o del paciente con secreciones naso-orales <strong>del propio personal</strong>.</p>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-clinica" id="aislamientos">
+      <span class="seccion__pestana"><b>03</b> Aislamientos</span>
+      <h2 class="seccion__titulo">Los Tres Aislamientos</h2>
+
+      <p>Lo que separa a los tres no es la gravedad de la enfermedad sino el <strong>tamaño de la partícula</strong> y la <strong>distancia que recorre</strong>. De ahí sale todo lo demás: la habitación, el barbijo y hasta la puerta.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Mecanismo</th><th>Física de la partícula</th><th>Agentes</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Contacto</strong></td>
+              <td>Transmisión por contacto directo con el paciente o indirecto a través del <strong>entorno contaminado</strong></td>
+              <td><strong><em>C. difficile</em></strong>, <strong>carbapenemasas</strong>, enterovirus, virus sincicial respiratorio, <strong>zóster diseminado</strong>, rotavirus, difteria, fiebre hemorrágica</td>
+            </tr>
+            <tr>
+              <td><strong>Gotitas</strong></td>
+              <td>Partículas de <strong><span class="dato">5 – 100 μm</span></strong> emitidas al toser, estornudar o hablar. Por su tamaño <strong>no se mantienen en suspensión más de algunos segundos</strong> y son expulsadas a <strong>menos de 1 metro</strong> de la boca o la nariz</td>
+              <td>Difteria, <strong>meningococo</strong>, influenza, coronavirus, parotiditis</td>
+            </tr>
+            <tr>
+              <td><strong>Aéreo</strong></td>
+              <td>Partículas de <strong>menos de <span class="dato">5 μm</span></strong> que <strong>se mantienen en suspensión durante períodos prolongados</strong> y se desplazan distancias más largas que las gotitas, empujadas por corrientes de aire</td>
+              <td><strong>TBC</strong>, sarampión, <strong>herpes zóster diseminado</strong>, varicela</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Dos agentes aparecen en más de una lista, y no es un error: la <strong>difteria</strong> figura en contacto y en gotitas —la forma cutánea se transmite por contacto y la faríngea por gotitas— y el <strong>zóster diseminado</strong> figura en contacto y en aéreo, porque requiere <strong>ambas precauciones a la vez</strong>.</p>
+
+      <h3>Resumen de las medidas de aislamiento</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Tipo de aislamiento</th><th>Contacto</th><th>Gota</th><th>Aéreo</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Siempre acompañado de precauciones estándar</strong></td>
+              <td colspan="3">Higiene de manos respetando los <strong>5 momentos</strong> · EPP en caso de anticiparse contacto con sangre y fluidos corporales · <strong>inyección segura</strong> · limpieza y desinfección adecuadas</td>
+            </tr>
+            <tr>
+              <td><strong>Equipos y materiales no críticos</strong></td>
+              <td colspan="3">De <strong>uso exclusivo</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Ubicación del paciente</strong></td>
+              <td colspan="2">Habitación individual. Si no es posible, <strong>cohorte</strong></td>
+              <td>Habitación individual. <strong>AIIR</strong> (presión negativa)</td>
+            </tr>
+            <tr>
+              <td><strong>EPP</strong></td>
+              <td><strong>Guantes + camisolín</strong></td>
+              <td><strong>Barbijo quirúrgico</strong> + protección ocular en caso de SARS-CoV-2 e influenza</td>
+              <td><strong>Barbijo con filtración especial</strong> — alta eficiencia tipo <strong>N95</strong> o superior</td>
+            </tr>
+            <tr>
+              <td><strong>Traslados</strong></td>
+              <td><strong>Limitar.</strong> EPP nuevo · lesiones cutáneas con secreción activa: cubrir · documentación de papel en bolsas plásticas</td>
+              <td><strong>Limitar.</strong> Paciente con barbijo quirúrgico</td>
+              <td><strong>Limitar.</strong> Paciente con barbijo quirúrgico · si tiene lesiones cutáneas con secreción activa: cubrir</td>
+            </tr>
+            <tr>
+              <td><strong>Ropa</strong></td>
+              <td colspan="3">Retirar en <strong>bolsa cerrada</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Puerta</strong></td>
+              <td colspan="3"><strong>Siempre cerrada</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Visitas</strong></td>
+              <td><strong>Restringidas.</strong> Higiene de manos estricta</td>
+              <td><strong>Restringidas.</strong> Deben usar barbijo quirúrgico</td>
+              <td><strong>Restringidas.</strong> Barbijo con filtración especial</td>
+            </tr>
+            <tr>
+              <td><strong>Otros</strong></td>
+              <td>Vajilla: retirar al final + higiene de manos posterior</td>
+              <td>En influenza y SARS-CoV-2, ante <strong>procedimientos generadores de aerosoles</strong>: barbijo de alta eficiencia N95 + protección facial + <strong>camisolín hidrorrepelente</strong> + guantes</td>
+              <td>Para reutilizar la habitación hay que tener en cuenta el <strong>tipo de ventilación</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><em>Clostridioides difficile</em> tiene dos excepciones propias que hay que saber de memoria: la habitación se limpia con <strong>soluciones cloradas</strong>, y la higiene de manos se hace con <strong>agua y jabón</strong>, no con alcohol — <strong>la solución alcohólica no elimina las esporas</strong>. Si no hay agua y jabón disponible, se usa alcohol y se completa con agua y jabón lo antes posible.</p>
+      </div>
+
+      <p class="cita">Fuente: Norma Provincial de Precauciones Estándar y Precauciones Basadas en Mecanismos de Transmisión, 2024, citada en el material de cátedra. AIIR: <em>airborne infection isolation room</em>, habitación de aislamiento con presión negativa.</p>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-diagnostico" id="navm">
+      <span class="seccion__pestana"><b>04</b> NAVM</span>
+      <h2 class="seccion__titulo">Neumonía Asociada al Ventilador</h2>
+
+      <h3>Las tres definiciones que hay que separar</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Entidad</th><th>Definición</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>NIH</strong><br>Neumonía intrahospitalaria</td>
+              <td>Ocurre <strong>luego de las 48 horas o más después del ingreso</strong> y se atribuye a adquisición nosocomial por <strong>no parecer estar incubándose</strong> al momento del ingreso</td>
+            </tr>
+            <tr>
+              <td><strong>NAVM</strong><br>Neumonía asociada al ventilador</td>
+              <td>Ocurre <strong>luego de 48 horas después de la intubación endotraqueal</strong>.<br><strong>Temprana</strong>: causada por patógenos adquiridos en la comunidad.<br><strong>Tardía</strong>: ocurre después de <strong>4 días</strong> de ingreso hospitalario y generalmente es causada por <strong>organismos multirresistentes</strong> adquiridos en el hospital</td>
+            </tr>
+            <tr>
+              <td><strong>NAAM</strong><br>Neumonía asociada a la atención médica</td>
+              <td>Paciente hospitalizado <strong>≥ 2 días en los últimos 90 días</strong>; o que reside en <strong>hogar de ancianos</strong> o centro de cuidados a largo plazo; o que recibió <strong>antibiótico IV, quimioterapia o cuidados de una herida en los 30 días previos</strong>; o que asiste a un hospital o <strong>centro de hemodiálisis</strong>. Se sospechan patógenos del entorno de salud, como los multirresistentes</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>La distinción temprana / tardía es la que decide el espectro del tratamiento empírico: <strong>lo que cambia con los días no es la gravedad, es el germen</strong>.</p>
+
+      <p class="cita">Nota de actualización: la categoría <strong>NAAM (o HCAP)</strong> fue <strong>eliminada</strong> por la guía ATS/IDSA a partir de 2016, porque sobreestimaba el riesgo de multirresistencia y llevaba a sobretratar. Las guías vigentes deciden la cobertura ampliada por <strong>factores de riesgo individuales</strong> del paciente y por la epidemiología local. El cuadernillo conserva la definición del material de cátedra; conviene saber que la categoría está en discusión. Kalil AC et al., ATS/IDSA, Clin Infect Dis 2016.</p>
+
+      <h3>Criterios diagnósticos</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Categoría</th><th>Siempre presentes</th><th>Pueden o no estar presentes</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Radiográfico</strong></td>
+              <td>Infiltrados <strong>nuevos, progresivos o persistentes</strong></td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td><strong>Clínicos</strong></td>
+              <td>Al menos <strong>dos</strong> de:<br>a. Temperatura <strong>&gt; 38,5 °C</strong> o <strong>&lt; 36 °C</strong><br>b. Leucocitos <strong>&gt; 12.000/mm³</strong> o <strong>&lt; 4.000/mm³</strong>, o <strong>10 % de células inmaduras</strong><br>c. <strong>Secreciones purulentas</strong></td>
+              <td>Hipoxemia · hipotensión · acidosis metabólica · necesidad de <strong>inotrópicos o vasopresores</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Microbiológico</strong></td>
+              <td>Rescate de al menos un germen en <strong>uno</strong> de estos cultivos <strong>cuantitativos</strong>:<br>a. <strong>Aspirado traqueal ≥ 10⁵⁻⁶ UFC/mL</strong><br>b. <strong>Lavado broncoalveolar ≥ 10⁴ UFC/mL</strong></td>
+              <td>Hemocultivos positivos · líquido pleural positivo</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>El diagnóstico exige las <strong>tres categorías «siempre presentes» a la vez</strong>: imagen, clínica y microbiología cuantitativa. Los hemocultivos, que en otras infecciones serían el estudio clave, acá están en la columna de lo accesorio.</p>
+
+      <p class="cita">Fuente: Actualización en neumonía asociada a la ventilación mecánica, SATI 2019, citada en el material de cátedra.</p>
+
+      <h3>Patogenia</h3>
+      <p>Las <strong>fuentes comunes</strong> de patógenos son la <strong>aspiración</strong>, el <strong>procedimiento de intubación</strong>, la <strong>formación de biopelícula</strong>, las <strong>secreciones contaminantes</strong> y el <strong>equipo respiratorio contaminado</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 370" role="img" aria-label="Patogenia de la neumonía asociada al ventilador. Las fuentes comunes son la aspiración, el procedimiento de intubación, las secreciones contaminadas y el equipo respiratorio contaminado. La secuencia empieza con los microorganismos de la orofaringe, que adhieren y colonizan el tubo orotraqueal, se organizan en una biopelícula dentro del tubo, se desprenden fragmentos que migran hacia distal, e invaden la carina y la vía aérea distal produciendo la neumonía.">
+          <defs>
+            <marker id="pta-nav" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="14" y="100" width="210" height="170" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.25" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="30" y="124" font-size="11.5" font-weight="700" fill="currentColor">Fuentes comunes</text>
+          <text x="30" y="148" font-size="11.5" fill="currentColor" opacity="0.75">Aspiración</text>
+          <text x="30" y="168" font-size="11.5" fill="currentColor" opacity="0.75">Procedimiento de intubación</text>
+          <text x="30" y="188" font-size="11.5" fill="currentColor" opacity="0.75">Formación de biopelícula</text>
+          <text x="30" y="208" font-size="11.5" fill="currentColor" opacity="0.75">Secreciones contaminadas</text>
+          <text x="30" y="228" font-size="11.5" fill="currentColor" opacity="0.75">Equipo respiratorio</text>
+          <text x="30" y="248" font-size="11.5" fill="currentColor" opacity="0.75">contaminado</text>
+
+          <line x1="224" y1="185" x2="244" y2="185" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#pta-nav)"></line>
+
+          <rect x="250" y="16" width="436" height="52" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="266" y="37" font-size="12.5" font-weight="700" fill="currentColor">Microorganismos orofaríngeos</text>
+          <text x="266" y="56" font-size="11.5" fill="currentColor" opacity="0.75">Flora de la orofaringe del paciente crítico</text>
+
+          <line x1="468" y1="68" x2="468" y2="82" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-nav)"></line>
+          <text x="476" y="79" font-size="10.5" fill="currentColor" opacity="0.65">adhieren</text>
+
+          <rect x="250" y="86" width="436" height="52" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="266" y="107" font-size="12.5" font-weight="700" fill="currentColor">Colonización del tubo orotraqueal</text>
+          <text x="266" y="126" font-size="11.5" fill="currentColor" opacity="0.75">El tubo puentea las defensas de la vía aérea</text>
+
+          <line x1="468" y1="138" x2="468" y2="152" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-nav)"></line>
+          <text x="476" y="149" font-size="10.5" fill="currentColor" opacity="0.65">se organizan</text>
+
+          <rect x="250" y="156" width="436" height="52" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="266" y="177" font-size="12.5" font-weight="700" fill="currentColor">Biopelícula en el tubo</text>
+          <text x="266" y="196" font-size="11.5" fill="currentColor" opacity="0.75">Matriz que protege al germen del antibiótico</text>
+
+          <line x1="468" y1="208" x2="468" y2="222" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-nav)"></line>
+          <text x="476" y="219" font-size="10.5" fill="currentColor" opacity="0.65">se desprenden</text>
+
+          <rect x="250" y="226" width="436" height="52" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="266" y="247" font-size="12.5" font-weight="700" fill="currentColor">Migración distal de la biopelícula</text>
+          <text x="266" y="266" font-size="11.5" fill="currentColor" opacity="0.75">Fragmentos que viajan hacia la vía aérea baja</text>
+
+          <line x1="468" y1="278" x2="468" y2="292" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-nav)"></line>
+          <text x="476" y="289" font-size="10.5" fill="currentColor" opacity="0.65">invaden</text>
+
+          <rect x="250" y="296" width="436" height="52" rx="3" fill="var(--c)" fill-opacity="0.26" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="266" y="317" font-size="12.5" font-weight="700" fill="currentColor">Colonización de carina y vía distal</text>
+          <text x="266" y="336" font-size="11.5" fill="currentColor" opacity="0.75">NAVM: infiltrado nuevo + criterios clínicos</text>
+        </svg>
+        <figcaption>El tubo endotraqueal no es sólo una puerta de entrada: es también un <strong>refugio</strong>. La biopelícula que crece en su luz queda fuera del alcance del antibiótico y de los neutrófilos, y siembra la vía aérea distal de forma repetida.</figcaption>
+      </figure>
+
+      <h3>Etiología</h3>
+      <p>Según el Informe VIHDA 2024, los gérmenes más frecuentes en NAVM son, en orden descendente:</p>
+      <ol>
+        <li><strong><em>Acinetobacter baumannii</em></strong></li>
+        <li><strong><em>Pseudomonas aeruginosa</em></strong></li>
+        <li><strong><em>Klebsiella pneumoniae</em></strong></li>
+        <li><em>Staphylococcus aureus</em></li>
+        <li>Otros bacilos Gram negativos</li>
+      </ol>
+      <p>Cuatro de los cinco primeros puestos son <strong>bacilos Gram negativos</strong>, y los dos primeros son los <strong>no fermentadores</strong> con más resistencia intrínseca. Eso explica por qué el esquema empírico de la NAVM tardía es tan amplio.</p>
+
+      <h3>Tratamiento empírico de la NAVM tardía</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Cobertura de Gram positivos</th><th>Cobertura de Gram negativos</th><th>Cobertura de Gram negativos multirresistentes<br><em>Pseudomonas</em>, <em>Acinetobacter</em>, EPC</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <strong>Vancomicina</strong><br>DC <span class="dato">35 mg/kg</span> en infusión de 4 h, seguida de DM ajustada a función renal<br>o<br><strong>Linezolid</strong><br><span class="dato">600 mg</span> en infusión cada 12 h
+              </td>
+              <td>
+                <strong>Ceftazidima</strong> — DC <span class="dato">2 g</span>, DM <span class="dato">6 g</span> en infusión continua de 24 h<br>o<br><strong>Piperacilina-tazobactam</strong> — DC <span class="dato">4,5 g</span>, DM <span class="dato">13,5 g</span> en infusión de 24 h<br>o<br><strong>Imipenem</strong> — <span class="dato">1 g c/8 h</span> sin DC, cada dosis en infusión de 2 h<br>o<br><strong>Meropenem</strong> — DC <span class="dato">2 g</span>, DM <span class="dato">2 g c/8 h</span> en infusión prolongada de 3 h<br>o<br><strong>Cefepima</strong> — DC <span class="dato">2 g</span>, luego <span class="dato">6 g</span> en infusión continua de 24 h
+              </td>
+              <td>
+                <strong>Colistina</strong> — DC <span class="dato">300 mg</span>, DM <span class="dato">150 mg c/12 h</span>, la primera dosis a las 12 h de finalizada la carga<br>y/o<br><strong>Amikacina</strong> — <span class="dato">15 – 20 mg/kg/día</span> en dosis única<br>y/o<br><strong>Fosfomicina</strong> — <span class="dato">20 – 24 g/día</span> repartida cada 4 – 6 h<br>y/o<br><strong>Tigeciclina</strong> — DC <span class="dato">100 – 200 mg</span>, DM <span class="dato">50 – 100 mg c/12 h</span><br><strong>Ceftazidima-avibactam</strong> — <span class="dato">2,5 g c/8 h</span> en 2 h → <strong>KPC</strong><br><strong>Ceftolozano-tazobactam</strong> — <span class="dato">1,5 g c/8 h</span> en 1 h → <em>P. aeruginosa</em> <strong>sin carbapenemasa</strong><br><strong>Aztreonam-avibactam</strong> → <strong>MBL</strong>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Dos advertencias del propio esquema: puede <strong>no cubrirse SAMR</strong> si la incidencia en la unidad es <strong>&lt; 10 %</strong>, y la <strong>tigeciclina no es útil</strong> para <em>Pseudomonas</em> spp. ni <em>Proteus</em> spp. Todas las dosis son las recomendadas para <strong>pacientes críticamente enfermos</strong> y microorganismos multirresistentes, y hay que <strong>adaptarlas a la epidemiología local</strong>.</p>
+
+      <h3>Prevención</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Recomendación</th><th>Evidencia</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Evitar la intubación orotraqueal</strong> y promover la ventilación no invasiva siempre que sea posible</td><td><strong>I</strong></td></tr>
+            <tr><td>Realizar <strong>«vacación» de sedación</strong> en forma diaria en pacientes sin contraindicación</td><td><strong>I</strong></td></tr>
+            <tr><td>Hacer <strong>prueba de ventilación espontánea diaria</strong> en pacientes sin contraindicación</td><td><strong>I</strong></td></tr>
+            <tr><td>Cambiar los circuitos respiratorios <strong>cuando están visiblemente sucios o con disfunción</strong></td><td><strong>I</strong></td></tr>
+            <tr><td><strong>Higiene oral con clorhexidina</strong> solución oral al <span class="dato">0,12 %</span></td><td>II</td></tr>
+            <tr><td>Control del paciente ventilado <strong>sin sedantes</strong> — evitar benzodiacepinas frente a cuadros de agitación</td><td>II</td></tr>
+            <tr><td><strong>Movilización temprana</strong> y ejercicio en los pacientes en ventilación mecánica</td><td>II</td></tr>
+            <tr><td>Utilizar tubos endotraqueales con <strong>aspiración subglótica</strong> en pacientes que se espera estén en ventilación más de 48 horas</td><td>II</td></tr>
+            <tr><td>Esterilización o desinfección adecuada del equipo de cuidados respiratorios</td><td>II</td></tr>
+            <tr><td><strong>Elevar la cabecera a <span class="dato">30 – 45°</span></strong></td><td>III</td></tr>
+            <tr><td>Remover la condensación en los circuitos frecuentemente, <strong>evitando el drenaje hacia el paciente</strong></td><td>III</td></tr>
+            <tr><td>Aspirar las secreciones previo a la movilización</td><td>III</td></tr>
+            <tr><td>Mantener la <strong>presión del manguito</strong> del tubo endotraqueal en <span class="dato">20 – 22 cm H₂O</span></td><td>III</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Vale notar el orden: las cuatro medidas de <strong>grado I</strong> no son de higiene sino de <strong>estrategia ventilatoria</strong>. La forma más eficaz de prevenir la NAVM es <strong>no intubar, y si se intubó, extubar cuanto antes</strong>. Lo demás viene después.</p>
+
+      <p class="cita">Fuente: Neumonía asociada a la ventilación mecánica — Recomendaciones intersociedades 2018, y Actualización SATI 2019, citadas en el material de cátedra. Etiología: Informe VIHDA (Programa Nacional de Vigilancia y Control de IACS) 2024.</p>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-tratamiento" id="iacvc">
+      <span class="seccion__pestana"><b>05</b> IACVC</span>
+      <h2 class="seccion__titulo">Infección Asociada a Catéter Venoso Central</h2>
+
+      <p>Las bacteriemias nosocomiales pueden ser <strong>primarias</strong> o <strong>secundarias</strong>. Las <strong>primarias</strong> —o infección primaria de la sangre— están relacionadas con <strong>catéteres venosos centrales</strong> y se producen principalmente en las unidades de cuidados intensivos. Las <strong>secundarias</strong> están relacionadas con infecciones en otros sitios: pulmón, tracto urinario, heridas quirúrgicas.</p>
+
+      <h3>Cuándo un hemocultivo significa bacteriemia</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Tipo de germen</th><th>Cuántos hemocultivos hacen falta</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Microorganismo que <strong>no</strong> es causa habitual de contaminación: <em>S. aureus</em>, enterobacterias, <em>P. aeruginosa</em>, <em>S. pneumoniae</em>, <em>Candida</em></td>
+              <td><strong>Al menos un hemocultivo</strong>, en un paciente con cuadro clínico compatible</td>
+            </tr>
+            <tr>
+              <td>Microorganismo que <strong>contamina habitualmente</strong>: SCoN, estreptococos del grupo viridans, <em>Corynebacterium</em> spp., <em>Bacillus</em> spp., <em>Propionibacterium acnes</em>, algunas especies de <em>Clostridium</em></td>
+              <td><strong>Al menos dos hemocultivos</strong> obtenidos de <strong>punciones distintas de vena periférica</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Las tres infecciones locales del catéter</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Infección</th><th>Definición</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Del sitio de inserción</strong></td><td>Eritema, induración, mayor sensibilidad y/o exudado en un área de <strong><span class="dato">2 cm</span></strong> en torno al punto de exteriorización del catéter</td></tr>
+            <tr><td><strong>Del túnel</strong></td><td>Eritema, aumento de la sensibilidad y/o induración a <strong>más de 2 cm</strong> del sitio de salida y a lo largo del <strong>trayecto subcutáneo</strong> de un catéter tunelizado</td></tr>
+            <tr><td><strong>Del bolsillo</strong></td><td>Eritema y/o induración en el <strong>bolsillo subcutáneo</strong> de un catéter totalmente implantable</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Los <strong>2 cm</strong> son el límite que separa una infección del sitio de inserción —manejable— de una <strong>infección del túnel</strong>, que es indicación de retiro.</p>
+
+      <h3>Fisiopatología</h3>
+      <figure class="esquema">
+        <svg viewBox="0 0 700 310" role="img" aria-label="Vías de colonización del catéter venoso central. Los microorganismos de la piel llegan por vía extraluminal y representan el 70 a 90 por ciento de los casos. La conexión contaminada llega por vía endoluminal y representa el 10 a 50 por ciento. La infusión contaminada representa el 3 por ciento. La diseminación hematógena llega desde un foco a distancia. Todas convergen en la colonización del catéter, sobre cuya superficie se forman fibrina y trombos, y de ahí resulta la bacteriemia primaria.">
+          <defs>
+            <marker id="pta-cvc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="14" y="20" width="250" height="58" rx="3" fill="var(--c)" fill-opacity="0.26" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="30" y="42" font-size="12.5" font-weight="700" fill="currentColor">Microorganismos de la piel</text>
+          <text x="30" y="62" font-size="11.5" font-weight="700" fill="currentColor">Vía extraluminal · 70 – 90 %</text>
+
+          <rect x="14" y="90" width="250" height="58" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="112" font-size="12.5" font-weight="700" fill="currentColor">Conexión contaminada</text>
+          <text x="30" y="132" font-size="11.5" font-weight="700" fill="currentColor">Vía endoluminal · 10 – 50 %</text>
+
+          <rect x="14" y="160" width="250" height="58" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="182" font-size="12.5" font-weight="700" fill="currentColor">Infusión contaminada</text>
+          <text x="30" y="202" font-size="11.5" font-weight="700" fill="currentColor">3 %</text>
+
+          <rect x="14" y="230" width="250" height="58" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="30" y="252" font-size="12.5" font-weight="700" fill="currentColor">Diseminación hematógena</text>
+          <text x="30" y="272" font-size="11.5" fill="currentColor" opacity="0.75">Desde un foco a distancia</text>
+
+          <line x1="264" y1="49" x2="350" y2="49" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="264" y1="119" x2="350" y2="119" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="264" y1="189" x2="350" y2="189" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="264" y1="259" x2="350" y2="259" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="350" y1="49" x2="350" y2="259" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="350" y1="154" x2="404" y2="154" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-cvc)"></line>
+          <text x="356" y="146" font-size="10.5" fill="currentColor" opacity="0.65">colonizan</text>
+
+          <rect x="408" y="112" width="278" height="84" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--ct)" stroke-width="2.5"></rect>
+          <text x="424" y="136" font-size="12.5" font-weight="700" fill="currentColor">Colonización del catéter</text>
+          <text x="424" y="157" font-size="11.5" fill="currentColor" opacity="0.75">Fibrina y trombos sobre la superficie</text>
+          <text x="424" y="175" font-size="11.5" font-weight="700" fill="currentColor">Bacteriemia primaria</text>
+        </svg>
+        <figcaption>Siete de cada diez colonizaciones vienen de la <strong>piel del propio paciente</strong>, migrando por fuera del catéter. Por eso la antisepsia cutánea en la inserción y el baño diario con clorhexidina pesan más que cualquier medida sobre la conexión.</figcaption>
+      </figure>
+
+      <h3>Diagnóstico</h3>
+      <p>Hemocultivos positivos <strong>más</strong> uno de estos dos criterios:</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Método</th><th>Criterio</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Cultivo semicuantitativo de la punta del catéter</strong><br>Técnica de Maki</td>
+              <td>Punto de corte <strong>≥ <span class="dato">15 UFC/placa</span></strong>, con resultado positivo para el <strong>mismo germen y perfil de sensibilidad</strong> que el aislado en hemocultivos</td>
+            </tr>
+            <tr>
+              <td><strong>Tiempo diferencial de positividad</strong></td>
+              <td>Los hemocultivos con <strong>mayor inóculo positivizan antes</strong>. Comparando el retrocultivo de cada luz del catéter con el de vía periférica —mismo tipo de frasco, mismo volumen, colocados a la vez en el equipo—, un diferencial de <strong>≥ <span class="dato">120 minutos</span> a favor del retrocultivo</strong> predice que la bacteriemia es asociada al catéter</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Los cultivos deben ser positivos <strong>para el mismo germen</strong>. Un retrocultivo positivo con un germen distinto al de la vía periférica no confirma infección del catéter — habla de contaminación o de dos procesos distintos.</p>
+      </div>
+
+      <h3>Etiología</h3>
+      <p>Según el Informe VIHDA 2024, en orden descendente: <strong><em>K. pneumoniae</em></strong>, otros estafilococos, <strong><em>S. aureus</em></strong>, <strong><em>P. aeruginosa</em></strong>, otros bacilos Gram negativos, <em>A. baumannii</em> y <em>E. faecalis</em>.</p>
+
+      <h3>Indicaciones de retiro del catéter</h3>
+      <figure class="esquema">
+        <svg viewBox="0 0 700 390" role="img" aria-label="Algoritmo de decisión ante sospecha de infección asociada a catéter venoso central. Siempre se toman hemocultivos periféricos y retrocultivo del catéter. Luego se pregunta si hay criterio de retiro. Si lo hay, se retira el catéter: supuración en el sitio de inserción, shock séptico, bacteriemia persistente tras setenta y dos horas de tratamiento adecuado, complicaciones metastásicas, infección del túnel, endocarditis o tromboflebitis séptica. Si no lo hay, puede considerarse retenerlo, sólo si el germen es un estafilococo coagulasa negativo, confirmando con cultivo de punta por técnica de Maki mayor o igual a quince unidades formadoras de colonias o tiempo diferencial mayor o igual a ciento veinte minutos.">
+          <defs>
+            <marker id="pta-ret" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="150" y="8" width="400" height="48" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--ct)" stroke-width="1.5"></rect>
+          <text x="350" y="38" font-size="13" font-weight="700" fill="currentColor" text-anchor="middle">Sospecha de infección asociada a CVC</text>
+
+          <line x1="350" y1="56" x2="350" y2="78" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ret)"></line>
+          <text x="358" y="72" font-size="11" fill="currentColor" opacity="0.65">siempre</text>
+
+          <rect x="110" y="80" width="480" height="48" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--ct)" stroke-width="2.5"></rect>
+          <text x="350" y="110" font-size="13" font-weight="700" fill="currentColor" text-anchor="middle">Hemocultivos periféricos + retrocultivo del catéter</text>
+
+          <line x1="350" y1="128" x2="350" y2="150" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ret)"></line>
+
+          <rect x="225" y="152" width="250" height="48" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--ct)" stroke-width="1.5"></rect>
+          <text x="350" y="182" font-size="13" font-weight="700" fill="currentColor" text-anchor="middle">¿Hay criterio de retiro?</text>
+
+          <line x1="350" y1="200" x2="350" y2="226" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="165" y1="226" x2="535" y2="226" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="165" y1="226" x2="165" y2="252" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ret)"></line>
+          <line x1="535" y1="226" x2="535" y2="252" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ret)"></line>
+          <text x="173" y="244" font-size="11" font-weight="700" fill="currentColor">sí</text>
+          <text x="543" y="244" font-size="11" font-weight="700" fill="currentColor">no</text>
+
+          <rect x="20" y="258" width="290" height="110" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-opacity="0.5" stroke-width="1.5"></rect>
+          <text x="36" y="282" font-size="12.5" font-weight="700" fill="currentColor">RETIRAR EL CATÉTER</text>
+          <text x="36" y="304" font-size="11.5" fill="currentColor" opacity="0.75">Supuración en el sitio de inserción</text>
+          <text x="36" y="322" font-size="11.5" fill="currentColor" opacity="0.75">Shock séptico</text>
+          <text x="36" y="340" font-size="11.5" fill="currentColor" opacity="0.75">Bacteriemia persistente &gt; 72 h</text>
+          <text x="36" y="358" font-size="11.5" fill="currentColor" opacity="0.75">Túnel · endocarditis · tromboflebitis</text>
+
+          <rect x="390" y="258" width="290" height="110" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="406" y="282" font-size="12.5" font-weight="700" fill="currentColor">Puede considerarse retenerlo</text>
+          <text x="406" y="304" font-size="11.5" fill="currentColor" opacity="0.75">Sólo si el germen es un SCoN</text>
+          <text x="406" y="322" font-size="11.5" fill="currentColor" opacity="0.75">Confirmar el origen con:</text>
+          <text x="406" y="340" font-size="11.5" fill="currentColor" opacity="0.75">Maki ≥ 15 UFC/placa</text>
+          <text x="406" y="358" font-size="11.5" fill="currentColor" opacity="0.75">o diferencial ≥ 120 min</text>
+        </svg>
+        <figcaption>El estafilococo coagulasa negativo es el único germen ante el cual se discute conservar el catéter. Con <em>S. aureus</em>, <em>Candida</em>, shock o bacteriemia persistente, el catéter sale.</figcaption>
+      </figure>
+
+      <h3>Tratamiento empírico</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Cocos Gram positivos</th><th>Bacilos Gram negativos</th><th>Bacilos Gram negativos multirresistentes</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Vancomicina</strong><br>DC <span class="dato">30 mg/kg</span> · DM <span class="dato">30 – 45 mg/kg/día</span><br>o<br><strong>Daptomicina</strong><br><span class="dato">10 – 12 mg/kg/día</span></td>
+              <td><strong>Piperacilina-tazobactam</strong> <span class="dato">4,5 g c/6 h</span> (infusión en 3 – 4 h o continua)<br>o<br><strong>Imipenem</strong> <span class="dato">500 mg c/6 h</span><br>o<br><strong>Meropenem</strong> <span class="dato">30 mg/kg c/8 h</span> (infusión 3 – 4 h)<br>o<br><strong>Cefepima</strong> <span class="dato">2 g c/8 h</span> (infusión 3 h o continua)</td>
+              <td><strong>Colistina</strong><br>DC <span class="dato">300 mg</span> · DM <span class="dato">150 mg c/12 h</span><br>y/o<br><strong>Amikacina</strong> <span class="dato">15 mg/kg/día</span><br>y/o<br><strong>Ceftazidima-avibactam</strong> <span class="dato">2,5 g c/8 h</span> (infusión en 2 h)<br><strong>Aztreonam-avibactam</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Tratamiento dirigido</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Microorganismo</th><th>Antibiótico de elección</th><th>Alternativas</th><th>Duración</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><em>S. aureus</em> <strong>oxacilina sensible</strong></td><td><strong>Cefazolina o cefalotina</strong></td><td>Vancomicina o daptomicina para alérgicos a β-lactámicos</td><td><span class="dato">14 días</span></td></tr>
+            <tr><td><em>S. aureus</em> <strong>oxacilina resistente</strong></td><td><strong>Vancomicina</strong></td><td>Daptomicina</td><td><span class="dato">14 días</span></td></tr>
+            <tr><td>SCoN <strong>oxacilina sensible</strong></td><td>Cefazolina o cefalotina</td><td>Vancomicina o daptomicina para alérgicos</td><td><span class="dato">5 – 7 días</span></td></tr>
+            <tr><td>SCoN <strong>oxacilina resistente</strong></td><td>Vancomicina</td><td>Daptomicina</td><td><span class="dato">5 – 7 días</span></td></tr>
+            <tr><td><em>Enterococcus faecalis</em></td><td><strong>Ampicilina</strong></td><td>Vancomicina</td><td><span class="dato">7 días</span></td></tr>
+            <tr><td><em>E. faecium</em> <strong>vancomicina resistente</strong></td><td><strong>Daptomicina</strong></td><td>Linezolid</td><td><span class="dato">7 días</span></td></tr>
+            <tr><td>Bacilos Gram negativos</td><td>Ajustar a sensibilidad</td><td>—</td><td><span class="dato">7 – 10 días</span></td></tr>
+            <tr><td><em>P. aeruginosa</em></td><td><strong>Monoterapia</strong> cuando se conoce la sensibilidad</td><td>—</td><td><span class="dato">7 – 10 días</span></td></tr>
+            <tr><td>Enterobacterias <strong>KPC +</strong><br>CIM meropenem <strong>&lt; 16 µg/mL</strong></td><td><strong>Meropenem + colistina o amikacina</strong></td><td>Ceftazidima-avibactam</td><td><span class="dato">7 – 10 días</span></td></tr>
+            <tr><td>Enterobacterias <strong>KPC +</strong><br>CIM meropenem <strong>≥ 16 µg/mL</strong></td><td><strong>Colistina + amikacina</strong></td><td>Colistina + fosfomicina, o meropenem + ertapenem, o ceftazidima-avibactam</td><td><span class="dato">7 – 10 días</span></td></tr>
+            <tr><td><em>Candida</em> spp.</td><td><strong>Equinocandinas.</strong> No se recomienda anfotericina B</td><td>Fluconazol</td><td><span class="dato">14 días</span> desde el primer hemocultivo negativo</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>La <strong>CIM del meropenem</strong> es la que decide en las KPC: por debajo de <strong>16 µg/mL</strong> el carbapenem todavía sirve como columna del esquema; por encima, ya no, y se pasa a colistina más amikacina.</p>
+
+      <h3>Prevención</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Inserción</th><th>Mantenimiento</th><th>Extras</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <strong>Higiene de manos</strong><br>
+                <strong>Máximas medidas de barrera estéril</strong><br>
+                Desinfección de la piel con <strong>clorhexidina alcohólica</strong><br>
+                <strong>Evitar los accesos femorales</strong><br>
+                Uso de <strong>guía ecográfica</strong>
+              </td>
+              <td>
+                Desinfección de <strong>puertos y conectores antes de usar</strong><br>
+                <strong>Baño diario</strong> del paciente con clorhexidina<br>
+                Cambio de apósitos transparentes cada <span class="dato">7 días</span><br>
+                Cambio de apósitos <strong>húmedos, sueltos o manchados</strong><br>
+                Cambio de sets de administración cada <span class="dato">96 h</span> máximo<br>
+                Cambio de sets de <strong>transfusión y NPT cada 24 h</strong> máximo<br>
+                <strong>Remover los catéteres cuando no se necesitan</strong>
+              </td>
+              <td>
+                Apósitos impregnados en clorhexidina<br>
+                Catéteres impregnados en <strong>plata o minociclina-rifampicina</strong><br>
+                <em>Lock therapy</em> preventiva en ciertas poblaciones<br>
+                Protector de conectores con antisépticos
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Fuente: Actualización en IACVC, SATI 2019, y IACVC — Recomendaciones intersociedades 2018, citadas en el material de cátedra. Etiología: Informe VIHDA 2024. Esquema de fisiopatología adaptado de An Pediatr Contin. 2010;8:167–73, citado en el material.</p>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-diferenciales" id="cauti">
+      <span class="seccion__pestana"><b>06</b> CAUTI</span>
+      <h2 class="seccion__titulo">Infección Urinaria Asociada a Sonda Vesical</h2>
+
+      <p>Acá lo decisivo es una distinción que cambia por completo la conducta: <strong>bacteriuria no es infección</strong>. Confundirlas es la causa más frecuente de antibiótico innecesario en el paciente internado.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Entidad</th><th>Definición</th><th>Conducta</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Bacteriuria asintomática asociada a sonda vesical</strong></td>
+              <td>Sonda colocada <strong>&gt; <span class="dato">48 horas</span></strong>, urocultivo positivo para <strong>≥ 1 microorganismo</strong> con recuento <strong>≥ <span class="dato">10⁵ UFC</span></strong>, y <strong>ausencia de signos y síntomas</strong> de infección</td>
+              <td><strong>Generalmente no requiere tratamiento antibiótico</strong></td>
+            </tr>
+            <tr>
+              <td><strong>ITU asociada al catéter (ITU-AC)</strong></td>
+              <td>Sonda colocada hace <strong>más de 48 horas</strong>, urocultivo positivo con recuento <strong>&gt; 10⁵ UFC para no más de 2 gérmenes</strong>, <strong>más al menos uno</strong> de estos signos sin otra causa reconocida: <strong>fiebre &gt; 38 °C</strong>, dolor suprapúbico, dolor o sensibilidad del <strong>ángulo costovertebral</strong>, urgencia miccional, disuria y/o aumento de la frecuencia urinaria</td>
+              <td>Tratamiento antibiótico dirigido</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>La bacteriuria asintomática <strong>sólo se trata en tres grupos</strong> de alto riesgo de complicaciones: <strong>embarazadas</strong>, <strong>trasplantados renales</strong> y <strong>previo a un procedimiento urológico endoscópico con riesgo de sangrado</strong>. Fuera de esos tres, tratarla no beneficia al paciente y selecciona resistencia.</p>
+      </div>
+
+      <h3>Fisiopatología</h3>
+      <ul>
+        <li>Los microorganismos ingresan al sistema urinario por <strong>tres mecanismos</strong>: con la <strong>inserción</strong> de la sonda, por vía <strong>endoluminal</strong> y por vía <strong>exoluminal</strong>.</li>
+        <li>El sondaje permanente <strong>perturba los mecanismos defensivos del huésped</strong> y facilita el acceso de los uropatógenos a la vejiga.</li>
+        <li>La bacteriuria <strong>aumenta proporcionalmente al tiempo de sondaje</strong>. Con sistema de drenaje cerrado, la incidencia crece <strong><span class="dato">3 – 7 % por día</span></strong> y alcanza el <strong><span class="dato">100 % a los 30 días</span></strong>.</li>
+      </ul>
+
+      <p>Esa última cifra es la que ordena todo: si a los 30 días <strong>todos</strong> los pacientes sondados tienen bacteriuria, el urocultivo de rutina no aporta nada, y la única prevención real es <strong>retirar la sonda</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>De la bacteriuria a la enfermedad</th><th>Proporción</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Pacientes con sonda y bacteriuria que presentan <strong>manifestaciones clínicas</strong></td><td><span class="dato">10 – 30 %</span></td></tr>
+            <tr><td>Pacientes con bacteriuria que presentan <strong>bacteriemia</strong></td><td><span class="dato">1 – 4 %</span></td></tr>
+            <tr><td>Proporción de <strong>todas las bacteriemias nosocomiales por BGN</strong> que son de origen urinario</td><td>hasta el <span class="dato">15 %</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Etiología</h3>
+      <p>Según el Informe VIHDA 2024, en orden descendente: <strong><em>K. pneumoniae</em></strong>, <strong><em>E. coli</em></strong>, <strong><em>P. aeruginosa</em></strong>, enterococos, <em>P. mirabilis</em>, <strong><em>C. albicans</em></strong> y otros bacilos Gram negativos.</p>
+      <p>Llama la atención que <em>K. pneumoniae</em> supere a <em>E. coli</em>: en la ITU de la comunidad el orden es el inverso. Es la firma del ambiente hospitalario.</p>
+
+      <h3>Prevención — listado de verificación de inserción</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Momento</th><th>Pasos</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Preparación</strong></td>
+              <td><strong>Higiene de manos</strong> higiénica · higiene genitourinaria con <strong>agua y jabón</strong> · asepsia del meato urinario con <strong>antiséptico acuoso</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Procedimiento</strong></td>
+              <td><strong>Higiene de manos antiséptica</strong> · <strong>campo estéril</strong> (guantes, paño fenestrado, gasas) · lubricar meato y/o sonda · <strong>inserción aséptica</strong> con <strong>conexión estéril al sistema</strong> · inflar balón</td>
+            </tr>
+            <tr>
+              <td><strong>Después</strong></td>
+              <td><strong>Fijación de la sonda al muslo</strong> · sistema colector <strong>por debajo de la vejiga y sin contacto con el suelo</strong> · higiene de manos higiénica</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Diagnóstico microbiológico rápido</h3>
+      <p>Los <strong>métodos moleculares</strong> —paneles sindrómicos tipo <em>film array</em>, <em>Verigene</em>, PCR multiplex— y la identificación fenotípica rápida por <strong>MALDI-TOF</strong> acortan drásticamente el tiempo hasta el resultado frente al cultivo convencional: de <strong>decenas de horas a unas pocas</strong>.</p>
+      <p>Lo que importa no es la velocidad en sí sino lo que habilita: <strong>desescalar el antibiótico empírico días antes</strong>, que es la principal herramienta de control de resistencia dentro del hospital.</p>
+
+      <p class="cita">Fuente: material de cátedra. Listado de verificación del proyecto ITU-ZERO. Etiología: Informe VIHDA 2024.</p>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-importantes" id="importantes">
+      <span class="seccion__pestana"><b>07</b> Alerta</span>
+      <h2 class="seccion__titulo">Multirresistentes &amp; Aspectos Importantes</h2>
+
+      <p>Las tres IACS asociadas a dispositivo convergen en el mismo problema final: <strong>bacilos Gram negativos resistentes a carbapenems</strong>. El tratamiento ya no se elige por el germen sino por <strong>el mecanismo de resistencia que produce</strong>.</p>
+
+      <h3>Enterobacterias resistentes a carbapenems</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Mecanismo</th><th>Primera línea</th><th>Alternativas</th><th>Fuerza · certeza</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>KPC</strong></td>
+              <td><strong>Ceftazidima-avibactam</strong> o <strong>meropenem-vaborbactam</strong></td>
+              <td>Imipenem-relebactam y cefiderocol pueden considerarse</td>
+              <td><strong>Fuerte</strong> · moderada<br><em>(alternativas: condicional · baja)</em></td>
+            </tr>
+            <tr>
+              <td><strong>OXA-48</strong></td>
+              <td><strong>Ceftazidima-avibactam</strong></td>
+              <td>—</td>
+              <td>Condicional · muy baja</td>
+            </tr>
+            <tr>
+              <td><strong>MBL</strong><br>Metalo-β-lactamasas</td>
+              <td><strong>Ceftazidima-avibactam + aztreonam</strong></td>
+              <td>Cefiderocol puede considerarse</td>
+              <td><strong>Fuerte</strong> · moderada<br><em>(alternativa: condicional · baja)</em></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>El caso de las <strong>MBL</strong> es el más particular: el avibactam no inhibe metalo-β-lactamasas, pero el <strong>aztreonam es estable frente a ellas</strong> y a su vez es degradado por otras β-lactamasas que el avibactam sí inhibe. La combinación funciona porque cada droga cubre el punto ciego de la otra. En la práctica local esa combinación se está reemplazando por la formulación conjunta de <strong>aztreonam-avibactam</strong>.</p>
+
+      <h3><em>Pseudomonas aeruginosa</em> con resistencia difícil de tratar</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Escenario</th><th>Recomendación</th><th>Fuerza · certeza</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Tratamiento <strong>dirigido</strong> de DTR-PA</td>
+              <td><strong>Ceftolozano-tazobactam</strong> y <strong>ceftazidima-avibactam</strong> son las opciones de primera línea. Imipenem-cilastatina-relebactam y cefiderocol podrían ser alternativas, así como la terapia basada en colistina</td>
+              <td><strong>Fuerte</strong> · moderada</td>
+            </tr>
+            <tr>
+              <td><strong>Terapia combinada</strong> en DTR-PA</td>
+              <td><strong>No debe ser la elección de rutina</strong>, pero puede considerarse <strong>caso por caso</strong>, especialmente en consulta con infectología. En particular, regímenes que incluyan <strong>fosfomicina</strong> como droga acompañante</td>
+              <td>Condicional · baja</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>La ceftazidima-avibactam es <strong>una de las últimas armas disponibles</strong> contra Gram negativos resistentes a carbapenems. Cada centro debería <strong>planificar un uso prudente</strong> y reservarla para infecciones bien documentadas difíciles de tratar, o para áreas de alta prevalencia de enterobacterias resistentes. Su papel en el <strong>uso empírico inicial</strong> en pacientes colonizados por KPC —sobre todo graves o neutropénicos— <strong>todavía está por definirse</strong>, y su <strong>alto costo</strong> ha limitado la experiencia clínica nacional.</p>
+      </div>
+
+      <h3>Las alertas que atraviesan todo el cuadernillo</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Situación</th><th>Qué hay que recordar</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Precauciones estándar</strong></td>
+              <td>Todo paciente es infectocontagioso hasta que se demuestre lo contrario. Se aplican <strong>a todos</strong>, sin importar el diagnóstico</td>
+            </tr>
+            <tr>
+              <td><strong>Higiene de manos</strong></td>
+              <td>No hacerla cómo y cuándo corresponde es un <strong>error profesional</strong>. Los guantes <strong>no la sustituyen</strong></td>
+            </tr>
+            <tr>
+              <td><strong><em>C. difficile</em></strong></td>
+              <td><strong>Agua y jabón</strong>, no alcohol — el alcohol no elimina esporas. Habitación con <strong>soluciones cloradas</strong></td>
+            </tr>
+            <tr>
+              <td><strong>NAVM</strong></td>
+              <td>Es la IACS <strong>más frecuente</strong> del país y de la provincia. La prevención de grado I es <strong>no intubar y extubar cuanto antes</strong></td>
+            </tr>
+            <tr>
+              <td><strong>IACVC</strong></td>
+              <td><strong>70 – 90 %</strong> viene de la piel del propio paciente. Con <em>S. aureus</em>, <em>Candida</em>, shock o bacteriemia persistente, <strong>el catéter sale</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Bacteriuria asintomática</strong></td>
+              <td><strong>No se trata</strong>, salvo embarazo, trasplante renal o procedimiento urológico con riesgo de sangrado</td>
+            </tr>
+            <tr>
+              <td><strong>Todo dispositivo</strong></td>
+              <td>La medida preventiva más potente y más barata es siempre la misma: <strong>retirarlo cuando ya no se necesita</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Fuente: recomendaciones internacionales para el tratamiento de bacilos Gram negativos multirresistentes citadas en el material de cátedra, con su gradación de fuerza de recomendación y certeza de la evidencia. DTR-PA: <em>difficult-to-treat resistance</em> en <em>P. aeruginosa</em>.</p>
+    </section>
+
+    <!-- ============ Repaso activo ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>¿Qué define a una infección como asociada al cuidado de la salud?</summary>
+          <div class="fc__r">Que se produzca <strong>durante el proceso asistencial</strong>, que <strong>no estuviera presente ni incubándose</strong> al momento de la atención, y que la sintomatología aparezca <strong>≥ 48 h</strong> después de la prestación. Incluye las que se manifiestan <strong>tras el alta</strong> y las <strong>infecciones profesionales</strong> del personal.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Cuál es la IACS más frecuente en Argentina y con qué tasa?</summary>
+          <div class="fc__r">La <strong>NAVM</strong>. En Mendoza 2025, <strong>14,92 cada 1000 días de ARM</strong>, contra 5,46 de la bacteriemia por catéter y 1,06 de la ITU por sonda.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Cuál es el eslabón de la cadena donde más se interviene, y con qué?</summary>
+          <div class="fc__r">El <strong>mecanismo de transmisión</strong>, con <strong>higiene de manos, EPP y aislamientos</strong>. Basta cortar <strong>un solo eslabón</strong> para detener la cadena.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Diferenciá gotitas de aéreo por el tamaño de partícula y la distancia.</summary>
+          <div class="fc__r"><strong>Gotitas</strong>: <strong>5 – 100 μm</strong>, no se sostienen en el aire más de unos segundos, llegan a <strong>menos de 1 metro</strong>. <strong>Aéreo</strong>: <strong>&lt; 5 μm</strong>, se mantienen en suspensión períodos prolongados y viajan lejos con las corrientes de aire.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Por qué en <em>C. difficile</em> la higiene de manos se hace con agua y jabón?</summary>
+          <div class="fc__r">Porque <strong>la solución alcohólica no elimina las esporas</strong>. Además, la habitación se limpia con <strong>soluciones cloradas</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Enumerá los tres criterios «siempre presentes» de NAVM.</summary>
+          <div class="fc__r"><strong>Radiográfico</strong>: infiltrados nuevos, progresivos o persistentes. <strong>Clínico</strong>: al menos dos de temperatura &gt; 38,5 °C o &lt; 36 °C, leucocitos &gt; 12.000 o &lt; 4.000 (o 10 % de inmaduras), y secreciones purulentas. <strong>Microbiológico</strong>: aspirado traqueal <strong>≥ 10⁵⁻⁶</strong> o BAL <strong>≥ 10⁴ UFC/mL</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Cuál es la medida de prevención de NAVM con mejor nivel de evidencia?</summary>
+          <div class="fc__r">Las cuatro de <strong>grado I</strong> son de estrategia ventilatoria: <strong>evitar la intubación</strong> y promover VNI, <strong>vacación diaria de sedación</strong>, <strong>prueba de ventilación espontánea diaria</strong>, y cambiar circuitos sólo cuando están sucios o disfuncionantes. Elevar la cabecera es grado III.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Cuál es la vía de colonización más frecuente del CVC y qué porcentaje representa?</summary>
+          <div class="fc__r">Los <strong>microorganismos de la piel</strong> por vía <strong>extraluminal</strong>: <strong>70 – 90 %</strong>. Le siguen la conexión contaminada por vía endoluminal (10 – 50 %) y la infusión contaminada (3 %).</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Definí los dos criterios microbiológicos que confirman una IACVC.</summary>
+          <div class="fc__r"><strong>Técnica de Maki</strong>: cultivo semicuantitativo de la punta <strong>≥ 15 UFC/placa</strong> con el <strong>mismo germen y perfil</strong> que el hemocultivo. <strong>Tiempo diferencial de positividad ≥ 120 minutos</strong> a favor del retrocultivo.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Ante qué germen puede considerarse retener el catéter?</summary>
+          <div class="fc__r">Sólo ante un <strong>estafilococo coagulasa negativo</strong>. Con supuración del sitio, shock séptico, bacteriemia persistente &gt; 72 h, infección del túnel, endocarditis o tromboflebitis séptica, <strong>el catéter se retira</strong>.</div>
+        </details>
+
+        <details class="fc s-diferenciales">
+          <summary>¿Cuándo se trata una bacteriuria asintomática asociada a sonda?</summary>
+          <div class="fc__r">Sólo en <strong>embarazadas</strong>, <strong>trasplantados renales</strong> y <strong>antes de un procedimiento urológico endoscópico con riesgo de sangrado</strong>. Fuera de eso, no.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Cuál es el tratamiento de elección para una enterobacteria productora de MBL?</summary>
+          <div class="fc__r"><strong>Ceftazidima-avibactam + aztreonam</strong> (o la formulación conjunta <strong>aztreonam-avibactam</strong>). El avibactam no inhibe metalo-β-lactamasas, pero el aztreonam es estable frente a ellas: cada droga cubre el punto ciego de la otra.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Definición clave</dt>
+        <dd><strong>IACS</strong> = infección que aparece <strong>≥ 48 h</strong> después de la prestación sanitaria, sin estar presente ni incubándose antes. Las tres asociadas a dispositivo que se vigilan son <strong>NAVM, IACVC y CAUTI</strong>.</dd>
+
+        <dt class="r-gold">Umbrales diagnósticos</dt>
+        <dd><strong>NAVM</strong>: aspirado traqueal ≥ 10⁵⁻⁶ o BAL ≥ 10⁴ UFC/mL, con infiltrado nuevo y 2 criterios clínicos. <strong>IACVC</strong>: Maki ≥ 15 UFC/placa o diferencial ≥ 120 min. <strong>CAUTI</strong>: &gt; 10⁵ UFC para ≤ 2 gérmenes, sonda &gt; 48 h, <strong>más síntomas</strong>.</dd>
+
+        <dt class="r-tto">Tratamiento empírico</dt>
+        <dd><strong>NAVM tardía</strong>: cobertura antipseudomónica amplia ± vancomicina o linezolid ± esquema para multirresistentes. <strong>IACVC</strong>: vancomicina o daptomicina + betalactámico antipseudomónico. Ajustar siempre a la <strong>epidemiología local</strong>.</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd><strong>Retirar el CVC</strong> ante supuración, shock, bacteriemia &gt; 72 h, túnel, endocarditis o tromboflebitis. <strong><em>C. difficile</em></strong>: agua y jabón, nunca alcohol. <strong>Bacteriuria asintomática</strong>: no tratar salvo los tres grupos.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir del material de cátedra de la Dra. Claudia Cabello (Cátedra de Enfermedades Infecciosas, Universidad de Mendoza, Sede San Rafael), complementado con la Norma Provincial de Precauciones 2024, las Recomendaciones intersociedades 2018, las actualizaciones SATI 2019 y el Informe VIHDA 2024. Material de estudio: no reemplaza el criterio clínico ni la guía institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link'));
+
+  function porMeta(hash){
+    for (var i = 0; i < enlaces.length; i++){
+      if (enlaces[i].getAttribute('href') === '#' + hash) return enlaces[i];
+    }
+    return null;
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var enlace = porMeta(e.target.id);
+        if (!enlace) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          enlace.setAttribute('aria-current', 'true');
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>

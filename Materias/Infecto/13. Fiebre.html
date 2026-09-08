@@ -1,0 +1,1188 @@
+<title>Fiebre y FOD</title>
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+}
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índice lateral ---------- */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Ficha de sección ---------- */
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.35rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-row:1/3; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+.importante__titulo{
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso{ display:none !important; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-generalidades"  href="#definicion">Definición</a></li>
+      <li><a class="indice__link i-clinica"        href="#formas">Formas de Presentación</a></li>
+      <li><a class="indice__link i-diferenciales"  href="#aguda">Fiebre Aguda</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#fod">Fiebre de Origen Desconocido</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#causas">Causas de la FOD</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#estudios">Estudios Complementarios</a></li>
+      <li><a class="indice__link i-importantes"    href="#inmuno">Inmunocomprometido</a></li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Infectología · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Fiebre y FOD</h1>
+      <p class="portada__bajada">Un signo que casi siempre es banal y a veces es lo único que hay. Del termostato hipotalámico a los tres criterios que definen una fiebre de origen desconocido.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">7 secciones</span>
+        <span class="etiqueta s-clinica">4 formas</span>
+        <span class="etiqueta s-diagnostico">Criterios de FOD</span>
+        <span class="etiqueta s-importantes">Signos de alarma</span>
+      </div>
+    </header>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="definicion">
+      <span class="seccion__pestana"><b>01</b> Definición</span>
+      <h2 class="seccion__titulo">Definición: Fiebre &amp; Hipertermia</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th></th><th>FIEBRE</th><th>HIPERTERMIA</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Qué es</strong></td>
+              <td>La <strong>elevación REGULADA</strong> de la temperatura corporal por encima de los valores normales</td>
+              <td>La <strong>elevación NO regulada</strong> de la temperatura</td>
+            </tr>
+            <tr>
+              <td><strong>Mecanismo</strong></td>
+              <td><strong>Reprogramación de los centros termorreguladores hipotalámicos</strong>, mediada por <strong>CITOCINAS</strong>, en respuesta a un <strong>estímulo pirogénico</strong></td>
+              <td><strong>Producción excesiva de calor</strong><br><strong>Disminución de la disipación de calor</strong><br><strong>Pérdida de la regulación central</strong></td>
+            </tr>
+            <tr>
+              <td><strong>El punto de ajuste</strong></td>
+              <td><strong>SUBE</strong> — y la temperatura corporal lo <strong>sigue</strong></td>
+              <td><strong>Permanece NORMAL</strong> — y la temperatura lo <strong>supera</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Valores de referencia</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Sitio de medición</th><th>Se considera fiebre</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Cavidad bucal</strong></td><td><strong>&gt; <span class="dato">37,5 °C</span></strong></td></tr>
+            <tr><td><strong>Región axilar</strong></td><td><strong>&gt; <span class="dato">37,4 °C</span></strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Nota sobre estos dos valores: la temperatura <strong>axilar es normalmente unos 0,5 °C más baja</strong> que la bucal, de modo que su umbral debería ser <strong>menor</strong>, no apenas una décima. Los cortes que suelen consignarse son <strong>axilar 37,2 °C</strong> y <strong>bucal 37,5 °C</strong>. Se conservan los del material — <strong>conviene confirmarlo con la cátedra</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 350" role="img" aria-label="Comparación entre fiebre e hipertermia representada con dos termómetros. En la fiebre el punto de ajuste hipotalámico sube, por ejemplo a treinta y nueve grados, y la temperatura corporal lo sigue hasta alcanzarlo: los dos coinciden. Está mediada por citocinas en respuesta a un estímulo pirogénico, los mecanismos termorreguladores están intactos y responde a los antitérmicos. En la hipertermia el punto de ajuste permanece normal en treinta y siete grados pero la temperatura corporal lo supera, por ejemplo hasta cuarenta y un grados. Se debe a producción excesiva de calor, disminución de la disipación o pérdida de la regulación central, y no responde a los antitérmicos.">
+          <polyline points="350,16 350,340" fill="none" stroke="currentColor" stroke-width="1" opacity="0.25"></polyline>
+
+          <text x="175" y="26" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">FIEBRE</text>
+          <text x="175" y="46" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">elevación REGULADA</text>
+
+          <rect x="153" y="70" width="44" height="160" rx="22" fill="none" stroke="currentColor" stroke-width="2.2"></rect>
+          <circle cx="175" cy="244" r="18" fill="var(--c)" fill-opacity="0.45" stroke="currentColor" stroke-width="2.2"></circle>
+          <rect x="159" y="138" width="32" height="96" fill="var(--c)" fill-opacity="0.45" stroke="none"></rect>
+          <polyline points="127,138 223,138" fill="none" stroke="currentColor" stroke-width="2.2" stroke-dasharray="6 3"></polyline>
+
+          <text x="121" y="134" font-size="10.5" fill="currentColor" text-anchor="end">punto de ajuste</text>
+          <text x="121" y="150" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="end">SUBE a 39 °C</text>
+          <text x="229" y="134" font-size="10.5" fill="currentColor">la temperatura</text>
+          <text x="229" y="150" font-size="10.5" font-weight="700" fill="currentColor">SIGUE al punto</text>
+
+          <text x="20" y="286" font-size="10.5" fill="currentColor">· mediada por CITOCINAS</text>
+          <text x="20" y="304" font-size="10.5" fill="currentColor">· en respuesta a un estímulo pirogénico</text>
+          <text x="20" y="322" font-size="10.5" fill="currentColor">· mecanismos termorreguladores INTACTOS</text>
+          <text x="20" y="340" font-size="10.5" font-weight="700" fill="currentColor">· RESPONDE a los antitérmicos</text>
+
+          <text x="525" y="26" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">HIPERTERMIA</text>
+          <text x="525" y="46" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">elevación NO regulada</text>
+
+          <rect x="503" y="70" width="44" height="160" rx="22" fill="none" stroke="currentColor" stroke-width="2.2"></rect>
+          <circle cx="525" cy="244" r="18" fill="var(--c)" fill-opacity="0.45" stroke="currentColor" stroke-width="2.2"></circle>
+          <rect x="509" y="93" width="32" height="141" fill="var(--c)" fill-opacity="0.45" stroke="none"></rect>
+          <polyline points="477,184 573,184" fill="none" stroke="currentColor" stroke-width="2.2" stroke-dasharray="6 3"></polyline>
+
+          <text x="471" y="180" font-size="10.5" fill="currentColor" text-anchor="end">punto de ajuste</text>
+          <text x="471" y="196" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="end">NORMAL, 37 °C</text>
+          <text x="579" y="89" font-size="10.5" fill="currentColor">la temperatura</text>
+          <text x="579" y="105" font-size="10.5" font-weight="700" fill="currentColor">lo SUPERA: 41 °C</text>
+
+          <text x="370" y="286" font-size="10.5" fill="currentColor">· producción excesiva de calor</text>
+          <text x="370" y="304" font-size="10.5" fill="currentColor">· disminución de la disipación</text>
+          <text x="370" y="322" font-size="10.5" fill="currentColor">· pérdida de la regulación central</text>
+          <text x="370" y="340" font-size="10.5" font-weight="700" fill="currentColor">· NO responde a los antitérmicos</text>
+        </svg>
+        <figcaption>La diferencia no está en <strong>cuánto sube la temperatura</strong> sino en <strong>si el cuerpo la está subiendo a propósito</strong>. En la fiebre el termostato se reprogramó y el organismo <strong>trabaja para alcanzar el nuevo valor</strong> — de ahí los escalofríos y la vasoconstricción. En la hipertermia el termostato está bien y el cuerpo <strong>intenta bajar la temperatura sin lograrlo</strong>: por eso hay sudoración y vasodilatación, y por eso <strong>los antitérmicos no sirven</strong>.</figcaption>
+      </figure>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante! — Por qué la distinción cambia la conducta</p>
+        <p>En la <strong>FIEBRE</strong>, los antitérmicos —paracetamol, AINEs— <strong>funcionan</strong>: inhiben la ciclooxigenasa, bajan la <strong>prostaglandina E2</strong> hipotalámica y <strong>devuelven el punto de ajuste a su valor normal</strong>.</p>
+        <p>En la <strong>HIPERTERMIA</strong> <strong>NO sirven</strong>, porque el punto de ajuste <strong>nunca se movió</strong>: no hay nada que corregir. El tratamiento es <strong>enfriamiento físico</strong> y corregir la causa. Las tres entidades a reconocer son el <strong>golpe de calor</strong>, la <strong>hipertermia maligna</strong> por anestésicos y el <strong>síndrome neuroléptico maligno</strong>.</p>
+      </div>
+
+      <h3>Pirógenos exógenos y endógenos</h3>
+      <p>La definición del material habla de un <strong>«estímulo pirogénico exógeno»</strong>. Conviene abrir la cadena completa, porque explica también las fiebres <strong>sin agente externo</strong> que aparecen más adelante como causas de FOD:</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Paso</th><th>Qué ocurre</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>1. Pirógeno EXÓGENO</strong></td><td>Viene de <strong>afuera del organismo</strong>: <strong>lipopolisacárido</strong> y otros componentes microbianos, toxinas, fármacos</td></tr>
+            <tr><td><strong>2. Células del huésped</strong></td><td><strong>Monocitos, macrófagos y células endoteliales</strong> lo reconocen y responden</td></tr>
+            <tr><td><strong>3. Pirógenos ENDÓGENOS</strong></td><td>Las <strong>CITOCINAS</strong>: <strong>IL-1, IL-6, TNF-α</strong> e <strong>interferones</strong></td></tr>
+            <tr><td><strong>4. Hipotálamo</strong></td><td>Las citocinas inducen <strong>prostaglandina E2</strong> en el área preóptica, que <strong>eleva el punto de ajuste</strong></td></tr>
+            <tr><td><strong>5. Respuesta</strong></td><td><strong>Vasoconstricción cutánea, escalofríos y temblor</strong> hasta alcanzar la nueva temperatura</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Profundización, no está en el material: los <strong>pirógenos endógenos pueden producirse SIN un estímulo exógeno</strong>. Es exactamente lo que ocurre en los <strong>linfomas</strong> —que liberan citocinas directamente—, en las <strong>colagenopatías</strong> y en las <strong>reacciones a fármacos</strong>. Por eso la definición conviene leerla como <strong>«estímulo pirogénico»</strong> a secas: si sólo hubiera fiebre con pirógeno exógeno, no existirían tres de las cuatro categorías de causas de FOD. Fuente: Kasper D et al., <em>Harrison. Principios de Medicina Interna</em>, 21.ª ed., capítulo de fiebre.</p>
+
+      <h3>La respuesta de fase aguda</h3>
+      <p>La fiebre <strong>no es un fenómeno aislado</strong>: es un <strong>signo o síntoma que forma parte de una respuesta multisistémica</strong>, mediada por modificaciones <strong>humorales, hormonales e inmunohematológicas</strong>, ante distintos <strong>estímulos agresivos</strong>. Es la <strong>respuesta de fase aguda</strong>.</p>
+
+      <p class="cita">Los <strong>reactantes de fase aguda</strong> que acompañan a esa respuesta —PCR, VSG, ferritina, fibrinógeno, complemento— están desarrollados en el cuadernillo de <strong>Laboratorio Inmunológico</strong>. Es la misma respuesta vista desde el laboratorio.</p>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-clinica" id="formas">
+      <span class="seccion__pestana"><b>02</b> Formas</span>
+      <h2 class="seccion__titulo">Formas de Presentación</h2>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 300" role="img" aria-label="Mapa de las cuatro formas de presentación de la fiebre. La primera división es por el huésped. En el inmunocompetente la clasificación es por duración: menos de quince días es fiebre aguda, más de quince días es fiebre prolongada, y si además cumple los tres criterios se trata de una fiebre de origen desconocido. El inmunocomprometido constituye una categoría propia, en la que puede haber infección grave sin fiebre.">
+          <defs>
+            <marker id="pta-form" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="300" y="10" width="100" height="32" rx="3" fill="var(--c)" fill-opacity="0.34" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="350" y="32" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">FIEBRE</text>
+
+          <polyline points="350,42 350,60" fill="none" stroke="currentColor" stroke-width="1.6"></polyline>
+          <polyline points="190,60 540,60" fill="none" stroke="currentColor" stroke-width="1.6"></polyline>
+          <polyline points="190,60 190,80" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-form)"></polyline>
+          <polyline points="540,60 540,80" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-form)"></polyline>
+
+          <rect x="40" y="84" width="300" height="32" rx="3" fill="var(--c)" fill-opacity="0.20" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="190" y="105" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">INMUNOCOMPETENTE</text>
+
+          <rect x="400" y="84" width="280" height="32" rx="3" fill="var(--c)" fill-opacity="0.20" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="540" y="105" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">INMUNOCOMPROMETIDO</text>
+
+          <polyline points="190,116 190,140" fill="none" stroke="currentColor" stroke-width="1.6"></polyline>
+          <polyline points="95,140 265,140" fill="none" stroke="currentColor" stroke-width="1.6"></polyline>
+          <polyline points="95,140 95,154"   fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-form)"></polyline>
+          <polyline points="265,140 265,154" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-form)"></polyline>
+          <text x="95" y="134" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">&lt; 15 días</text>
+          <text x="265" y="134" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">&gt; 15 días</text>
+
+          <rect x="20" y="158" width="150" height="48" rx="3" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="95" y="180" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">FIEBRE</text>
+          <text x="95" y="198" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">AGUDA</text>
+
+          <rect x="190" y="158" width="150" height="48" rx="3" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="265" y="180" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">FIEBRE</text>
+          <text x="265" y="198" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">PROLONGADA</text>
+
+          <polyline points="265,206 265,228" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-form)"></polyline>
+
+          <rect x="190" y="232" width="150" height="56" rx="3" fill="var(--c)" fill-opacity="0.44" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="265" y="252" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">FOD</text>
+          <text x="265" y="270" font-size="10.5" fill="currentColor" text-anchor="middle">sólo si cumple</text>
+          <text x="265" y="284" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">los 3 criterios</text>
+
+          <polyline points="540,116 540,138" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-form)"></polyline>
+
+          <rect x="400" y="142" width="280" height="76" rx="3" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="540" y="164" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">CATEGORÍA PROPIA</text>
+          <text x="540" y="186" font-size="10.5" fill="currentColor" text-anchor="middle">puede haber infección</text>
+          <text x="540" y="204" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">GRAVE SIN FIEBRE</text>
+        </svg>
+        <figcaption>La primera pregunta <strong>no es cuánto hace que tiene fiebre sino quién es el paciente</strong>. El inmunocomprometido <strong>se sale del árbol</strong>: no se clasifica por duración porque la regla que ordena a los demás —que la fiebre indica infección y su ausencia tranquiliza— <strong>no se le aplica</strong>. Y dentro del inmunocompetente, notar que <strong>toda FOD es una fiebre prolongada, pero no toda fiebre prolongada es una FOD</strong>.</figcaption>
+      </figure>
+
+      <h3>Fiebre prolongada</h3>
+      <p>Es aquella que <strong>dura más de 15 días</strong>, <strong>independientemente de su etiología</strong>.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>NO debe confundirse con FOD.</strong> Es la advertencia textual del material y es el error clásico del tema.</p>
+        <p>Una <strong>fiebre prolongada</strong> se define <strong>sólo por la duración</strong> —más de 15 días— y puede tener <strong>diagnóstico conocido</strong>. Una <strong>FOD</strong> exige además <strong>tres semanas</strong>, un <strong>umbral térmico</strong> y, sobre todo, que <strong>el estudio inicial haya fracasado</strong>.</p>
+      </div>
+
+      <p><strong>Algunas enfermedades que cursan con fiebre prolongada:</strong> <strong>brucelosis</strong> · <strong>paludismo</strong> · <strong>linfomas</strong> · <strong>tuberculosis</strong>, entre otras.</p>
+
+      <p class="cita">Notar que las cuatro reaparecen en la sección 05 como causas de FOD. La diferencia no está en la enfermedad sino en <strong>si el estudio inicial la encontró o no</strong>: una TBC miliar diagnosticada a los veinte días fue una <strong>fiebre prolongada</strong>; la misma TBC que sigue sin diagnóstico tras tres semanas y tres días de internación es una <strong>FOD</strong>.</p>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-diferenciales" id="aguda">
+      <span class="seccion__pestana"><b>03</b> Aguda</span>
+      <h2 class="seccion__titulo">Fiebre Aguda</h2>
+
+      <p>Se define como la de <strong>menos de 15 días de duración en un paciente inmunocompetente</strong>. <strong>La mayoría de las veces es la manifestación de una enfermedad común</strong>:</p>
+      <ul>
+        <li><strong>Infecciones de la vía aérea superior</strong></li>
+        <li><strong>Infecciones de piel y partes blandas</strong></li>
+        <li><strong>Infección del tracto urinario</strong></li>
+        <li><strong>Neumonía</strong></li>
+      </ul>
+
+      <p>Es <strong>importante conocer el contexto ambiental y epidemiológico</strong>, y <strong>los viajes</strong>.</p>
+
+      <p class="cita">La anamnesis epidemiológica es lo que separa una fiebre aguda banal de una que no lo es: <strong>viajes recientes y su destino</strong>, <strong>contacto con animales</strong>, <strong>actividad laboral</strong>, <strong>consumo de alimentos o agua de riesgo</strong>, <strong>contactos enfermos</strong>, <strong>picaduras</strong>, <strong>internaciones o procedimientos previos</strong> y <strong>conductas sexuales</strong>. Sin ese contexto, el paludismo, la brucelosis o el dengue simplemente no se piensan.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 292" role="img" aria-label="Los cuatro signos de alarma de la fiebre aguda y lo que obliga a pensar cada uno. Fiebre con cefalea y confusión mental obliga a pensar en síndrome meníngeo. Fiebre con lesiones purpúricas o petequias obliga a pensar en endocarditis, meningococemia o coagulación intravascular diseminada. Fiebre con hipotensión, escalofríos y alteración del sensorio obliga a pensar en bacteriemia. Fiebre con dolor precordial obliga a pensar en neumonía o pericarditis.">
+          <defs>
+            <marker id="pta-alarm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <text x="170" y="26" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">FIEBRE +</text>
+          <text x="530" y="26" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">OBLIGA A PENSAR EN</text>
+
+          <rect x="20" y="40" width="300" height="52" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="170" y="72" font-size="11" fill="currentColor" text-anchor="middle">Cefalea y confusión mental</text>
+          <polyline points="322,66 376,66" fill="none" stroke="currentColor" stroke-width="1.8" marker-end="url(#pta-alarm)"></polyline>
+          <rect x="380" y="40" width="300" height="52" rx="3" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="530" y="72" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">SÍNDROME MENÍNGEO</text>
+
+          <rect x="20" y="102" width="300" height="52" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="170" y="134" font-size="11" fill="currentColor" text-anchor="middle">Lesiones purpúricas o petequias</text>
+          <polyline points="322,128 376,128" fill="none" stroke="currentColor" stroke-width="1.8" marker-end="url(#pta-alarm)"></polyline>
+          <rect x="380" y="102" width="300" height="52" rx="3" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="530" y="126" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">Endocarditis · Meningococemia</text>
+          <text x="530" y="144" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">CID</text>
+
+          <rect x="20" y="164" width="300" height="52" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="170" y="188" font-size="11" fill="currentColor" text-anchor="middle">Hipotensión · escalofríos</text>
+          <text x="170" y="206" font-size="11" fill="currentColor" text-anchor="middle">alteración del sensorio</text>
+          <polyline points="322,190 376,190" fill="none" stroke="currentColor" stroke-width="1.8" marker-end="url(#pta-alarm)"></polyline>
+          <rect x="380" y="164" width="300" height="52" rx="3" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="530" y="196" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">BACTERIEMIA</text>
+
+          <rect x="20" y="226" width="300" height="52" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="170" y="258" font-size="11" fill="currentColor" text-anchor="middle">Dolor precordial</text>
+          <polyline points="322,252 376,252" fill="none" stroke="currentColor" stroke-width="1.8" marker-end="url(#pta-alarm)"></polyline>
+          <rect x="380" y="226" width="300" height="52" rx="3" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="530" y="258" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">Neumonía · Pericarditis</text>
+        </svg>
+        <figcaption>Los cuatro comparten una lógica: <strong>la fiebre sola casi nunca es el problema</strong>, pero <strong>fiebre más un hallazgo de estas cuatro columnas cambia el escenario</strong>. Tres de las cuatro sospechas —síndrome meníngeo, meningococemia y bacteriemia— son <strong>emergencias con ventana terapéutica de horas</strong>.</figcaption>
+      </figure>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Fiebre más…</th><th>Obliga a pensar en</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Cefalea y confusión mental</strong></td><td><strong>SÍNDROME MENÍNGEO</strong></td></tr>
+            <tr><td><strong>Lesiones purpúricas o petequias</strong></td><td><strong>Endocarditis</strong> · <strong>Meningococemia</strong> · <strong>CID</strong></td></tr>
+            <tr><td><strong>Hipotensión, escalofríos, alteración del sensorio</strong></td><td><strong>BACTERIEMIA</strong></td></tr>
+            <tr><td><strong>Dolor precordial</strong></td><td><strong>Neumonía</strong> o <strong>Pericarditis</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-diagnostico" id="fod">
+      <span class="seccion__pestana"><b>04</b> FOD</span>
+      <h2 class="seccion__titulo">Fiebre de Origen Desconocido</h2>
+
+      <p>Se define como una <strong>situación de enfermedad febril</strong> caracterizada por <strong>tres condiciones que deben cumplirse JUNTAS</strong>:</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Criterio</th><th>Qué exige</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>1. DURACIÓN</strong></td><td>De por lo menos <strong><span class="dato">3 SEMANAS</span></strong></td></tr>
+            <tr><td><strong>2. TEMPERATURA</strong></td><td><strong>&gt; <span class="dato">38,3 °C</span></strong> en por lo menos <strong>TRES ocasiones</strong></td></tr>
+            <tr><td><strong>3. ESTUDIO FALLIDO</strong></td><td><strong>Imposibilidad de lograr un diagnóstico etiológico</strong> después de:<br>· <strong>3 días de evaluación</strong> en un paciente <strong>internado</strong>, o<br>· <strong>3 consultas</strong> en <strong>ambulatorio</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante! — El tercer criterio es el que define</p>
+        <p>Los dos primeros son de <strong>duración e intensidad</strong>. El tercero es distinto: exige que se haya hecho <strong>un estudio inicial adecuado y que haya fracasado</strong>.</p>
+        <p>Por eso <strong>una fiebre de tres semanas sin estudiar NO es una FOD</strong>: es una fiebre prolongada mal evaluada. La FOD <strong>no es un diagnóstico de tiempo sino de esfuerzo diagnóstico agotado</strong>.</p>
+      </div>
+
+      <p class="cita">De dónde vienen estos números: los criterios originales son de <strong>Petersdorf y Beeson (1961)</strong>, y exigían <strong>3 semanas de fiebre y UNA SEMANA de investigación hospitalaria</strong>. En <strong>1991, Durack y Street</strong> los flexibilizaron —dado que buena parte del estudio pasó a ser ambulatorio y más rápido— a <strong>3 días de internación o 3 consultas ambulatorias</strong>, que es exactamente la versión que usa el material. Fuente: Durack DT, Street AC, <em>Fever of unknown origin — reexamined and redefined</em>, Curr Clin Top Infect Dis 1991.</p>
+
+      <h3>Las cuatro categorías de FOD</h3>
+      <p>El material titula sus causas como <strong>«FOD CLÁSICA»</strong>, y esa aclaración no es casual: es <strong>una de cuatro categorías</strong> descritas en la misma revisión de Durack y Street.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Categoría</th><th>A quién se aplica</th><th>Qué predomina</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>CLÁSICA</strong></td><td>Paciente <strong>sin inmunocompromiso conocido</strong>, evaluado 3 días internado o en 3 consultas</td><td><strong>Infecciones, neoplasias y colagenopatías</strong> — es la que desarrolla la sección 05</td></tr>
+            <tr><td><strong>NOSOCOMIAL</strong></td><td>Fiebre que aparece en un <strong>paciente internado</strong> que <strong>no la tenía al ingreso</strong></td><td><strong>Infecciones asociadas al cuidado de la salud</strong>: catéteres, sonda vesical, sinusitis, <em>Clostridioides difficile</em>. Y causas no infecciosas: <strong>fármacos</strong>, <strong>tromboembolismo</strong></td></tr>
+            <tr><td><strong>NEUTROPÉNICA</strong></td><td>Paciente con <strong>neutropenia</strong></td><td><strong>Infecciones bacterianas</strong> y, si se prolonga, <strong>MICÓTICAS</strong></td></tr>
+            <tr><td><strong>ASOCIADA A VIH</strong></td><td>Paciente con <strong>infección por VIH</strong></td><td><strong>Infecciones oportunistas</strong>, <strong>micobacterias</strong>, <strong>linfomas</strong>, y el propio virus</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">La distinción importa porque <strong>cambia la lista de causas antes de empezar a estudiar</strong>. Un mismo cuadro febril de tres semanas se aborda de manera distinta según el paciente esté sano, internado, neutropénico o con VIH — y buscar las causas de la FOD clásica en un neutropénico es perder tiempo.</p>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-fisiopatologia" id="causas">
+      <span class="seccion__pestana"><b>05</b> Causas</span>
+      <h2 class="seccion__titulo">Causas de la FOD Clásica en Adultos</h2>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 420" role="img" aria-label="Los cuatro grupos de causas de fiebre de origen desconocido clásica en adultos, con barras proporcionales a su frecuencia. Las infecciones representan del treinta al cuarenta por ciento e incluyen como comunes la tuberculosis miliar o extrapulmonar, los abscesos, la endocarditis infecciosa, la osteomielitis y la infección urinaria, y como infrecuentes la mononucleosis, el citomegalovirus, la sinusitis, la fiebre tifoidea y los abscesos dentarios periapicales. Las neoplasias representan del veinte al treinta por ciento e incluyen como comunes los linfomas Hodgkin y no Hodgkin, las leucemias agudas no linfoblásticas, el carcinoma renal y las metástasis hepáticas, y como infrecuentes el sarcoma de Kaposi, las mielodisplasias y los cánceres de pulmón, mama, estómago y ovario. Las enfermedades del colágeno representan del diez al veinte por ciento e incluyen como comunes la enfermedad de Still, la arteritis de células gigantes y la polimialgia reumática, y como infrecuentes los síndromes vasculíticos. Otras causas incluyen como comunes las drogas, la enfermedad inflamatoria intestinal, la sarcoidosis, el tromboembolismo venoso y los hematomas, y como infrecuentes la fiebre facticia, el feocromocitoma, la tiroiditis subaguda, el hipertiroidismo y la fiebre mediterránea familiar.">
+          <text x="20" y="40" font-size="11.5" font-weight="700" fill="currentColor">INFECCIONES</text>
+          <rect x="20" y="48" width="210" height="22" fill="var(--c)" fill-opacity="0.44" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="238" y="64" font-size="11" font-weight="700" fill="currentColor">30 – 40 %</text>
+          <text x="20" y="88" font-size="10.5" fill="currentColor"><tspan font-weight="700">Comunes:</tspan> TBC miliar o extrapulmonar · abscesos · endocarditis · osteomielitis · ITU</text>
+          <text x="20" y="106" font-size="10.5" fill="currentColor"><tspan font-weight="700">Infrecuentes:</tspan> mononucleosis · CMV · sinusitis · fiebre tifoidea · abscesos dentarios</text>
+
+          <text x="20" y="140" font-size="11.5" font-weight="700" fill="currentColor">NEOPLASIAS</text>
+          <rect x="20" y="148" width="150" height="22" fill="var(--c)" fill-opacity="0.34" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="178" y="164" font-size="11" font-weight="700" fill="currentColor">20 – 30 %</text>
+          <text x="20" y="188" font-size="10.5" fill="currentColor"><tspan font-weight="700">Comunes:</tspan> linfomas H y no H · leucemias agudas no linfoblásticas · carcinoma renal</text>
+          <text x="20" y="206" font-size="10.5" fill="currentColor">metástasis hepáticas · <tspan font-weight="700">Infrecuentes:</tspan> Kaposi · mielodisplasias · Ca de pulmón, mama</text>
+
+          <text x="20" y="240" font-size="11.5" font-weight="700" fill="currentColor">ENFERMEDADES DEL COLÁGENO</text>
+          <rect x="20" y="248" width="90" height="22" fill="var(--c)" fill-opacity="0.26" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="118" y="264" font-size="11" font-weight="700" fill="currentColor">10 – 20 %</text>
+          <text x="20" y="288" font-size="10.5" fill="currentColor"><tspan font-weight="700">Comunes:</tspan> enfermedad de Still · arteritis de células gigantes · polimialgia reumática</text>
+          <text x="20" y="306" font-size="10.5" fill="currentColor"><tspan font-weight="700">Infrecuentes:</tspan> vasculitis — GPA (Wegener) · poliarteritis nodosa · crioglobulinemias</text>
+
+          <text x="20" y="340" font-size="11.5" font-weight="700" fill="currentColor">OTRAS CAUSAS</text>
+          <rect x="20" y="348" width="150" height="22" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="178" y="364" font-size="11" font-weight="700" fill="currentColor">el resto</text>
+          <text x="20" y="388" font-size="10.5" fill="currentColor"><tspan font-weight="700">Comunes:</tspan> drogas · EII · sarcoidosis · tromboembolismo venoso · hematomas</text>
+          <text x="20" y="406" font-size="10.5" fill="currentColor"><tspan font-weight="700">Infrecuentes:</tspan> fiebre facticia · feocromocitoma · tiroiditis · fiebre mediterránea familiar</text>
+        </svg>
+        <figcaption>Las barras están <strong>a escala</strong>. El orden es el que hay que retener: <strong>infecciones primero, después neoplasias, después colagenopatías</strong>. Y notar que <strong>ninguna de las tres llega al 50 %</strong> — lo que significa que, en una FOD, <strong>ninguna hipótesis única es probable</strong> y hay que estudiar en las cuatro direcciones a la vez.</figcaption>
+      </figure>
+
+      <h3>Infecciones — 30 a 40 %</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Comunes</th><th>Infrecuentes</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>TBC</strong> — miliar o extrapulmonar<br><strong>Abscesos</strong><br><strong>Endocarditis infecciosa</strong><br><strong>Osteomielitis</strong><br><strong>ITU</strong></td>
+              <td><strong>Mononucleosis</strong><br><strong>Infección por CMV</strong><br><strong>Sinusitis</strong><br><strong>Fiebre tifoidea</strong><br><strong>Abscesos dentarios periapicales</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Neoplasias — 20 a 30 %</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Comunes</th><th>Infrecuentes</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Linfomas Hodgkin y no Hodgkin</strong><br><strong>Leucemias agudas no linfoblásticas</strong><br><strong>Carcinoma renal</strong><br><strong>Metástasis hepáticas</strong></td>
+              <td><strong>Sarcoma de Kaposi</strong><br><strong>Mielodisplasias</strong><br><strong>Cáncer de pulmón, mama, estómago y ovario</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Enfermedades del colágeno — 10 a 20 %</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Comunes</th><th>Infrecuentes</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Enfermedad de Still</strong><br><strong>Arteritis de células gigantes</strong><br><strong>Polimialgia reumática</strong></td>
+              <td><strong>Síndromes vasculíticos</strong>:<br>· <strong>Granulomatosis con poliangeítis (GPA)</strong> — antes Wegener<br>· <strong>Poliarteritis nodosa</strong><br>· <strong>Crioglobulinemias</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Otras causas</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Comunes</th><th>Infrecuentes</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Drogas</strong><br><strong>Enfermedad inflamatoria intestinal</strong><br><strong>Sarcoidosis</strong><br><strong>Enfermedad tromboembólica venosa</strong><br><strong>Hematomas intraabdominales o pélvicos</strong></td>
+              <td><strong>Fiebre facticia</strong><br><strong>Feocromocitoma</strong><br><strong>Tiroiditis subaguda</strong><br><strong>Hipertiroidismo</strong><br><strong>Fiebre mediterránea familiar</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Nota sobre la nomenclatura: el material escribe <strong>«granulomatosis de Wegner»</strong>. Corresponde a <strong>Wegener</strong>, y el epónimo fue reemplazado por <strong>granulomatosis con poliangeítis (GPA)</strong> en la nomenclatura de Chapel Hill de 2012 — la misma corrección que figura en el cuadernillo de Laboratorio Inmunológico. Se conserva el epónimo entre paréntesis porque sigue circulando.</p>
+
+      <p class="cita">Profundización sobre las proporciones: en las series contemporáneas la <strong>proporción de infecciones ha DESCENDIDO</strong> —porque las imágenes y la microbiología las detectan antes de que la fiebre llegue a las tres semanas— y ha <strong>aumentado el grupo que queda SIN DIAGNÓSTICO</strong>, que en algunas cohortes llega al <strong>30 – 50 %</strong>. La buena noticia es que <strong>ese grupo sin diagnóstico tiene buen pronóstico</strong>: la mayoría resuelve espontáneamente. Fuente: Kasper D et al., <em>Harrison. Principios de Medicina Interna</em>, 21.ª ed.</p>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-tratamiento" id="estudios">
+      <span class="seccion__pestana"><b>06</b> Estudios</span>
+      <h2 class="seccion__titulo">Estudios Complementarios</h2>
+
+      <h3>Primera etapa</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Grupo</th><th>Estudios</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Laboratorio general</strong></td><td><strong>Hemograma completo y plaquetas</strong><br><strong>Eritrosedimentación</strong><br><strong>Hepatograma, LDH y GGT</strong></td></tr>
+            <tr><td><strong>Orina</strong></td><td><strong>Orina completa y urocultivo</strong></td></tr>
+            <tr><td><strong>Microbiología</strong></td><td><strong>HEMOCULTIVOS: 3 juegos distintos, en distinta hora, SIN antibiótico</strong></td></tr>
+            <tr><td><strong>Imágenes</strong></td><td><strong>Rx de tórax</strong><br><strong>Imagen de abdomen</strong>: TAC con doble contraste o ecografía</td></tr>
+            <tr><td><strong>Tuberculosis</strong></td><td><strong>PPD</strong></td></tr>
+            <tr><td><strong>Serologías</strong></td><td><strong>HIV</strong><br><strong>HBsAg</strong> y <strong>anti-HBs</strong><br><strong>CMV</strong> y <strong>Epstein-Barr</strong></td></tr>
+            <tr><td><strong>Inmunológico</strong></td><td><strong>FAN</strong> y <strong>Factor reumatoideo</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Aclaraciones de transcripción sobre esta lista: <strong>«Ag S HB»</strong> y <strong>«Ac Ag S HB»</strong> corresponden al <strong>antígeno de superficie de la hepatitis B (HBsAg)</strong> y a su <strong>anticuerpo (anti-HBs)</strong>. <strong>«Epistain Barr»</strong> es <strong>Epstein-Barr</strong>. La sigla <strong>«CMBV»</strong> no es interpretable con certeza; por el contexto se la consigna como <strong>CMV</strong> — <strong>conviene confirmarlo</strong>.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante! — Las tres condiciones de los hemocultivos</p>
+        <p><strong>Tres juegos distintos</strong>: aumenta el rendimiento y permite distinguir una <strong>bacteriemia verdadera</strong> —varios frascos positivos con el mismo germen— de una <strong>contaminación</strong>, que suele dar un solo frasco.</p>
+        <p><strong>En distinta hora</strong>: para captar bacteriemias <strong>intermitentes</strong>, que son la regla en abscesos y en la fiebre tifoidea. La excepción es la <strong>endocarditis</strong>, donde la bacteriemia es <strong>continua</strong> y el momento importa menos.</p>
+        <p><strong>SIN antibiótico</strong>: una sola dosis previa puede <strong>negativizar los cultivos durante días</strong>. Es la razón por la que en una fiebre sin foco y sin criterios de gravedad <strong>NO se indica antibiótico empírico</strong> antes de tomar las muestras.</p>
+      </div>
+
+      <h3>Segunda etapa</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Grupo</th><th>Estudios</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Cardiológicos</strong></td><td><strong>Ecocardiograma Doppler color</strong><br><strong>Ecocardiograma transesofágico (ETE)</strong></td></tr>
+            <tr><td><strong>Medicina nuclear</strong></td><td><strong>PET-TAC</strong></td></tr>
+            <tr><td><strong>BIOPSIAS</strong></td><td><strong>Adenomegalias</strong><br><strong>Hepática</strong><br><strong>Médula ósea</strong><br><strong>Nódulos epidérmicos</strong><br><strong>Arteria temporal</strong></td></tr>
+            <tr><td><strong>Endoscopia</strong></td><td><strong>Videoendoscopia alta y baja</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Cada estudio de la segunda etapa <strong>apunta a un grupo de causas</strong> de la sección 05. El <strong>ETE</strong> busca <strong>endocarditis</strong> —el transtorácico no alcanza para descartarla—. La <strong>biopsia de médula ósea</strong> busca <strong>linfomas, leucemias y TBC miliar</strong> a la vez. La <strong>biopsia de arteria temporal</strong> busca <strong>arteritis de células gigantes</strong>, que en el mayor de 50 años con VSG muy elevada es una causa frecuente y tratable. El <strong>PET-TAC</strong> es el que más rinde cuando no hay ninguna pista: detecta focos <strong>inflamatorios, infecciosos y neoplásicos</strong> en un solo estudio.</p>
+
+      <p class="cita">Sobre la <strong>PPD</strong>: confirma <strong>contacto previo con el bacilo</strong>, pero <strong>no distingue infección latente de enfermedad activa</strong> y puede ser <strong>falsamente negativa por anergia</strong> — justamente en el inmunocomprometido y en la <strong>TBC miliar</strong>, que es la primera causa infecciosa de la lista. Una PPD negativa <strong>no descarta tuberculosis</strong>. Ver el cuadernillo de Tuberculosis.</p>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-importantes" id="inmuno">
+      <span class="seccion__pestana"><b>07</b> Inmunocomprometido</span>
+      <h2 class="seccion__titulo">Fiebre en el Inmunocomprometido</h2>
+
+      <p>En este paciente, la fiebre <strong>puede ser la manifestación más importante o la ÚNICA de una infección</strong>. Debe considerarse <strong>más de un foco infeccioso</strong> y <strong>más de una etiología microbiana</strong>.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante! — La ausencia de fiebre NO tranquiliza</p>
+        <p>Es la advertencia central del material: <strong>también puede presentar graves infecciones locales o sistémicas EN AUSENCIA DE FIEBRE.</strong></p>
+        <p>El motivo está en la sección 01: la fiebre depende de que <strong>monocitos y macrófagos produzcan citocinas</strong>. Si esas células están <strong>ausentes, suprimidas por corticoides o inhibidas por inmunosupresores</strong>, <strong>la respuesta febril no se monta</strong> — pero <strong>la infección progresa igual</strong>.</p>
+        <p>Y lo mismo vale para el resto de los signos: sin neutrófilos <strong>no hay pus</strong>, y una neumonía puede cursar con <strong>radiografía normal</strong> hasta que el recuento se recupera.</p>
+      </div>
+
+      <h3>Las tres consideraciones del abordaje</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Considerar</th><th>Detalle</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1. Tipo, duración y gravedad de la inmunosupresión</strong></td>
+              <td>Ejemplo: la <strong>neutropenia intensa y prolongada aumenta el riesgo de infecciones MICÓTICAS</strong></td>
+            </tr>
+            <tr>
+              <td><strong>2. Tipo de inmunodéficit</strong></td>
+              <td><strong>HUMORAL</strong> — inmunodeficiencia común variable<br><strong>FUNCIÓN FAGOCÍTICA</strong> — neutropenia<br><strong>CELULAR</strong> — SIDA</td>
+            </tr>
+            <tr>
+              <td><strong>3. Urgencia</strong></td>
+              <td><strong>Necesidad de evaluación rápida</strong> y <strong>urgente inicio de un tratamiento antimicrobiano EMPÍRICO</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Profundización sobre el punto 2: cada tipo de déficit <strong>predice qué gérmenes esperar</strong>. El <strong>humoral</strong> —y la asplenia— predisponen a <strong>bacterias capsuladas</strong>: neumococo, <em>Haemophilus</em>, meningococo. La <strong>alteración fagocítica</strong> predispone a <strong>bacilos gramnegativos, <em>S. aureus</em></strong> y, si se prolonga, a <strong>hongos filamentosos</strong> —<em>Aspergillus</em>—. El déficit <strong>celular</strong> predispone a <strong>intracelulares y oportunistas</strong>: micobacterias, <em>Pneumocystis</em>, <em>Toxoplasma</em>, CMV, criptococo. <strong>Saber qué rama está caída es lo que orienta el empírico.</strong></p>
+
+      <h3>Neutropenia febril</h3>
+      <p>Es el escenario que la última línea del material anticipa al hablar de «urgente inicio de un tratamiento antimicrobiano empírico».</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Componente</th><th>Definición</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>FIEBRE</strong></td><td>Una <strong>única toma ≥ 38,3 °C</strong>, o <strong>≥ 38,0 °C sostenida durante 1 hora</strong></td></tr>
+            <tr><td><strong>NEUTROPENIA</strong></td><td><strong>Recuento absoluto de neutrófilos &lt; 500/mm³</strong>, o <strong>&lt; 1.000/mm³ con descenso esperado por debajo de 500</strong> en las siguientes 48 horas</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante! — Es una emergencia infectológica</p>
+        <p>La conducta invierte la regla general de la sección 06. Acá <strong>NO se espera</strong>:</p>
+        <p><strong>1.</strong> Anamnesis, examen dirigido y <strong>hemocultivos</strong> —de vía periférica y de cada lumen del catéter—.<br>
+        <strong>2.</strong> <strong>Antibiótico empírico de amplio espectro DENTRO DE LA PRIMERA HORA</strong>, con cobertura <strong>antipseudomónica</strong>.<br>
+        <strong>3.</strong> Recién después, completar el resto del estudio.</p>
+        <p>El motivo es el tiempo: <strong>sin neutrófilos, una bacteriemia por gramnegativos puede llevar al shock en horas</strong>. La mortalidad se relaciona directamente con la demora en la primera dosis.</p>
+      </div>
+
+      <p class="cita">Fuente para esta sección: Freifeld AG et al., <em>Clinical Practice Guideline for the Use of Antimicrobial Agents in Neutropenic Patients with Cancer</em>, IDSA. Ver también el cuadernillo de Infecciones en Huéspedes Especiales.</p>
+    </section>
+
+    <!-- ============ Repaso ============ -->
+    <section class="seccion s-clinica" id="repaso">
+      <span class="seccion__pestana"><b>08</b> Repaso</span>
+      <h2 class="seccion__titulo">Repaso Activo</h2>
+      <p>Respondé antes de abrir cada tarjeta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary class="fc__p">Definición de fiebre, palabra por palabra</summary>
+          <div class="fc__r">La <strong>elevación REGULADA</strong> de la temperatura corporal por encima de los valores normales, debida a <strong>reprogramación de los centros termorreguladores hipotalámicos</strong>, <strong>mediada por CITOCINAS</strong>, en respuesta a un <strong>estímulo pirogénico</strong>.</div>
+        </details>
+        <details class="fc s-generalidades">
+          <summary class="fc__p">¿Qué diferencia a la hipertermia de la fiebre?</summary>
+          <div class="fc__r">Que <strong>NO es regulada</strong>. Se debe a <strong>producción excesiva de calor</strong>, <strong>disminución de la disipación</strong> o <strong>pérdida de la regulación central</strong>. El <strong>punto de ajuste está NORMAL</strong> y la temperatura lo supera — por eso <strong>no responde a los antitérmicos</strong> y requiere <strong>enfriamiento físico</strong>.</div>
+        </details>
+        <details class="fc s-generalidades">
+          <summary class="fc__p">La cadena del pirógeno al termostato</summary>
+          <div class="fc__r"><strong>Pirógeno exógeno</strong> (LPS, componentes microbianos) → <strong>monocitos y macrófagos</strong> → <strong>pirógenos ENDÓGENOS: IL-1, IL-6, TNF-α e interferones</strong> → <strong>prostaglandina E2</strong> en el hipotálamo → <strong>sube el punto de ajuste</strong> → vasoconstricción y escalofríos. Los <strong>endógenos pueden producirse sin estímulo exógeno</strong>: es la fiebre del linfoma.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary class="fc__p">Las cuatro formas de presentación</summary>
+          <div class="fc__r"><strong>Fiebre AGUDA</strong>: &lt; 15 días en inmunocompetente. <strong>Fiebre PROLONGADA</strong>: &gt; 15 días. <strong>FOD</strong>: cumple los tres criterios. <strong>Fiebre en el INMUNOCOMPROMETIDO</strong>: categoría propia, no se clasifica por duración.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary class="fc__p">¿Por qué no hay que confundir fiebre prolongada con FOD?</summary>
+          <div class="fc__r">Porque la <strong>prolongada se define SÓLO por la duración</strong> —más de 15 días— y <strong>puede tener diagnóstico conocido</strong>. La <strong>FOD exige además</strong> tres semanas, más de 38,3 °C en tres ocasiones, y que <strong>el estudio inicial haya FRACASADO</strong>. Toda FOD es prolongada; no toda prolongada es FOD.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary class="fc__p">Cuatro enfermedades que cursan con fiebre prolongada</summary>
+          <div class="fc__r"><strong>Brucelosis · Paludismo · Linfomas · Tuberculosis.</strong> Las cuatro reaparecen como causas de FOD — la diferencia está en si el estudio inicial las encontró.</div>
+        </details>
+        <details class="fc s-diferenciales">
+          <summary class="fc__p">Las cuatro causas comunes de fiebre aguda</summary>
+          <div class="fc__r"><strong>Infecciones de la vía aérea superior</strong>, <strong>de piel y partes blandas</strong>, <strong>ITU</strong> y <strong>neumonía</strong>. Y siempre indagar <strong>contexto ambiental, epidemiológico y viajes</strong>.</div>
+        </details>
+        <details class="fc s-diferenciales">
+          <summary class="fc__p">Los cuatro signos de alarma de la fiebre aguda</summary>
+          <div class="fc__r"><strong>Cefalea y confusión</strong> → <strong>síndrome meníngeo</strong>. <strong>Púrpura o petequias</strong> → <strong>endocarditis, meningococemia, CID</strong>. <strong>Hipotensión, escalofríos, alteración del sensorio</strong> → <strong>bacteriemia</strong>. <strong>Dolor precordial</strong> → <strong>neumonía o pericarditis</strong>.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary class="fc__p">Los tres criterios de FOD</summary>
+          <div class="fc__r"><strong>1.</strong> Duración de al menos <strong>3 SEMANAS</strong>. <strong>2.</strong> Temperatura <strong>&gt; 38,3 °C en al menos 3 ocasiones</strong>. <strong>3.</strong> <strong>Sin diagnóstico etiológico</strong> tras <strong>3 días internado o 3 consultas ambulatorias</strong>. Se cumplen <strong>juntos</strong>.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary class="fc__p">¿Por qué el tercer criterio es el que realmente define?</summary>
+          <div class="fc__r">Porque los dos primeros son de <strong>tiempo e intensidad</strong>, y el tercero exige que <strong>se haya estudiado bien y haya fracasado</strong>. Una fiebre de tres semanas <strong>sin estudiar no es una FOD</strong>: es una fiebre prolongada mal evaluada.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary class="fc__p">Las cuatro categorías de FOD</summary>
+          <div class="fc__r"><strong>CLÁSICA</strong> —la que desarrolla la cátedra—, <strong>NOSOCOMIAL</strong> —aparece internado, no la tenía al ingreso—, <strong>NEUTROPÉNICA</strong> y <strong>ASOCIADA A VIH</strong>. Cambian la lista de causas <strong>antes de empezar a estudiar</strong>.</div>
+        </details>
+        <details class="fc s-fisiopatologia">
+          <summary class="fc__p">Los cuatro grupos de causas de FOD clásica con sus porcentajes</summary>
+          <div class="fc__r"><strong>Infecciones 30 – 40 %</strong> · <strong>Neoplasias 20 – 30 %</strong> · <strong>Enfermedades del colágeno 10 – 20 %</strong> · <strong>Otras causas</strong>. Ninguna llega al 50 %: hay que estudiar <strong>en las cuatro direcciones a la vez</strong>.</div>
+        </details>
+        <details class="fc s-fisiopatologia">
+          <summary class="fc__p">Causas infecciosas COMUNES de FOD</summary>
+          <div class="fc__r"><strong>TBC miliar o extrapulmonar</strong>, <strong>abscesos</strong>, <strong>endocarditis infecciosa</strong>, <strong>osteomielitis</strong> e <strong>ITU</strong>. Entre las infrecuentes: mononucleosis, CMV, sinusitis, fiebre tifoidea y <strong>abscesos dentarios periapicales</strong>.</div>
+        </details>
+        <details class="fc s-fisiopatologia">
+          <summary class="fc__p">Colagenopatías comunes en la FOD</summary>
+          <div class="fc__r"><strong>Enfermedad de Still</strong>, <strong>arteritis de células gigantes</strong> y <strong>polimialgia reumática</strong>. Entre las infrecuentes, los síndromes vasculíticos: <strong>GPA (antes Wegener)</strong>, <strong>poliarteritis nodosa</strong> y <strong>crioglobulinemias</strong>.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary class="fc__p">Las tres condiciones de los hemocultivos y por qué</summary>
+          <div class="fc__r"><strong>Tres juegos</strong>: distingue bacteriemia verdadera de contaminación. <strong>En distinta hora</strong>: capta bacteriemias <strong>intermitentes</strong> —la endocarditis es la excepción, ahí es continua—. <strong>Sin antibiótico</strong>: una sola dosis previa puede <strong>negativizar los cultivos por días</strong>.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary class="fc__p">Estudios de la primera etapa de la FOD</summary>
+          <div class="fc__r"><strong>Hemograma con plaquetas · VSG · hepatograma, LDH y GGT · orina completa y urocultivo · 3 hemocultivos · Rx tórax · imagen abdominal (TAC con doble contraste o ecografía) · PPD · serologías (HIV, HBsAg, anti-HBs, CMV, Epstein-Barr) · FAN y FR.</strong></div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary class="fc__p">Estudios de la segunda etapa</summary>
+          <div class="fc__r"><strong>Ecocardiograma Doppler color y transesofágico · PET-TAC · BIOPSIAS</strong> —adenomegalias, hepática, médula ósea, nódulos epidérmicos, arteria temporal— <strong>· videoendoscopia alta y baja</strong>.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary class="fc__p">¿Por qué una PPD negativa no descarta tuberculosis?</summary>
+          <div class="fc__r">Porque puede ser <strong>falsamente negativa por ANERGIA</strong> — justamente en el <strong>inmunocomprometido</strong> y en la <strong>TBC miliar</strong>, que es la primera causa infecciosa de FOD. Además <strong>no distingue infección latente de enfermedad activa</strong>.</div>
+        </details>
+        <details class="fc s-importantes">
+          <summary class="fc__p">¿Por qué un inmunocomprometido puede tener una infección grave SIN fiebre?</summary>
+          <div class="fc__r">Porque la fiebre requiere que <strong>monocitos y macrófagos produzcan citocinas</strong>. Si esas células están <strong>ausentes, suprimidas por corticoides o inhibidas</strong>, <strong>la respuesta febril no se monta</strong> aunque la infección progrese. Sin neutrófilos <strong>tampoco hay pus</strong>, y la <strong>radiografía puede ser normal</strong>.</div>
+        </details>
+        <details class="fc s-importantes">
+          <summary class="fc__p">Los tres tipos de inmunodéficit y qué gérmenes predicen</summary>
+          <div class="fc__r"><strong>HUMORAL</strong> (inmunodeficiencia común variable) → <strong>bacterias capsuladas</strong>. <strong>FAGOCÍTICO</strong> (neutropenia) → <strong>gramnegativos, <em>S. aureus</em></strong> y, si se prolonga, <strong>hongos</strong>. <strong>CELULAR</strong> (SIDA) → <strong>intracelulares y oportunistas</strong>.</div>
+        </details>
+        <details class="fc s-importantes">
+          <summary class="fc__p">Definición de neutropenia febril</summary>
+          <div class="fc__r"><strong>FIEBRE</strong>: una toma <strong>≥ 38,3 °C</strong> o <strong>≥ 38,0 °C sostenida 1 hora</strong>. <strong>NEUTROPENIA</strong>: <strong>RAN &lt; 500/mm³</strong>, o <strong>&lt; 1.000 con descenso esperado por debajo de 500</strong> en 48 h.</div>
+        </details>
+        <details class="fc s-importantes">
+          <summary class="fc__p">Conducta ante una neutropenia febril</summary>
+          <div class="fc__r"><strong>Hemocultivos</strong> —periféricos y de cada lumen del catéter— y <strong>antibiótico empírico de amplio espectro DENTRO DE LA PRIMERA HORA</strong>, con <strong>cobertura antipseudomónica</strong>. Recién después se completa el estudio. <strong>Sin neutrófilos, una bacteriemia por gramnegativos lleva al shock en horas.</strong></div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Concepto clave</dt>
+        <dd><strong>FIEBRE = elevación REGULADA</strong> por reprogramación del hipotálamo mediada por <strong>citocinas</strong>; el punto de ajuste <strong>sube</strong> y la temperatura lo sigue. <strong>HIPERTERMIA = elevación NO regulada</strong>; el punto de ajuste está <strong>normal</strong> y la temperatura lo supera — <strong>no responde a antitérmicos</strong>. Cortes de cátedra: <strong>bucal &gt; 37,5 °C</strong>, <strong>axilar &gt; 37,4 °C</strong>.</dd>
+
+        <dt class="r-gold">Las cuatro formas y los tres criterios</dt>
+        <dd><strong>AGUDA</strong> &lt; 15 días · <strong>PROLONGADA</strong> &gt; 15 días · <strong>FOD</strong> · <strong>INMUNOCOMPROMETIDO</strong>. Los <strong>tres criterios de FOD, juntos</strong>: <strong>3 semanas</strong> de duración · <strong>&gt; 38,3 °C en 3 ocasiones</strong> · <strong>sin diagnóstico tras 3 días internado o 3 consultas ambulatorias</strong>. <strong>Toda FOD es prolongada, no toda prolongada es FOD.</strong></dd>
+
+        <dt class="r-tto">Causas y estudio</dt>
+        <dd><strong>Infecciones 30 – 40 %</strong> (TBC miliar, abscesos, endocarditis, osteomielitis, ITU) · <strong>Neoplasias 20 – 30 %</strong> (linfomas, leucemias, carcinoma renal, MTS hepáticas) · <strong>Colágeno 10 – 20 %</strong> (Still, arteritis de células gigantes, polimialgia) · <strong>Otras</strong> (drogas, EII, sarcoidosis, TEP, hematomas). <strong>1.ª etapa</strong>: laboratorio, orina, <strong>3 hemocultivos sin ATB</strong>, Rx, imagen abdominal, PPD, serologías, FAN y FR. <strong>2.ª etapa</strong>: ETE, <strong>PET-TAC</strong>, biopsias y endoscopia.</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd><strong>Fiebre + cefalea y confusión</strong> = síndrome meníngeo · <strong>+ púrpura</strong> = meningococemia, endocarditis, CID · <strong>+ hipotensión y escalofríos</strong> = bacteriemia · <strong>+ dolor precordial</strong> = neumonía o pericarditis. En el <strong>inmunocomprometido, la AUSENCIA de fiebre no tranquiliza</strong>. <strong>Neutropenia febril</strong> —RAN &lt; 500 con T ≥ 38,3— es una <strong>emergencia</strong>: hemocultivos y <strong>antibiótico antipseudomónico dentro de la primera hora</strong>.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir del material de cátedra sobre fiebre, transcripto por el usuario. Complementado con Harrison. Principios de Medicina Interna, la revisión de Durack y Street sobre fiebre de origen desconocido y la guía de la IDSA sobre neutropenia febril. Las aclaraciones de nomenclatura y las cifras señaladas como dudosas están marcadas en el texto. Material de estudio: no reemplaza el criterio clínico ni la guía institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link'));
+
+  function porMeta(hash){
+    for (var i = 0; i < enlaces.length; i++){
+      if (enlaces[i].getAttribute('href') === '#' + hash) return enlaces[i];
+    }
+    return null;
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var enlace = porMeta(e.target.id);
+        if (!enlace) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          enlace.setAttribute('aria-current', 'true');
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>

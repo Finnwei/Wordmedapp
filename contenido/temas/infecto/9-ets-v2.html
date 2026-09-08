@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Enfermedades de Transmisión Sexual</title>
+<link rel="stylesheet" href="../../fuentes/fuentes.css">
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+}
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índice lateral ---------- */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Ficha de sección ---------- */
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.35rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-row:1/3; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+.importante__titulo{
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso{ display:none !important; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+<style>
+/* Fuentes de la capa de contenido. Va después del estilo del
+   cuadernillo para pisar las de Windows, que no se pueden
+   redistribuir y no existen en Android. */
+:root{
+  --f-titulo:'Spectral',Georgia,'Times New Roman',serif;
+  --f-texto:'Open Sans',system-ui,-apple-system,sans-serif;
+  --f-dato:'Cascadia Mono','Cascadia Code',ui-monospace,Consolas,monospace;
+}
+/* Botón de volver, espejo del de tema que ya trae el cuadernillo. */
+.volver{
+  position:fixed; top:.7rem; left:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.volver:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.volver__icono{ width:1.15rem; height:1.15rem; display:block; }
+</style>
+</head>
+<body data-clave="infecto/9-ets-v2">
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-generalidades"  href="#generalidades">Generalidades</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#temprana">Sífilis Temprana</a></li>
+      <li><a class="indice__link i-clinica"        href="#tardia">Sífilis Latente y Tardía</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#sifilis-dx">Sífilis: Diagnóstico y Tratamiento</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#secrecion">ITS con Secreción</a></li>
+      <li><a class="indice__link i-diferenciales"  href="#ulceras">ITS con Úlcera Genital</a></li>
+      <li><a class="indice__link i-importantes"    href="#proliferativas">Lesiones Proliferativas</a></li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Infectología · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Enfermedades de Transmisión Sexual</h1>
+      <p class="portada__bajada">De la sífilis en sus cuatro estadios a las ITS con secreción, con úlcera y con lesión proliferativa.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">7 secciones</span>
+        <span class="etiqueta s-fisiopatologia">Sífilis completa</span>
+        <span class="etiqueta s-diferenciales">Úlcera genital</span>
+        <span class="etiqueta s-importantes">Esquemas de tratamiento</span>
+      </div>
+    </header>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="generalidades">
+      <span class="seccion__pestana"><b>01</b> Base</span>
+      <h2 class="seccion__titulo">Generalidades</h2>
+
+      <p>El paciente consulta por un <strong>síndrome</strong>, no por un germen. Agrupar las ITS por lo que se ve en la consulta ordena todo el estudio.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Síndrome</th><th>Entidades</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Úlcera genital</strong></td><td>Sífilis · herpes genital · chancroide · linfogranuloma venéreo · donovanosis</td></tr>
+            <tr><td><strong>Secreción uretral o cervical</strong></td><td>Gonococo · <em>Chlamydia trachomatis</em> · <em>Trichomonas vaginalis</em></td></tr>
+            <tr><td><strong>Lesión proliferativa</strong></td><td>Condilomas acuminados (HPV) · molusco contagioso</td></tr>
+            <tr><td><strong>Compromiso pelviano</strong></td><td>Enfermedad pelviana inflamatoria (EPI)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Tres reglas que valen para todas</h3>
+      <ul>
+        <li><strong>La coinfección es la regla</strong>, no la excepción. Diagnosticar una ITS obliga a buscar las demás: <strong>HIV, VDRL, hepatitis B y C</strong>.</li>
+        <li><strong>Se trata siempre a la pareja</strong>, aunque esté asintomática, y en el mismo momento.</li>
+        <li><strong>Abstinencia sexual</strong> hasta completar el tratamiento — y hasta <strong>7 días</strong> después si fue dosis única.</li>
+      </ul>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-fisiopatologia" id="temprana">
+      <span class="seccion__pestana"><b>02</b> Sífilis temprana</span>
+      <h2 class="seccion__titulo">Sífilis Temprana</h2>
+
+      <p>Producida por <strong><em>Treponema pallidum</em></strong>, una espiroqueta. Se llama <strong>temprana</strong> al primer año de evolución.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Sífilis temprana</th><th>Sífilis tardía</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Infectante</strong>, transmisible por <strong>vía sexual y vertical</strong><br>Afecta <strong>piel y mucosas</strong><br>Sin tratamiento evoluciona a <strong>recidivas y secundarismos</strong></td>
+              <td><strong>Rara vez contagiosa</strong> por vía sexual o vertical<br><strong>Lesiones crónicas</strong><br><strong>Manejo difícil</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 300" role="img" aria-label="Historia natural de la sífilis en cuatro estadios. La sífilis primaria aparece tras una incubación de unos veintiún días con el chancro duro y el ganglio de Ricord, y cura sola en tres a seis semanas. La secundaria aparece entre las seis semanas y los seis meses, con roséola, sifílides papulosas, condiloma plano y alopecia apolillada, y da recidivas durante el primer año. La latente no tiene clínica y sólo serología reactiva, y se divide en temprana antes del año y tardía después. La terciaria aparece entre los tres y los veinte años con gomas, sifílides nódulo ulcerativas, compromiso óseo, cardiovascular y neurosífilis. El primer año separa la sífilis temprana, infectante y transmisible por vía sexual y vertical, de la tardía, que rara vez contagia.">
+          <rect x="16" y="20" width="420" height="28" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="226" y="39" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">TEMPRANA · infectante, transmisible sexual y vertical</text>
+
+          <rect x="436" y="20" width="250" height="28" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.2"></rect>
+          <text x="561" y="39" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">TARDÍA · rara vez contagiosa</text>
+
+          <line x1="436" y1="52" x2="436" y2="216" stroke="currentColor" stroke-width="1.2" stroke-dasharray="5 3" stroke-opacity="0.6"></line>
+
+          <rect x="16" y="62" width="160" height="150" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="28" y="86" font-size="12.5" font-weight="700" fill="currentColor">Primaria</text>
+          <text x="28" y="110" font-size="10.5" fill="currentColor" opacity="0.8">Chancro duro</text>
+          <text x="28" y="128" font-size="10.5" fill="currentColor" opacity="0.8">Ganglio de Ricord</text>
+          <text x="28" y="146" font-size="10.5" fill="currentColor" opacity="0.8">Única, indolora,</text>
+          <text x="28" y="164" font-size="10.5" fill="currentColor" opacity="0.8">indurada</text>
+          <text x="28" y="188" font-size="10.5" fill="currentColor" opacity="0.8">Cura sola en 3–6 sem</text>
+
+          <rect x="186" y="62" width="160" height="150" rx="3" fill="var(--c)" fill-opacity="0.20" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="198" y="86" font-size="12.5" font-weight="700" fill="currentColor">Secundaria</text>
+          <text x="198" y="110" font-size="10.5" fill="currentColor" opacity="0.8">Roséola sifilítica</text>
+          <text x="198" y="128" font-size="10.5" fill="currentColor" opacity="0.8">Sifílides papulosas</text>
+          <text x="198" y="146" font-size="10.5" fill="currentColor" opacity="0.8">Condiloma plano</text>
+          <text x="198" y="164" font-size="10.5" fill="currentColor" opacity="0.8">Alopecia apolillada</text>
+          <text x="198" y="188" font-size="10.5" font-weight="700" fill="currentColor">Recidivas &lt; 1 año</text>
+
+          <rect x="356" y="62" width="160" height="150" rx="3" fill="var(--c)" fill-opacity="0.08" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="368" y="86" font-size="12.5" font-weight="700" fill="currentColor">Latente</text>
+          <text x="368" y="110" font-size="10.5" fill="currentColor" opacity="0.8">Sin clínica</text>
+          <text x="368" y="128" font-size="10.5" fill="currentColor" opacity="0.8">Serología reactiva</text>
+          <text x="368" y="152" font-size="10.5" fill="currentColor" opacity="0.8">Temprana &lt; 1 año</text>
+          <text x="368" y="170" font-size="10.5" fill="currentColor" opacity="0.8">Tardía &gt; 1 año</text>
+
+          <rect x="526" y="62" width="160" height="150" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.2"></rect>
+          <text x="538" y="86" font-size="12.5" font-weight="700" fill="currentColor">Terciaria</text>
+          <text x="538" y="110" font-size="10.5" fill="currentColor" opacity="0.8">Gomas</text>
+          <text x="538" y="128" font-size="10.5" fill="currentColor" opacity="0.8">Nódulo-ulcerativas</text>
+          <text x="538" y="146" font-size="10.5" fill="currentColor" opacity="0.8">Ósea</text>
+          <text x="538" y="164" font-size="10.5" fill="currentColor" opacity="0.8">Cardiovascular</text>
+          <text x="538" y="188" font-size="10.5" fill="currentColor" opacity="0.8">Neurosífilis</text>
+
+          <line x1="16" y1="236" x2="686" y2="236" stroke="currentColor" stroke-width="1.2" stroke-opacity="0.4"></line>
+          <text x="96" y="258" font-size="10.5" fill="currentColor" opacity="0.7" text-anchor="middle">~ 21 días</text>
+          <text x="266" y="258" font-size="10.5" fill="currentColor" opacity="0.7" text-anchor="middle">6 sem – 6 meses</text>
+          <text x="436" y="258" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">1 año</text>
+          <text x="606" y="258" font-size="10.5" fill="currentColor" opacity="0.7" text-anchor="middle">3 – 20 años</text>
+          <text x="16" y="282" font-size="10.5" fill="currentColor" opacity="0.6">Tiempo desde el contagio</text>
+        </svg>
+        <figcaption>El corte del <strong>primer año</strong> es lo que hay que fijar: antes hay recidivas y contagio; después, ni una cosa ni la otra.</figcaption>
+      </figure>
+
+      <h3>Sífilis primaria — el chancro</h3>
+      <ul>
+        <li><strong>Incubación ~<span class="dato">21 días</span></strong> (rango 9 – 90) desde el contacto.</li>
+        <li><strong>Chancro duro:</strong> úlcera <strong>única</strong>, de <strong>bordes netos y regulares</strong>, <strong>fondo limpio</strong>, <strong>base indurada</strong> —de ahí «duro»— y característicamente <strong>indolora</strong>. No supura. Asienta en el sitio de inoculación.</li>
+        <li><strong>Cura sola en <span class="dato">3 – 6 semanas</span></strong>, con o sin tratamiento. Que desaparezca no significa que la enfermedad se haya ido.</li>
+      </ul>
+
+      <h3>Ganglio centinela de Ricord</h3>
+      <p>Adenopatía satélite que acompaña al chancro y aparece a los <strong>7 – 10 días</strong> de este. Junto al chancro constituye el <strong>complejo primario</strong>.</p>
+      <ul>
+        <li>Varios ganglios, con <strong>uno de mayor tamaño</strong> que domina el conjunto — el <strong>ganglio centinela</strong>, rodeado de otros menores: la <strong>pléyade ganglionar de Ricord</strong>.</li>
+        <li><strong>Duros, indoloros, móviles, no adheridos</strong> y, sobre todo, <strong>no supuran ni fistulizan</strong>.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>El par <strong>úlcera indolora + adenopatía dura que no supura</strong> es la firma de la sífilis primaria. Lo contrario —úlcera dolorosa con ganglio que fistuliza— apunta al <strong>chancroide</strong>.</p>
+      </div>
+
+      <h3>Sífilis secundaria — el secundarismo</h3>
+      <p>Aparece entre las <strong><span class="dato">6 semanas</span> y los <span class="dato">6 meses</span></strong> del chancro, por <strong>diseminación hematógena</strong> del treponema. Es la etapa de <strong>mayor contagiosidad</strong> y la gran simuladora de la dermatología.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Lesión</th><th>Características</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Roséola sifilítica</strong></td>
+              <td><strong>Primera manifestación.</strong> Máculas rosadas, tenues, <strong>no pruriginosas</strong>, en tronco y raíz de miembros. Fugaz y discreta — pasa desapercibida con frecuencia</td>
+            </tr>
+            <tr>
+              <td><strong>Sifílides papulosas</strong></td>
+              <td>Pápulas <strong>eritemato-cobrizas</strong>, infiltradas, con descamación en el borde (<strong>collarete de Biett</strong>). Lo distintivo es el <strong>compromiso palmoplantar</strong>: pocas dermatosis toman palmas y plantas</td>
+            </tr>
+            <tr>
+              <td><strong>Condiloma plano</strong><br><em>(condiloma lata)</em></td>
+              <td>Pápulas y placas <strong>planas, húmedas y maceradas</strong> en pliegues y zonas húmedas —perianal, genital, submamaria—. <strong>Altísima carga de treponemas: son las lesiones más contagiosas</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Alopecia «en comida de ratón»</strong></td>
+              <td>Alopecia <strong>parcheada e irregular</strong> del cuero cabelludo, de predominio occipital, como apolillada. Puede acompañarse de pérdida de la <strong>cola de las cejas</strong> (signo de Fournier)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Acompañan <strong>síntomas generales</strong>: febrícula, astenia, cefalea y <strong>adenopatías generalizadas</strong> (incluida la epitroclear, muy sugestiva). En mucosas, <strong>placas mucosas</strong> y queilitis angular.</p>
+
+      <h3>Evolución del secundarismo</h3>
+      <ul>
+        <li>Las lesiones son <strong>autolimitadas</strong> y resuelven solas en semanas o meses.</li>
+        <li>Sin tratamiento aparecen <strong>recidivas</strong> —brotes sucesivos— durante el <strong>primer año</strong>. Cada brote es <strong>menos florido y más localizado</strong> que el anterior.</li>
+        <li>Pasado el año las recidivas cesan y la enfermedad entra en <strong>latencia</strong>.</li>
+      </ul>
+
+      <p class="cita">Fuente: material de cátedra. Descripción semiológica según Fitzpatrick, Dermatología en Medicina General, y la Guía de Prevención y Tratamiento de las ITS del Ministerio de Salud de la Nación.</p>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-clinica" id="tardia">
+      <span class="seccion__pestana"><b>03</b> Latente y tardía</span>
+      <h2 class="seccion__titulo">Sífilis Latente y Tardía</h2>
+
+      <h3>Sífilis latente</h3>
+      <p>Sin ninguna manifestación clínica: <strong>sólo serología reactiva</strong>. La división se hace por tiempo y tiene consecuencias prácticas.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Tipo</th><th>Definición</th><th>Consecuencia</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Latente temprana</strong></td><td>Menos de <strong>1 año</strong> de evolución</td><td>Todavía <strong>infectante</strong> y todavía puede <strong>recidivar</strong>. Tratamiento con <strong>dosis única</strong></td></tr>
+            <tr><td><strong>Latente tardía</strong></td><td>Más de <strong>1 año</strong>, o de <strong>duración indeterminada</strong></td><td>Rara vez contagiosa. Requiere <strong>3 dosis semanales</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Ante la duda sobre el tiempo de evolución, se maneja siempre <strong>como latente tardía</strong>.</p>
+
+      <h3>Sífilis tardía benigna</h3>
+      <p>Aparece <strong>3 a 20 años</strong> después. La lesión elemental es el <strong>goma</strong>: un granuloma con <strong>pocos treponemas</strong> —de ahí que sea poco contagiosa— pero muy <strong>destructivo</strong>.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Forma</th><th>Descripción</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Sifílides nódulo-ulcerativas</strong></td>
+              <td>Nódulos agrupados en disposición <strong>arciforme o serpiginosa</strong> que se ulceran, con <strong>curación central y extensión periférica</strong>. Dejan cicatriz</td>
+            </tr>
+            <tr>
+              <td><strong>Lesiones esclerogomosas</strong><br><em>(gomas)</em></td>
+              <td>Nódulo subcutáneo que <strong>se reblandece, ulcera y drena</strong> un material gomoso; cura con <strong>cicatriz retráctil</strong>. Afecta piel, mucosas, hueso y vísceras. En paladar da <strong>perforación</strong>; en tabique nasal, <strong>nariz en silla de montar</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Sífilis ósea</strong></td>
+              <td><strong>Periostitis, osteítis y osteomielitis gomosa</strong>. Lo característico es el <strong>dolor óseo de predominio nocturno</strong>. Compromete sobre todo <strong>tibia</strong> —que se deforma en <strong>«tibia en hoja de sable»</strong>—, cráneo y clavícula</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Sífilis cardiovascular</h3>
+      <ul>
+        <li>Aparece <strong>10 a 30 años</strong> después del contagio.</li>
+        <li>El mecanismo es una <strong>endarteritis obliterante de los <em>vasa vasorum</em></strong> de la aorta, que necrosa la media y debilita la pared.</li>
+        <li>Compromete la <strong>aorta ascendente</strong> y da: <strong>aneurisma sacular de aorta torácica</strong>, <strong>insuficiencia aórtica</strong> y <strong>estenosis de los ostium coronarios</strong> (angina con coronarias sanas).</li>
+        <li>Signo radiológico clásico: <strong>calcificación lineal de la aorta ascendente</strong>.</li>
+      </ul>
+
+      <h3>Neurosífilis</h3>
+      <p>Puede aparecer <strong>en cualquier etapa</strong>, incluso precozmente. No es exclusiva del terciarismo.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Forma</th><th>Presentación</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Asintomática</strong></td><td>Sólo alteración del LCR, sin clínica</td></tr>
+            <tr><td><strong>Meníngea y meningovascular</strong></td><td>Meningitis subaguda; o <strong>ACV en un paciente joven sin factores de riesgo</strong> — es la forma precoz</td></tr>
+            <tr><td><strong>Tabes dorsal</strong></td><td>Forma tardía por degeneración de los <strong>cordones posteriores</strong> y raíces dorsales</td></tr>
+            <tr><td><strong>Parálisis general progresiva</strong></td><td>Forma tardía: <strong>meningoencefalitis crónica</strong> con deterioro cognitivo</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Tabes dorsal</h4>
+      <ul>
+        <li><strong>Ataxia sensitiva</strong> con <strong>marcha talonante</strong> y <strong>Romberg positivo</strong>.</li>
+        <li><strong>Dolores lancinantes</strong> «en puñalada» y <strong>crisis viscerales</strong> gástricas.</li>
+        <li><strong>Arreflexia osteotendinosa</strong> en miembros inferiores y <strong>abolición de la sensibilidad profunda</strong> —vibratoria y posicional—.</li>
+        <li><strong>Pupila de Argyll Robertson</strong>: miótica, irregular, <strong>no reactiva a la luz pero conserva la acomodación</strong>. «Acomoda pero no reacciona».</li>
+        <li>Secuelas tróficas: <strong>artropatía de Charcot</strong>, <strong>mal perforante plantar</strong>, vejiga neurogénica.</li>
+      </ul>
+
+      <h4>Parálisis general progresiva</h4>
+      <ul>
+        <li><strong>Deterioro cognitivo progresivo</strong> hasta la demencia, con <strong>cambios de personalidad</strong> y <strong>delirios de grandeza</strong>.</li>
+        <li><strong>Temblor</strong> de lengua y manos, <strong>disartria</strong>, alteración de la escritura.</li>
+        <li>Puede coexistir con la pupila de Argyll Robertson.</li>
+      </ul>
+
+      <p class="cita">Nota terminológica: el temario la nombra como «parálisis parcial progresiva»; el término consagrado es <strong>parálisis general progresiva</strong> o <strong>paresia general</strong>. Fuente: Harrison, Principios de Medicina Interna, capítulo de sífilis.</p>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-diagnostico" id="sifilis-dx">
+      <span class="seccion__pestana"><b>04</b> Sífilis: Dx y Tto</span>
+      <h2 class="seccion__titulo">Sífilis: Diagnóstico y Tratamiento</h2>
+
+      <h3>Métodos directos — buscan al treponema</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Método</th><th>Uso</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Microscopía de campo oscuro</strong></td><td>Del exudado del <strong>chancro</strong> o del <strong>condiloma plano</strong>. Es el método de elección en la <strong>sífilis primaria</strong>, cuando la serología todavía puede ser negativa</td></tr>
+            <tr><td><strong>Inmunofluorescencia directa</strong></td><td>Sobre material de la lesión</td></tr>
+            <tr><td><strong>PCR</strong></td><td>Alta sensibilidad sobre lesión; útil también en muestras de sífilis congénita</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Los métodos directos <strong>no sirven en lesiones orales</strong>: la boca tiene treponemas comensales que no se distinguen morfológicamente del <em>T. pallidum</em>.</p>
+
+      <h3>Métodos indirectos — serología</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th></th><th>No treponémicas</th><th>Treponémicas</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Pruebas</strong></td><td><strong>VDRL · RPR</strong></td><td><strong>FTA-Abs · TPHA · TPPA</strong> · quimioluminiscencia · pruebas rápidas</td></tr>
+            <tr><td><strong>Qué detectan</strong></td><td>Anticuerpos anti-cardiolipina (inespecíficos)</td><td>Anticuerpos <strong>contra el treponema</strong></td></tr>
+            <tr><td><strong>Cuantitativas</strong></td><td><strong>Sí</strong> — se informan en títulos</td><td>No</td></tr>
+            <tr><td><strong>Sirven para seguimiento</strong></td><td><strong>Sí</strong>, es su función principal</td><td><strong>No</strong> — quedan <strong>reactivas de por vida</strong> («cicatriz serológica»)</td></tr>
+            <tr><td><strong>Limitaciones</strong></td><td><strong>Falsos positivos</strong>: embarazo, enfermedades autoinmunes (LES, síndrome antifosfolipídico), infecciones virales, edad avanzada, drogas endovenosas</td><td>No distinguen infección activa de infección tratada</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>Fenómeno de prozona:</strong> una VDRL puede dar <strong>falsamente no reactiva</strong> por <strong>exceso de anticuerpos</strong>. Se corrige <strong>diluyendo la muestra</strong>. Es clásico en el <strong>secundarismo</strong> y en el <strong>embarazo</strong>, justamente donde más títulos hay y donde peor sale equivocarse.</p>
+      </div>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 370" role="img" aria-label="Algoritmo serológico de la sífilis. Ante sospecha clínica se solicita una prueba no treponémica cuantitativa, VDRL o RPR. Si es reactiva, se confirma con una prueba treponémica, FTA-Abs, TPHA o TPPA, y se titula para el seguimiento. Si es no reactiva y la sospecha es alta, se repite por ventana serológica o se descarta el fenómeno de prozona diluyendo la muestra. Las pruebas treponémicas quedan reactivas de por vida y no sirven para seguimiento: sólo la titulación de la no treponémica evalúa la respuesta al tratamiento, que se define por un descenso de cuatro veces el título.">
+          <defs>
+            <marker id="pta-ser" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="150" y="8" width="400" height="48" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--ct)" stroke-width="1.5"></rect>
+          <text x="350" y="38" font-size="13" font-weight="700" fill="currentColor" text-anchor="middle">Sospecha clínica de sífilis</text>
+
+          <line x1="350" y1="56" x2="350" y2="78" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ser)"></line>
+          <text x="358" y="72" font-size="11" fill="currentColor" opacity="0.65">tamizaje</text>
+
+          <rect x="110" y="80" width="480" height="48" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--ct)" stroke-width="2.5"></rect>
+          <text x="350" y="110" font-size="13" font-weight="700" fill="currentColor" text-anchor="middle">Prueba NO treponémica cuantitativa — VDRL o RPR</text>
+
+          <line x1="350" y1="128" x2="350" y2="154" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="165" y1="154" x2="535" y2="154" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="165" y1="154" x2="165" y2="180" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ser)"></line>
+          <line x1="535" y1="154" x2="535" y2="180" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ser)"></line>
+          <text x="173" y="172" font-size="11" font-weight="700" fill="currentColor">reactiva</text>
+          <text x="543" y="172" font-size="11" font-weight="700" fill="currentColor">no reactiva</text>
+
+          <rect x="20" y="186" width="290" height="100" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="currentColor" stroke-opacity="0.5" stroke-width="1.5"></rect>
+          <text x="36" y="210" font-size="12.5" font-weight="700" fill="currentColor">Confirmar</text>
+          <text x="36" y="232" font-size="11.5" fill="currentColor" opacity="0.75">Prueba treponémica:</text>
+          <text x="36" y="250" font-size="11.5" fill="currentColor" opacity="0.75">FTA-Abs · TPHA · TPPA</text>
+          <text x="36" y="272" font-size="11.5" font-weight="700" fill="currentColor">Titular para seguimiento</text>
+
+          <rect x="390" y="186" width="290" height="100" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="406" y="210" font-size="12.5" font-weight="700" fill="currentColor">Si la sospecha es alta</text>
+          <text x="406" y="232" font-size="11.5" fill="currentColor" opacity="0.75">Repetir: ventana serológica</text>
+          <text x="406" y="250" font-size="11.5" fill="currentColor" opacity="0.75">(la primaria puede ser negativa)</text>
+          <text x="406" y="272" font-size="11.5" font-weight="700" fill="currentColor">Descartar prozona: diluir</text>
+
+          <rect x="20" y="300" width="660" height="56" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.25" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="36" y="322" font-size="11.5" font-weight="700" fill="currentColor">Para el seguimiento sólo sirve la no treponémica</text>
+          <text x="36" y="344" font-size="11.5" fill="currentColor" opacity="0.75">Las treponémicas quedan reactivas de por vida · éxito = descenso de 4 veces el título (2 diluciones)</text>
+        </svg>
+        <figcaption>Una prueba diagnostica y la otra sigue. Confundirlas lleva a «retratar» pacientes ya curados que conservan la treponémica reactiva.</figcaption>
+      </figure>
+
+      <p>En <strong>neurosífilis</strong> se estudia el LCR: <strong>VDRL en LCR</strong> (muy específica, poco sensible), <strong>pleocitosis linfocitaria</strong> e <strong>hiperproteinorraquia</strong>.</p>
+
+      <h3>Tratamiento</h3>
+      <p>La <strong>penicilina</strong> sigue siendo la droga de elección en todos los estadios. <em>T. pallidum</em> <strong>no ha desarrollado resistencia</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Estadio</th><th>Esquema</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Temprana</strong><br>Primaria · secundaria · latente temprana</td>
+              <td><strong>Penicilina G benzatínica <span class="dato">2.400.000 UI</span> IM, dosis única</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Latente tardía</strong> · de duración indeterminada · <strong>terciaria</strong> no neurológica</td>
+              <td><strong>Penicilina G benzatínica <span class="dato">2.400.000 UI</span> IM semanal × <span class="dato">3 dosis</span></strong> (total 7.200.000 UI)</td>
+            </tr>
+            <tr>
+              <td><strong>Neurosífilis</strong> · sífilis ocular u ótica</td>
+              <td><strong>Penicilina G cristalina acuosa <span class="dato">18 – 24 millones UI/día EV</span></strong>, en dosis de 3 – 4 millones cada 4 h o en infusión continua, <strong>× <span class="dato">10 – 14 días</span></strong></td>
+            </tr>
+            <tr>
+              <td><strong>Alergia a la penicilina</strong></td>
+              <td><strong>Doxiciclina 100 mg c/12 h</strong>: <span class="dato">14 días</span> en la temprana, <span class="dato">28 días</span> en la tardía</td>
+            </tr>
+            <tr>
+              <td><strong>Embarazo</strong></td>
+              <td><strong>Penicilina siempre.</strong> Si hay alergia, se <strong>desensibiliza</strong> — es la única droga con eficacia probada para prevenir la <strong>sífilis congénita</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>Reacción de Jarisch-Herxheimer:</strong> fiebre, cefalea, mialgias y exacerbación de las lesiones dentro de las <strong>primeras 24 h</strong> del tratamiento, por <strong>lisis masiva de treponemas</strong>. Es más frecuente en el secundarismo. <strong>No es alergia</strong>, se trata sintomáticamente y <strong>no contraindica continuar</strong>. En la embarazada puede desencadenar contracciones, por lo que se advierte y se controla.</p>
+      </div>
+
+      <h3>Seguimiento</h3>
+      <p>VDRL o RPR <strong>cuantitativa a los 3, 6 y 12 meses</strong>. Se considera respuesta adecuada el <strong>descenso de 4 veces el título</strong> —dos diluciones— entre los 6 y 12 meses.</p>
+
+      <p class="cita">Fuente: Guía de Prevención y Tratamiento de las Infecciones de Transmisión Sexual, Ministerio de Salud de la Nación, y CDC Sexually Transmitted Infections Treatment Guidelines 2021.</p>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-tratamiento" id="secrecion">
+      <span class="seccion__pestana"><b>05</b> Secreción</span>
+      <h2 class="seccion__titulo">ITS con Secreción</h2>
+
+      <h3>Infección gonocócica</h3>
+      <p><strong><em>Neisseria gonorrhoeae</em></strong>: diplococo <strong>Gram negativo intracelular</strong>. Incubación corta, de <strong>2 a 7 días</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Localización</th><th>Cuadro clínico</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Uretritis (hombre)</strong></td><td><strong>Secreción purulenta abundante</strong> y disuria intensa, de comienzo brusco. Complicaciones: <strong>epididimitis</strong>, prostatitis, estenosis uretral</td></tr>
+            <tr><td><strong>Cervicitis (mujer)</strong></td><td>Frecuentemente <strong>asintomática</strong>. Puede dar flujo, sangrado intermenstrual o poscoital. Complicación mayor: <strong>EPI</strong></td></tr>
+            <tr><td><strong>Extragenital</strong></td><td>Faringitis (casi siempre asintomática) · <strong>proctitis</strong> · conjuntivitis, incluida la <strong>oftalmía neonatal</strong></td></tr>
+            <tr><td><strong>Infección diseminada</strong></td><td>Síndrome <strong>artritis-dermatitis</strong>: <strong>poliartralgias migratrices</strong>, <strong>tenosinovitis</strong> y <strong>lesiones cutáneas pustulosas escasas</strong>. Menos frecuentes: endocarditis y meningitis</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Diagnóstico</h4>
+      <ul>
+        <li><strong>Tinción de Gram</strong> de la secreción uretral: <strong>diplococos Gram negativos intracelulares</strong> dentro de PMN. Sensible y específica en el <strong>hombre sintomático</strong>; poco útil en mujer y en localizaciones extragenitales.</li>
+        <li><strong>Cultivo en Thayer-Martin</strong>: es el único que permite <strong>antibiograma</strong>, clave por la resistencia creciente.</li>
+        <li><strong>PCR / NAAT</strong>: la mayor sensibilidad, método de elección actual.</li>
+      </ul>
+
+      <h4>Tratamiento</h4>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Escenario</th><th>Esquema</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Infección anogenital</strong></td><td><strong>Ceftriaxona <span class="dato">500 mg</span> IM dosis única + azitromicina <span class="dato">1 g</span> VO dosis única</strong></td></tr>
+            <tr><td>Alternativa</td><td><strong>Cefixima <span class="dato">400 mg</span> VO dosis única</strong> + azitromicina</td></tr>
+            <tr><td><strong>Infección diseminada</strong></td><td><strong>Ceftriaxona <span class="dato">1 g</span> IM o EV por día × <span class="dato">7 días</span></strong> + azitromicina 1 g dosis única</td></tr>
+            <tr><td>Alternativa en diseminada</td><td><strong>Espectinomicina <span class="dato">2 g</span> IM cada 12 h × <span class="dato">7 días</span></strong> + azitromicina dosis única</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Dos notas sobre este esquema. <strong>(1)</strong> El material de cátedra escribe «estreptomicina» en la alternativa de la infección diseminada; se trata de <strong>espectinomicina</strong> — la estreptomicina no tiene actividad útil contra el gonococo, mientras que la espectinomicina 2 g IM cada 12 h es la alternativa clásica. <strong>(2)</strong> El CDC 2021 pasó a <strong>ceftriaxona 500 mg IM en monoterapia</strong> (1 g si el paciente pesa ≥ 150 kg) y reemplazó la azitromicina por <strong>doxiciclina 100 mg c/12 h × 7 días</strong>, indicada sólo si no se descartó clamidia. El cuadernillo conserva el esquema de la cátedra.</p>
+
+      <h3>Infección por <em>Chlamydia trachomatis</em></h3>
+      <p>Bacteria <strong>intracelular obligada</strong>. Los <strong>serovares D–K</strong> dan la infección genital; los <strong>L1–L3</strong>, el linfogranuloma venéreo. Incubación más larga que la del gonococo: <strong>7 a 21 días</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Cuadro</th><th>Características</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Uretritis no gonocócica</strong></td>
+              <td>Es la <strong>causa más frecuente</strong> de UNG. Secreción <strong>escasa, mucoide o clara</strong>, disuria leve. Curso <strong>insidioso</strong>, a diferencia del comienzo brusco y purulento del gonococo</td>
+            </tr>
+            <tr>
+              <td><strong>Epididimitis</strong></td>
+              <td>En <strong>menores de 35 años</strong>, causa más frecuente junto al gonococo. Dolor y tumefacción escrotal unilateral, con <strong>signo de Prehn positivo</strong> (alivia al elevar el testículo). Diferencial obligado: <strong>torsión testicular</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Proctitis</strong></td>
+              <td>Dolor anal, <strong>tenesmo</strong> y secreción mucopurulenta</td>
+            </tr>
+            <tr>
+              <td><strong>Síndrome de Reiter</strong><br><em>(artritis reactiva)</em></td>
+              <td>Triada <strong>artritis + conjuntivitis + uretritis</strong>, 1 a 4 semanas después de la infección. Se agregan <strong>balanitis circinada</strong> y <strong>queratodermia blenorrágica</strong>. Asociado a <strong>HLA-B27</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Infección cervical</strong></td>
+              <td>Mayormente <strong>asintomática</strong>. Cérvix <strong>friable</strong>, con secreción mucopurulenta y <strong>sangrado al roce</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Síndrome uretral agudo</strong></td>
+              <td>Mujer joven con <strong>disuria y polaquiuria</strong> pero <strong>urocultivo negativo o con recuento bajo</strong> — <strong>piuria estéril</strong>. Hay que pensar en clamidia, no en una ITU común</td>
+            </tr>
+            <tr>
+              <td><strong>EPI</strong><br><em>(enfermedad pelviana inflamatoria)</em></td>
+              <td><strong>Ascenso</strong> de la infección a útero, trompas y peritoneo. Dolor abdominal bajo, <strong>dolor a la movilización del cuello uterino</strong>, fiebre. Secuelas: <strong>infertilidad tubaria, embarazo ectópico y dolor pelviano crónico</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Síndrome de Fitz-Hugh-Curtis</strong></td>
+              <td><strong>Perihepatitis</strong> por diseminación de la EPI. <strong>Dolor en hipocondrio derecho</strong> junto a signos de EPI. En laparoscopía, adherencias <strong>«en cuerdas de violín»</strong> entre la cápsula hepática y la pared abdominal</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>Diagnóstico:</strong> <strong>PCR / NAAT</strong> es el método de elección. El cultivo celular es difícil y quedó relegado.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Escenario</th><th>Esquema</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Infección anogenital no complicada</strong></td>
+              <td><strong>Doxiciclina <span class="dato">100 mg</span> c/12 h × <span class="dato">7 días</span></strong><br>o <strong>azitromicina <span class="dato">1 g</span> VO dosis única</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Linfogranuloma venéreo</strong></td>
+              <td><strong>Doxiciclina <span class="dato">100 mg</span> c/12 h × <span class="dato">14 días</span></strong><br>Azitromicina <span class="dato">1 g</span> VO semanal × <span class="dato">3 semanas</span><br>Eritromicina <span class="dato">500 mg</span> c/6 h × <span class="dato">14 días</span><br>Tetraciclina <span class="dato">500 mg</span> c/6 h × <span class="dato">14 días</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Nota de actualización: el CDC 2021 dejó la <strong>doxiciclina como primera elección</strong> y bajó la azitromicina a alternativa, por menor eficacia en la infección rectal; y extiende el tratamiento del <strong>linfogranuloma venéreo a 21 días</strong> de doxiciclina. El cuadernillo conserva los esquemas de la cátedra.</p>
+
+      <h3>Tricomoniasis vaginal</h3>
+      <ul>
+        <li><strong>La ITS no viral más frecuente del mundo.</strong> Causada por el protozoario <strong><em>Trichomonas vaginalis</em></strong>.</li>
+        <li>A menudo produce <strong>coinfección</strong> con <em>N. gonorrhoeae</em> y <em>C. trachomatis</em>.</li>
+        <li>Se transmite por <strong>vía sexual y por fómites</strong>. Período de incubación de <strong><span class="dato">28 días</span></strong>.</li>
+        <li>Produce <strong>leucorrea profusa, espumosa, amarillo-verdosa y mal oliente</strong>, con abundantes PMN, y <strong>prurito vulvar</strong>. En el examen puede verse el <strong>cérvix «en frutilla»</strong> (colpitis macular).</li>
+        <li>Se observa por <strong>microscopía directa de secreciones</strong>: trofozoítos móviles en fresco.</li>
+        <li>Tratamiento: <strong>metronidazol <span class="dato">2 g</span> dosis única</strong> o <strong><span class="dato">500 mg</span> c/12 h × <span class="dato">7 días</span></strong>.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Con metronidazol hay que <strong>advertir el efecto disulfiram</strong>: nada de alcohol durante el tratamiento y hasta 24 h después. Y como es una ITS, <strong>se trata a la pareja</strong> aunque esté asintomática — sin eso, la reinfección es la regla.</p>
+      </div>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-diferenciales" id="ulceras">
+      <span class="seccion__pestana"><b>06</b> Úlceras</span>
+      <h2 class="seccion__titulo">ITS con Úlcera Genital</h2>
+
+      <p>Cuatro preguntas resuelven casi todo el diferencial: <strong>¿duele?</strong>, <strong>¿está indurada?</strong>, <strong>¿es única o múltiple?</strong> y <strong>¿cómo es el ganglio?</strong></p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 320" role="img" aria-label="Árbol discriminante de la úlcera genital. La primera pregunta es si duele. Si no duele, se pregunta si la base está indurada: si lo está, es sífilis con chancro duro; si no lo está, corresponde a donovanosis, con fondo granulomatoso que sangra, o a linfogranuloma venéreo, con úlcera fugaz seguida de bubón con signo del surco. Si duele, se pregunta si hay vesículas agrupadas: si las hay, es herpes; si no, es chancroide, con úlceras múltiples de bordes irregulares, signo del beso y bubón que fistuliza.">
+          <defs>
+            <marker id="pta-ulc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="270" y="8" width="160" height="44" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="350" y="36" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">¿Duele?</text>
+
+          <line x1="350" y1="52" x2="350" y2="70" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="175" y1="70" x2="525" y2="70" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="175" y1="70" x2="175" y2="92" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ulc)"></line>
+          <line x1="525" y1="70" x2="525" y2="92" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ulc)"></line>
+          <text x="183" y="88" font-size="11" font-weight="700" fill="currentColor">no</text>
+          <text x="533" y="88" font-size="11" font-weight="700" fill="currentColor">sí</text>
+
+          <rect x="95" y="96" width="160" height="44" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="175" y="124" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">¿Indurada?</text>
+
+          <rect x="445" y="96" width="160" height="44" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="525" y="124" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">¿Vesículas?</text>
+
+          <line x1="175" y1="140" x2="175" y2="158" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="91" y1="158" x2="262" y2="158" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="91" y1="158" x2="91" y2="186" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ulc)"></line>
+          <line x1="262" y1="158" x2="262" y2="186" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ulc)"></line>
+          <text x="97" y="180" font-size="11" font-weight="700" fill="currentColor">sí</text>
+          <text x="268" y="180" font-size="11" font-weight="700" fill="currentColor">no</text>
+
+          <line x1="525" y1="140" x2="525" y2="158" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="432" y1="158" x2="603" y2="158" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="432" y1="158" x2="432" y2="186" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ulc)"></line>
+          <line x1="603" y1="158" x2="603" y2="186" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ulc)"></line>
+          <text x="438" y="180" font-size="11" font-weight="700" fill="currentColor">sí</text>
+          <text x="609" y="180" font-size="11" font-weight="700" fill="currentColor">no</text>
+
+          <rect x="14" y="192" width="155" height="110" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="26" y="216" font-size="12" font-weight="700" fill="currentColor">SÍFILIS</text>
+          <text x="26" y="238" font-size="10.5" fill="currentColor" opacity="0.8">Chancro duro</text>
+          <text x="26" y="256" font-size="10.5" fill="currentColor" opacity="0.8">Única, borde neto</text>
+          <text x="26" y="274" font-size="10.5" fill="currentColor" opacity="0.8">Ganglio duro, indoloro</text>
+          <text x="26" y="292" font-size="10.5" fill="currentColor" opacity="0.8">y que no supura</text>
+
+          <rect x="185" y="192" width="155" height="110" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="197" y="216" font-size="12" font-weight="700" fill="currentColor">DONOVANOSIS o LGV</text>
+          <text x="197" y="238" font-size="10.5" fill="currentColor" opacity="0.8">Donovanosis: fondo</text>
+          <text x="197" y="256" font-size="10.5" fill="currentColor" opacity="0.8">granulomatoso y sangra</text>
+          <text x="197" y="274" font-size="10.5" fill="currentColor" opacity="0.8">LGV: fugaz → bubón</text>
+          <text x="197" y="292" font-size="10.5" fill="currentColor" opacity="0.8">con signo del surco</text>
+
+          <rect x="355" y="192" width="155" height="110" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="367" y="216" font-size="12" font-weight="700" fill="currentColor">HERPES</text>
+          <text x="367" y="238" font-size="10.5" fill="currentColor" opacity="0.8">Vesículas agrupadas</text>
+          <text x="367" y="256" font-size="10.5" fill="currentColor" opacity="0.8">sobre base eritematosa</text>
+          <text x="367" y="274" font-size="10.5" fill="currentColor" opacity="0.8">Recurrente</text>
+          <text x="367" y="292" font-size="10.5" fill="currentColor" opacity="0.8">Pródromo de ardor</text>
+
+          <rect x="525" y="192" width="155" height="110" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="537" y="216" font-size="12" font-weight="700" fill="currentColor">CHANCROIDE</text>
+          <text x="537" y="238" font-size="10.5" fill="currentColor" opacity="0.8">Múltiples, bordes</text>
+          <text x="537" y="256" font-size="10.5" fill="currentColor" opacity="0.8">irregulares, no indurada</text>
+          <text x="537" y="274" font-size="10.5" fill="currentColor" opacity="0.8">Signo del beso</text>
+          <text x="537" y="292" font-size="10.5" fill="currentColor" opacity="0.8">Bubón que fistuliza</text>
+        </svg>
+        <figcaption>El dolor es el primer tamiz y el que más rinde: la sífilis y la donovanosis no duelen; el chancroide y el herpes, sí.</figcaption>
+      </figure>
+
+      <h3>Herpes genital</h3>
+      <ul>
+        <li>La familia <strong>Herpesviridae</strong> tiene <strong>80 especies</strong>; sólo <strong>5 afectan al hombre</strong>: <strong>herpes simple 1 y 2, varicela zóster, citomegalovirus y Epstein-Barr</strong>.</li>
+        <li>La infección se inicia con la exposición del virus a mucosas y piel: penetra en las células, comienza su replicación e inicia una <strong>infección de por vida</strong>.</li>
+      </ul>
+
+      <p>La infección por VHS tiene <strong>tres fases</strong>:</p>
+      <ol>
+        <li><strong>Infección primaria mucocutánea.</strong></li>
+        <li><strong>Infección ganglionar aguda.</strong></li>
+        <li><strong>Establecimiento de latencia, reactivación e infección recurrente.</strong></li>
+      </ol>
+
+      <h4>Presentación clínica</h4>
+      <ul>
+        <li><strong>Múltiples vesículas o úlceras</strong> en los órganos sexuales.</li>
+        <li>El <strong>herpes primario</strong> además presenta <strong>fiebre, cefalea, astenia y mialgias</strong>.</li>
+        <li>Localmente: <strong>prurito, disuria, exudado uretral y vaginal</strong>, acompañado de <strong>adenopatías</strong>.</li>
+        <li>Las <strong>recurrencias</strong> son más leves y breves, sin síntomas sistémicos, y suelen anunciarse con un <strong>pródromo</strong> de ardor o parestesias.</li>
+      </ul>
+
+      <h4>Diagnóstico</h4>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Directos</th><th>Indirectos</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Cultivo celular</strong>, tinción de la lesión por <strong>IFD</strong>, microscopía electrónica, ELISA, <strong>hibridación de ADN</strong></td>
+              <td><strong>Pruebas serológicas</strong>, de <strong>valor limitado</strong> ya que sus resultados son <strong>tardíos</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Tratamiento</h4>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Régimen</th><th>Esquemas</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Primer episodio clínico</strong></td>
+              <td>Aciclovir <span class="dato">200 mg</span>, 5 veces al día × 7 días VO<br>Aciclovir <span class="dato">400 mg</span>, 3 veces al día × 7 días VO<br>Valaciclovir <span class="dato">1000 mg</span>, 2 veces al día × 7 días VO<br>Famciclovir <span class="dato">250 mg</span>, 3 veces al día × 7 días VO</td>
+            </tr>
+            <tr>
+              <td><strong>Infección recurrente</strong></td>
+              <td>Aciclovir <span class="dato">200 mg</span>, 5 veces al día × 5 días<br>Aciclovir <span class="dato">400 mg</span>, 3 veces al día × 5 días<br>Aciclovir <span class="dato">800 mg</span>, 2 veces al día × 5 días<br>Valaciclovir <span class="dato">500 mg</span>, 2 veces al día × 5 días<br>Valaciclovir <span class="dato">1000 mg</span>, 1 vez al día × 5 días</td>
+            </tr>
+            <tr>
+              <td><strong>Tratamiento supresivo</strong></td>
+              <td>Aciclovir <span class="dato">400 mg</span>, 2 veces al día en <strong>forma permanente</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Enfermedad grave</strong></td>
+              <td>Aciclovir <span class="dato">5 a 10 mg/kg</span> EV cada 8 h × <span class="dato">5 a 7 días</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Nota: hoy la <strong>PCR</strong> es el método directo de elección por su sensibilidad, y ha desplazado al cultivo celular. El tratamiento antiviral <strong>acorta el episodio y reduce la transmisión, pero no erradica el virus</strong>: la latencia ganglionar persiste de por vida.</p>
+
+      <h3>Chancroide</h3>
+      <p>Producido por <strong><em>Haemophilus ducreyi</em></strong>. Es el «chancro blando», el opuesto exacto del chancro sifilítico.</p>
+      <ul>
+        <li><strong>Úlceras múltiples, planas, de bordes irregulares, no induradas, muy dolorosas.</strong></li>
+        <li><strong>Signo del beso:</strong> consiste en la <strong>autoinoculación de las lesiones al lado contrario</strong> — lesiones «en espejo» sobre las superficies que se contactan.</li>
+        <li>Adenopatía inguinal <strong>dolorosa y unilateral</strong> que se reblandece, <strong>supura y fistuliza por un solo orificio</strong> (bubón).</li>
+        <li>Incubación corta: <strong>3 a 7 días</strong>.</li>
+      </ul>
+      <p><strong>Tratamiento:</strong> azitromicina <span class="dato">1 g</span> VO dosis única · ceftriaxona <span class="dato">250 mg</span> IM dosis única · ciprofloxacina <span class="dato">500 mg</span> c/12 h × 3 días · eritromicina <span class="dato">500 mg</span> c/8 h × 7 días.</p>
+
+      <h3>Linfogranuloma venéreo</h3>
+      <p>Producido por <strong><em>C. trachomatis</em> serovares L1, L2 y L3</strong>. Evoluciona en <strong>tres fases</strong>:</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Fase</th><th>Manifestación</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1 · Primaria</strong></td>
+              <td>Pápula o úlcera pequeña, <strong>indolora y fugaz</strong>, que suele <strong>pasar desapercibida</strong>. Aparece 3 – 30 días después de la exposición</td>
+            </tr>
+            <tr>
+              <td><strong>2 · Secundaria</strong><br><em>(ganglionar o bubónica)</em></td>
+              <td>2 – 6 semanas después. <strong>Adenopatía inguinal o femoral dolorosa</strong> que se reblandece y <strong>fistuliza por múltiples orificios</strong> («en regadera»). <strong>Signo del surco</strong>: el ligamento inguinal divide en dos la masa ganglionar. En HSH puede presentarse como <strong>proctocolitis</strong> hemorrágica</td>
+            </tr>
+            <tr>
+              <td><strong>3 · Terciaria</strong><br><em>(síndrome genito-ano-rectal)</em></td>
+              <td>Fase de <strong>secuelas</strong>: fibrosis, <strong>estenosis rectal</strong>, fístulas y <strong>elefantiasis genital</strong> (estiómeno)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Tratamiento:</strong> el detallado más arriba en la sección de clamidia — doxiciclina 100 mg c/12 h × 14 días como esquema principal.</p>
+
+      <h3>Granuloma inguinal (donovanosis)</h3>
+      <p>Producido por <strong><em>Klebsiella granulomatis</em></strong> (antes <em>Calymmatobacterium granulomatis</em>).</p>
+      <ul>
+        <li>Úlcera <strong>indolora</strong>, de crecimiento lento y progresivo, con fondo <strong>rojo vivo, granulomatoso y muy vascularizado</strong>, que <strong>sangra fácilmente al contacto</strong> — aspecto de «carne viva».</li>
+        <li><strong>No produce adenopatías verdaderas.</strong> Puede haber un <strong>pseudobubón</strong>, que es un granuloma subcutáneo, no un ganglio.</li>
+        <li>Diagnóstico: <strong>cuerpos de Donovan</strong> —bacterias intracitoplasmáticas dentro de macrófagos— en frotis o biopsia con tinción de <strong>Wright o Giemsa</strong>. No crece en medios habituales.</li>
+        <li>Tratamiento: <strong>azitromicina 1 g semanal</strong> o 500 mg/día, durante <strong>al menos 3 semanas y hasta la epitelización completa</strong>. Alternativas: doxiciclina, trimetoprima-sulfametoxazol, ciprofloxacina, eritromicina.</li>
+      </ul>
+
+      <h3>Tabla comparativa</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th></th><th>Sífilis</th><th>Chancroide</th><th>Herpes</th><th>LGV</th><th>Donovanosis</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Agente</strong></td><td><em>T. pallidum</em></td><td><em>H. ducreyi</em></td><td>VHS 1 y 2</td><td><em>C. trachomatis</em> L1–L3</td><td><em>K. granulomatis</em></td></tr>
+            <tr><td><strong>Incubación</strong></td><td>~21 días</td><td>3 – 7 días</td><td>2 – 7 días</td><td>3 – 30 días</td><td>1 – 12 semanas</td></tr>
+            <tr><td><strong>Número</strong></td><td><strong>Única</strong></td><td><strong>Múltiples</strong></td><td>Múltiples vesículas</td><td>Única, fugaz</td><td>Única o pocas</td></tr>
+            <tr><td><strong>Dolor</strong></td><td><strong>Indolora</strong></td><td><strong>Muy dolorosa</strong></td><td>Dolorosa</td><td>Indolora</td><td>Indolora</td></tr>
+            <tr><td><strong>Base</strong></td><td><strong>Indurada</strong>, limpia</td><td>Blanda, sucia, purulenta</td><td>Superficial, eritematosa</td><td>Superficial</td><td><strong>Granulomatosa</strong>, sangra</td></tr>
+            <tr><td><strong>Bordes</strong></td><td>Netos, regulares</td><td><strong>Irregulares</strong>, socavados</td><td>Policíclicos</td><td>Netos</td><td>Elevados</td></tr>
+            <tr><td><strong>Adenopatía</strong></td><td>Dura, indolora, <strong>no supura</strong></td><td>Dolorosa, supura por <strong>un orificio</strong></td><td>Bilateral, dolorosa</td><td><strong>Signo del surco</strong>, varios orificios</td><td><strong>Ausente</strong> (pseudobubón)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-importantes" id="proliferativas">
+      <span class="seccion__pestana"><b>07</b> Proliferativas</span>
+      <h2 class="seccion__titulo">Lesiones Proliferativas &amp; Alertas</h2>
+
+      <h3>Condilomas acuminados</h3>
+      <p>Producidos por el <strong>HPV</strong>, sobre todo los <strong>genotipos 6 y 11</strong>, de <strong>bajo riesgo oncogénico</strong>. Los de alto riesgo —16 y 18— dan lesiones planas y displasia, no verrugas.</p>
+      <ul>
+        <li>Lesiones <strong>vegetantes y papilomatosas</strong>, «en cresta de gallo» o coliflor, <strong>no dolorosas</strong>.</li>
+        <li>Diagnóstico <strong>clínico</strong>. Ayuda el <strong>acetoblanqueo</strong> con ácido acético al 3 – 5 %. Biopsia si la lesión es atípica, pigmentada o no responde.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>No confundir el <strong>condiloma acuminado</strong> del HPV —vegetante, seco, «en cresta de gallo»— con el <strong>condiloma plano</strong> de la sífilis secundaria —<strong>plano, húmedo, macerado</strong> y con <strong>VDRL reactiva</strong>—. Ante un condiloma, pedir serología para sífilis.</p>
+      </div>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Aplicados por el paciente</th><th>Aplicados por el profesional</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <strong>Podofilotoxina 0,5 %</strong> solución o gel: 2 veces al día × 3 días, 4 días de descanso, hasta 4 ciclos<br>
+                <strong>Imiquimod 5 %</strong> crema: 3 veces por semana, hasta 16 semanas<br>
+                Sinecatequinas 15 % pomada
+              </td>
+              <td>
+                <strong>Crioterapia</strong> con nitrógeno líquido<br>
+                <strong>Ácido tricloroacético 80 – 90 %</strong>, semanal<br>
+                <strong>Electrocoagulación</strong><br>
+                <strong>Escisión quirúrgica</strong> · láser
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>La <strong>podofilotoxina y el imiquimod están contraindicados en el embarazo</strong>. En la embarazada se usan ácido tricloroacético, crioterapia o escisión. La <strong>vacuna contra el HPV</strong> está en el Calendario Nacional argentino a los <strong>11 años</strong> para niñas y niños: <strong>previene, no trata</strong> las lesiones ya presentes.</p>
+
+      <h3>Molusco contagioso</h3>
+      <ul>
+        <li>Producido por un <strong>Poxvirus</strong> (<em>Molluscipoxvirus</em>).</li>
+        <li><strong>Pápulas hemisféricas umbilicadas</strong> en el centro, color piel o perladas, de 2 – 5 mm, no dolorosas. Al exprimirlas sale un material blanquecino.</li>
+        <li>En el <strong>adulto</strong>, la localización genital se considera de <strong>transmisión sexual</strong>; en el niño es por contacto habitual.</li>
+        <li>Diagnóstico <strong>clínico</strong>. En histología, <strong>cuerpos de Henderson-Paterson</strong>.</li>
+        <li>Tratamiento: en el inmunocompetente es <strong>autolimitado</strong> —resuelve en meses—. Si se trata: <strong>curetaje</strong>, crioterapia, ácido tricloroacético, imiquimod o hidróxido de potasio.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Un molusco contagioso con <strong>lesiones múltiples, extensas o de gran tamaño en un adulto</strong> obliga a sospechar <strong>inmunosupresión</strong> y a <strong>solicitar serología para HIV</strong>.</p>
+      </div>
+
+      <h3>Alertas transversales</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Situación</th><th>Conducta</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Toda ITS diagnosticada</strong></td><td>Estudiar las demás: <strong>HIV, VDRL, hepatitis B y C</strong></td></tr>
+            <tr><td><strong>Pareja sexual</strong></td><td><strong>Tratar siempre</strong>, aunque esté asintomática, y en el mismo momento</td></tr>
+            <tr><td><strong>Embarazo</strong></td><td><strong>Tamizaje de sífilis en cada trimestre y al parto.</strong> La penicilina es la única droga que previene la sífilis congénita</td></tr>
+            <tr><td><strong>Úlcera genital dolorosa con ganglio que fistuliza</strong></td><td>Chancroide o LGV — <strong>no</strong> sífilis</td></tr>
+            <tr><td><strong>Condiloma</strong></td><td>Pedir VDRL: puede ser un <strong>condiloma plano</strong> de sífilis secundaria</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ Repaso activo ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-fisiopatologia">
+          <summary>Describí el chancro y el ganglio de Ricord.</summary>
+          <div class="fc__r"><strong>Chancro duro</strong>: úlcera <strong>única, indolora</strong>, de bordes netos, fondo limpio y <strong>base indurada</strong>; cura sola en 3 – 6 semanas. <strong>Pléyade ganglionar de Ricord</strong>: varios ganglios con uno mayor —el centinela—, <strong>duros, indoloros, móviles y que no supuran</strong>.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>Nombrá las cuatro lesiones del secundarismo.</summary>
+          <div class="fc__r"><strong>Roséola sifilítica</strong> (primera manifestación), <strong>sifílides papulosas</strong> con compromiso palmoplantar y collarete de Biett, <strong>condiloma plano</strong> (el más contagioso) y <strong>alopecia «en comida de ratón»</strong>.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Hasta cuándo hay recidivas y qué pasa después?</summary>
+          <div class="fc__r">Durante el <strong>primer año</strong>, con brotes cada vez <strong>menos floridos y más localizados</strong>. Pasado el año cesan y la enfermedad entra en <strong>latencia</strong>. Ese corte separa la sífilis temprana de la tardía.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué es la pupila de Argyll Robertson y en qué cuadro aparece?</summary>
+          <div class="fc__r">Pupila <strong>miótica e irregular que no reacciona a la luz pero conserva la acomodación</strong> — «acomoda pero no reacciona». Aparece en la <strong>tabes dorsal</strong> y puede verse también en la parálisis general progresiva.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Enumerá los rasgos de la tabes dorsal.</summary>
+          <div class="fc__r">Degeneración de los <strong>cordones posteriores</strong>: <strong>ataxia sensitiva</strong> con marcha talonante y Romberg positivo, <strong>dolores lancinantes</strong> y crisis viscerales, <strong>arreflexia</strong> en miembros inferiores, <strong>abolición de la sensibilidad profunda</strong>, <strong>Argyll Robertson</strong>, artropatía de Charcot y mal perforante plantar.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Cuál prueba sirve para seguimiento y cuál no? ¿Por qué?</summary>
+          <div class="fc__r">Sólo las <strong>no treponémicas (VDRL, RPR)</strong>, porque son <strong>cuantitativas</strong>. Las <strong>treponémicas quedan reactivas de por vida</strong> («cicatriz serológica»). Éxito terapéutico = <strong>descenso de 4 veces el título</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>VDRL no reactiva en una embarazada con lesiones sospechosas: ¿qué pensás?</summary>
+          <div class="fc__r"><strong>Fenómeno de prozona</strong>: falso negativo por <strong>exceso de anticuerpos</strong>. Se corrige <strong>diluyendo la muestra</strong>. Es clásico justamente en el secundarismo y el embarazo.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Esquema de penicilina en sífilis temprana, tardía y neurosífilis.</summary>
+          <div class="fc__r"><strong>Temprana</strong>: benzatínica 2.400.000 UI IM <strong>dosis única</strong>. <strong>Latente tardía o terciaria</strong>: benzatínica 2.400.000 UI IM <strong>semanal × 3</strong>. <strong>Neurosífilis</strong>: penicilina G <strong>cristalina acuosa 18 – 24 millones UI/día EV × 10 – 14 días</strong>.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Qué es el síndrome de Fitz-Hugh-Curtis?</summary>
+          <div class="fc__r"><strong>Perihepatitis</strong> por diseminación de una EPI: dolor en <strong>hipocondrio derecho</strong> con signos de EPI. En laparoscopía, adherencias <strong>«en cuerdas de violín»</strong> entre la cápsula hepática y la pared abdominal.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Mujer joven con disuria y urocultivo negativo. ¿Diagnóstico?</summary>
+          <div class="fc__r"><strong>Síndrome uretral agudo</strong> por <em>Chlamydia trachomatis</em>: disuria y polaquiuria con <strong>piuria estéril</strong>. No es una ITU común.</div>
+        </details>
+
+        <details class="fc s-diferenciales">
+          <summary>¿Qué es el signo del beso y el signo del surco?</summary>
+          <div class="fc__r"><strong>Signo del beso</strong> (chancroide): <strong>autoinoculación de la lesión al lado contrario</strong>. <strong>Signo del surco</strong> (LGV): el <strong>ligamento inguinal divide en dos</strong> la masa ganglionar.</div>
+        </details>
+
+        <details class="fc s-diferenciales">
+          <summary>Úlcera indolora que sangra al contacto y sin adenopatías: ¿qué es?</summary>
+          <div class="fc__r"><strong>Donovanosis</strong>. Fondo <strong>granulomatoso rojo vivo</strong>, muy vascularizado. No da adenopatías verdaderas, sí <strong>pseudobubón</strong>. Diagnóstico por <strong>cuerpos de Donovan</strong>.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Triada clave</dt>
+        <dd><strong>Sífilis primaria</strong> = chancro <strong>único, indoloro e indurado</strong> + <strong>ganglio de Ricord</strong> duro que no supura. <strong>Secundarismo</strong> = roséola, sifílides palmoplantares, condiloma plano y alopecia apolillada.</dd>
+
+        <dt class="r-gold">Estudio de elección</dt>
+        <dd><strong>Campo oscuro</strong> del chancro en la primaria. Después, <strong>VDRL/RPR cuantitativa</strong> para tamizar y seguir, confirmada con una <strong>treponémica</strong> (que queda reactiva de por vida).</dd>
+
+        <dt class="r-tto">Tratamiento de 1ª línea</dt>
+        <dd><strong>Sífilis temprana</strong>: penicilina G benzatínica <strong>2.400.000 UI IM dosis única</strong>. <strong>Gonococo</strong>: ceftriaxona 500 mg IM + azitromicina 1 g. <strong>Clamidia</strong>: doxiciclina 100 mg c/12 h × 7 días. <strong>Tricomonas</strong>: metronidazol 2 g DU.</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd><strong>Jarisch-Herxheimer</strong> en las primeras 24 h: no es alergia, no suspender. <strong>Embarazo</strong>: penicilina siempre, desensibilizar si hay alergia. <strong>Molusco extenso en adulto</strong> → pedir HIV.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir del temario y el material de cátedra, complementado con la Guía de Prevención y Tratamiento de las ITS del Ministerio de Salud de la Nación y las CDC Sexually Transmitted Infections Treatment Guidelines 2021. Material de estudio: no reemplaza el criterio clínico ni la guía institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link'));
+
+  function porMeta(hash){
+    for (var i = 0; i < enlaces.length; i++){
+      if (enlaces[i].getAttribute('href') === '#' + hash) return enlaces[i];
+    }
+    return null;
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var enlace = porMeta(e.target.id);
+        if (!enlace) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          enlace.setAttribute('aria-current', 'true');
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>
+<script>
+(function(){
+  "use strict";
+  var clave = document.body.dataset.clave || "";
+  var enApp = typeof window.WordmedApp !== "undefined";
+  var MEM = "wordmed:progreso";
+
+  function leer(){ try{ return JSON.parse(localStorage.getItem(MEM)) || {}; }catch(e){ return {}; } }
+  function guardar(m){ try{ localStorage.setItem(MEM, JSON.stringify(m)); }catch(e){} }
+
+  function alto(){
+    return Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+  }
+
+  /* retomar donde quedó */
+  if (clave) {
+    var m = leer()[clave];
+    if (m && m.y > 0) {
+      window.addEventListener("load", function(){
+        window.scrollTo(0, Math.min(m.y, alto()));
+      });
+    }
+  }
+
+  /* anotar el avance, sin ahogar el scroll */
+  var pendiente = false;
+  window.addEventListener("scroll", function(){
+    if (pendiente || !clave) return;
+    pendiente = true;
+    requestAnimationFrame(function(){
+      pendiente = false;
+      var y = window.scrollY;
+      var pct = Math.round((y / alto()) * 100);
+      pct = Math.max(0, Math.min(100, pct));
+      var m = leer();
+      m[clave] = { y: y, pct: pct, ts: Date.now() };
+      guardar(m);
+      if (enApp && window.WordmedApp.progreso) window.WordmedApp.progreso(clave, pct, y);
+    });
+  }, { passive: true });
+
+  /* volver: solo cuando vinimos de la cáscara web */
+  if (!enApp && document.referrer && document.referrer.indexOf(location.origin) === 0) {
+    var b = document.createElement("button");
+    b.className = "volver";
+    b.type = "button";
+    b.setAttribute("aria-label", "Volver");
+    b.innerHTML = '<svg class="volver__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg>';
+    b.addEventListener("click", function(){ history.back(); });
+    document.body.appendChild(b);
+  }
+})();
+</script>
+</body>
+</html>

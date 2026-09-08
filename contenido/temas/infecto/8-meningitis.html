@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meningitis</title>
+<link rel="stylesheet" href="../../fuentes/fuentes.css">
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+}
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índice lateral ---------- */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Ficha de sección ---------- */
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.35rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-row:1/3; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+.importante__titulo{
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso{ display:none !important; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+<style>
+/* Fuentes de la capa de contenido. Va después del estilo del
+   cuadernillo para pisar las de Windows, que no se pueden
+   redistribuir y no existen en Android. */
+:root{
+  --f-titulo:'Spectral',Georgia,'Times New Roman',serif;
+  --f-texto:'Open Sans',system-ui,-apple-system,sans-serif;
+  --f-dato:'Cascadia Mono','Cascadia Code',ui-monospace,Consolas,monospace;
+}
+/* Botón de volver, espejo del de tema que ya trae el cuadernillo. */
+.volver{
+  position:fixed; top:.7rem; left:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.volver:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.volver__icono{ width:1.15rem; height:1.15rem; display:block; }
+</style>
+</head>
+<body data-clave="infecto/8-meningitis">
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-generalidades"  href="#generalidades">Generalidades &amp; Clasificación</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#fisiopatologia">Fisiopatología del LCR</a></li>
+      <li><a class="indice__link i-clinica"        href="#clinica">Cuadro Clínico</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#diagnostico">Punción Lumbar &amp; LCR</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#tratamiento">Tratamiento &amp; Profilaxis</a></li>
+      <li><a class="indice__link i-importantes"    href="#importantes">Aspectos Importantes</a></li>
+      <li><a class="indice__link i-diferenciales"  href="#diferenciales">Diagnósticos Diferenciales</a></li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Infectología · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Meningitis</h1>
+      <p class="portada__bajada">Inflamación de las leptomeninges. Una emergencia médica en la que el diagnóstico y el tratamiento corren en paralelo: la punción lumbar define la etiología, pero el antibiótico empírico no la espera.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">Denuncia obligatoria</span>
+        <span class="etiqueta s-diagnostico">Punción lumbar · LCR</span>
+        <span class="etiqueta s-tratamiento">Empírico + dexametasona</span>
+        <span class="etiqueta s-importantes">Mortalidad 25 %</span>
+      </div>
+    </header>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="generalidades">
+      <span class="seccion__pestana"><b>01</b> Base</span>
+      <h2 class="seccion__titulo">Generalidades, Etiología &amp; Clasificación</h2>
+
+      <h3>Definición</h3>
+      <ul>
+        <li><strong>Inflamación de las leptomeninges</strong> —<strong>piamadre y aracnoides</strong>— que cubren el cerebro.</li>
+        <li><strong>LCR con pleocitosis</strong>: en adultos, <span class="dato">&gt; 5 leucocitos/mL</span>.</li>
+        <li><strong>Meningitis infecciosa:</strong> hay un <strong>agente infeccioso en el LCR</strong>.</li>
+        <li>Es una <strong>EMERGENCIA MÉDICA</strong> por su <strong>alta morbilidad y mortalidad</strong>, y es de <strong>denuncia obligatoria</strong>.</li>
+      </ul>
+
+      <p>El abordaje se apoya en tres patas que se usan juntas: <strong>clínica</strong>, <strong>exámenes complementarios</strong> y <strong>epidemiología</strong>.</p>
+
+      <h3>Causas en adultos inmunocompetentes</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Grupo</th><th>Frecuencia</th><th>Agentes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Virus</strong></td><td><strong><span class="dato">50 %</span></strong> de las meningitis</td><td>Más frecuentes: <strong>enterovirus</strong>, <strong>herpes simple</strong>, <strong>varicela zóster</strong></td></tr>
+            <tr><td><strong>Bacterias</strong></td><td><strong><span class="dato">25 %</span></strong> de los casos</td><td><strong><em>Streptococcus pneumoniae</em></strong> y <strong><em>Neisseria meningitidis</em></strong></td></tr>
+            <tr><td><strong>Otras causas</strong></td><td><span class="dato">&lt; 10 %</span> de los casos</td><td><em>Haemophilus influenzae</em>, <em>Listeria monocytogenes</em>, <em>Mycobacterium tuberculosis</em> y hongos (<strong>criptococos</strong>)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Etiología bacteriana según el grupo etario</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Grupo etario</th><th>Microorganismos</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Menores de 1 mes</strong></td><td><em>Streptococcus agalactiae</em> · <em>Streptococcus pneumoniae</em> · <em>Escherichia coli</em> · <strong><em>Listeria monocytogenes</em></strong></td></tr>
+            <tr><td><strong>1 – 3 meses</strong></td><td><em>Streptococcus pneumoniae</em> · <em>Neisseria meningitidis</em> · <em>Haemophilus influenzae</em> tipo b (Hib) · <em>Streptococcus agalactiae</em></td></tr>
+            <tr><td><strong>Más de 3 meses</strong></td><td><em>Neisseria meningitidis</em> · <em>Streptococcus pneumoniae</em></td></tr>
+            <tr><td><strong>Adolescentes y adultos jóvenes</strong></td><td><em>Neisseria meningitidis</em> · <em>Streptococcus pneumoniae</em></td></tr>
+            <tr><td><strong>Adultos mayores</strong></td><td><em>Streptococcus pneumoniae</em> · <em>Neisseria meningitidis</em> · <em>Haemophilus influenzae</em> tipo b (Hib) · <strong><em>Listeria monocytogenes</em></strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong><em>Listeria</em> reaparece en los dos extremos de la vida</strong> —recién nacidos y adultos mayores— y ésa es exactamente la razón por la que el esquema empírico cambia según la edad.</p>
+
+      <h3>Clasificación</h3>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 340" role="img" aria-label="Tres ejes de clasificación de la meningitis. Por aspecto del líquido cefalorraquídeo: el LCR turbio corresponde a las bacterianas, que son una emergencia infectológica con mayor morbimortalidad, requieren diagnóstico y tratamiento rápidos y tienen mortalidad del veinticinco por ciento y morbilidad del sesenta por ciento; el LCR claro corresponde a virales, fúngicas y autoinmunes, con menor morbimortalidad y existen causas no infecciosas. Por tiempo evolutivo: aguda de cuarenta y ocho a setenta y dos horas, subaguda de tres días a un mes, crónica más de un mes. Por etiología: infecciosa viral, bacteriana o fúngica, y no infecciosa química, post radioterapia o neoplásica.">
+          <text x="10" y="22" font-size="12.5" font-weight="700" fill="currentColor">Tres ejes que se usan simultáneamente</text>
+
+          <rect x="10" y="36" width="334" height="160" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="26" y="60" font-size="12.5" font-weight="700" fill="currentColor">LCR TURBIO → BACTERIANAS</text>
+          <text x="26" y="84" font-size="10.5" fill="currentColor" opacity="0.85">Constituyen una emergencia infectológica</text>
+          <text x="26" y="101" font-size="10.5" fill="currentColor" opacity="0.85">Presentan mayor morbimortalidad</text>
+          <text x="26" y="118" font-size="10.5" fill="currentColor" opacity="0.85">Requieren diagnóstico y tratamiento rápidos</text>
+          <text x="26" y="135" font-size="10.5" fill="currentColor" opacity="0.85">para evitar evolución fatal o secuelas</text>
+          <text x="26" y="152" font-size="10.5" fill="currentColor" opacity="0.85">irreversibles</text>
+          <line x1="26" y1="164" x2="328" y2="164" stroke="currentColor" stroke-opacity="0.3" stroke-width="1"></line>
+          <text x="26" y="185" font-size="11.5" font-weight="700" fill="currentColor">Mortalidad 25 %   ·   Morbilidad 60 %</text>
+
+          <rect x="356" y="36" width="334" height="160" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.45" stroke-width="1.4"></rect>
+          <text x="372" y="60" font-size="12.5" font-weight="700" fill="currentColor">LCR CLARO</text>
+          <text x="372" y="84" font-size="10.5" fill="currentColor" opacity="0.85">Virales · fúngicas · autoinmunes</text>
+          <text x="372" y="101" font-size="10.5" fill="currentColor" opacity="0.85">Evolución con menor morbimortalidad</text>
+          <text x="372" y="118" font-size="10.5" fill="currentColor" opacity="0.85">Existen causas no infecciosas</text>
+          <line x1="372" y1="140" x2="674" y2="140" stroke="currentColor" stroke-opacity="0.3" stroke-width="1"></line>
+          <text x="372" y="161" font-size="10.5" font-weight="700" fill="currentColor">Cuidado: el LCR claro no descarta gravedad.</text>
+          <text x="372" y="178" font-size="10.5" fill="currentColor" opacity="0.75">La tuberculosa puede verse clara o turbia.</text>
+
+          <rect x="10" y="212" width="334" height="118" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.4"></rect>
+          <text x="26" y="236" font-size="12.5" font-weight="700" fill="currentColor">POR TIEMPO EVOLUTIVO</text>
+          <text x="26" y="262" font-size="11" fill="currentColor" opacity="0.85">Aguda: 48 – 72 h</text>
+          <text x="26" y="284" font-size="11" fill="currentColor" opacity="0.85">Subaguda: 3 días a 1 mes</text>
+          <text x="26" y="306" font-size="11" fill="currentColor" opacity="0.85">Crónica: más de 1 mes</text>
+
+          <rect x="356" y="212" width="334" height="118" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.4"></rect>
+          <text x="372" y="236" font-size="12.5" font-weight="700" fill="currentColor">POR ETIOLOGÍA</text>
+          <text x="372" y="262" font-size="11" font-weight="700" fill="currentColor">Infecciosa</text>
+          <text x="372" y="279" font-size="10.5" fill="currentColor" opacity="0.85">Viral · bacteriana · fúngica</text>
+          <text x="372" y="301" font-size="11" font-weight="700" fill="currentColor">No infecciosa</text>
+          <text x="372" y="318" font-size="10.5" fill="currentColor" opacity="0.85">Química · post-radioterapia · neoplásica</text>
+        </svg>
+        <figcaption>El aspecto del LCR es el eje que decide la urgencia; el tiempo evolutivo y la etiología orientan qué buscar. Los tres se aplican al mismo paciente.</figcaption>
+      </figure>
+
+      <p class="cita">Fuente: clase «Meningitis» de la Dra. Macarena Pérez, residente de 2.º año de Infectología, HTJS.</p>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-fisiopatologia" id="fisiopatologia">
+      <span class="seccion__pestana"><b>02</b> Mecanismo</span>
+      <h2 class="seccion__titulo">Por qué el LCR cambia como cambia</h2>
+
+      <p>La tabla del LCR es lo más examinable del tema, y se vuelve mucho más fácil de retener cuando se entiende <strong>de dónde sale cada valor</strong>. Todo se desprende de <strong>qué célula responde</strong>: el neutrófilo en la bacteriana, el linfocito en la viral.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 412" role="img" aria-label="Mecanismo que explica el perfil del líquido cefalorraquídeo en la meningitis bacteriana. La bacteria en el espacio subaracnoideo desencadena una respuesta inflamatoria neutrofílica intensa. De ahí se derivan cuatro consecuencias: la celularidad muy alta vuelve turbio el LCR con mil a diez mil células por milímetro cúbico; la célula reclutada es el neutrófilo, que supera el sesenta por ciento; los neutrófilos y las bacterias consumen glucosa, que baja por debajo de cuarenta y cinco con un índice LCR sobre plasma menor a cero coma tres; y el aumento de permeabilidad de la barrera hematoencefálica eleva las proteínas por encima de cincuenta. En la meningitis viral la respuesta es linfocitaria y no consume glucosa, por lo que el LCR queda claro, con linfocitos, glucosa normal y proteínas poco elevadas.">
+          <defs>
+            <marker id="pta-lcr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="175" y="8" width="350" height="44" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.45" stroke-width="1.3"></rect>
+          <text x="350" y="36" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">Bacteria en el espacio subaracnoideo</text>
+
+          <line x1="350" y1="52" x2="350" y2="70" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-lcr)"></line>
+
+          <rect x="175" y="72" width="350" height="44" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="350" y="100" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">Respuesta inflamatoria NEUTROFÍLICA intensa</text>
+
+          <line x1="350" y1="116" x2="350" y2="140" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="91" y1="140" x2="613" y2="140" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="91" y1="140" x2="91" y2="164" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-lcr)"></line>
+          <line x1="265" y1="140" x2="265" y2="164" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-lcr)"></line>
+          <line x1="439" y1="140" x2="439" y2="164" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-lcr)"></line>
+          <line x1="613" y1="140" x2="613" y2="164" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-lcr)"></line>
+
+          <rect x="10" y="166" width="162" height="134" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.4"></rect>
+          <text x="24" y="190" font-size="10.5" fill="currentColor" opacity="0.8">Celularidad muy</text>
+          <text x="24" y="206" font-size="10.5" fill="currentColor" opacity="0.8">alta en el líquido</text>
+          <text x="24" y="234" font-size="11.5" font-weight="700" fill="currentColor">→ LCR TURBIO</text>
+          <line x1="24" y1="248" x2="158" y2="248" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="24" y="268" font-size="10.5" fill="currentColor" opacity="0.8">1.000 – 10.000</text>
+          <text x="24" y="284" font-size="10.5" fill="currentColor" opacity="0.8">cel/mm³</text>
+
+          <rect x="184" y="166" width="162" height="134" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.4"></rect>
+          <text x="198" y="190" font-size="10.5" fill="currentColor" opacity="0.8">La célula reclutada</text>
+          <text x="198" y="206" font-size="10.5" fill="currentColor" opacity="0.8">es el neutrófilo</text>
+          <text x="198" y="234" font-size="11.5" font-weight="700" fill="currentColor">→ Neutrófilos</text>
+          <line x1="198" y1="248" x2="332" y2="248" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="198" y="268" font-size="10.5" fill="currentColor" opacity="0.8">&gt; 60 % del</text>
+          <text x="198" y="284" font-size="10.5" fill="currentColor" opacity="0.8">recuento</text>
+
+          <rect x="358" y="166" width="162" height="134" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.4"></rect>
+          <text x="372" y="190" font-size="10.5" fill="currentColor" opacity="0.8">Neutrófilos y</text>
+          <text x="372" y="206" font-size="10.5" fill="currentColor" opacity="0.8">bacterias consumen</text>
+          <text x="372" y="222" font-size="10.5" fill="currentColor" opacity="0.8">glucosa</text>
+          <text x="372" y="248" font-size="11.5" font-weight="700" fill="currentColor">→ Glucosa &lt; 45</text>
+          <line x1="372" y1="262" x2="506" y2="262" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="372" y="282" font-size="10.5" fill="currentColor" opacity="0.8">Índice LCR/plasma</text>
+          <text x="372" y="296" font-size="10.5" fill="currentColor" opacity="0.8">&lt; 0,3</text>
+
+          <rect x="532" y="166" width="162" height="134" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.4"></rect>
+          <text x="546" y="190" font-size="10.5" fill="currentColor" opacity="0.8">↑ permeabilidad</text>
+          <text x="546" y="206" font-size="10.5" fill="currentColor" opacity="0.8">de la barrera</text>
+          <text x="546" y="222" font-size="10.5" fill="currentColor" opacity="0.8">hematoencefálica</text>
+          <text x="546" y="248" font-size="11.5" font-weight="700" fill="currentColor">→ Proteínas ↑</text>
+          <line x1="546" y1="262" x2="680" y2="262" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="546" y="282" font-size="10.5" fill="currentColor" opacity="0.8">&gt; 50 mg/dL por</text>
+          <text x="546" y="296" font-size="10.5" fill="currentColor" opacity="0.8">exudado plasmático</text>
+
+          <rect x="10" y="322" width="684" height="80" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.3" stroke-dasharray="5 3"></rect>
+          <text x="26" y="346" font-size="12" font-weight="700" fill="currentColor">En la meningitis VIRAL la respuesta es LINFOCITARIA — y el linfocito no consume glucosa</text>
+          <text x="26" y="370" font-size="11" fill="currentColor" opacity="0.8">Por eso el LCR queda claro, con predominio de linfocitos, glucosa NORMAL (45 – 81) e índice LCR/plasma &gt; 0,5.</text>
+          <text x="26" y="390" font-size="11" fill="currentColor" opacity="0.8">Las proteínas suben poco (&lt; 100), porque la barrera no se rompe con la misma intensidad.</text>
+        </svg>
+        <figcaption>Un solo dato —qué célula responde— predice las cuatro filas de la tabla del LCR. La glucosa baja no porque «la bacteria la coma», sino porque la consume la respuesta celular que ella desencadena.</figcaption>
+      </figure>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>La <strong>tuberculosa</strong> rompe el patrón simple: tiene respuesta <strong>linfocitaria</strong> como la viral, pero <strong>consume glucosa</strong> como la bacteriana. Ese cruce —<strong>linfocitos + glucosa baja + proteínas altas</strong>— es su firma en el LCR.</p>
+      </div>
+
+      <p class="cita">Fuente: el mecanismo que subyace al perfil del LCR no figura explícitamente en la presentación de cátedra y se agrega para dar sentido a la tabla comparativa. Concordante con Harrison, Principios de Medicina Interna, capítulo de meningitis bacteriana aguda, y con Mandell, Douglas y Bennett, Enfermedades infecciosas: principios y práctica.</p>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-clinica" id="clinica">
+      <span class="seccion__pestana"><b>03</b> Clínica</span>
+      <h2 class="seccion__titulo">Cuadro Clínico</h2>
+
+      <h3>La tétrada, y cómo se usa</h3>
+      <p>El <span class="dato">95 %</span> de los pacientes presenta <strong>dos o más</strong> de los siguientes cuatro síntomas:</p>
+      <ul>
+        <li><strong>Cefalea.</strong></li>
+        <li><strong>Rigidez de nuca.</strong></li>
+        <li><strong>Fiebre.</strong></li>
+        <li><strong>Alteración de la conciencia.</strong></li>
+      </ul>
+      <p>No hace falta la tétrada completa: con <strong>dos de los cuatro</strong> ya hay que pensar en meningitis y actuar en consecuencia.</p>
+
+      <h3>Signos meníngeos</h3>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 306" role="img" aria-label="Los tres signos meníngeos. Rigidez de nuca: se intenta flexionar el cuello del paciente y, si hay irritación meníngea, la cabeza y el tronco se elevan en un mismo bloque, con dolor y espasmo de los músculos del cuello. Signo de Kernig: se eleva la pierna extendida y el paciente flexiona la rodilla de forma refleja, con dolor en la cara posterior del muslo que impide completar la maniobra; también aparece en radiculopatías. Signo de Brudzinski: con el paciente en decúbito supino se flexiona el cuello y el paciente flexiona de forma inconsciente ambas rodillas.">
+          <rect x="10" y="8" width="680" height="32" rx="3" fill="var(--c)" fill-opacity="0.9"></rect>
+          <text x="26" y="30" font-size="11.5" font-weight="700" fill="#FFFFFF">SIGNO</text>
+          <text x="200" y="30" font-size="11.5" font-weight="700" fill="#FFFFFF">CÓMO SE EXPLORA</text>
+          <text x="410" y="30" font-size="11.5" font-weight="700" fill="#FFFFFF">RESPUESTA SI HAY IRRITACIÓN MENÍNGEA</text>
+
+          <rect x="10" y="50" width="680" height="76" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.4"></rect>
+          <line x1="190" y1="50" x2="190" y2="126" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></line>
+          <line x1="400" y1="50" x2="400" y2="126" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></line>
+          <text x="26" y="84" font-size="12" font-weight="700" fill="currentColor">Rigidez de nuca</text>
+          <text x="206" y="84" font-size="10.5" fill="currentColor" opacity="0.85">Se intenta flexionar</text>
+          <text x="206" y="100" font-size="10.5" fill="currentColor" opacity="0.85">el cuello del paciente</text>
+          <text x="416" y="78" font-size="10.5" font-weight="700" fill="currentColor">La cabeza y el tronco se elevan en un mismo bloque</text>
+          <text x="416" y="96" font-size="10.5" fill="currentColor" opacity="0.8">Dolor y espasmo de los músculos del cuello</text>
+
+          <rect x="10" y="134" width="680" height="76" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.4"></rect>
+          <line x1="190" y1="134" x2="190" y2="210" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></line>
+          <line x1="400" y1="134" x2="400" y2="210" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></line>
+          <text x="26" y="168" font-size="12" font-weight="700" fill="currentColor">Signo de Kernig</text>
+          <text x="206" y="168" font-size="10.5" fill="currentColor" opacity="0.85">Se eleva la pierna</text>
+          <text x="206" y="184" font-size="10.5" fill="currentColor" opacity="0.85">extendida</text>
+          <text x="416" y="162" font-size="10.5" font-weight="700" fill="currentColor">El paciente flexiona la rodilla de forma refleja</text>
+          <text x="416" y="180" font-size="10.5" fill="currentColor" opacity="0.8">Dolor en la cara posterior del muslo: no se puede</text>
+          <text x="416" y="196" font-size="10.5" fill="currentColor" opacity="0.8">completar la maniobra. También en radiculopatías.</text>
+
+          <rect x="10" y="218" width="680" height="76" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.4"></rect>
+          <line x1="190" y1="218" x2="190" y2="294" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></line>
+          <line x1="400" y1="218" x2="400" y2="294" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></line>
+          <text x="26" y="252" font-size="12" font-weight="700" fill="currentColor">Signo de Brudzinski</text>
+          <text x="206" y="246" font-size="10.5" fill="currentColor" opacity="0.85">En decúbito supino,</text>
+          <text x="206" y="262" font-size="10.5" fill="currentColor" opacity="0.85">se flexiona el cuello</text>
+          <text x="416" y="246" font-size="10.5" font-weight="700" fill="currentColor">El paciente flexiona de forma inconsciente</text>
+          <text x="416" y="264" font-size="10.5" font-weight="700" fill="currentColor">ambas rodillas</text>
+          <text x="416" y="282" font-size="10.5" fill="currentColor" opacity="0.8">Es una respuesta refleja, no voluntaria.</text>
+        </svg>
+        <figcaption>Kernig y Brudzinski son la misma idea explorada desde dos extremos: cualquier maniobra que estire las meninges inflamadas produce dolor y una flexión refleja de defensa.</figcaption>
+      </figure>
+
+      <h3>Dos pistas etiológicas que da el examen</h3>
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>La presencia de <strong>exantema</strong> en una presunta meningitis <strong>aumenta la probabilidad de <em>Neisseria meningitidis</em></strong>. Es el hallazgo que además obliga a indicar <strong>aislamiento respiratorio</strong> y a planificar la <strong>profilaxis de los contactos</strong>.</p>
+      </div>
+
+      <h3>Cuándo sospechar <em>Listeria monocytogenes</em></h3>
+      <p>Los <strong>factores de riesgo</strong> son las <strong>enfermedades crónicas</strong>, la <strong>diabetes</strong>, el <strong>alcoholismo</strong>, los <strong>tumores malignos</strong> y la <strong>edad</strong>. Es <strong>raro en inmunocompetentes menores de 65 años</strong> — y ese umbral es exactamente el que define a quién se le agrega ampicilina en el esquema empírico.</p>
+
+      <p class="cita">Fuente: clase «Meningitis» de la cátedra de Infectología.</p>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-diagnostico" id="diagnostico">
+      <span class="seccion__pestana"><b>04</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">Punción Lumbar &amp; Análisis del LCR</h2>
+
+      <p>La regla del tema es corta: <strong>meningitis pensada, punción lumbar realizada</strong>. Sin LCR no hay diagnóstico etiológico, y sin diagnóstico etiológico el tratamiento empírico se vuelve definitivo.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 372" role="img" aria-label="Algoritmo diagnóstico de la meningitis. Ante la sospecha clínica, con dos o más de cefalea, rigidez de nuca, fiebre y alteración de la conciencia, se descartan las contraindicaciones de la punción lumbar —plaquetopenia, coagulopatía, hipertensión endocraneana y absceso epidural espinal— y se evalúa si hay indicación de tomografía de encéfalo previa, que son inmunocompromiso, historia de enfermedad del sistema nervioso central, convulsiones de comienzo reciente, papiledema, alteración del sensorio y déficit neurológico. Luego se realiza la punción lumbar entre L3 y L4 o entre L4 y L5 y se analiza el líquido cefalorraquídeo con aspecto, citoquímico, Gram, cultivo y PCR. El antibiótico empírico no espera a la tomografía ni al resultado del líquido.">
+          <defs>
+            <marker id="pta-dxm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="210" y="8" width="280" height="56" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--ct)" stroke-width="2.5"></rect>
+          <text x="350" y="31" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">Sospecha de meningitis</text>
+          <text x="350" y="52" font-size="10.5" fill="currentColor" opacity="0.8" text-anchor="middle">2 o más de la tétrada (95 % de los casos)</text>
+
+          <line x1="350" y1="64" x2="350" y2="84" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-dxm)"></line>
+
+          <rect x="210" y="86" width="280" height="56" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--ct)" stroke-width="1.5"></rect>
+          <text x="350" y="109" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">¿Contraindicaciones?</text>
+          <text x="350" y="130" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">¿Indicación de TAC previa?</text>
+
+          <line x1="350" y1="142" x2="350" y2="162" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-dxm)"></line>
+
+          <rect x="210" y="164" width="280" height="52" rx="3" fill="var(--c)" fill-opacity="0.9"></rect>
+          <text x="350" y="187" font-size="12.5" font-weight="700" fill="#FFFFFF" text-anchor="middle">PUNCIÓN LUMBAR</text>
+          <text x="350" y="206" font-size="10.5" fill="#FFFFFF" opacity="0.9" text-anchor="middle">Entre L3 – L4 o entre L4 – L5</text>
+
+          <line x1="350" y1="216" x2="350" y2="236" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-dxm)"></line>
+
+          <rect x="210" y="238" width="280" height="56" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--ct)" stroke-width="1.5"></rect>
+          <text x="350" y="261" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">Analizar el LCR</text>
+          <text x="350" y="282" font-size="10.5" fill="currentColor" opacity="0.8" text-anchor="middle">Aspecto · citoquímico · Gram · cultivo · PCR</text>
+
+          <rect x="10" y="86" width="180" height="208" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.3"></rect>
+          <text x="24" y="110" font-size="11" font-weight="700" fill="currentColor">Contraindicaciones</text>
+          <text x="24" y="127" font-size="11" font-weight="700" fill="currentColor">de la punción</text>
+          <text x="24" y="154" font-size="10.5" fill="currentColor" opacity="0.85">· Plaquetopenia</text>
+          <text x="24" y="176" font-size="10.5" fill="currentColor" opacity="0.85">· Coagulopatía</text>
+          <text x="24" y="198" font-size="10.5" fill="currentColor" opacity="0.85">· Hipertensión</text>
+          <text x="24" y="213" font-size="10.5" fill="currentColor" opacity="0.85">  endocraneana</text>
+          <text x="24" y="235" font-size="10.5" fill="currentColor" opacity="0.85">· Absceso epidural</text>
+          <text x="24" y="250" font-size="10.5" fill="currentColor" opacity="0.85">  espinal</text>
+
+          <rect x="510" y="86" width="180" height="208" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.3"></rect>
+          <text x="524" y="110" font-size="11" font-weight="700" fill="currentColor">TAC de encéfalo</text>
+          <text x="524" y="127" font-size="11" font-weight="700" fill="currentColor">antes de la PL si:</text>
+          <text x="524" y="152" font-size="10.5" fill="currentColor" opacity="0.85">1 · Inmunocompromiso</text>
+          <text x="524" y="172" font-size="10.5" fill="currentColor" opacity="0.85">2 · Enfermedad previa</text>
+          <text x="524" y="187" font-size="10.5" fill="currentColor" opacity="0.85">     del SNC</text>
+          <text x="524" y="207" font-size="10.5" fill="currentColor" opacity="0.85">3 · Convulsiones de</text>
+          <text x="524" y="222" font-size="10.5" fill="currentColor" opacity="0.85">     comienzo reciente</text>
+          <text x="524" y="242" font-size="10.5" fill="currentColor" opacity="0.85">4 · Papiledema</text>
+          <text x="524" y="262" font-size="10.5" fill="currentColor" opacity="0.85">5 · Alteración del sensorio</text>
+          <text x="524" y="282" font-size="10.5" fill="currentColor" opacity="0.85">6 · Déficit neurológico</text>
+
+          <rect x="10" y="314" width="680" height="50" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="26" y="336" font-size="11.5" font-weight="700" fill="currentColor">El antibiótico empírico NO espera a la TAC ni al resultado del LCR</text>
+          <text x="26" y="356" font-size="11" fill="currentColor" opacity="0.8">Se toman hemocultivos, se da dexametasona y antibiótico, y recién después se completa el estudio por imágenes.</text>
+        </svg>
+        <figcaption>Las dos cajas laterales son las únicas que pueden frenar la punción. Ninguna de las dos frena el antibiótico.</figcaption>
+      </figure>
+
+      <h3>Bioquímica del LCR</h3>
+      <ul>
+        <li><strong>Glucosa:</strong> la glucosa del LCR es <strong>dos tercios de la concentración en sangre</strong>. Por eso <strong>es esencial medir la glucemia</strong> en simultáneo. El <strong>índice glucosa LCR / glucemia <span class="dato">&lt; 0,36</span></strong> es un marcador <strong>preciso (<span class="dato">93 %</span>)</strong> para distinguir la meningitis bacteriana de la viral.</li>
+        <li><strong>Proteínas:</strong> el LCR normal tiene <span class="dato">&lt; 0,4 g/L</span>. Su aumento sugiere inflamación. Una proteinorraquia <span class="dato">&lt; 0,6 g/L</span> <strong>en gran parte descarta la infección bacteriana</strong>.</li>
+      </ul>
+
+      <h3>Recuento celular</h3>
+      <ul>
+        <li>La <strong>pleocitosis indica inflamación meníngea</strong>, y la <strong>causa más común es la infección</strong>.</li>
+        <li><strong>Predominancia de linfocitos</strong> → sugiere <strong>infección viral</strong>. <strong>Predominancia de neutrófilos</strong> → sugiere <strong>infección bacteriana</strong>.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>El <strong><span class="dato">1 – 2 %</span> de los pacientes con meningitis bacteriana tendrá un recuento de leucocitos NORMAL en el LCR.</strong> Ocurre en cuatro escenarios: <strong>niños</strong>, <strong>inmunocomprometidos</strong>, <strong>antibioticoterapia previa</strong> e <strong>infección por micobacteria tuberculosa</strong>. Un LCR con celularidad normal no descarta meningitis bacteriana en esos pacientes.</p>
+      </div>
+
+      <h3>Tabla comparativa del LCR</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>LCR</th><th>Normal</th><th>Bacteriana</th><th>Viral</th><th>Tuberculosa</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Apariencia</strong></td><td>Claro</td><td><strong>Turbio, purulento</strong></td><td>Claro</td><td>Claro o turbio</td></tr>
+            <tr><td><strong>Presión de apertura</strong> (mmH₂O)</td><td>&lt; 180</td><td>↑</td><td>↑</td><td>↑</td></tr>
+            <tr><td><strong>Leucocitos</strong> (cel/mm³)</td><td>0 – 5</td><td><strong>1.000 – 10.000</strong></td><td>5 – 1.000</td><td>25 – 500</td></tr>
+            <tr><td><strong>Neutrófilos</strong> (%)</td><td>0 – 15</td><td><strong>&gt; 60</strong></td><td>&lt; 20</td><td>&lt; 50</td></tr>
+            <tr><td><strong>Proteínas</strong> (mg/dL)</td><td>15 – 50</td><td><strong>&gt; 50</strong></td><td>&lt; 100</td><td>&gt; 50</td></tr>
+            <tr><td><strong>Glucosa</strong> (mg/dL)</td><td>45 – 81</td><td><strong>&lt; 45</strong></td><td>45 – 81</td><td><strong>&lt; 45</strong></td></tr>
+            <tr><td><strong>Relación glucosa LCR/plasma</strong></td><td>0,6</td><td><strong>&lt; 0,3</strong></td><td>&gt; 0,5</td><td>&lt; 0,5</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Detección del agente: tinción de Gram</h3>
+      <p>La microscopía del LCR con <strong>tinción de Gram</strong> —o una <strong>tinción acidorresistente</strong> para <em>M. tuberculosis</em>— puede detectar bacterias, con una <strong>sensibilidad del <span class="dato">50 – 99 %</span></strong>.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Morfología en el Gram</th><th>Microorganismo</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Diplococos Gram positivos</strong></td><td><strong><em>Streptococcus pneumoniae</em></strong></td></tr>
+            <tr><td><strong>Diplococos Gram negativos</strong></td><td><strong><em>Neisseria meningitidis</em></strong></td></tr>
+            <tr><td><strong>Cocobacilos Gram negativos pequeños</strong></td><td><strong><em>Haemophilus influenzae</em></strong></td></tr>
+            <tr><td><strong>Bacilos Gram positivos</strong></td><td><strong><em>Listeria monocytogenes</em></strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Cultivo, PCR y sangre</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Estudio</th><th>Para qué</th><th>Rendimiento</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Cultivo del LCR</strong></td>
+              <td><strong>Método de referencia</strong> para el diagnóstico de la meningitis <strong>bacteriana</strong></td>
+              <td>Sensibilidad <span class="dato">70 – 85 %</span> si no recibió antibióticos; <strong>disminuye un 20 %</strong> si ya los recibió</td>
+            </tr>
+            <tr>
+              <td><strong>PCR en LCR</strong></td>
+              <td><strong>Método de referencia</strong> para el diagnóstico de la meningitis <strong>viral</strong></td>
+              <td><strong>Valiosa en pacientes que recibieron antibióticos antes de la PL</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Hemocultivo</strong></td>
+              <td><strong>Siempre al ingreso.</strong> Útil cuando el antibiótico se comenzó antes de la punción</td>
+              <td>Positivos en el <span class="dato">50 – 80 %</span> de las meningitis bacterianas</td>
+            </tr>
+            <tr>
+              <td><strong>Procalcitonina y proteína C reactiva</strong></td>
+              <td>Contribuyen a <strong>distinguir bacteriana de viral</strong> en adultos</td>
+              <td>Sirven para <strong>orientar el tratamiento si no se halla la etiología</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Hemograma completo</strong></td>
+              <td>Evaluación general del paciente</td>
+              <td>—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Fuente: clase «Meningitis» de la cátedra de Infectología. En la tabla comparativa, la unidad de proteínas figura en la diapositiva original como g/dL; se corrige a <strong>mg/dL</strong>, que es la unidad correspondiente a los rangos citados y coincide con el valor normal de &lt; 0,4 g/L mencionado en el texto de la misma clase.</p>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-tratamiento" id="tratamiento">
+      <span class="seccion__pestana"><b>05</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Tratamiento &amp; Profilaxis</h2>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>El tratamiento es <strong>EMPÍRICO</strong> y su <strong>inicio debe ser precoz</strong>: el retraso se asocia con un <strong>potencial incremento de la morbilidad y la mortalidad</strong>. No se espera el resultado del LCR para dar la primera dosis.</p>
+      </div>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 422" role="img" aria-label="Árbol del tratamiento empírico de la meningitis bacteriana. Ante la sospecha se administra dexametasona cero coma quince miligramos por kilo endovenosa cada seis horas durante dos a cuatro días, con la primera dosis diez a veinte minutos antes del antibiótico o junto con él. Luego, en adultos menores de sesenta y cinco años inmunocompetentes, ceftriaxona dos gramos cada doce horas endovenosa. En inmunosuprimidos por malnutrición, diabetes o alcoholismo, o adultos de sesenta y cinco años o más, ceftriaxona dos gramos cada doce horas más ampicilina dos gramos cada cuatro horas, porque hay que cubrir Listeria. Si no se puede descartar infección herpética se agrega aciclovir. Ante sospecha de Neisseria meningitidis corresponde aislamiento respiratorio hasta veinticuatro horas después de iniciado el tratamiento.">
+          <defs>
+            <marker id="pta-ttom" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="150" y="8" width="400" height="42" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--ct)" stroke-width="2.5"></rect>
+          <text x="350" y="35" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">Sospecha de meningitis bacteriana</text>
+
+          <line x1="350" y1="50" x2="350" y2="68" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ttom)"></line>
+
+          <rect x="60" y="70" width="580" height="60" rx="3" fill="var(--c)" fill-opacity="0.9"></rect>
+          <text x="76" y="94" font-size="12.5" font-weight="700" fill="#FFFFFF">Dexametasona 0,15 mg/kg EV c/6 h, por 2 a 4 días</text>
+          <text x="76" y="116" font-size="10.5" fill="#FFFFFF" opacity="0.92">Primera dosis 10 a 20 min ANTES del antibiótico, o en forma concomitante</text>
+
+          <line x1="350" y1="130" x2="350" y2="150" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="180" y1="150" x2="520" y2="150" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="180" y1="150" x2="180" y2="176" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ttom)"></line>
+          <line x1="520" y1="150" x2="520" y2="176" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ttom)"></line>
+
+          <rect x="10" y="178" width="340" height="116" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.4"></rect>
+          <text x="26" y="202" font-size="11.5" font-weight="700" fill="currentColor">Adultos &lt; 65 años</text>
+          <text x="26" y="220" font-size="10.5" fill="currentColor" opacity="0.8">Inmunocompetentes</text>
+          <line x1="26" y1="236" x2="334" y2="236" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="26" y="260" font-size="12" font-weight="700" fill="currentColor">Ceftriaxona 2 g c/12 h EV</text>
+          <text x="26" y="282" font-size="10.5" fill="currentColor" opacity="0.75">Cubre neumococo y meningococo</text>
+
+          <rect x="360" y="178" width="330" height="116" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="376" y="202" font-size="11.5" font-weight="700" fill="currentColor">Adultos ≥ 65 años, o inmunosuprimidos</text>
+          <text x="376" y="220" font-size="10.5" fill="currentColor" opacity="0.8">Malnutrición · diabetes · alcoholismo</text>
+          <line x1="376" y1="236" x2="674" y2="236" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="376" y="260" font-size="12" font-weight="700" fill="currentColor">Ceftriaxona 2 g c/12 h EV</text>
+          <text x="376" y="278" font-size="12" font-weight="700" fill="currentColor">+ Ampicilina 2 g c/4 h EV</text>
+          <text x="376" y="290" font-size="10" fill="currentColor" opacity="0.75">La ampicilina se agrega por Listeria</text>
+
+          <rect x="10" y="312" width="680" height="46" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.3" stroke-dasharray="5 3"></rect>
+          <text x="26" y="332" font-size="11" font-weight="700" fill="currentColor">Si no se puede descartar infección herpética → AGREGAR ACICLOVIR</text>
+          <text x="26" y="350" font-size="11" fill="currentColor" opacity="0.78">Cuando no hay LCR disponible o no llega a tiempo, el esquema empírico pasa a ser el definitivo.</text>
+
+          <rect x="10" y="366" width="680" height="46" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.3" stroke-dasharray="5 3"></rect>
+          <text x="26" y="386" font-size="11" font-weight="700" fill="currentColor">Sospecha de N. meningitidis → AISLAMIENTO RESPIRATORIO</text>
+          <text x="26" y="404" font-size="11" fill="currentColor" opacity="0.78">Se mantiene hasta 24 horas después de iniciado el tratamiento antibiótico.</text>
+        </svg>
+        <figcaption>La única variable que cambia el esquema es si hay que cubrir <em>Listeria</em>. Y eso lo deciden dos datos del interrogatorio: la edad y el estado inmunológico.</figcaption>
+      </figure>
+
+      <h3>Corticoides</h3>
+      <p>Deben iniciarse en <strong>todo paciente que pueda presentar meningitis por neumococo</strong>, porque <strong>disminuyen el riesgo de complicaciones</strong>.</p>
+      <ul>
+        <li><strong>Dexametasona <span class="dato">0,15 mg/kg</span> EV cada <span class="dato">6 h</span>, durante <span class="dato">2 a 4 días</span>.</strong></li>
+        <li>La <strong>primera dosis se administra 10 a 20 minutos antes de la primera dosis de antibiótico</strong>, o <strong>en forma concomitante</strong>.</li>
+      </ul>
+
+      <h3>Aislamiento respiratorio</h3>
+      <p>Si se sospecha <strong><em>Neisseria meningitidis</em></strong>: <strong>hasta las 24 horas después de iniciado el tratamiento</strong>.</p>
+
+      <h3>Esquema antibiótico empírico</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Escenario</th><th>Esquema</th><th>Por qué</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Adultos &lt; 65 años</strong></td>
+              <td><strong>Ceftriaxona 2 g cada 12 h EV</strong></td>
+              <td>Cubre <em>S. pneumoniae</em> y <em>N. meningitidis</em></td>
+            </tr>
+            <tr>
+              <td><strong>Inmunosuprimidos</strong> (malnutrición, diabetes o alcoholismo) <strong>o adultos ≥ 65 años</strong></td>
+              <td><strong>Ceftriaxona 2 g cada 12 h EV + ampicilina 2 g cada 4 h EV</strong></td>
+              <td>La <strong>ampicilina cubre <em>Listeria monocytogenes</em></strong>, rara en inmunocompetentes menores de 65</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>En muchos casos <strong>no se dispondrá del análisis del LCR rápidamente</strong>, o directamente <strong>no se contará con él</strong>. En esos escenarios el <strong>tratamiento empírico será el definitivo</strong>, y deberá <strong>agregarse aciclovir</strong> al esquema de no poder descartarse infección herpética.</p>
+
+      <h3>Meningitis viral</h3>
+      <ul>
+        <li><strong>No hay tratamiento específico para la meningitis viral.</strong></li>
+        <li><strong>Encefalitis herpética:</strong> considerar aciclovir <strong>sólo si el paciente tiene síntomas de encefalitis</strong> — <strong>alteración de la conciencia</strong>, <strong>signos neurológicos focales</strong> o <strong>inflamación del parénquima cerebral en la zona del lóbulo temporal</strong> en los estudios por imágenes.
+          <ul>
+            <li><strong>Aciclovir <span class="dato">15 – 30 mg/kg/día</span> IV cada <span class="dato">8 h</span>, por <span class="dato">14 – 21 días</span>.</strong></li>
+          </ul>
+        </li>
+        <li><strong>Enterovirus:</strong> si bien suele presentarse de inicio con <strong>los mismos síntomas que la meningitis bacteriana</strong>, tiene <strong>curso benigno y autolimitado</strong>, <strong>sin requerir tratamiento específico</strong>.</li>
+      </ul>
+
+      <h3>Duración del tratamiento</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Microorganismo</th><th>Duración (días)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><em>Neisseria meningitidis</em> <strong>*</strong></td><td><span class="dato">7</span></td></tr>
+            <tr><td><em>Haemophilus influenzae</em> <strong>*</strong></td><td><span class="dato">7</span></td></tr>
+            <tr><td><em>Streptococcus pneumoniae</em></td><td><span class="dato">10 – 14</span></td></tr>
+            <tr><td><em>Streptococcus agalactiae</em></td><td><span class="dato">14 – 21</span></td></tr>
+            <tr><td>Bacilos gram negativos aeróbicos <strong>**</strong></td><td><span class="dato">21</span></td></tr>
+            <tr><td><em>Listeria monocytogenes</em></td><td><span class="dato">≥ 21</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul>
+        <li><strong>*</strong> En caso de <strong>no haberse utilizado ceftriaxona</strong> como tratamiento, debe realizarse la <strong>decolonización nasofaríngea del paciente</strong> —con <strong>rifampicina o azitromicina</strong>— <strong>antes del alta</strong>.</li>
+        <li><strong>**</strong> Por ejemplo <em>Klebsiella</em>, <em>Escherichia coli</em>, <em>Serratia</em>, <em>Pseudomonas</em>, <em>Salmonella</em>.</li>
+      </ul>
+
+      <h3>Profilaxis de contactos</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Germen</th><th>A quién</th><th>Esquema</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong><em>Neisseria meningitidis</em></strong></td>
+              <td><strong>Al caso índice y a todos los contactos cercanos:</strong> convivientes, contactos escolares, personas que compartieron cepillos de dientes o vajilla, o que tuvieron contacto con secreciones respiratorias <strong>durante los 7 días previos a enfermar</strong>; y al <strong>personal de salud</strong> que estuvo en contacto con secreciones respiratorias <strong>antes de las 24 h de tratamiento</strong></td>
+              <td><strong>De elección:</strong> rifampicina 600 mg cada 12 h VO por 2 días<br><strong>Embarazadas:</strong> ceftriaxona 250 mg IM, única dosis<br><strong>Alternativos:</strong> ciprofloxacina 500 mg VO única dosis, o azitromicina 500 mg VO única dosis</td>
+            </tr>
+            <tr>
+              <td><strong><em>Haemophilus influenzae</em></strong></td>
+              <td><strong>Al paciente índice y a todos los contactos convivientes</strong> que a su vez tengan contacto con <strong>niños menores de 4 años no vacunados o vacunados en forma incompleta</strong>, o con <strong>niños inmunosuprimidos</strong>. <strong>No recomendado en embarazadas</strong></td>
+              <td>Rifampicina 20 mg/kg/día VO en <strong>una dosis diaria</strong> (máximo 600 mg/día) <strong>por 4 días</strong></td>
+            </tr>
+            <tr>
+              <td><strong><em>Streptococcus pneumoniae</em></strong></td>
+              <td>—</td>
+              <td><strong>No se recomienda profilaxis</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Fuente: clase «Meningitis» de la cátedra de Infectología, HTJS.</p>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-importantes" id="importantes">
+      <span class="seccion__pestana"><b>06</b> Alerta</span>
+      <h2 class="seccion__titulo">Aspectos Importantes</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Trampa frecuente</th><th>Lo correcto</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>«Espero la TAC y el LCR antes de dar antibiótico»</td>
+              <td>El inicio del antibiótico <strong>debe ser precoz</strong>: su retraso incrementa morbilidad y mortalidad. Hemocultivos, <strong>dexametasona</strong>, antibiótico — y después el estudio</td>
+            </tr>
+            <tr>
+              <td>«Doy el corticoide después del antibiótico»</td>
+              <td>La dexametasona va <strong>10 a 20 minutos ANTES</strong> de la primera dosis de antibiótico, o <strong>en forma concomitante</strong>. Después ya no cumple su función</td>
+            </tr>
+            <tr>
+              <td>«El LCR tiene celularidad normal, descarto bacteriana»</td>
+              <td>El <strong>1 – 2 %</strong> de las bacterianas cursa con recuento normal: <strong>niños, inmunocomprometidos, antibiótico previo o tuberculosis</strong></td>
+            </tr>
+            <tr>
+              <td>«Mido la glucosa del LCR sola»</td>
+              <td>Es <strong>esencial medir la glucemia</strong> en simultáneo: lo que discrimina es el <strong>índice LCR/glucemia &lt; 0,36</strong>, con 93 % de precisión</td>
+            </tr>
+            <tr>
+              <td>«Ya recibió antibiótico, el cultivo va a servir igual»</td>
+              <td>La sensibilidad del cultivo <strong>cae un 20 %</strong>. En ese escenario la <strong>PCR</strong> y el <strong>hemocultivo</strong> son las herramientas útiles</td>
+            </tr>
+            <tr>
+              <td>«Traté al paciente, terminé»</td>
+              <td>Falta la <strong>profilaxis de los contactos</strong> en meningococo y <em>Haemophilus</em>, y la <strong>decolonización nasofaríngea</strong> si no se usó ceftriaxona</td>
+            </tr>
+            <tr>
+              <td>«Es un adulto joven, no hace falta ampicilina»</td>
+              <td>Correcto sólo si es <strong>inmunocompetente y menor de 65</strong>. La <strong>diabetes, el alcoholismo, los tumores malignos</strong> y las enfermedades crónicas obligan a cubrir <em>Listeria</em></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>La <strong>meningitis bacteriana es de denuncia obligatoria</strong> y tiene <strong>mortalidad del 25 % y morbilidad del 60 %</strong>. Requiere <strong>diagnóstico y tratamiento rápidos</strong> para evitar una <strong>evolución fatal o secuelas irreversibles</strong>.</p>
+      </div>
+
+      <h3>Números para memorizar</h3>
+      <ul>
+        <li>Pleocitosis en adultos: <span class="dato">&gt; 5 leucocitos/mL</span>.</li>
+        <li>Meningitis bacteriana: mortalidad <span class="dato">25 %</span>, morbilidad <span class="dato">60 %</span>.</li>
+        <li>Tétrada: <span class="dato">95 %</span> presenta <strong>2 o más</strong> de los 4 síntomas.</li>
+        <li>Índice glucosa LCR/glucemia <span class="dato">&lt; 0,36</span>: precisión <span class="dato">93 %</span> para diferenciar bacteriana de viral.</li>
+        <li>Gram del LCR: sensibilidad <span class="dato">50 – 99 %</span>. Cultivo: <span class="dato">70 – 85 %</span>, cae <span class="dato">20 %</span> con antibiótico previo.</li>
+        <li>Hemocultivos positivos en <span class="dato">50 – 80 %</span> de las bacterianas.</li>
+        <li>Dexametasona <span class="dato">0,15 mg/kg</span> c/6 h por <span class="dato">2 – 4 días</span>; primera dosis <span class="dato">10 – 20 min</span> antes del antibiótico.</li>
+        <li>Aislamiento respiratorio por meningococo: <span class="dato">24 h</span> desde el inicio del tratamiento.</li>
+      </ul>
+
+      <p class="cita">Fuente: clase «Meningitis» de la cátedra de Infectología, HTJS.</p>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-diferenciales" id="diferenciales">
+      <span class="seccion__pestana"><b>07</b> Diferenciales</span>
+      <h2 class="seccion__titulo">Diagnósticos Diferenciales</h2>
+
+      <p>El diferencial se resuelve con <strong>un solo estudio</strong>: el LCR. Lo que sigue es cómo leerlo.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 386" role="img" aria-label="Árbol discriminante según el perfil del líquido cefalorraquídeo. El LCR turbio o purulento, con mil a diez mil leucocitos, más de sesenta por ciento de neutrófilos, proteínas mayores a cincuenta, glucosa menor a cuarenta y cinco e índice menor a cero coma tres, corresponde a meningitis bacteriana. El LCR claro con cinco a mil leucocitos, menos de veinte por ciento de neutrófilos, proteínas menores a cien, glucosa entre cuarenta y cinco y ochenta y uno e índice mayor a cero coma cinco, corresponde a meningitis viral. El LCR claro o turbio con veinticinco a quinientos leucocitos, menos de cincuenta por ciento de neutrófilos, proteínas mayores a cincuenta, glucosa menor a cuarenta y cinco e índice menor a cero coma cinco, corresponde a meningitis tuberculosa. El LCR claro sin pleocitosis, con cero a cinco leucocitos y valores normales, obliga a considerar causas no infecciosas si hay clínica.">
+          <defs>
+            <marker id="pta-ddxm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="200" y="8" width="300" height="42" rx="3" fill="var(--c)" fill-opacity="0.18" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="350" y="34" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">¿Qué muestra el LCR?</text>
+
+          <line x1="350" y1="50" x2="350" y2="74" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="91" y1="74" x2="613" y2="74" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="91" y1="74" x2="91" y2="98" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ddxm)"></line>
+          <line x1="265" y1="74" x2="265" y2="98" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ddxm)"></line>
+          <line x1="439" y1="74" x2="439" y2="98" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ddxm)"></line>
+          <line x1="613" y1="74" x2="613" y2="98" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ddxm)"></line>
+
+          <rect x="10" y="100" width="162" height="204" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="24" y="122" font-size="11" font-weight="700" fill="currentColor">Turbio, purulento</text>
+          <text x="24" y="146" font-size="10.5" fill="currentColor" opacity="0.85">1.000 – 10.000 cel</text>
+          <text x="24" y="164" font-size="10.5" fill="currentColor" opacity="0.85">Neutrófilos &gt; 60 %</text>
+          <text x="24" y="182" font-size="10.5" fill="currentColor" opacity="0.85">Proteínas &gt; 50</text>
+          <text x="24" y="200" font-size="10.5" fill="currentColor" opacity="0.85">Glucosa &lt; 45</text>
+          <text x="24" y="218" font-size="10.5" fill="currentColor" opacity="0.85">Índice &lt; 0,3</text>
+          <line x1="24" y1="234" x2="158" y2="234" stroke="currentColor" stroke-opacity="0.3" stroke-width="1"></line>
+          <text x="24" y="258" font-size="12" font-weight="700" fill="currentColor">→ BACTERIANA</text>
+          <text x="24" y="280" font-size="10" fill="currentColor" opacity="0.75">Emergencia:</text>
+          <text x="24" y="295" font-size="10" fill="currentColor" opacity="0.75">tratar de inmediato</text>
+
+          <rect x="184" y="100" width="162" height="204" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.3"></rect>
+          <text x="198" y="122" font-size="11" font-weight="700" fill="currentColor">Claro</text>
+          <text x="198" y="146" font-size="10.5" fill="currentColor" opacity="0.85">5 – 1.000 cel</text>
+          <text x="198" y="164" font-size="10.5" fill="currentColor" opacity="0.85">Neutrófilos &lt; 20 %</text>
+          <text x="198" y="182" font-size="10.5" fill="currentColor" opacity="0.85">Proteínas &lt; 100</text>
+          <text x="198" y="200" font-size="10.5" fill="currentColor" opacity="0.85">Glucosa 45 – 81</text>
+          <text x="198" y="218" font-size="10.5" fill="currentColor" opacity="0.85">Índice &gt; 0,5</text>
+          <line x1="198" y1="234" x2="332" y2="234" stroke="currentColor" stroke-opacity="0.3" stroke-width="1"></line>
+          <text x="198" y="258" font-size="12" font-weight="700" fill="currentColor">→ VIRAL</text>
+          <text x="198" y="280" font-size="10" fill="currentColor" opacity="0.75">Confirmar por PCR.</text>
+          <text x="198" y="295" font-size="10" fill="currentColor" opacity="0.75">Curso autolimitado.</text>
+
+          <rect x="358" y="100" width="162" height="204" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.3"></rect>
+          <text x="372" y="122" font-size="11" font-weight="700" fill="currentColor">Claro o turbio</text>
+          <text x="372" y="146" font-size="10.5" fill="currentColor" opacity="0.85">25 – 500 cel</text>
+          <text x="372" y="164" font-size="10.5" fill="currentColor" opacity="0.85">Neutrófilos &lt; 50 %</text>
+          <text x="372" y="182" font-size="10.5" fill="currentColor" opacity="0.85">Proteínas &gt; 50</text>
+          <text x="372" y="200" font-size="10.5" font-weight="700" fill="currentColor">Glucosa &lt; 45</text>
+          <text x="372" y="218" font-size="10.5" fill="currentColor" opacity="0.85">Índice &lt; 0,5</text>
+          <line x1="372" y1="234" x2="506" y2="234" stroke="currentColor" stroke-opacity="0.3" stroke-width="1"></line>
+          <text x="372" y="258" font-size="12" font-weight="700" fill="currentColor">→ TUBERCULOSA</text>
+          <text x="372" y="280" font-size="10" fill="currentColor" opacity="0.75">Linfocitos PERO</text>
+          <text x="372" y="295" font-size="10" fill="currentColor" opacity="0.75">glucosa baja.</text>
+
+          <rect x="532" y="100" width="162" height="204" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.3"></rect>
+          <text x="546" y="122" font-size="11" font-weight="700" fill="currentColor">Claro, sin pleocitosis</text>
+          <text x="546" y="146" font-size="10.5" fill="currentColor" opacity="0.85">0 – 5 cel</text>
+          <text x="546" y="164" font-size="10.5" fill="currentColor" opacity="0.85">Neutrófilos 0 – 15 %</text>
+          <text x="546" y="182" font-size="10.5" fill="currentColor" opacity="0.85">Proteínas 15 – 50</text>
+          <text x="546" y="200" font-size="10.5" fill="currentColor" opacity="0.85">Glucosa 45 – 81</text>
+          <text x="546" y="218" font-size="10.5" fill="currentColor" opacity="0.85">Índice 0,6</text>
+          <line x1="546" y1="234" x2="680" y2="234" stroke="currentColor" stroke-opacity="0.3" stroke-width="1"></line>
+          <text x="546" y="258" font-size="12" font-weight="700" fill="currentColor">→ NORMAL</text>
+          <text x="546" y="280" font-size="10" fill="currentColor" opacity="0.75">Con clínica: pensar</text>
+          <text x="546" y="295" font-size="10" fill="currentColor" opacity="0.75">causa no infecciosa.</text>
+
+          <rect x="10" y="322" width="684" height="56" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="26" y="344" font-size="11.5" font-weight="700" fill="currentColor">La excepción que hay que tener presente siempre</text>
+          <text x="26" y="366" font-size="11" fill="currentColor" opacity="0.8">El 1 – 2 % de las meningitis bacterianas cursa con leucocitos NORMALES en el LCR: niños, inmunocomprometidos, ATB previo o tuberculosis.</text>
+        </svg>
+        <figcaption>Cuatro perfiles y una excepción. La glucosa es el dato que más separa: baja en bacteriana y tuberculosa, normal en viral.</figcaption>
+      </figure>
+
+      <h3>Causas no infecciosas de meningitis</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Causa</th><th>Contexto que la sugiere</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Química</strong></td><td>Introducción de sustancias en el espacio subaracnoideo — procedimientos, contrastes, fármacos intratecales</td></tr>
+            <tr><td><strong>Post-radioterapia</strong></td><td>Antecedente de irradiación del sistema nervioso central</td></tr>
+            <tr><td><strong>Neoplásica</strong></td><td>Carcinomatosis meníngea en un paciente oncológico; curso <strong>subagudo o crónico</strong></td></tr>
+            <tr><td><strong>Autoinmune</strong></td><td>LCR claro en el contexto de una enfermedad sistémica conocida</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Dentro del grupo de LCR claro, no todo es viral</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Entidad</th><th>Clave que la distingue</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Meningitis viral</strong></td><td>Linfocitos con <strong>glucosa normal</strong> e índice &gt; 0,5. Enterovirus, herpes simple, varicela zóster. <strong>Curso benigno y autolimitado</strong></td></tr>
+            <tr><td><strong>Meningitis tuberculosa</strong></td><td>Linfocitos con <strong>glucosa baja</strong> y proteínas altas. Curso <strong>subagudo o crónico</strong>. Requiere <strong>tinción acidorresistente</strong></td></tr>
+            <tr><td><strong>Meningitis fúngica</strong> (criptococo)</td><td>LCR claro en <strong>inmunocomprometido</strong>; curso subagudo o crónico</td></tr>
+            <tr><td><strong>Encefalitis herpética</strong></td><td>No es sólo meningitis: <strong>alteración de la conciencia</strong>, <strong>signos neurológicos focales</strong> e <strong>inflamación del lóbulo temporal</strong> en imágenes. Requiere <strong>aciclovir</strong></td></tr>
+            <tr><td><strong>Bacteriana decapitada</strong></td><td>Antibiótico previo: el LCR puede aclararse y el cultivo cae un 20 %. <strong>La PCR y el hemocultivo salvan el diagnóstico</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Fuente: clase «Meningitis» de la cátedra de Infectología. Las causas no infecciosas figuran enumeradas en la clasificación etiológica de la presentación; el contexto clínico de cada una se amplía a partir de Harrison, Principios de Medicina Interna.</p>
+    </section>
+
+    <!-- ============ Repaso activo ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>Definí meningitis y decí cuál es el umbral de pleocitosis en adultos.</summary>
+          <div class="fc__r"><strong>Inflamación de las leptomeninges</strong> —piamadre y aracnoides— que cubren el cerebro, con <strong>LCR con pleocitosis</strong>. En adultos, <strong>&gt; 5 leucocitos/mL</strong>. Es una <strong>emergencia médica</strong> y de <strong>denuncia obligatoria</strong>.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Distribución de causas en adultos inmunocompetentes.</summary>
+          <div class="fc__r"><strong>Virus 50 %</strong> (enterovirus, herpes simple, varicela zóster). <strong>Bacterias 25 %</strong> (<em>S. pneumoniae</em> y <em>N. meningitidis</em>). <strong>Otras &lt; 10 %</strong>: <em>H. influenzae</em>, <em>Listeria</em>, <em>M. tuberculosis</em> y hongos (criptococos).</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿En qué dos grupos etarios aparece <em>Listeria</em>, y qué consecuencia tiene?</summary>
+          <div class="fc__r">En los <strong>menores de 1 mes</strong> y en los <strong>adultos mayores</strong>. Consecuencia directa: a esos pacientes —y a los inmunosuprimidos— hay que <strong>agregarles ampicilina</strong> al esquema empírico.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Clasificación de la meningitis según el tiempo evolutivo.</summary>
+          <div class="fc__r"><strong>Aguda:</strong> 48 – 72 h. <strong>Subaguda:</strong> 3 días a 1 mes. <strong>Crónica:</strong> más de 1 mes.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Por qué baja la glucosa del LCR en la meningitis bacteriana?</summary>
+          <div class="fc__r">Porque la <strong>respuesta neutrofílica intensa</strong> que la bacteria desencadena <strong>consume glucosa</strong> —junto con las propias bacterias— y además se altera su transporte. En la viral la respuesta es <strong>linfocitaria</strong>, que <strong>no consume glucosa</strong>: por eso queda normal.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Cuál es la firma del LCR en la meningitis tuberculosa y por qué es confusa?</summary>
+          <div class="fc__r"><strong>Linfocitos + glucosa baja (&lt; 45) + proteínas altas (&gt; 50)</strong>, con índice &lt; 0,5. Es confusa porque tiene <strong>el patrón celular de la viral</strong> pero <strong>el patrón metabólico de la bacteriana</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Cuál es la tétrada clínica y con cuántos elementos hay que sospechar?</summary>
+          <div class="fc__r"><strong>Cefalea, rigidez de nuca, fiebre y alteración de la conciencia.</strong> El <strong>95 % de los pacientes presenta dos o más</strong>: con <strong>dos de los cuatro</strong> ya hay que actuar.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Describí el signo de Kernig y el de Brudzinski.</summary>
+          <div class="fc__r"><strong>Kernig:</strong> se <strong>eleva la pierna extendida</strong> y el paciente <strong>flexiona la rodilla de forma refleja</strong>, con dolor en la cara posterior del muslo que impide completar la maniobra. También aparece en radiculopatías.<br><strong>Brudzinski:</strong> en decúbito supino se <strong>flexiona el cuello</strong> y el paciente <strong>flexiona de forma inconsciente ambas rodillas</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué sugiere un exantema en una presunta meningitis?</summary>
+          <div class="fc__r">Aumenta la probabilidad de <strong><em>Neisseria meningitidis</em></strong>. Obliga además a indicar <strong>aislamiento respiratorio</strong> y a planificar la <strong>profilaxis de los contactos</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Cuáles son las contraindicaciones de la punción lumbar?</summary>
+          <div class="fc__r"><strong>Plaquetopenia</strong>, <strong>coagulopatía</strong>, <strong>hipertensión endocraneana</strong> y <strong>absceso epidural espinal</strong>. La punción se hace entre <strong>L3-L4 o L4-L5</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Enumerá las seis indicaciones de TAC de encéfalo antes de la punción lumbar.</summary>
+          <div class="fc__r">1) <strong>Inmunocompromiso</strong>. 2) <strong>Historia de enfermedad del SNC</strong> (masa cerebral, infección focal, ACV previo). 3) <strong>Convulsiones de comienzo reciente</strong>. 4) <strong>Papiledema</strong>. 5) <strong>Alteración del sensorio</strong>. 6) <strong>Déficit neurológico</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Por qué hay que medir la glucemia junto con la glucorraquia?</summary>
+          <div class="fc__r">Porque la glucosa del LCR es <strong>dos tercios de la sangre</strong>, así que el valor aislado no dice nada. Lo que discrimina es el <strong>índice glucosa LCR/glucemia</strong>: <strong>&lt; 0,36</strong> es un marcador <strong>preciso al 93 %</strong> para distinguir bacteriana de viral.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Relacioná cada morfología del Gram con su germen.</summary>
+          <div class="fc__r"><strong>Diplococos Gram positivos</strong> → <em>S. pneumoniae</em>. <strong>Diplococos Gram negativos</strong> → <em>N. meningitidis</em>. <strong>Cocobacilos Gram negativos pequeños</strong> → <em>H. influenzae</em>. <strong>Bacilos Gram positivos</strong> → <em>Listeria monocytogenes</em>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Cuál es el método de referencia para la bacteriana y cuál para la viral?</summary>
+          <div class="fc__r"><strong>Bacteriana:</strong> el <strong>cultivo del LCR</strong> (sensibilidad 70 – 85 %, cae un 20 % con antibiótico previo). <strong>Viral:</strong> la <strong>PCR en LCR</strong>, que además es <strong>valiosa en pacientes que ya recibieron antibióticos</strong>.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Esquema empírico según edad y estado inmunológico.</summary>
+          <div class="fc__r"><strong>Adultos &lt; 65 años inmunocompetentes:</strong> <strong>ceftriaxona 2 g c/12 h EV</strong>.<br><strong>≥ 65 años o inmunosuprimidos</strong> (malnutrición, diabetes, alcoholismo): <strong>ceftriaxona 2 g c/12 h EV + ampicilina 2 g c/4 h EV</strong>, para cubrir <em>Listeria</em>.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Dexametasona: dosis, duración y timing exacto.</summary>
+          <div class="fc__r"><strong>0,15 mg/kg EV cada 6 h por 2 a 4 días</strong>, con la <strong>primera dosis 10 a 20 minutos ANTES</strong> de la primera dosis de antibiótico, o <strong>concomitante</strong>. Se indica en <strong>todo paciente que pueda tener meningitis por neumococo</strong>, porque disminuye el riesgo de complicaciones.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Cuándo se indica aciclovir y a qué dosis?</summary>
+          <div class="fc__r">Sólo si hay <strong>síntomas de encefalitis</strong>: alteración de la conciencia, signos neurológicos focales o inflamación del <strong>lóbulo temporal</strong> en imágenes. <strong>15 – 30 mg/kg/día IV cada 8 h por 14 – 21 días</strong>. También se agrega al empírico cuando <strong>no se puede descartar infección herpética</strong>.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Duración del tratamiento según el germen.</summary>
+          <div class="fc__r"><em>N. meningitidis</em> y <em>H. influenzae</em>: <strong>7 días</strong>. <em>S. pneumoniae</em>: <strong>10 – 14</strong>. <em>S. agalactiae</em>: <strong>14 – 21</strong>. Bacilos gram negativos aeróbicos: <strong>21</strong>. <em>Listeria</em>: <strong>≥ 21 días</strong>.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Profilaxis de contactos de <em>N. meningitidis</em>: a quién y con qué.</summary>
+          <div class="fc__r"><strong>Al caso índice y a todos los contactos cercanos</strong> —convivientes, escolares, quienes compartieron cepillos o vajilla, o tuvieron contacto con secreciones respiratorias en los <strong>7 días previos</strong>— y al <strong>personal de salud</strong> expuesto antes de las 24 h de tratamiento.<br><strong>De elección:</strong> rifampicina 600 mg c/12 h VO × 2 días. <strong>Embarazadas:</strong> ceftriaxona 250 mg IM única dosis. <strong>Alternativas:</strong> ciprofloxacina 500 mg o azitromicina 500 mg VO única dosis.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿En qué cuatro escenarios una meningitis bacteriana puede tener LCR con celularidad normal?</summary>
+          <div class="fc__r">Ocurre en el <strong>1 – 2 %</strong> de los casos: <strong>niños</strong>, <strong>inmunocomprometidos</strong>, <strong>antibioticoterapia previa</strong> e <strong>infección por micobacteria tuberculosa</strong>.</div>
+        </details>
+
+        <details class="fc s-diferenciales">
+          <summary>Nombrá las causas no infecciosas de meningitis.</summary>
+          <div class="fc__r"><strong>Química</strong>, <strong>post-radioterapia</strong> y <strong>neoplásica</strong> — más las <strong>autoinmunes</strong>, que se agrupan entre las de LCR claro.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Triada clave</dt>
+        <dd>El <strong>95 %</strong> presenta <strong>dos o más</strong> de: <strong>cefalea · rigidez de nuca · fiebre · alteración de la conciencia</strong>. Con dos de los cuatro ya se actúa. <strong>Exantema → <em>N. meningitidis</em></strong>. Signos meníngeos: <strong>Kernig</strong> (se eleva la pierna extendida, flexiona la rodilla) y <strong>Brudzinski</strong> (se flexiona el cuello, flexiona ambas rodillas).</dd>
+
+        <dt class="r-gold">Estudio de elección</dt>
+        <dd><strong>Punción lumbar</strong> entre L3-L4 o L4-L5 — «meningitis pensada, PL realizada». <strong>Bacteriana:</strong> turbio · &gt; 1.000 cel · neutrófilos &gt; 60 % · <strong>glucosa &lt; 45</strong> · índice &lt; 0,3. <strong>Viral:</strong> claro · linfocitos · <strong>glucosa normal</strong>. <strong>TB:</strong> linfocitos <strong>con</strong> glucosa baja. Método de referencia: <strong>cultivo</strong> (bacteriana) y <strong>PCR</strong> (viral).</dd>
+
+        <dt class="r-tto">Tratamiento de 1ª línea</dt>
+        <dd><strong>Dexametasona 0,15 mg/kg EV c/6 h</strong>, primera dosis <strong>10 – 20 min antes</strong> del antibiótico. <strong>&lt; 65 años:</strong> ceftriaxona 2 g c/12 h EV. <strong>≥ 65 o inmunosuprimido:</strong> ceftriaxona <strong>+ ampicilina 2 g c/4 h</strong> (por <em>Listeria</em>). <strong>Agregar aciclovir</strong> si no se descarta herpes. Duración: 7 días (meningococo, <em>Haemophilus</em>) a ≥ 21 (<em>Listeria</em>).</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd><strong>Emergencia médica y denuncia obligatoria</strong>: mortalidad <strong>25 %</strong>, morbilidad <strong>60 %</strong>. <strong>El antibiótico no espera</strong> ni a la TAC ni al LCR. <strong>Aislamiento respiratorio 24 h</strong> si se sospecha meningococo, y <strong>profilaxis de contactos</strong> con rifampicina. Un LCR con celularidad normal <strong>no descarta</strong> bacteriana en el 1 – 2 % de los casos.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir de la clase «Meningitis» de la Dra. Macarena Pérez, residente de 2.º año de Infectología del HTJS, Cátedra de Enfermedades Infecciosas. La sección de fisiopatología del LCR y el contexto clínico de las causas no infecciosas se agregan a partir de Harrison, Principios de Medicina Interna, y Mandell, Douglas y Bennett, Enfermedades infecciosas: principios y práctica; están señalados como tales en las citas de sus respectivas secciones. Material de estudio: no reemplaza el criterio clínico ni la guía institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link'));
+
+  function porMeta(hash){
+    for (var i = 0; i < enlaces.length; i++){
+      if (enlaces[i].getAttribute('href') === '#' + hash) return enlaces[i];
+    }
+    return null;
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var enlace = porMeta(e.target.id);
+        if (!enlace) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          enlace.setAttribute('aria-current', 'true');
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>
+<script>
+(function(){
+  "use strict";
+  var clave = document.body.dataset.clave || "";
+  var enApp = typeof window.WordmedApp !== "undefined";
+  var MEM = "wordmed:progreso";
+
+  function leer(){ try{ return JSON.parse(localStorage.getItem(MEM)) || {}; }catch(e){ return {}; } }
+  function guardar(m){ try{ localStorage.setItem(MEM, JSON.stringify(m)); }catch(e){} }
+
+  function alto(){
+    return Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+  }
+
+  /* retomar donde quedó */
+  if (clave) {
+    var m = leer()[clave];
+    if (m && m.y > 0) {
+      window.addEventListener("load", function(){
+        window.scrollTo(0, Math.min(m.y, alto()));
+      });
+    }
+  }
+
+  /* anotar el avance, sin ahogar el scroll */
+  var pendiente = false;
+  window.addEventListener("scroll", function(){
+    if (pendiente || !clave) return;
+    pendiente = true;
+    requestAnimationFrame(function(){
+      pendiente = false;
+      var y = window.scrollY;
+      var pct = Math.round((y / alto()) * 100);
+      pct = Math.max(0, Math.min(100, pct));
+      var m = leer();
+      m[clave] = { y: y, pct: pct, ts: Date.now() };
+      guardar(m);
+      if (enApp && window.WordmedApp.progreso) window.WordmedApp.progreso(clave, pct, y);
+    });
+  }, { passive: true });
+
+  /* volver: solo cuando vinimos de la cáscara web */
+  if (!enApp && document.referrer && document.referrer.indexOf(location.origin) === 0) {
+    var b = document.createElement("button");
+    b.className = "volver";
+    b.type = "button";
+    b.setAttribute("aria-label", "Volver");
+    b.innerHTML = '<svg class="volver__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg>';
+    b.addEventListener("click", function(){ history.back(); });
+    document.body.appendChild(b);
+  }
+})();
+</script>
+</body>
+</html>

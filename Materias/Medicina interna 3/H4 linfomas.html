@@ -1,0 +1,1670 @@
+<title>Hodgkin contra No Hodgkin</title>
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-bloque:1.95rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+
+  /* Que la barra de desplazamiento y los controles nativos acompanen al tema */
+  color-scheme: light dark;
+}
+
+/* Eleccion explicita de claro: solo hace falta para el color-scheme, los
+   tokens claros ya son la base sin estampar. */
+:root[data-theme="light"]{ color-scheme: light; }
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* Interruptor de tema claro / oscuro.
+   El estampado `data-theme` en la raíz ya lo respetan los bloques de tokens de
+   arriba; este botón sólo lo pone y lo guarda. Sin elección estampada mandan
+   las preferencias del sistema, que es el comportamiento por defecto. */
+.tema{
+  position:fixed; top:.7rem; right:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.tema:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.tema__icono{ width:1.15rem; height:1.15rem; display:block; }
+
+/* Se muestra el icono del tema al que se va a cambiar, no el actual.
+   Mismo escalonado que los tokens: base clara · sistema oscuro · elección explícita. */
+.tema__sol{ display:none; }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .tema__sol{ display:block; }
+  :root:not([data-theme="light"]) .tema__luna{ display:none; }
+}
+:root[data-theme="dark"] .tema__sol{ display:block; }
+:root[data-theme="dark"] .tema__luna{ display:none; }
+:root[data-theme="light"] .tema__sol{ display:none; }
+:root[data-theme="light"] .tema__luna{ display:block; }
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índices ---------- */
+/* Dos piezas complementarias y deliberadamente redundantes:
+   · .indice        — barra lateral fija, sólo en pantalla ancha, navegación permanente.
+   · .indice-rapido — tarjeta compacta al principio del cuerpo, visible en TODO ancho.
+   La lateral desaparece por debajo de 64rem, que es justo el ancho del panel de
+   Artifacts y del celular; sin la compacta el cuadernillo publicado se queda sin
+   índice. Las dos apuntan a los mismos anclajes y se resaltan juntas al desplazar. */
+
+/* 6.1 · Barra lateral */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+/* Rótulo de bloque intercalado en la lista lateral: no es un enlace, sólo
+   separa grupos de secciones para que 30 entradas no sean una tira plana. */
+.indice__bloque{
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+  margin:.9rem 0 .2rem; padding:0 .55rem;
+}
+.indice__bloque:first-child{ margin-top:0; }
+
+/* 6.2 · Índice compacto (va después de la portada, dentro del cuerpo) */
+.indice-rapido{
+  background:var(--hoja-hund);
+  border:1px solid var(--linea);
+  border-radius:var(--radio);
+  padding:1.1rem 1.2rem 1.2rem;
+}
+.indice-rapido__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .85rem;
+}
+/* auto-fit: una columna en el panel angosto, dos o tres en pantalla ancha */
+.indice-rapido__bloques{
+  list-style:none; margin:0; padding:0;
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(15rem, 1fr));
+  gap:1rem 2rem; align-items:start;
+}
+.ir-bloque{
+  display:block; margin-bottom:.4rem;
+  font-family:var(--f-titulo); font-size:.98rem; font-weight:700; line-height:1.3;
+  color:var(--tinta); text-decoration:none;
+  padding-bottom:.3rem; border-bottom:1px solid var(--linea-fuerte);
+}
+.ir-bloque:hover{ color:var(--cli-t); }
+.ir-secciones{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.05rem; }
+.ir-link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.55rem 1fr; align-items:baseline; gap:.4rem;
+  padding:.2rem .35rem; border-radius:2px;
+  font-size:.86rem; line-height:1.4; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.ir-link > b{
+  font-family:var(--f-dato); font-size:.76rem; font-weight:700;
+  font-variant-numeric:tabular-nums; color:var(--ct); opacity:.85;
+}
+.ir-link:hover{ background:var(--hoja); color:var(--tinta); }
+.ir-link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Título de bloque y ficha de sección ---------- */
+
+/* Anuncia un grupo de secciones. Neutro en color a propósito: los siete colores
+   tienen significado clínico fijo y un bloque agrupa secciones de varios. La
+   regla de abajo lleva el degradado completo de la paleta, igual que la pestaña
+   de repaso y la cabecera de la ficha relámpago.
+   Sin <svg> adentro: el exportador a Word aparea los diagramas con las figuras
+   por contador posicional sobre el HTML crudo (ver exportar_docx.py). */
+.bloque{
+  margin:1.4rem 0 0; padding:0;
+  text-align:center; scroll-margin-top:2.5rem;
+  display:flex; flex-direction:column; align-items:center; gap:.3rem;
+  font-weight:400;
+}
+.bloque:first-child{ margin-top:0; }
+.bloque__rotulo{
+  font-family:var(--f-texto);
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+}
+.bloque__nombre{
+  font-family:var(--f-titulo); font-size:var(--t-bloque); font-weight:700; line-height:1.15;
+  letter-spacing:-.01em; color:var(--tinta); text-wrap:balance; max-width:32ch;
+}
+.bloque::after{
+  content:""; width:7rem; height:2.5px; margin-top:.5rem; border-radius:2px;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+}
+
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.35rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-row:1/3; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+.importante__titulo{
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso, .tema{ display:none !important; }
+  /* La lateral no se imprime, pero la compacta sí: en papel es la tabla de
+     contenidos del cuadernillo. */
+  .indice-rapido{ display:block; break-inside:avoid; page-break-inside:avoid; margin-bottom:1.2rem; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .bloque{
+    margin:1.6rem 0 1rem;
+    break-after:avoid; page-break-after:avoid;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+
+<script>
+/* Aplica el tema guardado antes de pintar. Va aca arriba a proposito: si
+   esperara al script del final, el documento parpadearia en el tema del
+   sistema antes de corregirse. */
+(function(){
+  try {
+    var guardado = localStorage.getItem('wordmed-tema');
+    if (guardado === 'dark' || guardado === 'light') {
+      document.documentElement.setAttribute('data-theme', guardado);
+    }
+  } catch (e) { /* almacenamiento bloqueado: manda el sistema */ }
+})();
+</script>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<button class="tema" id="tema" type="button" aria-pressed="false" aria-label="Cambiar a modo oscuro">
+  <svg class="tema__icono tema__sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.2"></circle>
+    <path d="M12 2.6v2.1M12 19.3v2.1M5.1 5.1l1.5 1.5M17.4 17.4l1.5 1.5M2.6 12h2.1M19.3 12h2.1M5.1 18.9l1.5-1.5M17.4 6.6l1.5-1.5"></path>
+  </svg>
+  <svg class="tema__icono tema__luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20.4 14.2A8.6 8.6 0 0 1 9.8 3.6a8.6 8.6 0 1 0 10.6 10.6z"></path>
+  </svg>
+</button>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li class="indice__bloque">A · El eje comparativo</li>
+      <li><a class="indice__link i-generalidades"  href="#dos-enfermedades">Dos enfermedades</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#origen">De dónde nacen</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#tabla-maestra">La tabla maestra</a></li>
+      <li class="indice__bloque">B · Lo que se hace igual</li>
+      <li><a class="indice__link i-clinica"        href="#evaluacion">Evaluación inicial</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#biopsia">La biopsia</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#ann-arbor">Ann Arbor en los dos</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#laboratorio">Laboratorio</a></li>
+      <li class="indice__bloque">C · Pronóstico y tratamiento</li>
+      <li><a class="indice__link i-importantes"    href="#ips-ipi">IPS contra IPI</a></li>
+      <li><a class="indice__link i-importantes"    href="#factores">Factores pronósticos del LNH</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#tratamiento">Tratamiento</a></li>
+      <li class="indice__bloque">D · Subtipos del no Hodgkin</li>
+      <li><a class="indice__link i-importantes"    href="#paradoja">Indolentes contra agresivos</a></li>
+      <li><a class="indice__link i-clinica"        href="#ldcgb">Difuso a grandes células B</a></li>
+      <li><a class="indice__link i-clinica"        href="#folicular-manto">Folicular y del manto</a></li>
+      <li><a class="indice__link i-clinica"        href="#burkitt-malt">Burkitt y gástrico MALT</a></li>
+      <li><a class="indice__link i-diferenciales"  href="#precisiones">Precisiones</a></li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Medicina Interna III · Hematología</p>
+      <h1 class="portada__tema">Hodgkin contra No Hodgkin</h1>
+      <p class="portada__bajada">Dos enfermedades que comparten el ganglio, la biopsia y la estadificación, y no comparten casi nada más. Desarrolla el lado no Hodgkin y usa al Hodgkin como término de contraste — el detalle de Hodgkin está en su propio cuadernillo.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">15 secciones</span>
+        <span class="etiqueta s-fisiopatologia">Del ganglio al linfoma</span>
+        <span class="etiqueta s-importantes">IPS vs IPI</span>
+        <span class="etiqueta s-clinica">Los subtipos del LNH</span>
+      </div>
+    </header>
+
+    <nav class="indice-rapido" aria-label="Contenido del cuadernillo">
+      <p class="indice-rapido__rotulo">Contenido</p>
+      <ol class="indice-rapido__bloques">
+        <li>
+          <a class="ir-bloque" href="#bloque-a">Bloque A · El eje comparativo</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades"  href="#dos-enfermedades"><b>01</b> Dos enfermedades, no dos nombres</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#origen"><b>02</b> De dónde nacen</a></li>
+            <li><a class="ir-link i-diagnostico"    href="#tabla-maestra"><b>03</b> La tabla maestra de diferencias</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-b">Bloque B · Lo que se hace igual</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-clinica"     href="#evaluacion"><b>04</b> Evaluación inicial y examen físico</a></li>
+            <li><a class="ir-link i-diagnostico" href="#biopsia"><b>05</b> La biopsia: por qué la PAAF no sirve</a></li>
+            <li><a class="ir-link i-diagnostico" href="#ann-arbor"><b>06</b> Ann Arbor — y por qué rinde distinto</a></li>
+            <li><a class="ir-link i-diagnostico" href="#laboratorio"><b>07</b> Laboratorio</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-c">Bloque C · Pronóstico y tratamiento</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-importantes" href="#ips-ipi"><b>08</b> IPS contra IPI</a></li>
+            <li><a class="ir-link i-importantes" href="#factores"><b>09</b> Factores pronósticos del LNH</a></li>
+            <li><a class="ir-link i-tratamiento" href="#tratamiento"><b>10</b> Tratamiento</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-d">Bloque D · Subtipos del no Hodgkin</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-importantes"   href="#paradoja"><b>11</b> Indolentes contra agresivos</a></li>
+            <li><a class="ir-link i-clinica"       href="#ldcgb"><b>12</b> Difuso a grandes células B</a></li>
+            <li><a class="ir-link i-clinica"       href="#folicular-manto"><b>13</b> Folicular y del manto</a></li>
+            <li><a class="ir-link i-clinica"       href="#burkitt-malt"><b>14</b> Burkitt y gástrico MALT</a></li>
+            <li><a class="ir-link i-diferenciales" href="#precisiones"><b>15</b> Precisiones al material</a></li>
+            <li><a class="ir-link i-clinica"       href="#repaso"><b>·</b> Repaso activo</a></li>
+            <li><a class="ir-link i-importantes"   href="#relampago"><b>⚡</b> Ficha Relámpago</a></li>
+          </ul>
+        </li>
+      </ol>
+    </nav>
+
+    <h2 class="bloque" id="bloque-a">
+      <span class="bloque__rotulo">Bloque A</span>
+      <span class="bloque__nombre">El eje comparativo</span>
+    </h2>
+
+    <!-- ============ 01 ============ -->
+    <section class="seccion s-generalidades" id="dos-enfermedades">
+      <span class="seccion__pestana"><b>01</b> Base</span>
+      <h2 class="seccion__titulo">Dos enfermedades, no dos nombres</h2>
+
+      <p>El <strong>linfoma de Hodgkin</strong> es <em>una</em> enfermedad: una neoplasia B clonal definida por una célula concreta, la de Reed-Sternberg.</p>
+
+      <p>El <strong>linfoma no Hodgkin</strong> es una <strong>categoría por descarte</strong>. La definición de la cátedra lo dice sin rodeos: <em>«grupo heterogéneo de neoplasias originadas en el tejido linfoide en diferentes estadios madurativos, con diferente histología, inmunofenotipo, alteraciones genéticas y moleculares, las cuales condicionan una distinta conducta clínica, un curso evolutivo y un tratamiento en particular»</em>.</p>
+
+      <p>Todo lo que dice esa frase es «cada uno es distinto». No es un diagnóstico: es un cajón que agrupa decenas de entidades cuyo único rasgo común es <strong>no tener células de Reed-Sternberg</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th></th><th>Hodgkin</th><th>No Hodgkin</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Incidencia</td><td><span class="dato">2 – 2,5</span> /100.000/año</td><td><span class="dato">3 – 7</span> /100.000/año — <strong>4 veces más frecuente</strong></td></tr>
+            <tr><td>Mortalidad</td><td>Referencia</td><td><strong>10 veces mayor</strong>. 3 % de la mortalidad por neoplasias</td></tr>
+            <tr><td>Edad</td><td><strong>Bimodal</strong>: 15-30 y &gt; 55 años</td><td><strong>50 – 60 años</strong>, sube con la edad</td></tr>
+            <tr><td>Sexo</td><td>Varones</td><td>Varones</td></tr>
+            <tr><td>Fenotipo</td><td>B (clonal)</td><td>B es <strong>8-9 veces</strong> más frecuente que T en el adulto</td></tr>
+            <tr><td>Factores</td><td>EBV en 20-50 % de las Reed-Sternberg</td><td>Relación frecuente con <strong>factores ambientales y virus</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+        <p class="importante__titulo">En chicos se invierte el fenotipo</p>
+        <p>En el adulto el fenotipo <strong>B</strong> es 8 a 9 veces más frecuente que el T. <strong>En niños el T es 2 veces más frecuente que el B.</strong> Es una de las pocas afirmaciones del deck que cambia por completo la sospecha diagnóstica según la edad del paciente que tenés adelante.</p>
+      </div>
+
+      <p class="cita">Fuente: Tortosa SB. <em>Linfoma no Hodgkin</em>, Medicina Interna III — Hematología, páginas 9 y 10; y <em>Linfoma Hodgkin</em>, páginas 3 y 4.</p>
+    </section>
+
+    <!-- ============ 02 ============ -->
+    <section class="seccion s-fisiopatologia" id="origen">
+      <span class="seccion__pestana"><b>02</b> Origen</span>
+      <h2 class="seccion__titulo">De dónde nacen: el ganglio explica los nombres</h2>
+
+      <p>El ganglio linfático no es una bolsa homogénea. Tiene <strong>compartimentos</strong>, cada uno habitado por un tipo celular distinto, y <strong>cada compartimento da su propio linfoma</strong>. Sabiendo el mapa, la mitad de los nombres de los subtipos se explican solos.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 316" role="img" aria-label="Mapa del ganglio linfático y los linfomas que nacen en cada compartimento. El folículo tiene tres capas concéntricas: el centro germinal en el núcleo, rodeado por la zona del manto, y ésta por la zona marginal. Alrededor del folículo está la paracorteza, poblada por células T. Del centro germinal nacen el linfoma de Hodgkin, el folicular, el difuso a grandes células B y el Burkitt. De la zona del manto nace el linfoma del manto. De la zona marginal nace el linfoma MALT, incluido el gástrico. De la paracorteza nacen los linfomas T, entre ellos el periférico, el anaplásico de células grandes y los cutáneos como la micosis fungoide y el síndrome de Sézary.">
+          <ellipse cx="125" cy="132" rx="108" ry="98" fill="var(--c)" fill-opacity="0.05" stroke="currentColor" stroke-width="1.2"></ellipse>
+          <circle cx="125" cy="108" r="62" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1"></circle>
+          <circle cx="125" cy="108" r="46" fill="var(--c)" fill-opacity="0.30" stroke="currentColor" stroke-width="1"></circle>
+          <circle cx="125" cy="108" r="30" fill="var(--c)" fill-opacity="0.62" stroke="currentColor" stroke-width="1"></circle>
+          <text x="125" y="205" font-size="9.5" font-weight="700" fill="currentColor" text-anchor="middle" opacity="0.75">GANGLIO LINFÁTICO</text>
+          <text x="125" y="220" font-size="9" fill="currentColor" text-anchor="middle" opacity="0.7">folículo + paracorteza</text>
+
+          <circle cx="264" cy="66" r="8" fill="var(--c)" fill-opacity="0.62" stroke="currentColor" stroke-width="0.9"></circle>
+          <text x="282" y="62" font-size="10.5" font-weight="700" fill="currentColor">CENTRO GERMINAL</text>
+          <text x="282" y="77" font-size="10" fill="currentColor" opacity="0.85">Hodgkin · folicular · difuso a grandes</text>
+          <text x="282" y="90" font-size="10" fill="currentColor" opacity="0.85">células B · Burkitt</text>
+
+          <circle cx="264" cy="126" r="8" fill="var(--c)" fill-opacity="0.30" stroke="currentColor" stroke-width="0.9"></circle>
+          <text x="282" y="122" font-size="10.5" font-weight="700" fill="currentColor">ZONA DEL MANTO</text>
+          <text x="282" y="137" font-size="10" fill="currentColor" opacity="0.85">Linfoma del manto</text>
+
+          <circle cx="264" cy="176" r="8" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="0.9"></circle>
+          <text x="282" y="172" font-size="10.5" font-weight="700" fill="currentColor">ZONA MARGINAL</text>
+          <text x="282" y="187" font-size="10" fill="currentColor" opacity="0.85">Linfoma MALT — el gástrico entra acá</text>
+
+          <circle cx="264" cy="226" r="8" fill="var(--c)" fill-opacity="0.05" stroke="currentColor" stroke-width="1.1"></circle>
+          <text x="282" y="222" font-size="10.5" font-weight="700" fill="currentColor">PARACORTEZA — células T</text>
+          <text x="282" y="237" font-size="10" fill="currentColor" opacity="0.85">Linfomas T: periférico, anaplásico de células</text>
+          <text x="282" y="250" font-size="10" fill="currentColor" opacity="0.85">grandes, cutáneos (micosis fungoide, Sézary)</text>
+
+          <rect x="12" y="264" width="676" height="44" rx="4" fill="var(--c)" fill-opacity="0.12" stroke="currentColor" stroke-width="1.1"></rect>
+          <text x="350" y="282" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">Los nombres no son arbitrarios: el linfoma DEL MANTO se llama así porque nace en el manto,</text>
+          <text x="350" y="298" font-size="10.5" fill="currentColor" text-anchor="middle" opacity="0.85">y el MALT porque nace en el tejido linfoide asociado a mucosas.</text>
+        </svg>
+        <figcaption>Las tres capas concéntricas son el folículo; lo que las rodea es la paracorteza, territorio de células T. El deck describe esta arquitectura —corteza con células B y macrófagos, paracorteza con células T y dendríticas, médula con B, T y plasmáticas— sin conectarla con los subtipos que salen de cada zona.</figcaption>
+      </figure>
+
+      <h3>Tejido linfoide fuera del ganglio</h3>
+
+      <p>No todo el tejido linfoide está en ganglios. La cátedra enumera el <strong>tejido linfoide asociado</strong>:</p>
+
+      <ul>
+        <li><strong>Mucosas: MALT</strong> — bronquios, intestino, conjuntiva.</li>
+        <li><strong>Piel: SALT.</strong></li>
+      </ul>
+
+      <p>De ahí sale una diferencia central con el Hodgkin: el no Hodgkin puede nacer <strong>donde no hay ganglios</strong> — estómago, intestino, piel, órbita, testículo, sistema nervioso central. El Hodgkin es una enfermedad de ganglios que ocasionalmente invade un órgano vecino; el no Hodgkin puede empezar dentro del órgano.</p>
+
+      <p class="cita">Fuente: material de cátedra de no Hodgkin, páginas 3, 4, 6 y 7. La correspondencia entre compartimento ganglionar y subtipo de linfoma no figura en el original.</p>
+    </section>
+
+    <!-- ============ 03 ============ -->
+    <section class="seccion s-diagnostico" id="tabla-maestra">
+      <span class="seccion__pestana"><b>03</b> Contraste</span>
+      <h2 class="seccion__titulo">La tabla maestra de diferencias</h2>
+
+      <p>Todo lo que sigue en el cuadernillo son notas al pie de esta tabla.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th></th><th>Hodgkin</th><th>No Hodgkin</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Qué es</strong></td>
+              <td>Una enfermedad definida por <strong>una célula</strong></td>
+              <td><strong>Grupo heterogéneo</strong> de decenas de entidades</td>
+            </tr>
+            <tr>
+              <td><strong>Diseminación</strong></td>
+              <td><strong>Por contigüidad</strong>, de una cadena a la vecina — ordenada y predecible</td>
+              <td><strong>Salteada</strong> desde el inicio, con frecuente compromiso extraganglionar</td>
+            </tr>
+            <tr>
+              <td><strong>Presentación</strong></td>
+              <td>Ganglionar, <strong>cervical en el 55 %</strong>. Extraganglionar poco frecuente</td>
+              <td>Ganglionar o <strong>extraganglionar</strong>: tubo digestivo, piel, cavum, testículo, SNC, órbita</td>
+            </tr>
+            <tr>
+              <td><strong>Estadio al diagnóstico</strong></td>
+              <td>Con frecuencia localizado (I-II)</td>
+              <td>Con frecuencia <strong>avanzado (III-IV)</strong> — el difuso a grandes células B, en el 60 %</td>
+            </tr>
+            <tr>
+              <td><strong>Médula ósea</strong></td>
+              <td>Compromiso poco frecuente; define estadio IV</td>
+              <td><strong>Frecuente</strong> — 50 % en el difuso a grandes células B, 40-70 % en el folicular</td>
+            </tr>
+            <tr>
+              <td><strong>Cuánto pesa el estadio</strong></td>
+              <td><strong>Mucho</strong>: define el grupo pronóstico y el tratamiento</td>
+              <td><strong>Menos</strong>: es sólo 1 de las 5 variables del IPI</td>
+            </tr>
+            <tr>
+              <td><strong>Qué manda el pronóstico</strong></td>
+              <td>Estadio + factores desfavorables</td>
+              <td><strong>La histología</strong> y el IPI</td>
+            </tr>
+            <tr>
+              <td><strong>Curabilidad</strong></td>
+              <td><strong>Alta y pareja</strong>: 80-95 % según grupo</td>
+              <td><strong>Depende del subtipo</strong>: los agresivos se curan, los indolentes no (<a href="#paradoja">§11</a>)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>La fila que más consecuencias tiene es la segunda. <strong>Que el Hodgkin avance por contigüidad</strong> es lo que hace que su estadio anatómico prediga tan bien; <strong>que el no Hodgkin salte</strong> es lo que obliga a que el pronóstico se apoye en la biología del tumor —histología, LDH, β2-microglobulina— más que en el mapa de dónde está.</p>
+
+      <p class="cita">Fuente: síntesis comparada de los dos materiales de cátedra.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-b">
+      <span class="bloque__rotulo">Bloque B</span>
+      <span class="bloque__nombre">Lo que se hace igual en los dos</span>
+    </h2>
+
+    <!-- ============ 04 ============ -->
+    <section class="seccion s-clinica" id="evaluacion">
+      <span class="seccion__pestana"><b>04</b> Evaluación</span>
+      <h2 class="seccion__titulo">Evaluación inicial y examen físico</h2>
+
+      <h3>La anamnesis</h3>
+
+      <p>El deck de no Hodgkin desarrolla esta parte mucho más que el de Hodgkin. Lo que pide dirigidamente:</p>
+
+      <ul>
+        <li><strong>Antecedentes familiares</strong> de linfoma no Hodgkin.</li>
+        <li><strong>Exposición a factores químicos o físicos</strong>, y ocupación.</li>
+        <li><strong>Inmunodeficiencias congénitas o adquiridas.</strong></li>
+        <li><strong>Duración y ritmo de crecimiento</strong> de las adenopatías.</li>
+        <li><strong>Síntomas B</strong> y <strong>síntomas de afectación extraganglionar</strong>.</li>
+        <li>Antecedentes epidemiológicos: <strong>viajes, alimentos, promiscuidad, drogas ilícitas, mascotas</strong>. Hábitos tóxicos, medicaciones, comorbilidades, alergias y transfusiones.</li>
+      </ul>
+
+      <p>Ese último grupo llama la atención en un teórico de oncología, y tiene una explicación: <strong>no es una anamnesis de linfoma, es una anamnesis de adenopatía</strong>. Antes de estadificar hay que decidir si eso <em>es</em> un linfoma — mascotas apunta a bartonelosis y toxoplasmosis, viajes a endemias, promiscuidad y drogas a HIV y sífilis. La pregunta previa siempre es si el ganglio es infeccioso.</p>
+
+      <h3>Los síntomas</h3>
+
+      <p>La primera entrada de la lista de la cátedra es la más importante: <strong>ausentes</strong>. Después:</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Grupo</th><th>Manifestaciones</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Ninguno</td><td><strong>Ausentes</strong> — hallazgo incidental</td></tr>
+            <tr><td>Estado general</td><td><strong>Síntomas B</strong></td></tr>
+            <tr><td>Compromiso localizado</td><td>Dolor, flogosis, ulceración, exudación, edema, impotencia funcional</td></tr>
+            <tr><td>Sistémicos inespecíficos</td><td>Rash, artralgias, artritis, mialgias, faringitis, prurito</td></tr>
+            <tr><td>Hematológicos</td><td>Púrpura</td></tr>
+            <tr><td>Abdominales</td><td>Dolor y tensión abdominal</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>El examen físico</h3>
+
+      <ul>
+        <li><strong>Estado general por ECOG</strong> — no es un dato blando: es una de las cinco variables del IPI (<a href="#ips-ipi">§08</a>).</li>
+        <li><strong>Todos</strong> los territorios ganglionares periféricos.</li>
+        <li><strong>Orofaringe</strong> — por el anillo de Waldeyer, comprometido con frecuencia en el folicular y el del manto.</li>
+        <li><strong>Piel</strong> — por el tejido linfoide asociado a piel y por los linfomas T cutáneos.</li>
+        <li><strong>Visceromegalias</strong> y <strong>masas <em>bulky</em></strong> (<span class="dato">&gt; 7-10 cm</span>).</li>
+      </ul>
+
+      <p>Explorar orofaringe y piel en un paciente con adenopatías es específico del no Hodgkin, y se entiende con el mapa del <a href="#origen">§02</a>: ahí también hay tejido linfoide.</p>
+
+      <p class="cita">Fuente: material de no Hodgkin, páginas 12 a 16 (los síntomas, transcriptos de la imagen de la página 14).</p>
+    </section>
+
+    <!-- ============ 05 ============ -->
+    <section class="seccion s-diagnostico" id="biopsia">
+      <span class="seccion__pestana"><b>05</b> Biopsia</span>
+      <h2 class="seccion__titulo">La biopsia: por qué la PAAF no sirve</h2>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+        <p class="importante__titulo">La cátedra lo dice con todas las letras</p>
+        <p>Sobre la <strong>punción aspirativa con aguja fina</strong>: es «sencilla, rápida, poco molesta», sirve para «búsqueda de infiltración por tumores sólidos», pero <strong>«no aporta información sobre la estructura ganglionar»</strong> y <strong>«puede retrasar el diagnóstico»</strong>.</p>
+        <p>Es exactamente el punto: un linfoma no se diagnostica encontrando células raras, se diagnostica viendo <strong>cómo está organizado el ganglio</strong> — si el patrón es folicular o difuso, si la arquitectura está borrada. Eso una aguja no lo puede traer. Y una PAAF «normal» tranquiliza y hace perder semanas.</p>
+      </div>
+
+      <h3>La biopsia ganglionar</h3>
+
+      <ul>
+        <li><strong>Elegir el ganglio adecuado</strong> — el más grande y representativo. Se evita el inguinal cuando hay alternativa, porque suele tener cambios reactivos crónicos que confunden.</li>
+        <li><strong>Escisional</strong>: el ganglio entero, con su cápsula.</li>
+        <li><strong>Improntas para citología.</strong></li>
+        <li><strong>Búsqueda de gérmenes específicos y cultivo</strong> — otra vez el diferencial infeccioso.</li>
+        <li><strong>Inmunofenotipo y estudio molecular</strong> sobre la pieza.</li>
+      </ul>
+
+      <h3>Lo que se agrega en el no Hodgkin</h3>
+
+      <p>El estudio de extensión del LNH es más largo que el del Hodgkin, y la cátedra lo enmarca así: es un <strong>«procedimiento previo fundamental antes de iniciar el tratamiento»</strong>, que permite determinar la diseminación, evaluar los factores pronósticos y diseñar la estrategia terapéutica.</p>
+
+      <ul>
+        <li><strong>Biopsia de médula ósea</strong> ± improntas o PAMO — el compromiso medular es mucho más frecuente que en el Hodgkin.</li>
+        <li><strong>Punción lumbar</strong> — por el riesgo de compromiso del sistema nervioso central en los agresivos.</li>
+        <li><strong>Biopsia hepática</strong> cuando corresponde.</li>
+        <li><strong>Estudios de clonalidad</strong> en sangre periférica o médula: <strong>citometría de flujo</strong> con inmunotipificación, <strong>técnicas moleculares</strong>, <strong>FISH</strong> y <strong>citogenético</strong>.</li>
+      </ul>
+
+      <p>Esa última línea es la que no existe en el Hodgkin. En el no Hodgkin la <strong>genética define la entidad</strong>: el <span class="dato">t(14;18)</span> del folicular, los reordenamientos de <em>cMyc</em>, <em>Bcl2</em> y <em>Bcl6</em> de los de alto grado. No es un estudio complementario, es parte del diagnóstico.</p>
+
+      <p class="cita">Fuente: material de no Hodgkin, páginas 16, 21, 22 y 24.</p>
+    </section>
+
+    <!-- ============ 06 ============ -->
+    <section class="seccion s-diagnostico" id="ann-arbor">
+      <span class="seccion__pestana"><b>06</b> Ann Arbor</span>
+      <h2 class="seccion__titulo">Ann Arbor en los dos — y por qué rinde distinto</h2>
+
+      <p>La misma clasificación se aplica a las dos enfermedades, pero <strong>no informa lo mismo</strong>. La razón está en la fila de diseminación del <a href="#tabla-maestra">§03</a>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 340" role="img" aria-label="Comparación del rendimiento de la estadificación de Ann Arbor en el linfoma de Hodgkin y en el no Hodgkin. En el Hodgkin la enfermedad avanza por contigüidad, de una cadena ganglionar a la vecina, de modo que el estadio mide hasta dónde llegó la cadena y predice bien el pronóstico. En el no Hodgkin la enfermedad aparece en sitios salteados y con frecuencia fuera del ganglio, de modo que el estadio informa menos y el pronóstico lo determinan la histología y el índice pronóstico internacional. Abajo, los criterios de Ann Arbor: estadio uno, un grupo ganglionar o un sitio extranodal; estadio dos, dos o más grupos ganglionares o dos sitios extranodales de un lado del diafragma; estadio tres, grupos a ambos lados del diafragma; estadio cuatro, compromiso visceral difuso. Sufijo A asintomático, sufijo B fiebre mayor a 38 grados, sudores nocturnos o pérdida de más del 10 por ciento del peso en los 6 meses previos.">
+          <rect x="12" y="10" width="332" height="32" rx="4" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="178" y="31" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">HODGKIN — avanza CONTIGUO</text>
+
+          <rect x="356" y="10" width="332" height="32" rx="4" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="522" y="31" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">NO HODGKIN — aparece SALTEADO</text>
+
+          <line x1="70" y1="64" x2="70" y2="136" stroke="currentColor" stroke-width="1.4"></line>
+          <circle cx="70" cy="64" r="9" fill="var(--c)" fill-opacity="0.85" stroke="currentColor" stroke-width="0.9"></circle>
+          <circle cx="70" cy="88" r="9" fill="var(--c)" fill-opacity="0.85" stroke="currentColor" stroke-width="0.9"></circle>
+          <circle cx="70" cy="112" r="9" fill="var(--c)" fill-opacity="0.85" stroke="currentColor" stroke-width="0.9"></circle>
+          <circle cx="70" cy="136" r="9" fill="var(--c)" fill-opacity="0.85" stroke="currentColor" stroke-width="0.9"></circle>
+          <text x="98" y="88" font-size="10" fill="currentColor">Cadena ganglionar</text>
+          <text x="98" y="103" font-size="10" fill="currentColor">recorrida en orden</text>
+          <text x="98" y="126" font-size="10" fill="currentColor" opacity="0.85">Extraganglionar poco</text>
+          <text x="98" y="139" font-size="10" fill="currentColor" opacity="0.85">frecuente</text>
+
+          <circle cx="400" cy="62" r="9" fill="var(--c)" fill-opacity="0.85" stroke="currentColor" stroke-width="0.9"></circle>
+          <circle cx="468" cy="104" r="9" fill="var(--c)" fill-opacity="0.85" stroke="currentColor" stroke-width="0.9"></circle>
+          <circle cx="414" cy="136" r="9" fill="var(--c)" fill-opacity="0.85" stroke="currentColor" stroke-width="0.9"></circle>
+          <rect x="500" y="54" width="70" height="26" rx="8" fill="var(--c)" fill-opacity="0.5" stroke="currentColor" stroke-width="1"></rect>
+          <text x="535" y="71" font-size="9" font-weight="700" fill="currentColor" text-anchor="middle">estómago</text>
+          <rect x="500" y="118" width="70" height="26" rx="8" fill="var(--c)" fill-opacity="0.5" stroke="currentColor" stroke-width="1"></rect>
+          <text x="535" y="135" font-size="9" font-weight="700" fill="currentColor" text-anchor="middle">piel · SNC</text>
+          <text x="590" y="94" font-size="10" fill="currentColor">Sin orden y</text>
+          <text x="590" y="107" font-size="10" fill="currentColor">con frecuencia</text>
+          <text x="590" y="120" font-size="10" fill="currentColor">FUERA del ganglio</text>
+
+          <rect x="12" y="152" width="332" height="42" rx="4" fill="var(--c)" fill-opacity="0.10" stroke="currentColor" stroke-width="1.1"></rect>
+          <text x="178" y="169" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">El estadio mide hasta dónde llegó</text>
+          <text x="178" y="185" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">→ PREDICE BIEN</text>
+
+          <rect x="356" y="152" width="332" height="42" rx="4" fill="var(--c)" fill-opacity="0.10" stroke="currentColor" stroke-width="1.1"></rect>
+          <text x="522" y="169" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">El estadio dice menos → mandan la</text>
+          <text x="522" y="185" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">HISTOLOGÍA y el IPI</text>
+
+          <rect x="12" y="206" width="164" height="86" rx="3" fill="none" stroke="currentColor" stroke-width="0.9" opacity="0.6"></rect>
+          <text x="94" y="226" font-size="13" font-weight="700" fill="currentColor" text-anchor="middle">I</text>
+          <text x="94" y="246" font-size="9.5" fill="currentColor" text-anchor="middle">Un grupo ganglionar</text>
+          <text x="94" y="260" font-size="9.5" fill="currentColor" text-anchor="middle">o un sitio</text>
+          <text x="94" y="274" font-size="9.5" fill="currentColor" text-anchor="middle">extranodal (IE)</text>
+
+          <rect x="184" y="206" width="164" height="86" rx="3" fill="none" stroke="currentColor" stroke-width="0.9" opacity="0.6"></rect>
+          <text x="266" y="226" font-size="13" font-weight="700" fill="currentColor" text-anchor="middle">II</text>
+          <text x="266" y="246" font-size="9.5" fill="currentColor" text-anchor="middle">Dos o más grupos, o</text>
+          <text x="266" y="260" font-size="9.5" fill="currentColor" text-anchor="middle">dos sitios (IIE), de UN</text>
+          <text x="266" y="274" font-size="9.5" fill="currentColor" text-anchor="middle">lado del diafragma</text>
+
+          <rect x="356" y="206" width="164" height="86" rx="3" fill="none" stroke="currentColor" stroke-width="0.9" opacity="0.6"></rect>
+          <text x="438" y="226" font-size="13" font-weight="700" fill="currentColor" text-anchor="middle">III</text>
+          <text x="438" y="246" font-size="9.5" fill="currentColor" text-anchor="middle">Grupos a AMBOS</text>
+          <text x="438" y="260" font-size="9.5" fill="currentColor" text-anchor="middle">lados del diafragma</text>
+
+          <rect x="528" y="206" width="160" height="86" rx="3" fill="none" stroke="currentColor" stroke-width="0.9" opacity="0.6"></rect>
+          <text x="608" y="226" font-size="13" font-weight="700" fill="currentColor" text-anchor="middle">IV</text>
+          <text x="608" y="246" font-size="9.5" fill="currentColor" text-anchor="middle">Compromiso</text>
+          <text x="608" y="260" font-size="9.5" fill="currentColor" text-anchor="middle">visceral DIFUSO</text>
+
+          <rect x="12" y="300" width="676" height="34" rx="4" fill="var(--c)" fill-opacity="0.12" stroke="currentColor" stroke-width="1.1"></rect>
+          <text x="24" y="315" font-size="10" font-weight="700" fill="currentColor">A</text>
+          <text x="42" y="315" font-size="10" fill="currentColor">asintomático</text>
+          <text x="24" y="329" font-size="10" font-weight="700" fill="currentColor">B</text>
+          <text x="42" y="329" font-size="10" fill="currentColor">fiebre &gt; 38 °C, sudores nocturnos o pérdida inexplicable de más del 10 % del peso en los 6 meses previos</text>
+        </svg>
+        <figcaption>Los criterios son los mismos; lo que cambia es cuánta información entrega el resultado. Nótese que el material de no Hodgkin <strong>sí trae los criterios escritos</strong> de Ann Arbor — los mismos que faltaban en el teórico de Hodgkin.</figcaption>
+      </figure>
+
+      <p>De ahí la consecuencia práctica: en el Hodgkin, saber el estadio casi define la conducta. En el no Hodgkin, saber el estadio es apenas <strong>una de las cinco variables</strong> del score que sí la define (<a href="#ips-ipi">§08</a>), y por debajo de todo está la pregunta que más pesa: <strong>qué subtipo histológico es</strong>.</p>
+
+      <p class="cita">Fuente: material de no Hodgkin, páginas 17, 18 y 19.</p>
+    </section>
+
+    <!-- ============ 07 ============ -->
+    <section class="seccion s-diagnostico" id="laboratorio">
+      <span class="seccion__pestana"><b>07</b> Laboratorio</span>
+      <h2 class="seccion__titulo">Laboratorio: el común y lo que agrega el no Hodgkin</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Estudio</th><th>Hodgkin</th><th>No Hodgkin</th><th>Para qué</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Hemograma</td><td>Sí</td><td>Sí</td><td>Citopenias, linfopenia</td></tr>
+            <tr><td>VSG</td><td>Sí</td><td>Sí</td><td>Actividad</td></tr>
+            <tr><td>Función renal y hepática</td><td>Sí</td><td>Sí</td><td>Compromiso de órgano y tolerancia al tratamiento</td></tr>
+            <tr><td>Proteinograma</td><td>Sí</td><td>Sí, + <strong>cuantificar Ig</strong></td><td>Hipogammaglobulinemia, componente monoclonal</td></tr>
+            <tr><td><strong>LDH</strong></td><td>Acompaña a la VSG</td><td><strong>Sí</strong></td><td><strong>Variable del IPI</strong> — carga tumoral y proliferación</td></tr>
+            <tr><td><strong>β2-microglobulina</strong></td><td>—</td><td><strong>Sí</strong></td><td>Carga tumoral</td></tr>
+            <tr><td><strong>Serologías</strong></td><td>—</td><td><strong>Hepatitis B y C, HIV, EBV, CMV</strong></td><td>Ver abajo</td></tr>
+            <tr><td><strong>Uricemia</strong></td><td>—</td><td><strong>Sí</strong></td><td>Riesgo de lisis tumoral</td></tr>
+            <tr><td><strong>Coagulograma</strong></td><td>—</td><td><strong>Sí</strong></td><td>Previo a biopsias y punciones</td></tr>
+            <tr><td>Test de Coombs</td><td>(anemia hemolítica)</td><td>Sí</td><td>Anemia hemolítica autoinmune</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Los cuatro agregados no son exhaustividad: cada uno responde a algo propio del no Hodgkin.</p>
+
+      <ul>
+        <li><strong>LDH</strong> — es una de las cinco variables del IPI. Deja de ser un marcador de actividad para ser un dato que puntúa.</li>
+        <li><strong>Serologías</strong> — no son epidemiológicas. El <strong>HIV</strong> se asocia al difuso a grandes células B, como consigna el propio deck; la <strong>hepatitis B</strong> importa porque el tratamiento con anticuerpos anti-CD20 puede reactivarla.</li>
+        <li><strong>Uricemia</strong> — anticipa el <strong>síndrome de lisis tumoral</strong>: masas grandes de células que proliferan rápido y se destruyen en bloque al empezar el tratamiento. Es el riesgo del Burkitt (<a href="#burkitt-malt">§14</a>) y de los agresivos con gran carga.</li>
+        <li><strong>Cuantificar inmunoglobulinas</strong> — los linfomas B pueden cursar con hipogammaglobulinemia, que suma riesgo infeccioso.</li>
+      </ul>
+
+      <p class="cita">Fuente: material de no Hodgkin, página 20; material de Hodgkin, página 10.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-c">
+      <span class="bloque__rotulo">Bloque C</span>
+      <span class="bloque__nombre">Pronóstico y tratamiento</span>
+    </h2>
+
+    <!-- ============ 08 ============ -->
+    <section class="seccion s-importantes" id="ips-ipi">
+      <span class="seccion__pestana"><b>08</b> Scores</span>
+      <h2 class="seccion__titulo">IPS contra IPI: dos scores, dos lógicas</h2>
+
+      <p>Cada enfermedad tiene su índice pronóstico, y la diferencia entre ellos resume la diferencia entre las dos enfermedades.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th></th><th>Hodgkin — IPS (7 factores)</th><th>No Hodgkin — IPI (5 variables)</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Variables</td>
+              <td>Albúmina &lt; 4 g/dL · Hb &lt; 10,5 g/dL · GB ≥ 15.000 · linfocitos &lt; 600 o &lt; 8 % · <strong>varón</strong> · edad ≥ 45 · estadio IV</td>
+              <td>Edad &gt; 60 años · estadio Ann Arbor <strong>III-IV</strong> · <strong>ECOG ≥ 2</strong> · <strong>&gt; 2 localizaciones extraganglionares</strong> · <strong>LDH</strong> mayor a lo normal</td>
+            </tr>
+            <tr>
+              <td>Peso</td>
+              <td><strong>4 de 7 son de laboratorio</strong></td>
+              <td><strong>4 de 5 son clínicas o de extensión</strong></td>
+            </tr>
+            <tr>
+              <td>Se aplica a</td>
+              <td>Sólo a los <strong>estadios avanzados</strong> (grupo 3)</td>
+              <td><strong>A todos</strong> los pacientes</td>
+            </tr>
+            <tr>
+              <td>Resultado</td>
+              <td>≥ 3 factores → tratamiento más intensivo</td>
+              <td>Cuatro <strong>grados de riesgo</strong>: bajo (0-1), intermedio bajo (2), intermedio alto (3), alto (4-5)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+        <p class="importante__titulo">La variable que sólo puede existir en el no Hodgkin</p>
+        <p><strong>«Más de 2 localizaciones extraganglionares»</strong> no tendría sentido como variable pronóstica en el Hodgkin, donde el compromiso extraganglionar es excepcional y cuando ocurre es por contigüidad. En el no Hodgkin es tan frecuente que se convierte en uno de los cinco pilares del score.</p>
+        <p>Esa sola variable condensa la diferencia biológica del <a href="#tabla-maestra">§03</a>: una enfermedad que <strong>salta y sale del ganglio</strong> necesita medir cuántas veces lo hizo.</p>
+      </div>
+
+      <p>Y el segundo contraste: el IPS del Hodgkin se aplica <strong>sólo dentro del grupo avanzado</strong> —los estadios iniciales se clasifican con otros cinco factores distintos—, mientras que el IPI se aplica <strong>a todo paciente con linfoma no Hodgkin</strong>, cualquiera sea su estadio. Coherente con que en el Hodgkin el estadio ya hizo la mayor parte del trabajo, y en el no Hodgkin no.</p>
+
+      <p class="cita">Fuentes: material de no Hodgkin, páginas 29 y 30; material de Hodgkin, página 18.</p>
+    </section>
+
+    <!-- ============ 09 ============ -->
+    <section class="seccion s-importantes" id="factores">
+      <span class="seccion__pestana"><b>09</b> Factores</span>
+      <h2 class="seccion__titulo">Factores pronósticos del LNH: iniciales y evolutivos</h2>
+
+      <p>Más allá del IPI, la cátedra ordena los factores en dos tiempos: los que se conocen <strong>al diagnóstico</strong> y los que aparecen <strong>durante la evolución</strong>.</p>
+
+      <h3>Iniciales</h3>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Grupo</th><th>Factores</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Interacción paciente / tumor</td>
+              <td>Estado general (<strong>ECOG</strong>) · <strong>síntomas B</strong></td>
+            </tr>
+            <tr>
+              <td>Independientes del tumor</td>
+              <td>Edad · sexo · comorbilidades</td>
+            </tr>
+            <tr>
+              <td>Marcadores bioquímicos</td>
+              <td><strong>LDH</strong> · <strong>β2-microglobulina</strong> · citopenias · VSG · albuminemia</td>
+            </tr>
+            <tr>
+              <td>Masa y extensión</td>
+              <td>Masa tumoral <span class="dato">&gt; 7-10 cm</span> · estadio de Ann Arbor · afectación ganglionar extensa · <strong>compromiso extraganglionar en más de 1 territorio</strong> · infiltración de médula ósea o hepática · esplenomegalia</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Evolutivos</h3>
+
+      <ul>
+        <li><strong>Dependientes del tratamiento</strong>: la <strong>respuesta</strong> al tratamiento y la <strong>duración</strong> de esa respuesta.</li>
+        <li><strong>Relacionados al paciente</strong>: la edad.</li>
+        <li><strong>Dependientes del tumor</strong>: progresión de la enfermedad, <strong>LDH</strong>, alteraciones citogenéticas y moleculares, y <strong>transformación histológica</strong>.</li>
+      </ul>
+
+      <p>La <strong>transformación histológica</strong> es la que hay que retener: un linfoma indolente puede <strong>convertirse en agresivo</strong>. El folicular se transforma en difuso a grandes células B de alto grado en un 2 a 3 % (<a href="#folicular-manto">§13</a>). No es una recaída: es otra enfermedad, y cambia por completo el pronóstico y el tratamiento.</p>
+
+      <p>Que la <strong>respuesta al tratamiento</strong> figure como factor pronóstico marca la misma idea que en el Hodgkin sostiene el PET interino: el pronóstico no se fija sólo al inicio, <strong>se sigue midiendo</strong>.</p>
+
+      <p class="cita">Fuente: material de no Hodgkin, páginas 25 a 28.</p>
+    </section>
+
+    <!-- ============ 10 ============ -->
+    <section class="seccion s-tratamiento" id="tratamiento">
+      <span class="seccion__pestana"><b>10</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Tratamiento: los principios contrastados</h2>
+
+      <p>Las modalidades son las mismas en las dos enfermedades: <strong>quimioterapia</strong> (esquemas de 1.ª, 2.ª y 3.ª línea), <strong>radioterapia</strong>, <strong>anticuerpos monoclonales</strong> y <strong>trasplante de progenitores hematopoyéticos</strong>. Lo que cambia es cómo se elige.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th></th><th>Hodgkin</th><th>No Hodgkin</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Se elige según</td>
+              <td>Edad, <strong>estadio</strong> y respuesta</td>
+              <td><strong>IPI</strong> e <strong>histología</strong></td>
+            </tr>
+            <tr>
+              <td>Esquema base</td>
+              <td><strong>ABVD</strong> — el mismo esqueleto para casi todos</td>
+              <td><strong>Cambia con el subtipo</strong>: R-CHOP en el difuso a grandes células B, altas dosis en el Burkitt, erradicación de <em>H. pylori</em> en el MALT gástrico</td>
+            </tr>
+            <tr>
+              <td>Anticuerpo monoclonal</td>
+              <td>Brentuximab (anti-<strong>CD30</strong>)</td>
+              <td><strong>Rituximab</strong> (anti-<strong>CD20</strong>) — la «R» de R-CHOP</td>
+            </tr>
+            <tr>
+              <td>¿Se puede no tratar?</td>
+              <td><strong>No</strong> — siempre se trata</td>
+              <td><strong>A veces sí</strong>: en indolentes asintomáticos, observar y esperar (<a href="#paradoja">§11</a>)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>La fila del anticuerpo resume la lógica de los dos: en el Hodgkin el blanco es el <strong>CD30</strong> porque la Reed-Sternberg lo expresa fuerte y ha perdido el CD20; en el no Hodgkin de estirpe B el blanco es el <strong>CD20</strong>, que esas células sí conservan. Es el mismo razonamiento aplicado a dos células distintas.</p>
+
+      <p class="cita">Fuente: material de no Hodgkin, páginas 31 y 34; material de Hodgkin, página 20.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-d">
+      <span class="bloque__rotulo">Bloque D</span>
+      <span class="bloque__nombre">Los subtipos del no Hodgkin</span>
+    </h2>
+
+    <!-- ============ 11 ============ -->
+    <section class="seccion s-importantes" id="paradoja">
+      <span class="seccion__pestana"><b>11</b> Paradoja</span>
+      <h2 class="seccion__titulo">Indolentes contra agresivos: la paradoja</h2>
+
+      <p>Los subtipos del no Hodgkin se ordenan en dos grandes grupos por velocidad de crecimiento. Y la relación entre velocidad y pronóstico es <strong>la contraria de la que sugiere el sentido común</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 292" role="img" aria-label="Comparación entre linfomas no Hodgkin indolentes y agresivos. Los indolentes, como el folicular y el MALT, crecen lento, suelen ser asintomáticos, se diagnostican en estadio avanzado, responden al tratamiento pero recaen, tienen una mediana de supervivencia de 7 a 10 años y son incurables en estadio avanzado; en el asintomático puede indicarse observar y esperar. Los agresivos, como el difuso a grandes células B y el Burkitt, crecen rápido, son sintomáticos, constituyen una urgencia, son quimiosensibles y más del 70 por ciento se cura; hay que tratarlos de inmediato. La paradoja es que el que crece rápido se cura y el que crece lento no, porque la quimioterapia mata células que se están dividiendo y el linfoma indolente se divide poco.">
+          <rect x="12" y="10" width="332" height="34" rx="4" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="178" y="26" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">INDOLENTES</text>
+          <text x="178" y="39" font-size="9.5" fill="currentColor" text-anchor="middle" opacity="0.85">folicular · MALT · manto de curso indolente</text>
+
+          <rect x="356" y="10" width="332" height="34" rx="4" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="522" y="26" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">AGRESIVOS</text>
+          <text x="522" y="39" font-size="9.5" fill="currentColor" text-anchor="middle" opacity="0.85">difuso a grandes células B · Burkitt · manto clásico</text>
+
+          <rect x="12" y="52" width="332" height="150" rx="3" fill="none" stroke="currentColor" stroke-width="0.9" opacity="0.55"></rect>
+          <text x="26" y="72" font-size="10.5" fill="currentColor">Crecimiento <tspan font-weight="700">lento</tspan></text>
+          <text x="26" y="94" font-size="10.5" fill="currentColor">Con frecuencia <tspan font-weight="700">asintomáticos</tspan></text>
+          <text x="26" y="116" font-size="10.5" fill="currentColor">Diagnóstico en estadio <tspan font-weight="700">avanzado</tspan></text>
+          <text x="26" y="138" font-size="10.5" fill="currentColor">Responden... y <tspan font-weight="700">recaen</tspan></text>
+          <text x="26" y="160" font-size="10.5" fill="currentColor">Mediana <tspan font-weight="700">7 a 10 años</tspan></text>
+          <text x="26" y="184" font-size="11" font-weight="700" fill="currentColor">INCURABLES en estadio avanzado</text>
+
+          <rect x="356" y="52" width="332" height="150" rx="3" fill="none" stroke="currentColor" stroke-width="0.9" opacity="0.55"></rect>
+          <text x="370" y="72" font-size="10.5" fill="currentColor">Crecimiento <tspan font-weight="700">rápido</tspan></text>
+          <text x="370" y="94" font-size="10.5" fill="currentColor"><tspan font-weight="700">Sintomáticos</tspan> desde temprano</text>
+          <text x="370" y="116" font-size="10.5" fill="currentColor">Constituyen una <tspan font-weight="700">urgencia</tspan></text>
+          <text x="370" y="138" font-size="10.5" fill="currentColor"><tspan font-weight="700">Quimiosensibles</tspan></text>
+          <text x="370" y="160" font-size="10.5" fill="currentColor">Riesgo de <tspan font-weight="700">lisis tumoral</tspan></text>
+          <text x="370" y="184" font-size="11" font-weight="700" fill="currentColor">SE CURAN — más del 70 %</text>
+
+          <rect x="12" y="210" width="332" height="30" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="currentColor" stroke-width="1"></rect>
+          <text x="178" y="230" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">Si está asintomático: observar y esperar</text>
+
+          <rect x="356" y="210" width="332" height="30" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="currentColor" stroke-width="1"></rect>
+          <text x="522" y="230" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">Tratar ya</text>
+
+          <rect x="12" y="248" width="676" height="38" rx="4" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="350" y="265" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">El que crece rápido se cura; el que crece lento, no.</text>
+          <text x="350" y="280" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.85">La quimioterapia mata células que se están dividiendo — y el indolente casi no se divide.</text>
+        </svg>
+        <figcaption>La paradoja tiene una explicación mecánica sencilla: los citostáticos actúan sobre células en división. Un tumor que prolifera rápido ofrece muchos blancos a la vez; uno que prolifera lento tiene la mayoría de sus células quietas, y esas sobreviven al tratamiento.</figcaption>
+      </figure>
+
+      <p>De ahí que en un linfoma indolente asintomático la conducta pueda ser <strong>observar y esperar</strong>: tratar antes no prolonga la vida, y sí adelanta la toxicidad. Y de ahí, también, que un linfoma agresivo sea una <strong>urgencia oncológica</strong> — es el único escenario donde demorar el tratamiento cuesta la posibilidad de curar.</p>
+
+      <p class="cita">Fuentes: los cursos indolente y agresivo figuran dispersos en el material de no Hodgkin, páginas 32 a 38. La contraposición explícita y las cifras de curabilidad siguen a <em>Indolent B-Cell Non-Hodgkin Lymphoma Treatment (PDQ)</em>, National Cancer Institute, y a las revisiones de linfoma folicular y difuso a grandes células B.</p>
+    </section>
+
+    <!-- ============ 12 ============ -->
+    <section class="seccion s-clinica" id="ldcgb">
+      <span class="seccion__pestana"><b>12</b> LDCGB</span>
+      <h2 class="seccion__titulo">Linfoma difuso a grandes células B</h2>
+
+      <p>Antes de entrar, el mapa de los subtipos que desarrolla la cátedra:</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Subtipo</th><th>% de LNH</th><th>Curso</th><th>Rasgo que lo identifica</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Difuso a grandes células B</strong></td><td><span class="dato">35 %</span></td><td>Agresivo</td><td>El más frecuente. Asociado a HIV</td></tr>
+            <tr><td><strong>Folicular</strong></td><td><span class="dato">30 %</span></td><td>Indolente</td><td><span class="dato">t(14;18)</span>, IGH-BCL2</td></tr>
+            <tr><td><strong>Del manto</strong></td><td><span class="dato">6 – 9 %</span></td><td>Agresivo</td><td>Poliposis múltiple del tracto digestivo</td></tr>
+            <tr><td><strong>Burkitt</strong></td><td><span class="dato">1 %</span></td><td>Muy agresivo</td><td>Masas abdominales voluminosas</td></tr>
+            <tr><td><strong>Gástrico MALT</strong></td><td>—</td><td>Indolente</td><td><em>H. pylori</em> en el <span class="dato">92 %</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>El más frecuente</h3>
+
+      <ul>
+        <li><strong>35 % de todos los LNH.</strong> Su incidencia aumenta con la edad.</li>
+        <li><strong>Asociado a HIV.</strong></li>
+        <li>De <strong>crecimiento celular rápido</strong> y <strong>quimiosensible</strong> — las dos caras de la paradoja del <a href="#paradoja">§11</a>.</li>
+        <li>Se diagnostica en <strong>estadio III o IV en el 60 %</strong> de los casos.</li>
+        <li><strong>50 % de afectación de médula ósea</strong> al diagnóstico.</li>
+        <li>Presentación <strong>nodal o extranodal</strong>: tubo digestivo y cavum. Es el <strong>tumor testicular más frecuente en mayores de 60 años</strong>.</li>
+      </ul>
+
+      <h3>El compromiso del sistema nervioso central</h3>
+
+      <p>Es la particularidad que más conducta genera. Puede afectar el SNC, y puede ser de <strong>presentación primaria</strong> —frecuente en HIV—. La cátedra fija una rutina completa:</p>
+
+      <ul>
+        <li>Diagnóstico por <strong>biopsia cerebral</strong> y <strong>citometría de flujo del LCR</strong>.</li>
+        <li><strong>Ecografía de testículo</strong>, por el santuario testicular.</li>
+        <li><strong>Evaluación oftalmológica y cognitiva.</strong></li>
+        <li>Al diagnóstico se extrae <strong>LCR</strong> para citometría, físico-químico y bacteriológico, y <strong>en el mismo momento se hace profilaxis con triple intratecal</strong>.</li>
+      </ul>
+
+      <p>Testículo, ojo y SNC son <strong>santuarios farmacológicos</strong>: la quimioterapia sistémica llega mal a los tres. Por eso se los estudia aparte y por eso la profilaxis intratecal se hace en el mismo acto de la punción diagnóstica, sin esperar el resultado.</p>
+
+      <h3>Los de alto grado: doble y triple hit</h3>
+
+      <ul>
+        <li>Se diagnostican por <strong>FISH</strong>: reordenamiento de <strong><em>cMyc</em>, <em>Bcl2</em> y <em>Bcl6</em></strong>. Con dos alterados se llaman <strong>doble hit</strong>; con tres, <strong>triple hit</strong>.</li>
+        <li>Más frecuentes en <strong>varones mayores de 60 años</strong>, con <strong>IPI de 3 a 5</strong> y estadio III-IV.</li>
+        <li><strong>Resistentes a R-CHOP</strong> — el esquema estándar del difuso a grandes células B no alcanza.</li>
+        <li><strong>Mal pronóstico.</strong></li>
+      </ul>
+
+      <p>Es el caso que justifica el FISH del <a href="#biopsia">§05</a>: dos linfomas que se ven iguales al microscopio se comportan de forma completamente distinta, y sólo la genética los separa antes de elegir el tratamiento.</p>
+
+      <p class="cita">Fuente: material de no Hodgkin, páginas 32, 33 y 34.</p>
+    </section>
+
+    <!-- ============ 13 ============ -->
+    <section class="seccion s-clinica" id="folicular-manto">
+      <span class="seccion__pestana"><b>13</b> Folicular</span>
+      <h2 class="seccion__titulo">Folicular y del manto</h2>
+
+      <h3>Linfoma folicular</h3>
+
+      <ul>
+        <li><strong>30 % de los LNH</strong> — el segundo en frecuencia. Más frecuente en <strong>mujeres mayores de 60 años</strong>.</li>
+        <li>Afectación <strong>nodal, bazo, médula ósea, sangre periférica y anillo de Waldeyer</strong>. Extraganglionar: piel, mama, testículo y tracto gastrointestinal, sobre todo <strong>duodeno</strong>.</li>
+        <li><strong>Estadio III-IV al diagnóstico</strong>, con infiltración de médula ósea en el <span class="dato">40-70 %</span>.</li>
+        <li>Genética: <strong>t(14;18)</strong>, reordenamiento <strong>IGH-BCL2</strong>.</li>
+        <li>Se <strong>transforma en difuso a grandes células B de alto grado en un 2 a 3 %</strong>.</li>
+        <li>Se confirma con biopsia, citometría de flujo, citogenético y biología molecular.</li>
+      </ul>
+
+      <p>Nace en el <strong>folículo</strong> —el centro germinal del <a href="#origen">§02</a>—, y de ahí el nombre. El <em>BCL2</em> del t(14;18) es un gen <strong>antiapoptótico</strong>: la célula no prolifera más rápido, simplemente <strong>deja de morir</strong>. Eso explica en una línea por qué es indolente y por qué es incurable — se acumula despacio y no ofrece blancos a la quimioterapia.</p>
+
+      <h3>Linfoma del manto</h3>
+
+      <ul>
+        <li><strong>6-9 % de los LNH</strong>, con predominio masculino, entre los <strong>60 y 68 años</strong>.</li>
+        <li><strong>Estadio IV</strong> con adenopatías generalizadas.</li>
+        <li>Compromiso extranodal frecuente: médula ósea, hígado, bazo, <strong>tracto gastrointestinal con poliposis múltiple</strong> y anillo de Waldeyer.</li>
+        <li>Compromiso de <strong>sangre periférica</strong>, detectado por citometría de flujo — que es diagnóstico.</li>
+        <li>Tratamiento: <strong>quimioterapia intensificada seguida de trasplante autólogo</strong>.</li>
+      </ul>
+
+      <p>La <strong>poliposis linfomatosa múltiple</strong> es su firma: pólipos en todo el tubo digestivo que en la endoscopia pueden confundirse con una poliposis familiar.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+        <p class="importante__titulo">El manto NO es indolente — y la diapositiva se contradice sola</p>
+        <p>La página 35 dice «curso indolente, conducta observar y esperar a progresión clínica» y <strong>dos líneas después</strong> indica «quimioterapia intensificada seguida de TAMO». Las dos cosas no pueden ser ciertas del mismo paciente.</p>
+        <p>El linfoma del manto es <strong>agresivo</strong>, de mal pronóstico y supervivencia limitada — por eso el tratamiento intensivo con trasplante. Existe un subgrupo de <strong>hasta un 30 %</strong> con curso genuinamente indolente —presentación leucémica, SOX11 negativo, índice de proliferación Ki-67 bajo— y ahí sí se prefiere observar y esperar. Pero es la minoría, no la definición.</p>
+        <p>Es el linfoma que combina lo peor de los dos mundos: <strong>se comporta como un agresivo y, como los indolentes, no se cura</strong>.</p>
+      </div>
+
+      <p class="cita">Fuentes: material de no Hodgkin, páginas 35 y 36. La corrección sobre el curso del linfoma del manto sigue a <em>How I manage mantle cell lymphoma: indolent versus aggressive disease</em>, British Journal of Haematology, y a las revisiones sobre linfoma del manto indolente.</p>
+    </section>
+
+    <!-- ============ 14 ============ -->
+    <section class="seccion s-clinica" id="burkitt-malt">
+      <span class="seccion__pestana"><b>14</b> Burkitt · MALT</span>
+      <h2 class="seccion__titulo">Burkitt y linfoma gástrico MALT</h2>
+
+      <p>Los dos extremos del espectro: el más agresivo de todos y el único que se trata con antibióticos.</p>
+
+      <h3>Linfoma de Burkitt</h3>
+
+      <ul>
+        <li><strong>1 % de los LNH.</strong> Tres variantes: <strong>endémico</strong> (África), <strong>esporádico</strong> y <strong>asociado a inmunodeficiencia</strong>.</li>
+        <li><strong>Masas tumorales voluminosas de crecimiento rápido</strong>, con afectación abdominal y compromiso de médula ósea.</li>
+        <li><strong>15 % afecta el SNC.</strong></li>
+        <li>Tratamiento: <strong>quimioterapia en altas dosis con profilaxis del SNC</strong>.</li>
+      </ul>
+
+      <p>Es el tumor humano de crecimiento más rápido conocido, con un tiempo de duplicación de horas. De ahí las tres consecuencias: es una <strong>urgencia oncológica real</strong>, tiene el mayor riesgo de <strong>síndrome de lisis tumoral</strong> —por eso la uricemia del <a href="#laboratorio">§07</a>— y, por la misma velocidad que lo hace peligroso, es <strong>extraordinariamente quimiosensible</strong>. La paradoja del <a href="#paradoja">§11</a> en su forma más pura.</p>
+
+      <h3>Linfoma gástrico MALT</h3>
+
+      <p>El linfoma gástrico más frecuente es el difuso a grandes células B, con o sin componente MALT. Pero el que interesa conceptualmente es el <strong>linfoma de la zona marginal tipo MALT</strong>, de <strong>pronóstico excelente y sobrevida prolongada</strong>.</p>
+
+      <p>Su causa está identificada: la <strong>inflamación crónica secundaria a la infección por <em>Helicobacter pylori</em></strong>, presente en el <strong>92 %</strong> de los casos. El estímulo antigénico sostenido mantiene proliferando a un clon B de la zona marginal hasta que se vuelve autónomo.</p>
+
+      <p><strong>Diagnóstico:</strong></p>
+      <ul>
+        <li><strong>Detección de <em>H. pylori</em></strong>: biopsia, test del aire espirado, antígeno en materia fecal.</li>
+        <li><strong>Múltiples biopsias gástricas</strong> — la lesión es parcheada.</li>
+        <li><strong>Ecoendoscopia</strong>, para medir la profundidad de la lesión.</li>
+        <li>TAC de cuello, tórax, abdomen y pelvis. <strong>Investigar órbitas y anillo de Waldeyer</strong>, que son las otras localizaciones típicas del MALT.</li>
+      </ul>
+
+      <p><strong>Tratamiento y seguimiento:</strong></p>
+      <ul>
+        <li><strong>Erradicar <em>H. pylori</em></strong>: claritromicina, amoxicilina, levofloxacina.</li>
+        <li>Si se erradica el germen y <strong>desaparece el linfoma</strong> → reevaluar con endoscopia a los <strong>3 o 6 meses</strong> más estudios complementarios.</li>
+        <li>Si se erradica el germen pero <strong>persiste el linfoma</strong> → quimioterapia.</li>
+      </ul>
+
+      <p>Es el ejemplo más claro de la medicina de que <strong>quitar el estímulo puede curar el tumor</strong>: en la mayoría de los casos, tratar la infección hace remitir la neoplasia. Ningún otro linfoma se comporta así, y es la razón por la que el MALT gástrico aparece en todos los programas.</p>
+
+      <p class="cita">Fuente: material de no Hodgkin, páginas 37 y 38.</p>
+    </section>
+
+    <!-- ============ 15 ============ -->
+    <section class="seccion s-diferenciales" id="precisiones">
+      <span class="seccion__pestana"><b>15</b> Precisiones</span>
+      <h2 class="seccion__titulo">Precisiones al material de cátedra</h2>
+
+      <h3>1 · El linfoma del manto, descripto como indolente</h3>
+
+      <p>La página 35 lo llama de «curso indolente, conducta observar y esperar a progresión clínica» y en la línea siguiente indica quimioterapia intensificada con trasplante. Es una <strong>contradicción interna</strong> de la misma diapositiva. El manto es agresivo; el subgrupo indolente es una minoría de hasta el 30 % con características definidas. Desarrollado en <a href="#folicular-manto">§13</a>.</p>
+
+      <h3>2 · Dos variables del IPI mal tipeadas</h3>
+
+      <p>La página 29 escribe «ECOG &gt; 2 <strong>ó puntos</strong>» y «LDH &gt;<strong>, normal</strong>». Corresponden a <strong>ECOG ≥ 2</strong> y <strong>LDH mayor a lo normal</strong>. En un score donde cada variable vale un punto y el total define el grado de riesgo, un umbral ambiguo cambia la categoría del paciente.</p>
+
+      <h3>3 · Los dos teóricos se complementan en Ann Arbor</h3>
+
+      <p>Vale señalarlo porque sirve para estudiar: el teórico de <strong>Hodgkin</strong> presenta Ann Arbor como una figura sin ningún criterio escrito, mientras que el de <strong>no Hodgkin</strong> sí trae las definiciones completas de los cuatro estadios y de los sufijos A y B (página 17). Al estudiar Hodgkin conviene tomar los criterios de este otro material.</p>
+
+      <h3>4 · «Anticuerpos monoclonales» y «R-CHOP», sin conectar</h3>
+
+      <p>La página 31 lista «anticuerpos monoclonales» entre las modalidades y la 34 menciona «R-CHOP», pero en ningún momento se dice que la <strong>R es rituximab</strong>, un anti-<strong>CD20</strong>. Sin ese dato queda suelto por qué el anticuerpo del no Hodgkin B es distinto del brentuximab del Hodgkin, que es anti-CD30 (<a href="#tratamiento">§10</a>).</p>
+
+      <h3>5 · Marcadores de carga tumoral clasificados como «del paciente»</h3>
+
+      <p>La página 26 agrupa <strong>LDH, β2-microglobulina, citopenias, VSG y albuminemia</strong> bajo el rótulo «relacionados con el paciente». Son marcadores de <strong>carga y actividad tumoral</strong>: la LDH y la β2-microglobulina suben en proporción a la masa de tumor. El rótulo confunde el origen del dato.</p>
+
+      <h3>6 · Erratas</h3>
+
+      <p>La página 5 escribe «<strong>LHN</strong>» por LNH. La página 25 titula «factores pronósticos… relacionados con el paciente» y la 26 repite el mismo rótulo para un grupo distinto de variables.</p>
+
+      <h3>7 · Lo que este cuadernillo agrega</h3>
+
+      <p>El <strong>mapa del ganglio</strong> que conecta cada compartimento con su linfoma (<a href="#origen">§02</a>), la <strong>paradoja indolente-agresivo</strong> con su explicación mecánica (<a href="#paradoja">§11</a>), y el contraste sistemático entre las dos enfermedades, que ninguno de los dos teóricos plantea — cada uno describe su linfoma por separado.</p>
+
+      <p class="cita">Fuentes de las correcciones: <em>How I manage mantle cell lymphoma: indolent versus aggressive disease</em>, Br J Haematol; <em>Indolent B-Cell Non-Hodgkin Lymphoma Treatment (PDQ)</em>, National Cancer Institute; criterios del Índice Pronóstico Internacional para linfoma no Hodgkin.</p>
+    </section>
+
+    <!-- ============ REPASO ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+
+      <div class="repaso">
+
+        <details class="fc s-generalidades"><summary>¿Por qué «linfoma no Hodgkin» no es un diagnóstico?</summary>
+          <div class="fc__r">Porque es una <strong>categoría por descarte</strong>: un grupo heterogéneo de decenas de entidades con distinta histología, inmunofenotipo y genética, cuyo único rasgo común es <strong>no tener células de Reed-Sternberg</strong>. El Hodgkin, en cambio, es una enfermedad definida por una célula.</div></details>
+
+        <details class="fc s-generalidades"><summary>Compará incidencia, mortalidad y edad entre los dos.</summary>
+          <div class="fc__r">LNH: <strong>3-7</strong>/100.000/año, <strong>4 veces más frecuente</strong> que el Hodgkin y con mortalidad <strong>10 veces mayor</strong>; edad 50-60 años. Hodgkin: 2-2,5/100.000/año, incidencia <strong>bimodal</strong> (15-30 y &gt;55).</div></details>
+
+        <details class="fc s-generalidades"><summary>¿Cómo se reparten los fenotipos B y T según la edad?</summary>
+          <div class="fc__r">En el <strong>adulto</strong>, B es <strong>8-9 veces</strong> más frecuente que T. En <strong>niños se invierte</strong>: el T es <strong>2 veces</strong> más frecuente que el B.</div></details>
+
+        <details class="fc s-fisiopatologia"><summary>¿Qué linfoma nace en cada compartimento del ganglio?</summary>
+          <div class="fc__r"><strong>Centro germinal</strong> → Hodgkin, folicular, difuso a grandes células B, Burkitt. <strong>Zona del manto</strong> → linfoma del manto. <strong>Zona marginal</strong> → MALT. <strong>Paracorteza</strong> (células T) → linfomas T.</div></details>
+
+        <details class="fc s-fisiopatologia"><summary>¿Qué es el tejido linfoide asociado y por qué importa?</summary>
+          <div class="fc__r"><strong>MALT</strong> en mucosas (bronquios, intestino, conjuntiva) y <strong>SALT</strong> en piel. Importa porque el no Hodgkin puede <strong>nacer donde no hay ganglios</strong>: estómago, piel, órbita, testículo, SNC. El Hodgkin es una enfermedad de ganglios.</div></details>
+
+        <details class="fc s-diagnostico"><summary>¿Cuál es la diferencia clave en la forma de diseminarse?</summary>
+          <div class="fc__r">El <strong>Hodgkin avanza por contigüidad</strong>, de una cadena a la vecina, en orden. El <strong>no Hodgkin aparece salteado</strong> desde el inicio y con frecuencia fuera del ganglio. De ahí sale casi todo lo demás.</div></details>
+
+        <details class="fc s-diagnostico"><summary>¿Por qué la misma clasificación de Ann Arbor rinde distinto en cada uno?</summary>
+          <div class="fc__r">Porque en el Hodgkin el estadio <strong>mide hasta dónde llegó la cadena</strong> y predice bien. En el no Hodgkin, que salta, el estadio informa menos: es sólo <strong>1 de las 5 variables del IPI</strong>, y por debajo pesa más la <strong>histología</strong>.</div></details>
+
+        <details class="fc s-diagnostico"><summary>¿Cuáles son los cuatro estadios de Ann Arbor y los sufijos A y B?</summary>
+          <div class="fc__r"><strong>I</strong> un grupo ganglionar o un sitio extranodal (IE). <strong>II</strong> dos o más grupos, o dos sitios (IIE), de <strong>un lado</strong> del diafragma. <strong>III</strong> grupos a <strong>ambos lados</strong>. <strong>IV</strong> compromiso visceral <strong>difuso</strong>. <strong>A</strong>: asintomático. <strong>B</strong>: fiebre &gt; 38 °C, sudores nocturnos o pérdida &gt; 10 % del peso en 6 meses.</div></details>
+
+        <details class="fc s-clinica"><summary>¿Cuál es la primera entrada de la lista de síntomas del LNH?</summary>
+          <div class="fc__r"><strong>Ausentes.</strong> Puede ser un hallazgo incidental. Después: síntomas B, compromiso localizado (dolor, flogosis, ulceración, edema), síntomas inespecíficos (rash, artralgias, faringitis, prurito), púrpura y dolor abdominal.</div></details>
+
+        <details class="fc s-clinica"><summary>¿Por qué la anamnesis pregunta por mascotas, viajes y promiscuidad?</summary>
+          <div class="fc__r">Porque <strong>no es una anamnesis de linfoma sino de adenopatía</strong>: antes de estadificar hay que decidir si es un linfoma. Mascotas orienta a bartonelosis y toxoplasmosis, viajes a endemias, promiscuidad y drogas a HIV y sífilis.</div></details>
+
+        <details class="fc s-clinica"><summary>¿Por qué el examen físico incluye orofaringe y piel?</summary>
+          <div class="fc__r">Por el <strong>anillo de Waldeyer</strong> —comprometido en el folicular y el del manto— y por el <strong>tejido linfoide asociado a piel</strong> y los linfomas T cutáneos. Ahí también hay tejido linfoide.</div></details>
+
+        <details class="fc s-diagnostico"><summary>¿Por qué la PAAF no sirve, según la propia cátedra?</summary>
+          <div class="fc__r">Porque <strong>«no aporta información sobre la estructura ganglionar»</strong> y <strong>«puede retrasar el diagnóstico»</strong>. Un linfoma se diagnostica viendo cómo está <strong>organizado</strong> el ganglio —patrón folicular o difuso, arquitectura borrada—, y eso una aguja no lo trae. Va <strong>biopsia escisional</strong>.</div></details>
+
+        <details class="fc s-diagnostico"><summary>¿Qué agrega el estudio del LNH que no está en el del Hodgkin?</summary>
+          <div class="fc__r"><strong>Estudios de clonalidad</strong>: citometría de flujo, técnicas moleculares, <strong>FISH</strong> y citogenético. En el no Hodgkin la <strong>genética define la entidad</strong> — t(14;18) del folicular, cMyc/Bcl2/Bcl6 de los de alto grado. Más punción lumbar y biopsia hepática.</div></details>
+
+        <details class="fc s-diagnostico"><summary>¿Qué cuatro estudios de laboratorio agrega el LNH y para qué?</summary>
+          <div class="fc__r"><strong>LDH</strong> (variable del IPI y carga tumoral), <strong>β2-microglobulina</strong> (carga tumoral), <strong>serologías</strong> —HIV se asocia al difuso a grandes células B, y la hepatitis B puede reactivarse con anti-CD20— y <strong>uricemia</strong> (riesgo de lisis tumoral). Más coagulograma y cuantificación de Ig.</div></details>
+
+        <details class="fc s-importantes"><summary>¿Cuáles son las cinco variables del IPI y sus grados de riesgo?</summary>
+          <div class="fc__r"><strong>Edad &gt; 60</strong> · <strong>estadio III-IV</strong> · <strong>ECOG ≥ 2</strong> · <strong>&gt; 2 localizaciones extraganglionares</strong> · <strong>LDH mayor a lo normal</strong>. Un punto cada una. Riesgo: <strong>bajo 0-1, intermedio bajo 2, intermedio alto 3, alto 4-5</strong>.</div></details>
+
+        <details class="fc s-importantes"><summary>¿En qué se diferencian el IPS del Hodgkin y el IPI del no Hodgkin?</summary>
+          <div class="fc__r">El <strong>IPS</strong> tiene 7 factores, <strong>4 de laboratorio</strong>, y se aplica <strong>sólo a los estadios avanzados</strong>. El <strong>IPI</strong> tiene 5 variables, <strong>4 clínicas o de extensión</strong>, y se aplica <strong>a todos</strong> los pacientes, generando cuatro grados de riesgo.</div></details>
+
+        <details class="fc s-importantes"><summary>¿Qué variable del IPI no tendría sentido en el Hodgkin?</summary>
+          <div class="fc__r"><strong>«Más de 2 localizaciones extraganglionares.»</strong> En el Hodgkin el compromiso extraganglionar es excepcional y por contigüidad; en el no Hodgkin es tan frecuente que se vuelve uno de los cinco pilares del score.</div></details>
+
+        <details class="fc s-importantes"><summary>¿Qué es la transformación histológica y por qué importa?</summary>
+          <div class="fc__r">Que un linfoma <strong>indolente se convierta en agresivo</strong>. El folicular se transforma en difuso a grandes células B de alto grado en un <strong>2 a 3 %</strong>. No es una recaída: es otra enfermedad, con otro pronóstico y otro tratamiento.</div></details>
+
+        <details class="fc s-tratamiento"><summary>¿Según qué se elige el tratamiento en cada enfermedad?</summary>
+          <div class="fc__r">Hodgkin: <strong>edad, estadio y respuesta</strong>, con ABVD como esqueleto común. No Hodgkin: <strong>IPI e histología</strong>, y el esquema cambia con el subtipo — R-CHOP en el difuso a grandes células B, altas dosis en el Burkitt, antibióticos en el MALT gástrico.</div></details>
+
+        <details class="fc s-tratamiento"><summary>¿Cuál es el anticuerpo monoclonal de cada uno y por qué son distintos?</summary>
+          <div class="fc__r">Hodgkin: <strong>brentuximab</strong>, anti-<strong>CD30</strong>, porque la Reed-Sternberg lo expresa fuerte y perdió el CD20. No Hodgkin B: <strong>rituximab</strong>, anti-<strong>CD20</strong> —la «R» de R-CHOP—, porque esas células sí lo conservan.</div></details>
+
+        <details class="fc s-importantes"><summary>¿Cuál es la paradoja de los linfomas indolentes y agresivos?</summary>
+          <div class="fc__r"><strong>El que crece rápido se cura y el que crece lento no.</strong> Los agresivos son quimiosensibles y se curan en más del 70 %; los indolentes tienen mediana de 7-10 años pero son <strong>incurables en estadio avanzado</strong>.</div></details>
+
+        <details class="fc s-importantes"><summary>¿Cuál es la explicación mecánica de esa paradoja?</summary>
+          <div class="fc__r">La quimioterapia <strong>mata células que se están dividiendo</strong>. Un tumor que prolifera rápido ofrece muchos blancos a la vez; uno indolente tiene la mayoría de sus células quietas, y esas sobreviven al tratamiento.</div></details>
+
+        <details class="fc s-clinica"><summary>Datos clave del linfoma difuso a grandes células B.</summary>
+          <div class="fc__r"><strong>35 %</strong> de los LNH, el más frecuente. Asociado a <strong>HIV</strong>, agresivo y <strong>quimiosensible</strong>. <strong>60 %</strong> se diagnostica en estadio III-IV, <strong>50 %</strong> con médula ósea comprometida. Es el <strong>tumor testicular más frecuente en mayores de 60 años</strong>.</div></details>
+
+        <details class="fc s-clinica"><summary>¿Qué son los santuarios y qué conducta obligan en el LDCGB?</summary>
+          <div class="fc__r"><strong>SNC, testículo y ojo</strong>: la quimioterapia sistémica llega mal a los tres. Por eso se pide ecografía testicular y evaluación oftalmológica, y al extraer LCR para estudio <strong>se hace profilaxis con triple intratecal en el mismo acto</strong>, sin esperar el resultado.</div></details>
+
+        <details class="fc s-clinica"><summary>¿Qué es un linfoma doble o triple hit?</summary>
+          <div class="fc__r">Un difuso a grandes células B <strong>de alto grado</strong> con reordenamiento de <strong>cMyc, Bcl2 y Bcl6</strong> —dos o tres de ellos— detectado por <strong>FISH</strong>. Varones &gt; 60, IPI 3-5, estadio III-IV, <strong>resistentes a R-CHOP</strong> y de mal pronóstico.</div></details>
+
+        <details class="fc s-clinica"><summary>Datos clave del linfoma folicular y su genética.</summary>
+          <div class="fc__r"><strong>30 %</strong> de los LNH, mujeres &gt; 60 años, estadio III-IV al diagnóstico, médula ósea en <strong>40-70 %</strong>. <strong>t(14;18)</strong> con reordenamiento <strong>IGH-BCL2</strong>: un gen <strong>antiapoptótico</strong> — la célula no prolifera más, <strong>deja de morir</strong>. Por eso es indolente e incurable.</div></details>
+
+        <details class="fc s-clinica"><summary>¿El linfoma del manto es indolente?</summary>
+          <div class="fc__r"><strong>No.</strong> Es <strong>agresivo</strong>, de mal pronóstico, y por eso se trata con quimioterapia intensificada y trasplante. Hay un subgrupo de hasta el <strong>30 %</strong> con curso indolente (presentación leucémica, SOX11 negativo, Ki-67 bajo) donde sí se observa y espera. La diapositiva 35 se contradice sola.</div></details>
+
+        <details class="fc s-clinica"><summary>¿Cuál es la firma endoscópica del linfoma del manto?</summary>
+          <div class="fc__r">La <strong>poliposis linfomatosa múltiple</strong>: pólipos en todo el tubo digestivo, que pueden confundirse con una poliposis familiar. También compromete médula ósea, hígado, bazo y anillo de Waldeyer, y la sangre periférica por citometría.</div></details>
+
+        <details class="fc s-clinica"><summary>¿Por qué el Burkitt es a la vez el más peligroso y el más curable?</summary>
+          <div class="fc__r">Por la <strong>misma velocidad</strong>. Es el tumor humano de crecimiento más rápido: eso lo vuelve una <strong>urgencia</strong> con máximo riesgo de <strong>lisis tumoral</strong>, y a la vez <strong>extraordinariamente quimiosensible</strong>. Tres variantes: endémico, esporádico y asociado a inmunodeficiencia. 15 % afecta SNC.</div></details>
+
+        <details class="fc s-clinica"><summary>¿Cómo se trata el linfoma gástrico MALT y por qué?</summary>
+          <div class="fc__r"><strong>Erradicando <em>H. pylori</em></strong> (claritromicina, amoxicilina, levofloxacina), presente en el <strong>92 %</strong> de los casos. La inflamación crónica sostiene la proliferación del clon B; quitar el estímulo hace remitir el tumor. Si se erradica y persiste el linfoma → quimioterapia.</div></details>
+
+      </div>
+    </section>
+
+    <!-- ============ RELÁMPAGO ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <div class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</div>
+      <dl>
+        <dt class="r-triada">La diferencia de fondo</dt>
+        <dd><strong>Hodgkin</strong> = una enfermedad, una célula, avanza <strong>contiguo</strong>, extraganglionar raro, estadio predice bien, curación pareja 80-95 %. <strong>No Hodgkin</strong> = grupo heterogéneo, aparece <strong>salteado</strong> y fuera del ganglio, estadio dice menos, manda la <strong>histología</strong>. 4 veces más frecuente y 10 veces más mortal.</dd>
+
+        <dt class="r-gold">El ganglio explica los nombres</dt>
+        <dd><strong>Centro germinal</strong> → Hodgkin, folicular, difuso a grandes células B, Burkitt. <strong>Manto</strong> → linfoma del manto. <strong>Zona marginal</strong> → MALT. <strong>Paracorteza</strong> → linfomas T. Fuera del ganglio: <strong>MALT</strong> en mucosas, <strong>SALT</strong> en piel.</dd>
+
+        <dt class="r-gold">IPI — 5 variables, 1 punto cada una</dt>
+        <dd>Edad <span class="dato">&gt; 60</span> · estadio <span class="dato">III-IV</span> · <span class="dato">ECOG ≥ 2</span> · <span class="dato">&gt; 2</span> localizaciones extraganglionares · <strong>LDH</strong> alta. Riesgo: bajo 0-1 · intermedio bajo 2 · intermedio alto 3 · alto 4-5. Se aplica a <strong>todos</strong>, a diferencia del IPS del Hodgkin.</dd>
+
+        <dt class="r-alerta">La paradoja</dt>
+        <dd><strong>Los agresivos se curan (&gt; 70 %); los indolentes no.</strong> La quimioterapia mata células en división y el indolente casi no se divide. Indolente asintomático → <strong>observar y esperar</strong>. Agresivo → <strong>urgencia, tratar ya</strong>.</dd>
+
+        <dt class="r-tto">Los cinco subtipos</dt>
+        <dd><strong>Difuso a grandes células B</strong> 35 %, agresivo, HIV, santuarios (SNC, testículo, ojo) → R-CHOP. <strong>Folicular</strong> 30 %, indolente, <span class="dato">t(14;18)</span> BCL2 antiapoptótico. <strong>Manto</strong> 6-9 %, <strong>agresivo</strong>, poliposis múltiple → intensivo + TAMO. <strong>Burkitt</strong> 1 %, el más rápido, lisis tumoral, profilaxis SNC. <strong>MALT gástrico</strong>, <em>H. pylori</em> 92 % → <strong>antibióticos</strong>.</dd>
+
+        <dt class="r-alerta">Dos trampas del material</dt>
+        <dd>El <strong>manto no es indolente</strong> (la diapo 35 se contradice a sí misma). Y en el IPI, «ECOG &gt; 2 ó puntos» es <strong>ECOG ≥ 2</strong>, «LDH &gt;, normal» es <strong>LDH mayor a lo normal</strong>.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir de los teóricos de Linfoma Hodgkin y Linfomas No Hodgkin de la Dra. Susana B. Tortosa (Medicina Interna III — Hematología), complementados con el Índice Pronóstico Internacional para linfoma no Hodgkin y con revisiones sobre linfoma del manto y linfomas indolentes. El detalle del linfoma de Hodgkin —célula de Reed-Sternberg, inmunofenotipo, grupos pronósticos, ABVD y toxicidad tardía— está desarrollado en su propio cuadernillo. Material de estudio: no reemplaza el criterio clínico ni la guía institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+
+  // ---- Tema claro / oscuro ----
+  // Sin eleccion estampada manda el sistema; el boton la estampa y la guarda.
+  var raiz = document.documentElement;
+  var boton = document.getElementById('tema');
+
+  function temaActual(){
+    var estampado = raiz.getAttribute('data-theme');
+    if (estampado) return estampado;
+    return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+
+  if (boton){
+    var rotular = function(){
+      var actual = temaActual();
+      boton.setAttribute('aria-pressed', actual === 'dark' ? 'true' : 'false');
+      boton.setAttribute('aria-label', actual === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+    };
+    boton.addEventListener('click', function(){
+      var nuevo = temaActual() === 'dark' ? 'light' : 'dark';
+      raiz.setAttribute('data-theme', nuevo);
+      try { localStorage.setItem('wordmed-tema', nuevo); } catch (e) { /* sin persistencia */ }
+      rotular();
+    });
+    rotular();
+  }
+
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link, .ir-link'));
+
+  // Devuelve TODOS los enlaces al ancla: la misma seccion figura en el indice
+  // lateral y en el compacto, y los dos tienen que encenderse juntos.
+  function porMeta(hash){
+    return enlaces.filter(function(l){ return l.getAttribute('href') === '#' + hash; });
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var activos = porMeta(e.target.id);
+        if (!activos.length) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          activos.forEach(function(l){ l.setAttribute('aria-current', 'true'); });
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>

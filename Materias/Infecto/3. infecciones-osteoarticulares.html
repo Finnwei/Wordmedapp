@@ -1,0 +1,1472 @@
+<title>Infecciones Osteoarticulares</title>
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+}
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índice lateral ---------- */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Ficha de sección ---------- */
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.35rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-row:1/3; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+.importante__titulo{
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso{ display:none !important; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Base</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-generalidades"  href="#panorama">Las tres entidades</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#biofilm">El biofilm</a></li>
+    </ul>
+    <p class="indice__rotulo" style="margin-top:1.2rem">Artritis séptica</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-generalidades" href="#art-base">Definición &amp; Clínica</a></li>
+      <li><a class="indice__link i-diagnostico"   href="#art-diagnostico">Diagnóstico</a></li>
+      <li><a class="indice__link i-tratamiento"   href="#art-tratamiento">Tratamiento</a></li>
+    </ul>
+    <p class="indice__rotulo" style="margin-top:1.2rem">Osteomielitis</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-generalidades" href="#ost-base">Definición &amp; Etiología</a></li>
+      <li><a class="indice__link i-diagnostico"   href="#ost-diagnostico">Diagnóstico</a></li>
+      <li><a class="indice__link i-tratamiento"   href="#ost-tratamiento">Tratamiento</a></li>
+    </ul>
+    <p class="indice__rotulo" style="margin-top:1.2rem">Infección protésica</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-generalidades" href="#ip-base">Base &amp; Clasificación</a></li>
+      <li><a class="indice__link i-clinica"       href="#ip-clinica">Clínica</a></li>
+      <li><a class="indice__link i-diagnostico"   href="#ip-diagnostico">Diagnóstico</a></li>
+      <li><a class="indice__link i-tratamiento"   href="#ip-tratamiento">Tratamiento</a></li>
+    </ul>
+    <p class="indice__rotulo" style="margin-top:1.2rem">Cierre</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-diferenciales" href="#diferenciales">Diagnósticos Diferenciales</a></li>
+      <li><a class="indice__link i-clinica"       href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"   href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Infectología · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Infecciones Osteoarticulares</h1>
+      <p class="portada__bajada">Artritis séptica, osteomielitis e infección protésica. Tres cuadros distintos unidos por un mismo problema: la bacteria se refugia en el <strong>biofilm</strong>, donde el antibiótico no la alcanza. Por eso ninguno se cura sólo con antibiótico.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">3 entidades</span>
+        <span class="etiqueta s-fisiopatologia">Biofilm</span>
+        <span class="etiqueta s-diagnostico">Artrocentesis · biopsia</span>
+        <span class="etiqueta s-importantes">Siempre hay cirugía</span>
+      </div>
+    </header>
+
+    <!-- ═══════════ PANORAMA ═══════════ -->
+    <section class="seccion s-generalidades" id="panorama">
+      <span class="seccion__pestana"><b>00</b> Base</span>
+      <h2 class="seccion__titulo">Las tres entidades de un vistazo</h2>
+
+      <p>Las tres comparten un problema que no tienen las infecciones de partes blandas: la bacteria se instala sobre <strong>hueso desvitalizado o material protésico</strong>, superficies donde forma <strong>biofilm</strong> y queda protegida del antibiótico y del sistema inmune. De ahí salen las tres consecuencias que se repiten en todo el tema: <strong>tratamientos largos</strong>, <strong>tasas de curación limitadas</strong> y <strong>siempre algún gesto quirúrgico</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 400" role="img" aria-label="Comparación de las tres infecciones osteoarticulares. La artritis séptica compromete la articulación, su germen principal es Staphylococcus aureus, dura cuatro semanas de antibiótico y requiere drenaje articular. La osteomielitis compromete la médula y la cortical del hueso, su germen principal es Staphylococcus aureus con bacilos gramnegativos en formas posquirúrgicas y nosocomiales, dura ocho a doce semanas y la cirugía es fundamental en las formas crónicas. La infección protésica compromete la prótesis y el hueso vecino, sus gérmenes principales son Staphylococcus epidermidis y Staphylococcus aureus, dura doce semanas o seis meses o más si no se retira la prótesis, y requiere desbridamiento o recambio protésico.">
+          <text x="10" y="26" font-size="12.5" font-weight="700" fill="currentColor">Tres entidades, un mismo obstáculo: el biofilm</text>
+
+          <rect x="10" y="44" width="218" height="272" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="26" y="70" font-size="12" font-weight="700" fill="currentColor">ARTRITIS SÉPTICA</text>
+          <line x1="26" y1="84" x2="212" y2="84" stroke="currentColor" stroke-opacity="0.3" stroke-width="1"></line>
+          <text x="26" y="104" font-size="10" font-weight="700" fill="currentColor" opacity="0.7">QUÉ COMPROMETE</text>
+          <text x="26" y="122" font-size="10.5" fill="currentColor" opacity="0.9">La articulación</text>
+          <text x="26" y="138" font-size="10.5" fill="currentColor" opacity="0.75">Rodilla, la más frecuente</text>
+          <line x1="26" y1="152" x2="212" y2="152" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="26" y="172" font-size="10" font-weight="700" fill="currentColor" opacity="0.7">GERMEN</text>
+          <text x="26" y="190" font-size="10.5" fill="currentColor" opacity="0.9">S. aureus</text>
+          <line x1="26" y1="214" x2="212" y2="214" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="26" y="232" font-size="10" font-weight="700" fill="currentColor" opacity="0.7">DURACIÓN DEL ATB</text>
+          <text x="26" y="250" font-size="11.5" font-weight="700" fill="currentColor">4 semanas</text>
+          <line x1="26" y1="266" x2="212" y2="266" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="26" y="284" font-size="10" font-weight="700" fill="currentColor" opacity="0.7">CIRUGÍA</text>
+          <text x="26" y="302" font-size="10.5" font-weight="700" fill="currentColor">Drenaje articular</text>
+
+          <rect x="241" y="44" width="218" height="272" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="257" y="70" font-size="12" font-weight="700" fill="currentColor">OSTEOMIELITIS</text>
+          <line x1="257" y1="84" x2="443" y2="84" stroke="currentColor" stroke-opacity="0.3" stroke-width="1"></line>
+          <text x="257" y="104" font-size="10" font-weight="700" fill="currentColor" opacity="0.7">QUÉ COMPROMETE</text>
+          <text x="257" y="122" font-size="10.5" fill="currentColor" opacity="0.9">Médula y cortical</text>
+          <text x="257" y="138" font-size="10.5" fill="currentColor" opacity="0.9">del hueso</text>
+          <line x1="257" y1="152" x2="443" y2="152" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="257" y="172" font-size="10" font-weight="700" fill="currentColor" opacity="0.7">GERMEN</text>
+          <text x="257" y="190" font-size="10.5" fill="currentColor" opacity="0.9">S. aureus · BGN en las</text>
+          <text x="257" y="204" font-size="10.5" fill="currentColor" opacity="0.75">formas post-Qx</text>
+          <line x1="257" y1="214" x2="443" y2="214" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="257" y="232" font-size="10" font-weight="700" fill="currentColor" opacity="0.7">DURACIÓN DEL ATB</text>
+          <text x="257" y="250" font-size="11.5" font-weight="700" fill="currentColor">8 – 12 semanas</text>
+          <line x1="257" y1="266" x2="443" y2="266" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="257" y="284" font-size="10" font-weight="700" fill="currentColor" opacity="0.7">CIRUGÍA</text>
+          <text x="257" y="302" font-size="10.5" font-weight="700" fill="currentColor">Fundamental en la crónica</text>
+
+          <rect x="472" y="44" width="218" height="272" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="488" y="70" font-size="12" font-weight="700" fill="currentColor">INFECCIÓN PROTÉSICA</text>
+          <line x1="488" y1="84" x2="674" y2="84" stroke="currentColor" stroke-opacity="0.3" stroke-width="1"></line>
+          <text x="488" y="104" font-size="10" font-weight="700" fill="currentColor" opacity="0.7">QUÉ COMPROMETE</text>
+          <text x="488" y="122" font-size="10.5" fill="currentColor" opacity="0.9">La prótesis y el</text>
+          <text x="488" y="138" font-size="10.5" fill="currentColor" opacity="0.9">hueso vecino</text>
+          <line x1="488" y1="152" x2="674" y2="152" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="488" y="172" font-size="10" font-weight="700" fill="currentColor" opacity="0.7">GERMEN</text>
+          <text x="488" y="190" font-size="10.5" fill="currentColor" opacity="0.9">S. epidermidis</text>
+          <text x="488" y="204" font-size="10.5" fill="currentColor" opacity="0.75">y S. aureus</text>
+          <line x1="488" y1="214" x2="674" y2="214" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="488" y="232" font-size="10" font-weight="700" fill="currentColor" opacity="0.7">DURACIÓN DEL ATB</text>
+          <text x="488" y="250" font-size="11.5" font-weight="700" fill="currentColor">12 semanas</text>
+          <text x="488" y="264" font-size="9.5" fill="currentColor" opacity="0.7">o ≥ 6 meses si no se retira</text>
+          <line x1="488" y1="274" x2="674" y2="274" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="488" y="290" font-size="10" font-weight="700" fill="currentColor" opacity="0.7">CIRUGÍA</text>
+          <text x="488" y="308" font-size="10.5" font-weight="700" fill="currentColor">Desbridar o recambiar</text>
+
+          <rect x="10" y="332" width="680" height="60" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.3" stroke-dasharray="5 3"></rect>
+          <text x="26" y="354" font-size="11.5" font-weight="700" fill="currentColor">La regla que atraviesa las tres</text>
+          <text x="26" y="374" font-size="11" fill="currentColor" opacity="0.8">Ninguna se cura sólo con antibiótico: el hueso desvitalizado y el material protésico protegen a la bacteria.</text>
+          <text x="26" y="388" font-size="11" font-weight="700" fill="currentColor">Drenaje, desbridamiento o recambio — siempre hay un gesto quirúrgico.</text>
+        </svg>
+        <figcaption>La duración del antibiótico es proporcional a lo difícil que es alcanzar a la bacteria: cuatro semanas en una articulación, doce sobre una prótesis.</figcaption>
+      </figure>
+
+      <p class="cita">Fuente: clase «Infecciones osteoarticulares» de la Dra. Macarena Pérez, residente de 3.er año de Infectología del HTJS.</p>
+    </section>
+
+    <!-- ═══════════ BIOFILM ═══════════ -->
+    <section class="seccion s-fisiopatologia" id="biofilm">
+      <span class="seccion__pestana"><b>00</b> Mecanismo</span>
+      <h2 class="seccion__titulo">El biofilm — el mecanismo que explica todo el capítulo</h2>
+
+      <p>El <strong>biofilm</strong> es el <strong>mecanismo a través del cual se garantiza la adherencia y la supervivencia de las bacterias</strong>. Su desarrollo es un <strong>proceso continuo hasta la cronicidad</strong>: <strong>no genera la infección aguda</strong>, pero una vez producida la siembra bacteriana <strong>comienza a formarse alrededor de las estructuras protésicas y óseas y mantiene la infección</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 400" role="img" aria-label="Las cuatro etapas de formación del biofilm. Primero la adhesión de los gérmenes a la superficie, que es la única etapa reversible. Segundo, la fijación y formación del limo o matriz extracelular, momento a partir del cual el proceso se vuelve irreversible. Tercero, la maduración del biofilm, cuando la comunidad bacteriana se estructura y crece. Cuarto, el equilibrio entre formación y desprendimiento, que siembra bacterias a distancia. Las consecuencias clínicas son que el antibiótico solo no penetra el biofilm maduro, que hay que retirar el material extraño o desbridar el hueso desvitalizado, que la rifampicina se asocia para tratar bacterias productoras de biofilm y que se sugiere una ventana antibiótica de dos semanas antes de la toma de muestra quirúrgica.">
+          <defs>
+            <marker id="pta-bio" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <text x="10" y="26" font-size="12.5" font-weight="700" fill="currentColor">Cómo la bacteria se vuelve inalcanzable</text>
+
+          <rect x="10" y="44" width="158" height="128" rx="3" fill="var(--c)" fill-opacity="0.08" stroke="var(--c)" stroke-width="1.4"></rect>
+          <text x="24" y="68" font-size="11.5" font-weight="700" fill="currentColor">1 · ADHESIÓN</text>
+          <text x="24" y="92" font-size="10.5" fill="currentColor" opacity="0.85">Los gérmenes se</text>
+          <text x="24" y="108" font-size="10.5" fill="currentColor" opacity="0.85">adhieren a la</text>
+          <text x="24" y="124" font-size="10.5" fill="currentColor" opacity="0.85">superficie</text>
+          <text x="24" y="152" font-size="11" font-weight="700" fill="currentColor">Aún REVERSIBLE</text>
+
+          <rect x="188" y="44" width="158" height="128" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="1.4"></rect>
+          <text x="202" y="68" font-size="11.5" font-weight="700" fill="currentColor">2 · FIJACIÓN</text>
+          <text x="202" y="92" font-size="10.5" fill="currentColor" opacity="0.85">Formación del limo</text>
+          <text x="202" y="108" font-size="10.5" fill="currentColor" opacity="0.85">— la matriz</text>
+          <text x="202" y="124" font-size="10.5" fill="currentColor" opacity="0.85">extracelular</text>
+          <text x="202" y="152" font-size="11" font-weight="700" fill="currentColor">Ya IRREVERSIBLE</text>
+
+          <rect x="366" y="44" width="158" height="128" rx="3" fill="var(--c)" fill-opacity="0.20" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="380" y="68" font-size="11.5" font-weight="700" fill="currentColor">3 · MADURACIÓN</text>
+          <text x="380" y="92" font-size="10.5" fill="currentColor" opacity="0.85">La comunidad</text>
+          <text x="380" y="108" font-size="10.5" fill="currentColor" opacity="0.85">bacteriana se</text>
+          <text x="380" y="124" font-size="10.5" fill="currentColor" opacity="0.85">estructura y crece</text>
+          <text x="380" y="152" font-size="11" font-weight="700" fill="currentColor">El ATB no penetra</text>
+
+          <rect x="544" y="44" width="146" height="128" rx="3" fill="var(--c)" fill-opacity="0.26" stroke="var(--c)" stroke-width="2.2"></rect>
+          <text x="558" y="68" font-size="11.5" font-weight="700" fill="currentColor">4 · EQUILIBRIO</text>
+          <text x="558" y="92" font-size="10.5" fill="currentColor" opacity="0.85">Entre formación y</text>
+          <text x="558" y="108" font-size="10.5" fill="currentColor" opacity="0.85">desprendimiento</text>
+          <text x="558" y="124" font-size="10.5" fill="currentColor" opacity="0.85">del biofilm</text>
+          <text x="558" y="152" font-size="11" font-weight="700" fill="currentColor">Siembra a distancia</text>
+
+          <line x1="168" y1="108" x2="186" y2="108" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-bio)"></line>
+          <line x1="346" y1="108" x2="364" y2="108" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-bio)"></line>
+          <line x1="524" y1="108" x2="542" y2="108" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-bio)"></line>
+
+          <rect x="10" y="186" width="158" height="30" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.45" stroke-width="1.3"></rect>
+          <text x="89" y="206" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">REVERSIBLE</text>
+
+          <rect x="188" y="186" width="502" height="30" rx="3" fill="var(--c)" fill-opacity="0.9"></rect>
+          <text x="439" y="206" font-size="11" font-weight="700" fill="#FFFFFF" text-anchor="middle">IRREVERSIBLE</text>
+
+          <rect x="10" y="238" width="680" height="152" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.3" stroke-dasharray="5 3"></rect>
+          <text x="26" y="262" font-size="12" font-weight="700" fill="currentColor">Las cuatro consecuencias clínicas</text>
+          <text x="26" y="290" font-size="11" fill="currentColor" opacity="0.85">· El antibiótico solo NO penetra el biofilm maduro → la osteomielitis cura sólo en el 70 % de los casos</text>
+          <text x="26" y="314" font-size="11" fill="currentColor" opacity="0.85">· Hay que RETIRAR el material extraño o DESBRIDAR el hueso desvitalizado</text>
+          <text x="26" y="338" font-size="11" fill="currentColor" opacity="0.85">· Se asocia RIFAMPICINA para tratar bacterias productoras de biofilm cuando la prótesis no se puede retirar</text>
+          <text x="26" y="362" font-size="11" fill="currentColor" opacity="0.85">· Se sugiere una VENTANA ANTIBIÓTICA de 2 semanas antes de tomar la muestra quirúrgica</text>
+          <text x="26" y="382" font-size="10.5" fill="currentColor" opacity="0.7">El biofilm no causa la infección aguda: la vuelve crónica.</text>
+        </svg>
+        <figcaption>La única ventana en que el antibiótico solo puede ganar es la etapa 1. A partir de la matriz extracelular, la conducta pasa a ser quirúrgica.</figcaption>
+      </figure>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>El biofilm es <strong>la razón por la que estas infecciones se tratan durante semanas o meses y aun así fallan</strong>. Cada vez que en este cuadernillo aparezca una duración larga, un desbridamiento o la rifampicina, la explicación es la misma: hay que <strong>eliminar físicamente la superficie donde la bacteria se refugió</strong>.</p>
+      </div>
+
+      <p class="cita">Fuente: clase «Infecciones osteoarticulares» de la cátedra de Infectología, HTJS.</p>
+    </section>
+
+    <!-- ═══════════ ARTRITIS SÉPTICA ═══════════ -->
+    <section class="seccion s-generalidades" id="art-base">
+      <span class="seccion__pestana"><b>01</b> Artritis séptica</span>
+      <h2 class="seccion__titulo">Artritis Séptica — Definición &amp; Clínica</h2>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Es una <strong>URGENCIA MÉDICA</strong>: las bacterias son <strong>capaces de originar una rápida destrucción articular</strong>. El tiempo que se pierde hasta la artrocentesis y el drenaje se paga en función articular perdida.</p>
+      </div>
+
+      <h3>Definición</h3>
+      <p><strong>Infección articular producida por bacterias</strong>, capaces de originar una <strong>rápida destrucción articular</strong>.</p>
+
+      <h3>Epidemiología y etiología</h3>
+      <ul>
+        <li><strong><em>S. aureus</em> es el microorganismo más frecuente.</strong></li>
+        <li>La <strong>rodilla es la articulación más frecuentemente afectada</strong>, aunque <strong>cualquiera puede comprometerse</strong>.</li>
+      </ul>
+
+      <h3>Clínica</h3>
+      <p>Se manifiesta con <strong>tumefacción</strong>, <strong>dolor</strong> y <strong>fiebre</strong>.</p>
+
+      <p class="cita">Fuente: clase «Infecciones osteoarticulares» de la cátedra de Infectología, HTJS.</p>
+    </section>
+
+    <section class="seccion s-diagnostico" id="art-diagnostico">
+      <span class="seccion__pestana"><b>02</b> Artritis séptica</span>
+      <h2 class="seccion__titulo">Artritis Séptica — Diagnóstico</h2>
+
+      <p>El diagnóstico <strong>se basa en el análisis urgente del líquido articular (LA)</strong> obtenido mediante <strong>artrocentesis</strong>. No hay atajo: sin punción no hay diagnóstico.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 396" role="img" aria-label="Algoritmo diagnóstico de la artritis séptica. Ante una articulación con tumefacción, dolor y fiebre se realiza artrocentesis urgente, remitiendo muestra de líquido articular para cultivo y tomando dos hemocultivos incluso en pacientes sin fiebre. Al momento de la punción, el Gram del líquido articular orienta el esquema empírico. Se analiza el líquido: si es macroscópicamente turbio o tiene un recuento celular mayor a cincuenta por diez a la nueve células por litro, debe sospecharse artritis séptica y plantear antibiótico empírico urgente junto con drenaje articular, que es fundamental para evitar la destrucción de la articulación. La duración del tratamiento definitivo es de cuatro semanas, ajustado al cultivo.">
+          <defs>
+            <marker id="pta-art" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="175" y="8" width="350" height="46" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--ct)" stroke-width="1.5"></rect>
+          <text x="350" y="36" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">Tumefacción + dolor + fiebre articular</text>
+
+          <line x1="350" y1="54" x2="350" y2="72" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-art)"></line>
+
+          <rect x="175" y="74" width="350" height="60" rx="3" fill="var(--c)" fill-opacity="0.9"></rect>
+          <text x="350" y="99" font-size="13" font-weight="700" fill="#FFFFFF" text-anchor="middle">ARTROCENTESIS URGENTE</text>
+          <text x="350" y="120" font-size="10.5" fill="#FFFFFF" opacity="0.92" text-anchor="middle">Antes del ATB: LA para cultivo + hemocultivos × 2</text>
+
+          <line x1="350" y1="134" x2="350" y2="152" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-art)"></line>
+
+          <rect x="175" y="154" width="350" height="64" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--ct)" stroke-width="2.5"></rect>
+          <text x="350" y="178" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">¿LA macroscópicamente TURBIO,</text>
+          <text x="350" y="197" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">o recuento &gt; 50 × 10⁹ células/L?</text>
+          <text x="350" y="212" font-size="10" fill="currentColor" opacity="0.75" text-anchor="middle">equivale a 50.000 células/mm³</text>
+
+          <rect x="10" y="74" width="155" height="144" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.3"></rect>
+          <text x="24" y="98" font-size="11" font-weight="700" fill="currentColor">El GRAM del LA</text>
+          <text x="24" y="122" font-size="10.5" fill="currentColor" opacity="0.85">Al momento de la</text>
+          <text x="24" y="138" font-size="10.5" fill="currentColor" opacity="0.85">punción, orienta</text>
+          <text x="24" y="154" font-size="10.5" fill="currentColor" opacity="0.85">el esquema</text>
+          <text x="24" y="170" font-size="10.5" fill="currentColor" opacity="0.85">empírico ideal.</text>
+          <text x="24" y="196" font-size="10.5" fill="currentColor" opacity="0.7">Los hemocultivos van</text>
+          <text x="24" y="210" font-size="10.5" fill="currentColor" opacity="0.7">incluso sin fiebre.</text>
+
+          <rect x="535" y="74" width="155" height="144" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.3"></rect>
+          <text x="549" y="98" font-size="11" font-weight="700" fill="currentColor">El DRENAJE</text>
+          <text x="549" y="122" font-size="10.5" fill="currentColor" opacity="0.85">Es FUNDAMENTAL</text>
+          <text x="549" y="138" font-size="10.5" fill="currentColor" opacity="0.85">para evitar la</text>
+          <text x="549" y="154" font-size="10.5" fill="currentColor" opacity="0.85">destrucción de la</text>
+          <text x="549" y="170" font-size="10.5" fill="currentColor" opacity="0.85">articulación.</text>
+          <text x="549" y="196" font-size="10.5" fill="currentColor" opacity="0.7">No es opcional ni</text>
+          <text x="549" y="210" font-size="10.5" fill="currentColor" opacity="0.7">diferible.</text>
+
+          <line x1="350" y1="218" x2="350" y2="240" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-art)"></line>
+          <text x="360" y="235" font-size="11" font-weight="700" fill="currentColor">sí</text>
+
+          <rect x="100" y="242" width="500" height="76" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="350" y="268" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">SOSPECHAR ARTRITIS SÉPTICA</text>
+          <text x="350" y="292" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">ATB empírico URGENTE + DRENAJE ARTICULAR</text>
+          <text x="350" y="310" font-size="10.5" fill="currentColor" opacity="0.8" text-anchor="middle">No esperar el resultado del cultivo para iniciar</text>
+
+          <rect x="10" y="338" width="680" height="50" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.28" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="26" y="358" font-size="11" font-weight="700" fill="currentColor">Tratamiento definitivo</text>
+          <text x="26" y="378" font-size="11" fill="currentColor" opacity="0.8">En la mayoría de los casos el cultivo del LA será positivo: el ATB se ajusta a ese rescate. Duración recomendada: 4 semanas.</text>
+        </svg>
+        <figcaption>Dos umbrales bastan para activar la conducta: un líquido turbio a simple vista, o el recuento celular. Ninguno de los dos necesita esperar al laboratorio central.</figcaption>
+      </figure>
+
+      <h3>Criterios que activan la sospecha</h3>
+      <p>Ante un <strong>LA macroscópicamente turbio</strong> o un <strong>recuento celular mayor a <span class="dato">50 × 10⁹/L</span></strong> —equivalente a <span class="dato">50.000 células/mm³</span>— <strong>debe sospecharse artritis séptica y plantear antibiótico empírico urgente</strong>.</p>
+
+      <h3>Muestras — antes del antibiótico</h3>
+      <ul>
+        <li><strong>Antes del inicio del antibiótico</strong> debe remitirse <strong>muestra de LA para cultivo microbiológico</strong>.</li>
+        <li>Realizar <strong>hemocultivos × 2</strong>, <strong>incluso en pacientes sin fiebre</strong>.</li>
+        <li>El <strong>Gram del líquido articular al momento de la punción</strong> es lo que idealmente debe guiar la elección del antibiótico empírico.</li>
+      </ul>
+
+      <p class="cita">Fuente: clase «Infecciones osteoarticulares» de la cátedra de Infectología, HTJS.</p>
+    </section>
+
+    <section class="seccion s-tratamiento" id="art-tratamiento">
+      <span class="seccion__pestana"><b>03</b> Artritis séptica</span>
+      <h2 class="seccion__titulo">Artritis Séptica — Tratamiento</h2>
+
+      <h3>Tratamiento empírico</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Escenario</th><th>Gérmenes a cubrir</th><th>Esquema</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Huésped habitual</strong></td>
+              <td><strong><em>S. aureus</em></strong></td>
+              <td><strong>Cefalosporina de 1.ª generación</strong> o <strong>vancomicina</strong>, según la <strong>prevalencia local de SAMR</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Sospecha de gonococo</strong></td>
+              <td><em>Neisseria gonorrhoeae</em></td>
+              <td>Se <strong>agrega ceftriaxona</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Adictos a drogas endovenosas</strong></td>
+              <td><em>S. aureus</em> y <strong><em>Pseudomonas aeruginosa</em></strong></td>
+              <td>Se <strong>agrega piperacilina/tazobactam o ceftazidima</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Inmunosuprimidos</strong></td>
+              <td><em>S. aureus</em>, <strong>bacilos gramnegativos</strong> —incluida <em>P. aeruginosa</em>— y <strong>estreptococos</strong></td>
+              <td>Se <strong>agrega piperacilina/tazobactam o ceftazidima</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>El <strong>drenaje articular es fundamental para evitar la destrucción de la articulación</strong>. El antibiótico controla la infección, pero es el drenaje el que salva la función: el pus a presión dentro de una cavidad cerrada destruye el cartílago aunque la bacteria ya esté muerta.</p>
+      </div>
+
+      <h3>Tratamiento definitivo</h3>
+      <ul>
+        <li>En la <strong>mayoría de los casos el cultivo del LA será positivo</strong> y el antibiótico <strong>debe ajustarse a ese rescate</strong>. También deben tenerse en cuenta los <strong>hemocultivos</strong>.</li>
+        <li><strong>Tener presente la prevalencia de SAMR</strong> al momento de decidir el tratamiento.</li>
+        <li><strong>Duración recomendada: <span class="dato">4 semanas</span>.</strong></li>
+      </ul>
+
+      <p class="cita">Fuente: clase «Infecciones osteoarticulares» de la cátedra de Infectología, HTJS.</p>
+    </section>
+
+    <!-- ═══════════ OSTEOMIELITIS ═══════════ -->
+    <section class="seccion s-generalidades" id="ost-base">
+      <span class="seccion__pestana"><b>01</b> Osteomielitis</span>
+      <h2 class="seccion__titulo">Osteomielitis — Definición &amp; Etiología</h2>
+
+      <p><strong>Infección generalmente bacteriana de la médula y de la cortical del hueso.</strong></p>
+
+      <h3>Clasificación por evolución</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Forma</th><th>Tiempo</th><th>Qué la caracteriza</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Aguda</strong></td><td><strong>Menos de 2 semanas</strong></td><td><strong>Proceso puramente infeccioso</strong></td></tr>
+            <tr><td><strong>Subaguda</strong></td><td>Intermedia</td><td>Transición entre ambas</td></tr>
+            <tr><td><strong>Crónica</strong></td><td>Prolongada</td><td>Se <strong>agrega el factor isquémico</strong> por la aparición de <strong>macronecrosis</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Patogenia — cómo llega el germen al hueso</h3>
+      <ul>
+        <li><strong>Hematógena</strong> (o primaria): siembra a distancia por vía sanguínea.</li>
+        <li><strong>Isquémica</strong>: sobre un hueso con compromiso vascular previo.</li>
+        <li><strong>Contigua</strong>: <strong>postraumática</strong> o <strong>posquirúrgica</strong>, por continuidad desde el foco vecino.</li>
+      </ul>
+
+      <h3>Etiología</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Escenario</th><th>Germen predominante</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>General</strong></td><td><strong><em>S. aureus</em> es el más frecuente</strong></td></tr>
+            <tr><td><strong>Formas posquirúrgicas, postraumáticas y nosocomiales</strong></td><td>Predominan los <strong>bacilos gramnegativos</strong></td></tr>
+            <tr><td><strong>Paciente diabético</strong></td><td><strong><em>Pseudomonas aeruginosa</em></strong></td></tr>
+            <tr><td><strong>Infecciones asociadas a osteosíntesis o prótesis</strong></td><td><strong><em>Staphylococcus epidermidis</em></strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>El <strong>biofilm</strong> es el <strong>mecanismo a través del cual se garantiza la adherencia y supervivencia de las bacterias</strong> sobre el hueso y el material de osteosíntesis. Es la razón de fondo de la duración prolongada del tratamiento.</p>
+
+      <p class="cita">Fuente: clase «Infecciones osteoarticulares» de la cátedra de Infectología, HTJS.</p>
+    </section>
+
+    <section class="seccion s-diagnostico" id="ost-diagnostico">
+      <span class="seccion__pestana"><b>02</b> Osteomielitis</span>
+      <h2 class="seccion__titulo">Osteomielitis — Diagnóstico</h2>
+
+      <h3>Los dos signos que casi hacen el diagnóstico</h3>
+      <ul>
+        <li>La <strong>exposición ósea tras lesiones traumáticas</strong> es <strong>muy sugestiva de infección ósea</strong>.</li>
+        <li>Lo mismo ocurre con la <strong>presencia de fístula en la osteomielitis crónica</strong>, que <strong>se confirma con una fistulografía</strong>.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>En la <strong>osteomielitis aguda de origen hematógeno</strong>, <strong>ni las manifestaciones clínicas ni las de laboratorio son características</strong>. Además es <strong>infrecuente en adultos</strong>. Es decir: la forma que menos se sospecha es también la que menos pistas da.</p>
+      </div>
+
+      <h3>Radiografía convencional — la cronología importa</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Momento</th><th>Hallazgos</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Primera semana</strong></td><td><strong>Todavía no se ven cambios.</strong> Los primeros signos aparecen <strong>después de una semana</strong> de infección</td></tr>
+            <tr><td><strong>2.ª y 3.ª semana</strong></td><td>Cambios más significativos: <strong>osteoporosis</strong>, <strong>lesiones líticas</strong>, <strong>despegamiento del periostio</strong></td></tr>
+            <tr><td><strong>Más adelante</strong></td><td><strong>Secuestros</strong>, <strong>esclerosis residual</strong> y <strong>engrosamiento cortical</strong> — <strong>delatan la cronicidad</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Una radiografía normal en la primera semana <strong>no descarta</strong> una osteomielitis aguda.</p>
+
+      <h3>Otros estudios por imágenes</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Estudio</th><th>Qué aporta</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Centellograma con Tc 99</strong></td><td>Permite <strong>diferenciar lesiones óseas de las de partes blandas</strong></td></tr>
+            <tr><td><strong>TAC y RNM</strong></td><td><strong>Superan a las pruebas anteriores.</strong> Ayudan a diferenciar lesiones óseas de partes blandas y a <strong>precisar su localización y extensión</strong></td></tr>
+            <tr><td><strong>Fistulografía</strong></td><td><strong>Confirma la fístula</strong> en la osteomielitis crónica</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Diagnóstico microbiológico</h3>
+      <ul>
+        <li><strong>Siempre es conveniente la confirmación por biopsia.</strong></li>
+        <li>Se deben tomar <strong>muestras fiables</strong>: <strong>biopsia percutánea o quirúrgica</strong>.</li>
+        <li><strong>Punción de abscesos cerrados.</strong></li>
+        <li><strong>Hemocultivos.</strong></li>
+      </ul>
+
+      <p class="cita">Fuente: clase «Infecciones osteoarticulares» de la cátedra de Infectología, HTJS.</p>
+    </section>
+
+    <section class="seccion s-tratamiento" id="ost-tratamiento">
+      <span class="seccion__pestana"><b>03</b> Osteomielitis</span>
+      <h2 class="seccion__titulo">Osteomielitis — Tratamiento</h2>
+
+      <p>Es una infección <strong>difícil de curar</strong>: las <strong>tasas de curación son del <span class="dato">70 %</span></strong>. La <strong>principal dificultad es el biofilm</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 384" role="img" aria-label="Tratamiento de la osteomielitis según la forma aguda o crónica. En la forma aguda la antibioticoterapia debe ser empírica y precoz, con desbridamiento y toma de muestra para luego dirigir el antibiótico; el esquema empírico es ceftazidima o piperacilina tazobactam más vancomicina, que cubre bacilos gramnegativos incluida Pseudomonas y cocos grampositivos incluido SAMR. En la forma crónica la antibioticoterapia debe ser dirigida, esperando a conocer el patógeno, y la cirugía es fundamental porque elimina tejidos desvitalizados y logra estabilidad funcional. La duración es de ocho a doce semanas y las tasas de curación son del setenta por ciento, siendo el biofilm la principal dificultad.">
+          <defs>
+            <marker id="pta-ost" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="250" y="8" width="200" height="40" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--ct)" stroke-width="2.5"></rect>
+          <text x="350" y="34" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">OSTEOMIELITIS</text>
+
+          <line x1="350" y1="48" x2="350" y2="66" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="175" y1="66" x2="525" y2="66" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="175" y1="66" x2="175" y2="86" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ost)"></line>
+          <line x1="525" y1="66" x2="525" y2="86" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ost)"></line>
+
+          <rect x="10" y="88" width="330" height="212" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="26" y="114" font-size="12.5" font-weight="700" fill="currentColor">AGUDA — menos de 2 semanas</text>
+          <line x1="26" y1="126" x2="324" y2="126" stroke="currentColor" stroke-opacity="0.3" stroke-width="1"></line>
+          <text x="26" y="148" font-size="11.5" font-weight="700" fill="currentColor">ATB EMPÍRICO y precoz</text>
+          <text x="26" y="170" font-size="10.5" fill="currentColor" opacity="0.85">Ceftazidima o piperacilina/tazobactam</text>
+          <text x="26" y="186" font-size="10.5" font-weight="700" fill="currentColor">+ Vancomicina</text>
+          <text x="26" y="208" font-size="10.5" fill="currentColor" opacity="0.8">Cubre BGN incluida Pseudomonas,</text>
+          <text x="26" y="224" font-size="10.5" fill="currentColor" opacity="0.8">y cocos Gram + incluido SAMR</text>
+          <line x1="26" y1="240" x2="324" y2="240" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="26" y="262" font-size="11" font-weight="700" fill="currentColor">Desbridamiento con toma de muestra</text>
+          <text x="26" y="282" font-size="10.5" fill="currentColor" opacity="0.85">→ y recién ahí se dirige el antibiótico</text>
+
+          <rect x="360" y="88" width="330" height="212" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.45" stroke-width="1.4"></rect>
+          <text x="376" y="114" font-size="12.5" font-weight="700" fill="currentColor">CRÓNICA</text>
+          <line x1="376" y1="126" x2="674" y2="126" stroke="currentColor" stroke-opacity="0.3" stroke-width="1"></line>
+          <text x="376" y="148" font-size="11.5" font-weight="700" fill="currentColor">ATB DIRIGIDO</text>
+          <text x="376" y="170" font-size="10.5" fill="currentColor" opacity="0.85">Hay que ESPERAR a conocer el patógeno:</text>
+          <text x="376" y="186" font-size="10.5" fill="currentColor" opacity="0.85">no se trata a ciegas</text>
+          <line x1="376" y1="204" x2="674" y2="204" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="376" y="226" font-size="11" font-weight="700" fill="currentColor">La CIRUGÍA es fundamental</text>
+          <text x="376" y="248" font-size="10.5" fill="currentColor" opacity="0.85">Elimina tejidos desvitalizados</text>
+          <text x="376" y="264" font-size="10.5" fill="currentColor" opacity="0.85">y logra estabilidad funcional</text>
+          <text x="376" y="286" font-size="10.5" fill="currentColor" opacity="0.75">Se suma el factor isquémico por macronecrosis</text>
+
+          <rect x="10" y="320" width="680" height="56" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.3" stroke-dasharray="5 3"></rect>
+          <text x="26" y="342" font-size="11.5" font-weight="700" fill="currentColor">Duración: 8 – 12 semanas   ·   Tasa de curación: 70 %</text>
+          <text x="26" y="364" font-size="11" fill="currentColor" opacity="0.8">La principal dificultad es el biofilm: por eso el desbridamiento no es un complemento del antibiótico, es su condición.</text>
+        </svg>
+        <figcaption>La diferencia central: en la aguda se trata primero y se cultiva en el mismo acto; en la crónica se espera el germen, porque no hay urgencia que justifique un espectro innecesario durante tres meses.</figcaption>
+      </figure>
+
+      <h3>Osteomielitis aguda</h3>
+      <ul>
+        <li>La antibioticoterapia debe ser <strong>empírica y precoz</strong>.</li>
+        <li>Debe realizarse <strong>desbridamiento con toma de muestra</strong>, <strong>para luego dirigir el antibiótico</strong>.</li>
+        <li><strong>Esquema empírico: ceftazidima o piperacilina/tazobactam + vancomicina.</strong> Cubre <strong>bacilos gramnegativos incluida <em>Pseudomonas</em></strong> y <strong>cocos Gram positivos incluido SAMR</strong>.</li>
+      </ul>
+
+      <h3>Osteomielitis crónica</h3>
+      <ul>
+        <li>La antibioticoterapia <strong>debe ser dirigida</strong>: <strong>hay que esperar a conocer el patógeno</strong>.</li>
+        <li>La <strong>cirugía es fundamental en las formas crónicas</strong>, ya que <strong>elimina tejidos desvitalizados y logra estabilidad funcional</strong>.</li>
+      </ul>
+
+      <h3>Duración</h3>
+      <p><strong><span class="dato">8 – 12 semanas</span></strong> en ambas formas.</p>
+
+      <p class="cita">Fuente: clase «Infecciones osteoarticulares» de la cátedra de Infectología, HTJS.</p>
+    </section>
+
+    <!-- ═══════════ INFECCIONES PROTÉSICAS ═══════════ -->
+    <section class="seccion s-generalidades" id="ip-base">
+      <span class="seccion__pestana"><b>01</b> Protésica</span>
+      <h2 class="seccion__titulo">Infección Protésica — Base &amp; Clasificación</h2>
+
+      <p>El concepto de <strong>biofilm es crucial en esta patología</strong>, y su desarrollo es un <strong>proceso continuo hasta la cronicidad</strong>. <strong>No genera la infección aguda</strong>, pero una vez producida la <strong>siembra bacteriana</strong> comienza a formarse <strong>alrededor de las estructuras protésicas y óseas</strong> y <strong>mantiene la infección hasta la cronicidad</strong>.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>Sospecharla en todo paciente con una prótesis colocada — de cualquier tiempo evolutivo — asociado a un síndrome febril con algún signo local sugestivo.</strong> No importa que la cirugía haya sido hace diez años: una prótesis nunca deja de ser un cuerpo extraño colonizable.</p>
+      </div>
+
+      <h3>Clasificación</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Categoría</th><th>Tiempo</th><th>Características</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>AGUDA</strong></td>
+              <td><strong>Menos de 4 semanas</strong></td>
+              <td><strong>Dolor y flogosis local</strong></td>
+            </tr>
+            <tr>
+              <td><strong>CRÓNICA — temprana</strong></td>
+              <td><strong>1 a 3 meses</strong> del postoperatorio</td>
+              <td><strong>Suelen ser agudas que cronifican</strong></td>
+            </tr>
+            <tr>
+              <td><strong>CRÓNICA — demorada</strong></td>
+              <td><strong>3 meses a 2 años</strong></td>
+              <td>Curso solapado</td>
+            </tr>
+            <tr>
+              <td><strong>CRÓNICA — tardía</strong></td>
+              <td><strong>Más de 2 años</strong></td>
+              <td>Habitualmente por siembra hematógena</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La línea que importa para la conducta es la de las <strong>4 semanas</strong>: por debajo se intenta <strong>conservar la prótesis</strong>, por encima hay que <strong>recambiarla</strong>.</p>
+
+      <p class="cita">Fuente: clase «Infecciones osteoarticulares» de la cátedra de Infectología, HTJS. La atribución de la forma tardía a siembra hematógena no figura explícitamente en la presentación y se consigna como orientación habitual del cuadro.</p>
+    </section>
+
+    <section class="seccion s-clinica" id="ip-clinica">
+      <span class="seccion__pestana"><b>02</b> Protésica</span>
+      <h2 class="seccion__titulo">Infección Protésica — Clínica</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Infección AGUDA</th><th>Infección CRÓNICA</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Dolor</strong> — es el <strong>síntoma más frecuente</strong></td>
+              <td><strong>Disfunción articular</strong> y <strong>dolor</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Fiebre</strong> — dentro de los <strong>5 días del postoperatorio puede ser no infecciosa</strong></td>
+              <td><strong>Disminución del rango de movilidad</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Flogosis periarticular.</strong> El eritema es <strong>difícil de jerarquizar</strong> los primeros días del postoperatorio</td>
+              <td><strong>Fístula</strong> — <strong>considerada criterio mayor</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Secreción por la herida quirúrgica</strong></td>
+              <td><strong>Eritema</strong> y <strong>fiebre</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Dehiscencia de la herida quirúrgica</strong></td>
+              <td><strong>Aflojamiento de la prótesis</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Dos trampas del postoperatorio inmediato: la <strong>fiebre dentro de los primeros 5 días puede ser no infecciosa</strong>, y el <strong>eritema es difícil de jerarquizar</strong> en esos mismos días. Lo que sí orienta desde el principio es el <strong>dolor</strong>, que es el síntoma más frecuente. En la forma crónica, la <strong>fístula es criterio mayor</strong> — por sí sola define la infección.</p>
+      </div>
+
+      <p class="cita">Fuente: clase «Infecciones osteoarticulares» de la cátedra de Infectología, HTJS.</p>
+    </section>
+
+    <section class="seccion s-diagnostico" id="ip-diagnostico">
+      <span class="seccion__pestana"><b>03</b> Protésica</span>
+      <h2 class="seccion__titulo">Infección Protésica — Diagnóstico</h2>
+
+      <h3>Laboratorio: VSG y PCR</h3>
+      <ul>
+        <li><strong>Debe realizarse en todo paciente con sospecha</strong> de infección protésica.</li>
+        <li><strong>Valores normales NO descartan infección.</strong></li>
+        <li>En <strong>ausencia de infección o artropatía inflamatoria</strong>, los valores se <strong>normalizan en promedio en la 3.ª semana</strong> del postoperatorio.</li>
+        <li><strong>La mayor utilidad está en la medición seriada</strong>, no en un valor aislado.</li>
+      </ul>
+
+      <h3>Artrocentesis</h3>
+      <ul>
+        <li>Se <strong>recomienda en todo paciente con sospecha</strong> de infección protésica — <strong>salvo</strong> que se cumplan las tres condiciones: que el <strong>diagnóstico sea evidente</strong>, que <strong>esté planeada la cirugía</strong> y que <strong>pueda diferirse el tratamiento antibiótico</strong>.</li>
+        <li><strong>Líquido sinovial:</strong> <strong>leucocitosis con predominio de polimorfonucleares</strong>. <strong>Debe cultivarse.</strong></li>
+      </ul>
+
+      <h3>Cultivos</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Muestra</th><th>Indicación</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Hemocultivos</strong></td><td>Si se <strong>sospecha infección sistémica</strong> o el paciente <strong>presenta fiebre</strong></td></tr>
+            <tr><td><strong>Cultivo del líquido sinovial</strong></td><td><strong>Siempre</strong> que se realice artrocentesis</td></tr>
+            <tr><td><strong>Cultivo de tejido extraído quirúrgicamente</strong></td><td><strong>Al menos 5 muestras profundas</strong></td></tr>
+            <tr><td><strong>Cultivo superficial de la fístula</strong></td><td><strong>NO se recomienda</strong> — por <strong>contaminación</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Se sugiere una <strong>ventana antibiótica ideal de <span class="dato">2 semanas</span> antes de la toma de muestra quirúrgica</strong>. Es contraintuitivo —suspender el antibiótico en un paciente infectado— pero es lo que permite rescatar el germen: con antibiótico en curso, los cultivos de un biofilm se negativizan sin que la infección se haya curado.</p>
+      </div>
+
+      <h3>Imágenes</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Estudio</th><th>Qué evalúa</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Radiografía simple</strong></td><td>Útil para detectar <strong>aflojamiento</strong>. Puede evidenciarse <strong>osteolisis alrededor de la prótesis</strong></td></tr>
+            <tr><td><strong>Ecografía</strong></td><td>Permite detectar <strong>colecciones</strong></td></tr>
+            <tr><td><strong>TAC con contraste EV</strong></td><td>Útil para evaluar <strong>secuestro óseo, abscesos y fístulas</strong></td></tr>
+            <tr><td><strong>RNM</strong></td><td>Útil para evaluar <strong>partes blandas</strong></td></tr>
+            <tr><td><strong>Centellograma</strong></td><td>Evalúa la <strong>hipercaptación del radioisótopo en el sitio de infección</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Fuente: clase «Infecciones osteoarticulares» de la cátedra de Infectología, HTJS.</p>
+    </section>
+
+    <section class="seccion s-tratamiento" id="ip-tratamiento">
+      <span class="seccion__pestana"><b>04</b> Protésica</span>
+      <h2 class="seccion__titulo">Infección Protésica — Tratamiento</h2>
+
+      <p>Toda la decisión se resuelve con <strong>una pregunta</strong>: <strong>¿hace más o menos de 4 semanas?</strong> Esa línea separa conservar la prótesis de recambiarla.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 396" role="img" aria-label="Algoritmo de tratamiento de la infección protésica. En la forma aguda, de menos de cuatro semanas, se realiza desbridamiento más antibiótico manteniendo la prótesis; el antibiótico es inicialmente empírico con ceftazidima o piperacilina tazobactam más vancomicina, y luego se dirige según el cultivo de las muestras obtenidas en el desbridamiento, con una duración de doce semanas. En la forma crónica, de más de cuatro semanas, se realiza cirugía en dos tiempos: primero retiro de la prótesis y colocación de un espaciador con o sin antibiótico más antibiótico sistémico por doce semanas, y luego el implante de la nueva prótesis. Ante la imposibilidad de retirar la prótesis, el antibiótico crónico por seis meses o más asociado a rifampicina es una alternativa para conservar la funcionalidad articular. Antes de la toma de muestra quirúrgica se sugiere una ventana antibiótica de dos semanas.">
+          <defs>
+            <marker id="pta-ip" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="245" y="8" width="210" height="40" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--ct)" stroke-width="2.5"></rect>
+          <text x="350" y="34" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">INFECCIÓN PROTÉSICA</text>
+
+          <line x1="350" y1="48" x2="350" y2="66" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="175" y1="66" x2="525" y2="66" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="175" y1="66" x2="175" y2="86" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ip)"></line>
+          <line x1="525" y1="66" x2="525" y2="86" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ip)"></line>
+
+          <rect x="10" y="88" width="330" height="224" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="26" y="114" font-size="12.5" font-weight="700" fill="currentColor">AGUDA — menos de 4 semanas</text>
+          <line x1="26" y1="126" x2="324" y2="126" stroke="currentColor" stroke-opacity="0.3" stroke-width="1"></line>
+          <text x="26" y="150" font-size="12" font-weight="700" fill="currentColor">DESBRIDAMIENTO + ATB</text>
+          <text x="26" y="172" font-size="11.5" font-weight="700" fill="currentColor">Se MANTIENE la prótesis</text>
+          <line x1="26" y1="188" x2="324" y2="188" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="26" y="210" font-size="10.5" fill="currentColor" opacity="0.85">ATB empírico inicial:</text>
+          <text x="26" y="228" font-size="10.5" font-weight="700" fill="currentColor">Ceftazidima o PTZ + Vancomicina</text>
+          <text x="26" y="250" font-size="10.5" fill="currentColor" opacity="0.85">Luego se DIRIGE según el cultivo de</text>
+          <text x="26" y="266" font-size="10.5" fill="currentColor" opacity="0.85">las muestras del desbridamiento</text>
+          <line x1="26" y1="280" x2="324" y2="280" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="26" y="302" font-size="11.5" font-weight="700" fill="currentColor">Duración: 12 semanas</text>
+
+          <rect x="360" y="88" width="330" height="224" rx="3" fill="var(--c)" fill-opacity="0.20" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="376" y="114" font-size="12.5" font-weight="700" fill="currentColor">CRÓNICA — más de 4 semanas</text>
+          <line x1="376" y1="126" x2="674" y2="126" stroke="currentColor" stroke-opacity="0.3" stroke-width="1"></line>
+          <text x="376" y="150" font-size="12" font-weight="700" fill="currentColor">CIRUGÍA EN DOS TIEMPOS</text>
+          <text x="376" y="174" font-size="10.5" font-weight="700" fill="currentColor">1) Retiro de la prótesis + espaciador</text>
+          <text x="376" y="190" font-size="10.5" fill="currentColor" opacity="0.85">    (con o sin ATB) + ATB sistémico</text>
+          <text x="376" y="206" font-size="10.5" fill="currentColor" opacity="0.85">    por 12 semanas</text>
+          <text x="376" y="228" font-size="10.5" font-weight="700" fill="currentColor">2) Implante de la nueva prótesis</text>
+          <line x1="376" y1="244" x2="674" y2="244" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="376" y="266" font-size="10.5" fill="currentColor" opacity="0.85">Si NO se puede retirar la prótesis:</text>
+          <text x="376" y="284" font-size="10.5" font-weight="700" fill="currentColor">ATB crónico ≥ 6 meses</text>
+          <text x="376" y="302" font-size="10.5" font-weight="700" fill="currentColor">+ RIFAMPICINA (por el biofilm)</text>
+
+          <rect x="10" y="332" width="680" height="56" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.3" stroke-dasharray="5 3"></rect>
+          <text x="26" y="354" font-size="11.5" font-weight="700" fill="currentColor">Antes de la toma de muestra quirúrgica: ventana antibiótica ideal de 2 semanas</text>
+          <text x="26" y="376" font-size="11" fill="currentColor" opacity="0.8">Y en ambas ramas, el antibiótico definitivo siempre es DIRIGIDO de acuerdo al cultivo.</text>
+        </svg>
+        <figcaption>La rifampicina aparece únicamente en la rama donde la prótesis se queda puesta: es el único escenario en que hay que atacar al biofilm químicamente, porque no se lo puede retirar.</figcaption>
+      </figure>
+
+      <h3>Infección aguda — menos de 4 semanas</h3>
+      <ul>
+        <li><strong>Desbridamiento + antibiótico, con mantenimiento de la prótesis.</strong></li>
+        <li><strong>Inicialmente antibiótico empírico:</strong> <strong>ceftazidima o piperacilina/tazobactam + vancomicina</strong>.</li>
+        <li>Luego <strong>se dirige de acuerdo al cultivo de las muestras obtenidas en el desbridamiento</strong>.</li>
+        <li><strong>Duración del antibiótico: <span class="dato">12 semanas</span>.</strong></li>
+      </ul>
+
+      <h3>Infección crónica — más de 4 semanas</h3>
+      <p><strong>Cirugía en dos tiempos:</strong></p>
+      <ol>
+        <li><strong>Retiro de la prótesis</strong> y <strong>colocación de un espaciador</strong>, con o sin antibiótico, más <strong>antibiótico sistémico por <span class="dato">12 semanas</span></strong>.</li>
+        <li><strong>Implante de la nueva prótesis.</strong></li>
+      </ol>
+
+      <h3>Cuando la prótesis no se puede retirar</h3>
+      <p>Ante la <strong>imposibilidad de retirar la prótesis</strong>, el <strong>antibiótico crónico</strong> es una <strong>alternativa para conservar la funcionalidad articular</strong>:</p>
+      <ul>
+        <li>Debe tener una <strong>duración de <span class="dato">6 meses o más</span></strong>.</li>
+        <li>Debe <strong>asociarse a rifampicina</strong>, <strong>para el tratamiento de bacterias productoras de biofilm</strong>.</li>
+        <li>El <strong>antibiótico es dirigido de acuerdo al cultivo</strong>.</li>
+      </ul>
+
+      <p class="cita">Fuente: clase «Infecciones osteoarticulares» de la cátedra de Infectología, HTJS.</p>
+    </section>
+
+    <!-- ═══════════ DIFERENCIALES ═══════════ -->
+    <section class="seccion s-diferenciales" id="diferenciales">
+      <span class="seccion__pestana"><b>—</b> Diferenciales</span>
+      <h2 class="seccion__titulo">Diagnósticos Diferenciales entre las tres entidades</h2>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 346" role="img" aria-label="Tabla discriminante entre las tres infecciones osteoarticulares. La artritis séptica se define por una articulación tumefacta y dolorosa con fiebre, y líquido articular turbio o con recuento mayor a cincuenta por diez a la nueve células por litro; es una urgencia que requiere artrocentesis, antibiótico empírico y drenaje durante cuatro semanas. La osteomielitis se define por exposición ósea tras trauma o fístula en la forma crónica, con radiografía que muestra cambios recién después de la primera semana; la forma aguda se trata con empírico y desbridamiento y la crónica con antibiótico dirigido y cirugía, durante ocho a doce semanas. La infección protésica se define por una prótesis de cualquier tiempo evolutivo con síndrome febril y signo local, siendo la fístula criterio mayor; si tiene menos de cuatro semanas se desbrida conservando la prótesis y si tiene más se recambia en dos tiempos, durante doce semanas.">
+          <rect x="10" y="8" width="680" height="34" rx="3" fill="var(--c)" fill-opacity="0.9"></rect>
+          <text x="26" y="30" font-size="11.5" font-weight="700" fill="#FFFFFF">ENTIDAD</text>
+          <text x="206" y="30" font-size="11.5" font-weight="700" fill="#FFFFFF">HALLAZGO QUE LA DEFINE</text>
+          <text x="470" y="30" font-size="11.5" font-weight="700" fill="#FFFFFF">CONDUCTA Y DURACIÓN</text>
+
+          <rect x="10" y="50" width="680" height="90" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.3"></rect>
+          <line x1="196" y1="50" x2="196" y2="140" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></line>
+          <line x1="456" y1="50" x2="456" y2="140" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></line>
+          <text x="26" y="84" font-size="12" font-weight="700" fill="currentColor">ARTRITIS</text>
+          <text x="26" y="102" font-size="12" font-weight="700" fill="currentColor">SÉPTICA</text>
+          <text x="26" y="122" font-size="10" fill="currentColor" opacity="0.7">URGENCIA MÉDICA</text>
+          <text x="210" y="76" font-size="10.5" fill="currentColor" opacity="0.85">Articulación tumefacta y dolorosa</text>
+          <text x="210" y="94" font-size="10.5" fill="currentColor" opacity="0.85">con fiebre</text>
+          <text x="210" y="116" font-size="10.5" font-weight="700" fill="currentColor">LA turbio, o &gt; 50 × 10⁹ cel/L</text>
+          <text x="470" y="76" font-size="10.5" font-weight="700" fill="currentColor">Artrocentesis + ATB empírico</text>
+          <text x="470" y="94" font-size="10.5" font-weight="700" fill="currentColor">+ DRENAJE articular</text>
+          <text x="470" y="120" font-size="11" font-weight="700" fill="currentColor">4 semanas</text>
+
+          <rect x="10" y="148" width="680" height="90" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.3"></rect>
+          <line x1="196" y1="148" x2="196" y2="238" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></line>
+          <line x1="456" y1="148" x2="456" y2="238" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></line>
+          <text x="26" y="188" font-size="12" font-weight="700" fill="currentColor">OSTEOMIELITIS</text>
+          <text x="26" y="212" font-size="10" fill="currentColor" opacity="0.7">Curación 70 %</text>
+          <text x="210" y="174" font-size="10.5" fill="currentColor" opacity="0.85">Exposición ósea tras trauma, o</text>
+          <text x="210" y="192" font-size="10.5" font-weight="700" fill="currentColor">fístula en la forma crónica</text>
+          <text x="210" y="214" font-size="10.5" fill="currentColor" opacity="0.85">Rx: cambios recién tras 1 semana</text>
+          <text x="470" y="174" font-size="10.5" font-weight="700" fill="currentColor">Aguda: empírico + desbridar</text>
+          <text x="470" y="192" font-size="10.5" font-weight="700" fill="currentColor">Crónica: dirigido + cirugía</text>
+          <text x="470" y="218" font-size="11" font-weight="700" fill="currentColor">8 – 12 semanas</text>
+
+          <rect x="10" y="246" width="680" height="90" rx="3" fill="var(--c)" fill-opacity="0.08" stroke="currentColor" stroke-opacity="0.45" stroke-width="1.4"></rect>
+          <line x1="196" y1="246" x2="196" y2="336" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></line>
+          <line x1="456" y1="246" x2="456" y2="336" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></line>
+          <text x="26" y="280" font-size="12" font-weight="700" fill="currentColor">INFECCIÓN</text>
+          <text x="26" y="298" font-size="12" font-weight="700" fill="currentColor">PROTÉSICA</text>
+          <text x="26" y="318" font-size="10" fill="currentColor" opacity="0.7">A cualquier tiempo</text>
+          <text x="210" y="272" font-size="10.5" fill="currentColor" opacity="0.85">Prótesis de cualquier antigüedad +</text>
+          <text x="210" y="290" font-size="10.5" fill="currentColor" opacity="0.85">síndrome febril con signo local</text>
+          <text x="210" y="312" font-size="10.5" font-weight="700" fill="currentColor">Fístula = criterio mayor</text>
+          <text x="470" y="272" font-size="10.5" font-weight="700" fill="currentColor">&lt; 4 sem: desbridar y conservar</text>
+          <text x="470" y="290" font-size="10.5" font-weight="700" fill="currentColor">&gt; 4 sem: recambio en 2 tiempos</text>
+          <text x="470" y="316" font-size="11" font-weight="700" fill="currentColor">12 semanas</text>
+        </svg>
+        <figcaption>La duración del antibiótico funciona casi como un identificador: cuatro semanas, ocho a doce, o doce. Si en el examen dan la duración, ya está dicha la entidad.</figcaption>
+      </figure>
+
+      <h3>Las tres preguntas que separan los cuadros</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Pregunta</th><th>Si la respuesta es sí</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>¿Hay una prótesis o material de osteosíntesis?</strong></td><td><strong>Infección protésica</strong> — sospecharla ante fiebre con signo local, sin importar hace cuánto se colocó. Germen esperable: <em>S. epidermidis</em></td></tr>
+            <tr><td><strong>¿El compromiso está dentro de la articulación?</strong></td><td><strong>Artritis séptica</strong> — el diagnóstico se hace con <strong>artrocentesis urgente</strong></td></tr>
+            <tr><td><strong>¿Hay exposición ósea, fístula o cambios óseos en la imagen?</strong></td><td><strong>Osteomielitis</strong> — confirmar con <strong>biopsia</strong>, no con cultivo superficial</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Errores de muestreo que se repiten</h3>
+      <ul>
+        <li><strong>Cultivar la superficie de una fístula:</strong> <strong>no se recomienda por contaminación</strong>. Hay que ir a la muestra profunda.</li>
+        <li><strong>Tomar la muestra quirúrgica con el paciente antibioticado:</strong> se sugiere una <strong>ventana de 2 semanas</strong> antes.</li>
+        <li><strong>Iniciar antibiótico antes de puncionar en la artritis séptica:</strong> el LA y los <strong>hemocultivos × 2 van antes</strong>, incluso sin fiebre.</li>
+        <li><strong>Descartar osteomielitis por una radiografía normal en la primera semana:</strong> los cambios <strong>aparecen recién después</strong>.</li>
+        <li><strong>Descartar infección protésica por VSG y PCR normales:</strong> <strong>valores normales no descartan</strong>; lo útil es la <strong>medición seriada</strong>.</li>
+      </ul>
+
+      <p class="cita">Fuente: clase «Infecciones osteoarticulares» de la cátedra de Infectología, HTJS.</p>
+    </section>
+
+    <!-- ============ Repaso activo ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-fisiopatologia">
+          <summary>¿Cuáles son las cuatro etapas del biofilm y dónde deja de ser reversible?</summary>
+          <div class="fc__r"><strong>1) Adhesión</strong> de los gérmenes a la superficie — <strong>única etapa reversible</strong>. <strong>2) Fijación y formación del limo</strong> (matriz extracelular) — a partir de acá es <strong>irreversible</strong>. <strong>3) Maduración</strong> del biofilm. <strong>4) Equilibrio</strong> entre formación y desprendimiento, que siembra a distancia.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué papel juega el biofilm en la infección protésica aguda?</summary>
+          <div class="fc__r"><strong>NO genera la infección aguda.</strong> Pero una vez producida la <strong>siembra bacteriana</strong>, comienza a formarse alrededor de las estructuras protésicas y óseas y <strong>mantiene la infección hasta la cronicidad</strong>. Es un <strong>proceso continuo</strong>.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Artritis séptica: germen más frecuente, articulación más afectada y clínica.</summary>
+          <div class="fc__r">Germen: <strong><em>S. aureus</em></strong>. Articulación: <strong>la rodilla</strong>, aunque cualquiera puede afectarse. Clínica: <strong>tumefacción, dolor y fiebre</strong>. Es una <strong>URGENCIA MÉDICA</strong> por la rápida destrucción articular.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Qué dos hallazgos del líquido articular hacen sospechar artritis séptica?</summary>
+          <div class="fc__r">Un <strong>LA macroscópicamente turbio</strong>, o un <strong>recuento celular &gt; 50 × 10⁹/L</strong> (equivale a <strong>50.000 células/mm³</strong>). Cualquiera de los dos obliga a <strong>plantear antibiótico empírico urgente</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Qué muestras hay que tomar antes de iniciar el antibiótico en una artritis séptica?</summary>
+          <div class="fc__r"><strong>Muestra de líquido articular para cultivo</strong> y <strong>hemocultivos × 2</strong>, <strong>incluso en pacientes sin fiebre</strong>. Además, el <strong>Gram del LA al momento de la punción</strong> es lo que idealmente guía el esquema empírico.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Tratamiento empírico de la artritis séptica según el huésped.</summary>
+          <div class="fc__r"><strong>Habitual:</strong> cubrir <em>S. aureus</em> con <strong>cefalosporina de 1.ª o vancomicina</strong>, según la <strong>prevalencia local de SAMR</strong>.<br><strong>Sospecha de gonococo:</strong> agregar <strong>ceftriaxona</strong>.<br><strong>ADIV</strong> (<em>S. aureus</em>, <em>P. aeruginosa</em>) e <strong>inmunosuprimidos</strong> (<em>S. aureus</em>, BGN incluida <em>P. aeruginosa</em>, estreptococos): agregar <strong>PTZ o ceftazidima</strong>.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Por qué el drenaje articular es imprescindible, y cuánto dura el tratamiento?</summary>
+          <div class="fc__r">Porque <strong>es fundamental para evitar la destrucción de la articulación</strong>: el antibiótico controla la infección pero no descomprime la cavidad. <strong>Duración: 4 semanas</strong>, ajustadas al cultivo del LA y los hemocultivos.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Osteomielitis: definición, formas evolutivas y vías patogénicas.</summary>
+          <div class="fc__r"><strong>Infección generalmente bacteriana de la médula y la cortical del hueso.</strong><br><strong>Evolución:</strong> aguda (&lt; 2 semanas), subaguda y crónica.<br><strong>Patogenia:</strong> <strong>hematógena</strong> (o primaria), <strong>isquémica</strong>, o <strong>contigua</strong> (postraumática o posquirúrgica).</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Qué germen esperar en osteomielitis según el escenario?</summary>
+          <div class="fc__r"><strong>General:</strong> <em>S. aureus</em>. <strong>Formas posquirúrgicas, postraumáticas y nosocomiales:</strong> <strong>bacilos gramnegativos</strong>. <strong>Diabético:</strong> <strong><em>Pseudomonas aeruginosa</em></strong>. <strong>Osteosíntesis o prótesis:</strong> <strong><em>S. epidermidis</em></strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Cronología de los hallazgos radiográficos en la osteomielitis.</summary>
+          <div class="fc__r"><strong>Primera semana: no se ve nada</strong> — los primeros signos aparecen <strong>después</strong>. <strong>2.ª y 3.ª semana:</strong> osteoporosis, <strong>lesiones líticas</strong>, <strong>despegamiento del periostio</strong>. <strong>Más adelante:</strong> <strong>secuestros</strong>, esclerosis residual y engrosamiento cortical, que <strong>delatan la cronicidad</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Cómo se confirma microbiológicamente una osteomielitis?</summary>
+          <div class="fc__r">Con <strong>muestras fiables</strong>: <strong>biopsia percutánea o quirúrgica</strong>, <strong>punción de abscesos cerrados</strong> y <strong>hemocultivos</strong>. <strong>Siempre es conveniente la confirmación por biopsia.</strong></div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Por qué el antibiótico es empírico en la osteomielitis aguda y dirigido en la crónica?</summary>
+          <div class="fc__r">En la <strong>aguda</strong> hay urgencia: se inicia <strong>empírico y precoz</strong> (<strong>ceftazidima o PTZ + vancomicina</strong>) y se desbrida <strong>tomando muestra en el mismo acto</strong> para luego dirigirlo. En la <strong>crónica</strong> no hay urgencia que justifique un espectro amplio durante meses: <strong>hay que esperar a conocer el patógeno</strong>.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Duración y tasa de curación de la osteomielitis. ¿Cuál es la principal dificultad?</summary>
+          <div class="fc__r"><strong>8 – 12 semanas</strong>, con tasas de curación del <strong>70 %</strong>. La principal dificultad es el <strong>biofilm</strong>. En las formas crónicas <strong>la cirugía es fundamental</strong>: elimina tejidos desvitalizados y logra estabilidad funcional.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Clasificación temporal de las infecciones protésicas.</summary>
+          <div class="fc__r"><strong>AGUDA:</strong> menos de 4 semanas — dolor y flogosis local.<br><strong>CRÓNICA:</strong> más de 4 semanas — <strong>temprana</strong> (1 – 3 meses del POP, suelen ser agudas que cronifican), <strong>demorada</strong> (3 meses a 2 años) y <strong>tardía</strong> (más de 2 años).</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Cuál es el síntoma más frecuente de la infección protésica aguda, y qué dos signos son poco confiables en el postoperatorio inmediato?</summary>
+          <div class="fc__r">El síntoma más frecuente es el <strong>dolor</strong>. Poco confiables en el POP inmediato: la <strong>fiebre dentro de los primeros 5 días</strong> (puede ser no infecciosa) y el <strong>eritema</strong>, difícil de jerarquizar los primeros días.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué hallazgo de la infección protésica crónica es criterio mayor?</summary>
+          <div class="fc__r">La <strong>fístula</strong>. Los demás hallazgos crónicos son disfunción articular, dolor, disminución del rango de movilidad, eritema, fiebre y <strong>aflojamiento de la prótesis</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>VSG y PCR en infección protésica: ¿qué valor tienen?</summary>
+          <div class="fc__r">Se piden en <strong>todo paciente con sospecha</strong>, pero <strong>valores normales NO descartan infección</strong>. En ausencia de infección o artropatía inflamatoria se normalizan <strong>en promedio en la 3.ª semana</strong>. Su <strong>mayor utilidad está en la medición seriada</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Qué muestra NO debe cultivarse en una infección protésica, y cuántas sí?</summary>
+          <div class="fc__r"><strong>El cultivo superficial de la fístula NO se recomienda</strong>, por contaminación. Del tejido extraído quirúrgicamente hay que tomar <strong>al menos 5 muestras profundas</strong>. Y se sugiere una <strong>ventana antibiótica de 2 semanas</strong> antes de la toma quirúrgica.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Tratamiento de la infección protésica aguda frente a la crónica.</summary>
+          <div class="fc__r"><strong>Aguda (&lt; 4 semanas):</strong> <strong>desbridamiento + ATB manteniendo la prótesis</strong>; empírico con <strong>ceftazidima o PTZ + vancomicina</strong>, luego dirigido. <strong>12 semanas</strong>.<br><strong>Crónica (&gt; 4 semanas):</strong> <strong>cirugía en dos tiempos</strong> — 1) retiro de la prótesis + espaciador + ATB sistémico 12 semanas; 2) implante de la nueva prótesis.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Qué se hace si la prótesis no se puede retirar, y por qué rifampicina?</summary>
+          <div class="fc__r"><strong>ATB crónico de 6 meses o más</strong> como alternativa para <strong>conservar la funcionalidad articular</strong>, <strong>asociado a rifampicina para el tratamiento de bacterias productoras de biofilm</strong>. El antibiótico es <strong>dirigido de acuerdo al cultivo</strong>.</div>
+        </details>
+
+        <details class="fc s-diferenciales">
+          <summary>Si te dan sólo la duración del antibiótico, ¿qué entidad es?</summary>
+          <div class="fc__r"><strong>4 semanas → artritis séptica.</strong> <strong>8 – 12 semanas → osteomielitis.</strong> <strong>12 semanas → infección protésica</strong> (o <strong>≥ 6 meses</strong> si la prótesis no se retira).</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Lo que define cada entidad</dt>
+        <dd><strong>Artritis séptica:</strong> articulación tumefacta y dolorosa con fiebre · <strong>LA turbio o &gt; 50 × 10⁹ cel/L</strong> · <em>S. aureus</em> · rodilla · <strong>URGENCIA</strong>. <strong>Osteomielitis:</strong> médula y cortical del hueso · exposición ósea o <strong>fístula</strong> · Rx sin cambios la 1.ª semana. <strong>Infección protésica:</strong> prótesis de <strong>cualquier antigüedad</strong> + fiebre con signo local · <strong>fístula = criterio mayor</strong> · <em>S. epidermidis</em>.</dd>
+
+        <dt class="r-gold">Estudio de elección</dt>
+        <dd><strong>Artritis:</strong> <strong>artrocentesis urgente</strong> — LA para cultivo + <strong>hemocultivos × 2 incluso sin fiebre</strong>; el <strong>Gram</strong> guía el empírico. <strong>Osteomielitis:</strong> <strong>biopsia</strong> percutánea o quirúrgica; TAC y RNM superan a la Rx y al centellograma. <strong>Protésica:</strong> <strong>VSG y PCR seriadas</strong> (normales no descartan), artrocentesis, y <strong>≥ 5 muestras profundas</strong> — nunca cultivo superficial de fístula.</dd>
+
+        <dt class="r-tto">Tratamiento de 1ª línea</dt>
+        <dd><strong>Artritis:</strong> cefalosporina de 1.ª o <strong>vancomicina</strong> según prevalencia de SAMR + <strong>drenaje</strong> · <strong>4 semanas</strong>. <strong>Osteomielitis aguda:</strong> <strong>ceftazidima o PTZ + vancomicina</strong> + desbridamiento con muestra; crónica: <strong>dirigido</strong> + cirugía · <strong>8 – 12 semanas</strong>. <strong>Protésica &lt; 4 sem:</strong> desbridar y <strong>conservar</strong> la prótesis; <strong>&gt; 4 sem:</strong> <strong>recambio en dos tiempos</strong> · <strong>12 semanas</strong>.</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd><strong>Ninguna se cura sólo con antibiótico</strong> — el biofilm sobre hueso desvitalizado o material protésico protege a la bacteria. La artritis séptica es <strong>urgencia médica</strong>: cada hora sin drenaje es cartílago perdido. <strong>Ventana antibiótica de 2 semanas</strong> antes de la muestra quirúrgica. Y si la prótesis no se puede retirar: <strong>≥ 6 meses de ATB + rifampicina</strong>.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir de la clase «Infecciones osteoarticulares» de la Dra. Macarena Pérez, residente de 3.er año de Infectología del HTJS, Cátedra de Enfermedades Infecciosas. Material de estudio: no reemplaza el criterio clínico ni la guía institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link'));
+
+  function porMeta(hash){
+    for (var i = 0; i < enlaces.length; i++){
+      if (enlaces[i].getAttribute('href') === '#' + hash) return enlaces[i];
+    }
+    return null;
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var enlace = porMeta(e.target.id);
+        if (!enlace) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          enlace.setAttribute('aria-current', 'true');
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>

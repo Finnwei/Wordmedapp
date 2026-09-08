@@ -1,0 +1,1734 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Urgencias en Psiquiatría</title>
+<link rel="stylesheet" href="../../fuentes/fuentes.css">
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+}
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índice lateral ---------- */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Ficha de sección ---------- */
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.35rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-row:1/3; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+.importante__titulo{
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso{ display:none !important; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+<style>
+/* Fuentes de la capa de contenido. Va después del estilo del
+   cuadernillo para pisar las de Windows, que no se pueden
+   redistribuir y no existen en Android. */
+:root{
+  --f-titulo:'Spectral',Georgia,'Times New Roman',serif;
+  --f-texto:'Open Sans',system-ui,-apple-system,sans-serif;
+  --f-dato:'Cascadia Mono','Cascadia Code',ui-monospace,Consolas,monospace;
+}
+/* Botón de volver, espejo del de tema que ya trae el cuadernillo. */
+.volver{
+  position:fixed; top:.7rem; left:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.volver:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.volver__icono{ width:1.15rem; height:1.15rem; display:block; }
+</style>
+</head>
+<body data-clave="psiquiatria/3-urgencias-en-psiquiatria">
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-generalidades"  href="#emergencia">01 · La emergencia psiquiátrica</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#organico">02 · Descartar lo orgánico</a></li>
+      <li><a class="indice__link i-generalidades"  href="#entrevista">03 · La entrevista en guardia</a></li>
+      <li><a class="indice__link i-clinica"        href="#ansiedad">04 · Ansiedad y angustia</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#excitacion">05 · Excitación psicomotriz</a></li>
+      <li><a class="indice__link i-importantes"    href="#seguridad">06 · Seguridad y violencia</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#contencion">07 · Contención</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#farmacologico">08 · Tratamiento farmacológico</a></li>
+      <li><a class="indice__link i-clinica"        href="#suicidio">09 · Intento de suicidio</a></li>
+      <li><a class="indice__link i-importantes"    href="#internacion">10 · Decisión de internación</a></li>
+      <li><a class="indice__link i-clinica"        href="#personalidad">11 · Trastornos de personalidad</a></li>
+      <li><a class="indice__link i-diferenciales"  href="#precisiones">12 · Precisiones al material</a></li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Psiquiatría · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Urgencias en Psiquiatría</h1>
+      <p class="portada__bajada">El paciente en guardia: cómo descartar lo orgánico, cómo predecir y contener la violencia, cómo evaluar el riesgo suicida y cuándo internar. Cuadernillo de conducta, ordenado por la secuencia real de decisiones.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">12 secciones</span>
+        <span class="etiqueta s-importantes">Predicción de violencia</span>
+        <span class="etiqueta s-tratamiento">Contención y fármacos</span>
+        <span class="etiqueta s-clinica">Riesgo suicida</span>
+      </div>
+    </header>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="emergencia">
+      <span class="seccion__pestana"><b>01</b> Base</span>
+      <h2 class="seccion__titulo">La emergencia psiquiátrica</h2>
+
+      <p><strong>Fenómeno abrupto</strong> en el que el trastorno del <strong>pensamiento, el afecto o la conducta</strong> de un sujeto implica tal disrupción que el <strong>propio paciente, la familia o la sociedad</strong> consideran que requiere <strong>atención inmediata</strong> para su resolución.</p>
+
+      <p>La intervención tiene dos objetivos y nada más: <strong>aliviar la situación inmediata</strong> y <strong>planear la conducta a seguir</strong>. La guardia no es el lugar donde se resuelve la enfermedad; es donde se resuelve el episodio y se decide el destino.</p>
+
+      <h3>La pregunta que hay que responder siempre</h3>
+      <p>Toda emergencia psiquiátrica se cierra definiendo <strong>si la situación actual amerita o no internación</strong>. Cuatro condiciones la justifican:</p>
+      <ul>
+        <li>Presencia de <strong>riesgo grave, cierto e inminente</strong> para sí mismo y/o para terceros.</li>
+        <li><strong>Escasa o nula continencia familiar</strong>.</li>
+        <li>Riesgo de <strong>incumplimiento terapéutico</strong>.</li>
+        <li><strong>Fracaso terapéutico</strong>.</li>
+      </ul>
+
+      <h3>Contexto psicosocial y personalidad de base</h3>
+      <p>Los <strong>acontecimientos vitales</strong> —sobre todo los del último año— pueden suscitar alteraciones importantes en <strong>personalidades débilmente constituidas</strong> o en pacientes con <strong>discapacidad intelectual</strong>. También en la patología psiquiátrica mayor los <strong>estresores psicosociales</strong> aparecen como desencadenantes.</p>
+      <p class="cita">El material de cátedra referencia estos elementos como Eje IV (acontecimientos vitales), Eje II (personalidad y discapacidad intelectual) y Eje I (patología psiquiátrica mayor) del sistema multiaxial del DSM-IV. Ver sección 12.</p>
+
+      <h3>El recorrido completo</h3>
+      <figure class="esquema">
+        <svg viewBox="0 0 700 400" role="img" aria-label="Algoritmo de atención del paciente en guardia. Al llegar el paciente se evalúa primero la seguridad: si hay riesgo inminente para sí o para terceros se pasa directamente a la contención. Superada la seguridad, se pregunta si hay origen orgánico: si lo hay, se estudia y trata la causa y no se rotula el cuadro como psiquiátrico. Si no lo hay, se encuadra el cuadro en uno de tres grupos etiológicos: psiquiátrico, reactivo u orgánico-tóxico. Los tres confluyen en la decisión final de conducta y destino, que define si el paciente se interna o se maneja de forma ambulatoria.">
+          <defs>
+            <marker id="urg-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="60" y="14" width="280" height="32" rx="6" fill="var(--c)" fill-opacity="0.28" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="200" y="34" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">PACIENTE EN GUARDIA</text>
+
+          <line x1="200" y1="46" x2="200" y2="68" stroke="currentColor" stroke-width="1.4" marker-end="url(#urg-a)"></line>
+
+          <rect x="60" y="68" width="280" height="42" rx="6" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="200" y="86" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">1 · SEGURIDAD</text>
+          <text x="200" y="101" text-anchor="middle" font-size="10.5" fill="currentColor">¿riesgo inminente para sí o terceros?</text>
+
+          <line x1="340" y1="89" x2="386" y2="89" stroke="currentColor" stroke-width="1.4" marker-end="url(#urg-a)"></line>
+          <text x="363" y="84" text-anchor="middle" font-size="10" font-weight="700" fill="currentColor">SÍ</text>
+          <rect x="390" y="68" width="290" height="42" rx="6" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="400" y="85" font-size="10.5" font-weight="700" fill="currentColor">CONTENER PRIMERO</text>
+          <text x="400" y="100" font-size="10" fill="currentColor">verbal → farmacológica → mecánica</text>
+
+          <line x1="200" y1="110" x2="200" y2="132" stroke="currentColor" stroke-width="1.4" marker-end="url(#urg-a)"></line>
+          <text x="208" y="126" font-size="9.5" fill="currentColor">no, o ya contenido</text>
+
+          <rect x="60" y="132" width="280" height="42" rx="6" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="200" y="150" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">2 · ¿ORIGEN ORGÁNICO?</text>
+          <text x="200" y="165" text-anchor="middle" font-size="10.5" fill="currentColor">las 7 variables discriminantes</text>
+
+          <line x1="340" y1="153" x2="386" y2="153" stroke="currentColor" stroke-width="1.4" marker-end="url(#urg-a)"></line>
+          <text x="363" y="148" text-anchor="middle" font-size="10" font-weight="700" fill="currentColor">SÍ</text>
+          <rect x="390" y="132" width="290" height="42" rx="6" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="400" y="149" font-size="10.5" font-weight="700" fill="currentColor">ESTUDIAR Y TRATAR LA CAUSA</text>
+          <text x="400" y="164" font-size="10" fill="currentColor">no rotular como psiquiátrico</text>
+
+          <line x1="200" y1="174" x2="200" y2="196" stroke="currentColor" stroke-width="1.4" marker-end="url(#urg-a)"></line>
+          <text x="208" y="190" font-size="9.5" fill="currentColor">no</text>
+
+          <rect x="60" y="196" width="280" height="32" rx="6" fill="var(--c)" fill-opacity="0.2" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="200" y="216" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">3 · ENCUADRAR EL CUADRO</text>
+
+          <line x1="200" y1="228" x2="200" y2="244" stroke="currentColor" stroke-width="1.2"></line>
+          <line x1="126" y1="244" x2="574" y2="244" stroke="currentColor" stroke-width="1.2"></line>
+          <line x1="126" y1="244" x2="126" y2="264" stroke="currentColor" stroke-width="1.2" marker-end="url(#urg-a)"></line>
+          <line x1="350" y1="244" x2="350" y2="264" stroke="currentColor" stroke-width="1.2" marker-end="url(#urg-a)"></line>
+          <line x1="574" y1="244" x2="574" y2="264" stroke="currentColor" stroke-width="1.2" marker-end="url(#urg-a)"></line>
+
+          <rect x="24" y="264" width="204" height="62" rx="6" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="126" y="284" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">PSIQUIÁTRICO</text>
+          <text x="126" y="301" text-anchor="middle" font-size="10" fill="currentColor">esquizofrenia, manía,</text>
+          <text x="126" y="316" text-anchor="middle" font-size="10" fill="currentColor">depresión, t. delirante</text>
+
+          <rect x="248" y="264" width="204" height="62" rx="6" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="350" y="284" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">REACTIVO</text>
+          <text x="350" y="301" text-anchor="middle" font-size="10" fill="currentColor">ansiedad, conversivo,</text>
+          <text x="350" y="316" text-anchor="middle" font-size="10" fill="currentColor">personalidad, TEPT</text>
+
+          <rect x="472" y="264" width="204" height="62" rx="6" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="574" y="284" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">ORGÁNICO / TÓXICO</text>
+          <text x="574" y="301" text-anchor="middle" font-size="10" fill="currentColor">delirium, sustancias,</text>
+          <text x="574" y="316" text-anchor="middle" font-size="10" fill="currentColor">abstinencia</text>
+
+          <line x1="126" y1="326" x2="126" y2="342" stroke="currentColor" stroke-width="1.2"></line>
+          <line x1="350" y1="326" x2="350" y2="342" stroke="currentColor" stroke-width="1.2"></line>
+          <line x1="574" y1="326" x2="574" y2="342" stroke="currentColor" stroke-width="1.2"></line>
+          <line x1="126" y1="342" x2="574" y2="342" stroke="currentColor" stroke-width="1.2"></line>
+          <line x1="350" y1="342" x2="350" y2="360" stroke="currentColor" stroke-width="1.4" marker-end="url(#urg-a)"></line>
+
+          <rect x="190" y="360" width="320" height="34" rx="6" fill="var(--c)" fill-opacity="0.28" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="350" y="375" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">4 · CONDUCTA Y DESTINO</text>
+          <text x="350" y="389" text-anchor="middle" font-size="10" fill="currentColor">¿internación o manejo ambulatorio?</text>
+        </svg>
+        <figcaption>El orden no es negociable: la seguridad se resuelve antes que el diagnóstico, y lo orgánico se descarta antes de encuadrar el cuadro. La tendencia natural en la guardia es la inversa —atribuirle origen psiquiátrico de entrada a todo paciente agitado— y es la que produce los errores más graves.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-diagnostico" id="organico">
+      <span class="seccion__pestana"><b>02</b> Filtro</span>
+      <h2 class="seccion__titulo">Descartar siempre el origen orgánico</h2>
+
+      <p><strong>Debe descartarse siempre el origen orgánico del cuadro</strong>, que puede estar <strong>contribuyendo</strong> al padecimiento o directamente <strong>generándolo</strong>. Siete variables separan un cuadro orgánico de uno funcional.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 292" role="img" aria-label="Tabla discriminante entre cuadro orgánico y funcional según siete variables. Edad: menor de 12 o mayor de 40 años en el orgánico, entre 12 y 40 en el funcional. Inicio: abrupto en el orgánico, progresivo en el funcional. Alteración de la conciencia: presente en el orgánico, ausente en el funcional. Orientación: desorientado en el orgánico, orientado en el funcional. Alucinaciones: visuales en el orgánico, auditivas en el funcional. Curso: fluctuante en el orgánico, continuo en el funcional. Historia psiquiátrica previa: ausente en el orgánico, presente en el funcional.">
+          <rect x="20" y="12" width="230" height="34" fill="var(--c)" fill-opacity="0.32" stroke="currentColor" stroke-width="1.2"></rect>
+          <rect x="250" y="12" width="225" height="34" fill="var(--c)" fill-opacity="0.32" stroke="currentColor" stroke-width="1.2"></rect>
+          <rect x="475" y="12" width="205" height="34" fill="var(--c)" fill-opacity="0.32" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="32" y="34" font-size="12" font-weight="700" fill="currentColor">VARIABLE</text>
+          <text x="362" y="34" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">ORGÁNICA</text>
+          <text x="577" y="34" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">FUNCIONAL</text>
+
+          <rect x="20" y="46" width="230" height="34" fill="none" stroke="currentColor" stroke-width="1"></rect>
+          <rect x="250" y="46" width="225" height="34" fill="var(--c)" fill-opacity="0.1" stroke="currentColor" stroke-width="1"></rect>
+          <rect x="475" y="46" width="205" height="34" fill="none" stroke="currentColor" stroke-width="1"></rect>
+          <text x="32" y="67" font-size="11.5" font-weight="700" fill="currentColor">Edad</text>
+          <text x="362" y="67" text-anchor="middle" font-size="11.5" fill="currentColor">&lt; 12 o &gt; 40 años</text>
+          <text x="577" y="67" text-anchor="middle" font-size="11.5" fill="currentColor">12 – 40 años</text>
+
+          <rect x="20" y="80" width="230" height="34" fill="none" stroke="currentColor" stroke-width="1"></rect>
+          <rect x="250" y="80" width="225" height="34" fill="var(--c)" fill-opacity="0.1" stroke="currentColor" stroke-width="1"></rect>
+          <rect x="475" y="80" width="205" height="34" fill="none" stroke="currentColor" stroke-width="1"></rect>
+          <text x="32" y="101" font-size="11.5" font-weight="700" fill="currentColor">Inicio</text>
+          <text x="362" y="101" text-anchor="middle" font-size="11.5" fill="currentColor">Abrupto</text>
+          <text x="577" y="101" text-anchor="middle" font-size="11.5" fill="currentColor">Progresivo</text>
+
+          <rect x="20" y="114" width="230" height="34" fill="none" stroke="currentColor" stroke-width="1"></rect>
+          <rect x="250" y="114" width="225" height="34" fill="var(--c)" fill-opacity="0.1" stroke="currentColor" stroke-width="1"></rect>
+          <rect x="475" y="114" width="205" height="34" fill="none" stroke="currentColor" stroke-width="1"></rect>
+          <text x="32" y="135" font-size="11.5" font-weight="700" fill="currentColor">Alteración de la conciencia</text>
+          <text x="362" y="135" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">Presente</text>
+          <text x="577" y="135" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">Ausente</text>
+
+          <rect x="20" y="148" width="230" height="34" fill="none" stroke="currentColor" stroke-width="1"></rect>
+          <rect x="250" y="148" width="225" height="34" fill="var(--c)" fill-opacity="0.1" stroke="currentColor" stroke-width="1"></rect>
+          <rect x="475" y="148" width="205" height="34" fill="none" stroke="currentColor" stroke-width="1"></rect>
+          <text x="32" y="169" font-size="11.5" font-weight="700" fill="currentColor">Orientación</text>
+          <text x="362" y="169" text-anchor="middle" font-size="11.5" fill="currentColor">Desorientado</text>
+          <text x="577" y="169" text-anchor="middle" font-size="11.5" fill="currentColor">Orientado</text>
+
+          <rect x="20" y="182" width="230" height="34" fill="none" stroke="currentColor" stroke-width="1"></rect>
+          <rect x="250" y="182" width="225" height="34" fill="var(--c)" fill-opacity="0.1" stroke="currentColor" stroke-width="1"></rect>
+          <rect x="475" y="182" width="205" height="34" fill="none" stroke="currentColor" stroke-width="1"></rect>
+          <text x="32" y="203" font-size="11.5" font-weight="700" fill="currentColor">Alucinaciones</text>
+          <text x="362" y="203" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">Visuales</text>
+          <text x="577" y="203" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">Auditivas</text>
+
+          <rect x="20" y="216" width="230" height="34" fill="none" stroke="currentColor" stroke-width="1"></rect>
+          <rect x="250" y="216" width="225" height="34" fill="var(--c)" fill-opacity="0.1" stroke="currentColor" stroke-width="1"></rect>
+          <rect x="475" y="216" width="205" height="34" fill="none" stroke="currentColor" stroke-width="1"></rect>
+          <text x="32" y="237" font-size="11.5" font-weight="700" fill="currentColor">Curso</text>
+          <text x="362" y="237" text-anchor="middle" font-size="11.5" fill="currentColor">Fluctuante</text>
+          <text x="577" y="237" text-anchor="middle" font-size="11.5" fill="currentColor">Continuo</text>
+
+          <rect x="20" y="250" width="230" height="34" fill="none" stroke="currentColor" stroke-width="1"></rect>
+          <rect x="250" y="250" width="225" height="34" fill="var(--c)" fill-opacity="0.1" stroke="currentColor" stroke-width="1"></rect>
+          <rect x="475" y="250" width="205" height="34" fill="none" stroke="currentColor" stroke-width="1"></rect>
+          <text x="32" y="271" font-size="11.5" font-weight="700" fill="currentColor">Historia psiquiátrica previa</text>
+          <text x="362" y="271" text-anchor="middle" font-size="11.5" fill="currentColor">Ausente</text>
+          <text x="577" y="271" text-anchor="middle" font-size="11.5" fill="currentColor">Presente</text>
+        </svg>
+        <figcaption>Las dos filas resaltadas son las de mayor peso: la <strong>alucinación visual</strong> y la <strong>alteración de la conciencia</strong> apuntan a organicidad con más fuerza que cualquiera de las otras cinco. Ninguna variable aislada decide — pero un solo criterio de la columna orgánica obliga a estudiar antes de rotular el cuadro como psiquiátrico.</figcaption>
+      </figure>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Tres combinaciones deben hacer sonar la alarma orgánica aunque el paciente tenga antecedentes psiquiátricos: <strong>primer episodio después de los 40 años</strong>, <strong>alucinaciones visuales</strong> y <strong>curso fluctuante con alteración de la conciencia</strong>. Esa última tríada es el <strong>delirium</strong> hasta que se demuestre lo contrario, y el delirium tiene una causa médica que hay que buscar.</p>
+      </div>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-generalidades" id="entrevista">
+      <span class="seccion__pestana"><b>03</b> Abordaje</span>
+      <h2 class="seccion__titulo">La entrevista en guardia</h2>
+
+      <h3>Los cuatro aspectos a evaluar</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Aspecto</th><th>Qué se busca</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Seguridad</strong></td><td><strong>Riesgo inminente</strong> de dañarse a sí mismo o a terceros</td></tr>
+            <tr><td><strong>Suicidalidad</strong></td><td>Ideación, planificación, intento en curso o reciente</td></tr>
+            <tr><td><strong>Agresividad</strong></td><td><strong>Verbal, física o mixta</strong></td></tr>
+            <tr><td><strong>Abuso de sustancias</strong></td><td>Confiere <strong>mayor riesgo de conductas violentas</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Motivos de consulta más frecuentes</h3>
+      <ul>
+        <li>Trastornos de <strong>angustia, ansiedad y del estado de ánimo</strong>.</li>
+        <li><strong>Intoxicaciones</strong>, <strong>intentos de suicidio</strong>, ideas o amenaza suicida.</li>
+        <li><strong>Excitación psicomotriz</strong>.</li>
+      </ul>
+      <p>Cualquiera de los tres puede estar <strong>agravado por la presencia de un trastorno de personalidad comórbido</strong>, que cambia tanto la presentación como el manejo.</p>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-clinica" id="ansiedad">
+      <span class="seccion__pestana"><b>04</b> Cuadro</span>
+      <h2 class="seccion__titulo">Trastorno de ansiedad y angustia</h2>
+
+      <p>La ansiedad es una <strong>emoción normal</strong> que se vuelve patológica cuando es <strong>exageradamente intensa</strong> y/o <strong>extendida en el tiempo</strong>. Es un síntoma presente en múltiples patologías, psiquiátricas y no psiquiátricas, y suele acompañarse de un <strong>aumento de la descarga adrenérgica</strong>.</p>
+
+      <p>Puede presentarse de tres formas:</p>
+      <ul>
+        <li>Como <strong>respuesta al estrés</strong>.</li>
+        <li>Como <strong>trastorno psiquiátrico específico</strong>.</li>
+        <li>Como <strong>manifestación de una enfermedad somática subyacente</strong>.</li>
+      </ul>
+
+      <h3>Epidemiología</h3>
+      <ul>
+        <li>Es el motivo de consulta <strong>más frecuente y más inespecífico</strong>: casi el <span class="dato">40 %</span> del total de emergencias psiquiátricas.</li>
+        <li>Más común en el <strong>sexo femenino</strong>, relación <span class="dato">2 : 1</span>.</li>
+        <li>Edad de comienzo: <strong>segunda década de la vida</strong>.</li>
+        <li>El <span class="dato">30 – 40 %</span> puede presentar <strong>depresión</strong> — y con ella, <strong>riesgo suicida</strong>.</li>
+      </ul>
+
+      <h3>Síntomas</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Psíquicos</th><th>Somáticos</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Miedo a perder el control, volverse loco o morir</strong></td><td>Taquicardia, palpitaciones, <strong>dolor precordial</strong></td></tr>
+            <tr><td><strong>Despersonalización</strong></td><td>Disnea, sensación de ahogo, sofocación</td></tr>
+            <tr><td><strong>Desrealización</strong></td><td>Temblores o sacudidas · cefaleas</td></tr>
+            <tr><td>Irritabilidad</td><td>Mareo, vértigo, sensación de inestabilidad o de desmayo</td></tr>
+            <tr><td>Aturdimiento</td><td>Visión borrosa, zumbidos</td></tr>
+            <tr><td>Falta de concentración</td><td>Parestesias, sudoración, oleadas de frío y calor</td></tr>
+            <tr><td>Falta de memoria</td><td>Sequedad de boca, náuseas, vómitos, molestias abdominales</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Comorbilidad psiquiátrica</h3>
+      <p>La ansiedad puede presentarse como trastorno comórbido de:</p>
+      <ul>
+        <li><strong>Depresión</strong> y <strong>trastorno bipolar</strong>.</li>
+        <li><strong>Esquizofrenia</strong>.</li>
+        <li><strong>Abuso de sustancias</strong>.</li>
+        <li><strong>Deterioro cognitivo leve</strong> y formas iniciales de <strong>demencia</strong>.</li>
+        <li><strong>Trastornos de personalidad</strong> — hasta el <span class="dato">65 %</span>.</li>
+      </ul>
+
+      <h3>Diagnósticos diferenciales orgánicos</h3>
+      <p>Antes de rotular una crisis de ansiedad hay que descartar patología médica. La lista es larga porque la ansiedad es el gran imitador de la guardia:</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Sistema</th><th>Entidades a descartar</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Cardiovascular</strong></td><td><strong>Angina de pecho</strong>, <strong>IAM</strong>, HTA, arritmias, prolapso de válvula mitral, insuficiencia cardíaca congestiva</td></tr>
+            <tr><td><strong>Respiratorio</strong></td><td>Hiperventilación, asma, EPOC, <strong>tromboembolismo pulmonar</strong>, edema agudo de pulmón, <strong>neumotórax</strong></td></tr>
+            <tr><td><strong>Neurológico</strong></td><td>TEC, accidentes cerebrovasculares, <strong>hemorragia subaracnoidea</strong>, <strong>epilepsia del lóbulo temporal</strong>, migraña</td></tr>
+            <tr><td><strong>Endocrino-metabólico</strong></td><td><strong>Hipertiroidismo</strong>, <strong>hipoglucemia</strong>, menopausia, síndrome premenstrual, hiperparatiroidismo, <strong>feocromocitoma</strong></td></tr>
+            <tr><td><strong>Hematológico</strong></td><td>Anemia, porfiria aguda</td></tr>
+            <tr><td><strong>Tóxico</strong></td><td><strong>Abstinencia de alcohol, opiáceos y barbitúricos</strong> · intoxicaciones por psicotrópicos</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Una crisis de ansiedad con <strong>dolor precordial y disnea</strong> es indistinguible clínicamente de un <strong>síndrome coronario agudo</strong> o de un <strong>tromboembolismo pulmonar</strong>. El diagnóstico de crisis de angustia en la guardia es <strong>de exclusión</strong>: se hace después de los estudios, no antes. Y la <strong>abstinencia de alcohol o barbitúricos</strong> merece mención aparte, porque tratarla como ansiedad simple y mandar al paciente a la casa puede terminar en delirium tremens.</p>
+      </div>
+
+      <h3>Tratamiento</h3>
+      <p>El tratamiento agudo tiene un componente verbal que precede al farmacológico:</p>
+      <ol>
+        <li><strong>Interrogar sobre factores desencadenantes.</strong></li>
+        <li><strong>Explicar que no representa riesgo de vida</strong> — una vez descartado el compromiso orgánico.</li>
+        <li><strong>Explicar la naturaleza y el origen de los síntomas.</strong></li>
+        <li><strong>Administrar medicación.</strong></li>
+      </ol>
+
+      <p>Una vez descartado el compromiso orgánico, la <strong>psicoeducación constituye un elemento esencial del tratamiento agudo</strong>:</p>
+      <ul>
+        <li>Informar que los <strong>ataques de pánico no constituyen una amenaza para la vida</strong>, pero que <strong>de no ser tratados pueden acarrear consecuencias a largo plazo</strong>.</li>
+        <li><strong>Desaconsejar el consumo de productos con cafeína</strong> y medicamentos que contengan estimulantes.</li>
+        <li><strong>Derivar para tratamiento ambulatorio.</strong></li>
+        <li><strong>Evaluar la posibilidad de internación</strong> si resulta necesaria.</li>
+      </ul>
+
+      <h4>Benzodiacepinas — los ansiolíticos de elección</h4>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Fármaco</th><th>Rango de dosis</th><th>Vía</th><th>Inicio de acción (VO)</th><th>Vida media (h)</th><th>Dosis equivalente</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Clonazepam</strong></td><td><span class="dato">0,5 – 4 mg</span></td><td>VO</td><td>Intermedio</td><td><span class="dato">18 – 50</span></td><td><span class="dato">0,25</span></td></tr>
+            <tr><td><strong>Lorazepam</strong></td><td><span class="dato">1 – 6 mg</span></td><td><strong>VO / IM</strong></td><td>Intermedio</td><td><span class="dato">10 – 20</span></td><td><span class="dato">1</span></td></tr>
+            <tr><td><strong>Alprazolam</strong></td><td><span class="dato">0,5 – 4 mg</span></td><td>VO</td><td>Intermedio</td><td><span class="dato">6 – 20</span></td><td><span class="dato">0,5</span></td></tr>
+            <tr><td><strong>Diazepam</strong></td><td><span class="dato">2,5 – 40 mg</span></td><td>VO</td><td><strong>Rápido</strong></td><td><span class="dato">30 – 100</span></td><td><span class="dato">5</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul>
+        <li><strong>Evitar su uso</strong> en pacientes con antecedentes de <strong>abuso o dependencia de sustancias</strong>.</li>
+        <li><strong>Explicar que el uso de la medicación será por tiempo limitado</strong> desde la primera indicación.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Dos datos de la tabla se toman siempre. El <strong>lorazepam es la única benzodiacepina de la lista con presentación intramuscular</strong>, y por eso es la que se usa cuando no hay vía oral disponible. Y la columna de <strong>dosis equivalente</strong> se lee contra los <strong>5 mg de diazepam</strong>: 5 mg de diazepam ≈ 1 mg de lorazepam ≈ 0,5 mg de alprazolam ≈ 0,25 mg de clonazepam. Sirve para rotar de una a otra sin sobredosificar.</p>
+      </div>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-fisiopatologia" id="excitacion">
+      <span class="seccion__pestana"><b>05</b> Cuadro</span>
+      <h2 class="seccion__titulo">Excitación psicomotriz</h2>
+
+      <p>Síndrome caracterizado por un <strong>aumento significativo de la actividad motora</strong>, acompañado generalmente de <strong>alteración de la esfera emocional</strong> y de un conjunto diverso de <strong>síntomas polimorfos e inespecíficos</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Afirmación</th><th>Implicancia práctica</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Es el <strong>síndrome psiquiátrico de urgencia más importante</strong></td><td>Concentra la mayor parte del riesgo de la guardia</td></tr>
+            <tr><td><strong>No constituye en sí mismo una enfermedad</strong></td><td>Es un síndrome: siempre hay que buscar la causa detrás</td></tr>
+            <tr><td>Requiere <strong>asistencia e intervención inmediata</strong></td><td><strong>Sin posibilidad de atención diferida</strong></td></tr>
+            <tr><td>Puede ser consecuencia de trastornos <strong>psiquiátricos, reactivos u orgánicos</strong></td><td>Los tres grupos etiológicos a encuadrar</td></tr>
+            <tr><td>Es <strong>distinto del paciente violento</strong></td><td>Violencia = <strong>uso intencional de la fuerza o el poder físico</strong>, de hecho o como amenaza. La excitación no es intencional</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Existe una <strong>tendencia a atribuirle inmediatamente un origen psiquiátrico</strong> a todo paciente excitado, y es el error más costoso de la guardia. La excitación psicomotriz <strong>no es una enfermedad</strong>: es un síndrome que puede ser la cara visible de un delirium, una hipoglucemia o una abstinencia. Además, el <strong>consumo de sustancias psicoactivas incrementa significativamente el riesgo de conducta violenta</strong>, y estos pacientes son escasamente colaboradores.</p>
+      </div>
+
+      <h3>Presentación clínica</h3>
+      <ul>
+        <li><strong>Inquietud motora</strong>.</li>
+        <li><strong>Irritabilidad</strong>.</li>
+        <li><strong>Actividad verbal y motora sin propósito definido</strong>.</li>
+        <li><strong>Pobre control de los impulsos</strong> e <strong>impulsividad</strong>.</li>
+        <li><strong>Disminución de la cantidad de horas de sueño</strong>.</li>
+        <li><strong>Fluctuación de los síntomas</strong> a través del tiempo.</li>
+        <li><strong>Lenguaje poco apropiado</strong>.</li>
+        <li><strong>Distrés personal y familiar intenso</strong>.</li>
+      </ul>
+
+      <h3>Etiología — los tres grupos</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Grupo</th><th>Entidades</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Delirium</strong></td>
+              <td>Categoría propia por su peso: es la causa orgánica por excelencia y la que no se puede pasar por alto</td>
+            </tr>
+            <tr>
+              <td><strong>Trastornos psicóticos</strong> no asociados a delirium</td>
+              <td><strong>Esquizofrenia</strong> · <strong>trastornos del estado de ánimo</strong> · <strong>trastorno delirante</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Trastornos no psicóticos</strong> con agitación</td>
+              <td><strong>Trastornos de ansiedad</strong> · <strong>trastorno conversivo</strong> · <strong>trastornos de personalidad</strong> (antisocial, límite) · <strong>TEPT</strong> · <strong>trastorno por consumo de sustancias</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-importantes" id="seguridad">
+      <span class="seccion__pestana"><b>06</b> Seguridad</span>
+      <h2 class="seccion__titulo">Seguridad y predicción de violencia</h2>
+
+      <h3>Antes del contacto con el paciente</h3>
+      <ul>
+        <li><strong>Obtener toda la información posible</strong> antes de entrar.</li>
+        <li><strong>Quitarse collares, aros y anteojos</strong>, y recogerse el pelo.</li>
+        <li><strong>Evitar el uso de todo objeto que pueda ser utilizado como arma.</strong></li>
+        <li><strong>Avisar al equipo</strong> de que se va a entrevistar al paciente, para poner al personal en alerta ante cualquier necesidad de intervención urgente.</li>
+      </ul>
+
+      <h3>El ambiente</h3>
+      <ul>
+        <li><strong>Muebles sólidos y pesados</strong>; despejado de objetos de vidrio y de decoración que puedan usarse como <strong>proyectiles</strong>.</li>
+        <li><strong>Privado pero no aislado</strong>, sin dificultades para su acceso: <strong>dos puertas sin traba</strong>. Si hay una sola, debe haber <strong>fácil acceso para el entrevistador y para el paciente</strong>, sin objetos interpuestos.</li>
+        <li><strong>Sistema de llamada al exterior.</strong></li>
+        <li>Entrevistar al paciente <strong>solo o en presencia de un familiar que lo tranquilice</strong>.</li>
+        <li>Si el riesgo de violencia es elevado: entrevistar con la <strong>puerta abierta</strong> y con otras personas fuera o dentro de la habitación. La <strong>presencia de personal suficiente tiene carácter persuasivo y tranquilizador</strong>.</li>
+      </ul>
+
+      <h3>Durante la entrevista</h3>
+      <p>El <strong>comportamiento y los elementos de comunicación preverbales del examinador pueden inducir o evitar la violencia</strong>. Es decir: la conducta del médico es una variable del riesgo, no una constante.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Hacer</th><th>No hacer</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Hablar pausadamente</strong>, con actitud calma</td><td><strong>NO examinar a pacientes armados</strong> — dar aviso al personal de seguridad o a la policía</td></tr>
+            <tr><td><strong>Mantener las manos a la vista</strong> del paciente durante toda la entrevista</td><td><strong>No entrevistar al paciente a solas</strong></td></tr>
+            <tr><td><strong>Evitar movimientos bruscos o súbitos</strong></td><td><strong>No dar la espalda</strong> al paciente</td></tr>
+            <tr><td><strong>Iniciar con temas neutrales</strong> en lo posible</td><td><strong>Mantenerse fuera del alcance</strong> de potenciales golpes</td></tr>
+            <tr><td>—</td><td><strong>No intentar tocar al paciente</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>La escalada y la respuesta que le corresponde</h3>
+      <figure class="esquema">
+        <svg viewBox="0 0 700 484" role="img" aria-label="Escalada de la agitación en tres niveles con la respuesta correspondiente a cada uno. En el nivel inferior, violencia posible, los signos son aumento creciente de la actividad motora, amenazas verbales y gritos, hablar más rápido y subir el tono, deambular y negarse a tomar asiento, señalar con el dedo y apretar la mandíbula, alucinaciones y sospecha de tóxicos, y antecedentes de conducta violenta; la respuesta es la contención verbal. En el nivel intermedio, violencia inminente, los signos son cerrar los puños y mostrarlos, agitar el puño cerrado, levantarlo por encima del hombro, golpear la palma con el puño, asumir posición de ataque, expandir el tórax y ensanchar los hombros, y buscar un objeto utilizable como arma; la respuesta es el comportamiento de sumisión y la señal de alerta al equipo. En el nivel superior, cuando fracasa o no es posible la contención verbal, la respuesta es la contención mecánica sumada al tratamiento farmacológico.">
+          <defs>
+            <marker id="urg-c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="24" y="16" width="346" height="140" rx="6" fill="var(--c)" fill-opacity="0.3" stroke="currentColor" stroke-width="1.6"></rect>
+          <text x="36" y="37" font-size="12.5" font-weight="700" fill="currentColor">3 · FRACASA O NO ES POSIBLE LA VERBAL</text>
+          <text x="36" y="58" font-size="11" fill="currentColor">Se aplica sólo cuando la contención verbal fracasó</text>
+          <text x="36" y="74" font-size="11" fill="currentColor">Siempre de aplicación temporal</text>
+          <text x="36" y="90" font-size="11" fill="currentColor">Equipo de al menos 5 personas; 1 dirige el procedimiento</text>
+          <text x="36" y="106" font-size="11" fill="currentColor">Ante violencia extrema, la realiza personal de seguridad</text>
+          <text x="36" y="122" font-size="11" fill="currentColor">o policial, no el equipo de salud</text>
+          <text x="36" y="144" font-size="11" font-style="italic" fill="currentColor">El paciente ya no puede autorregularse</text>
+
+          <rect x="386" y="16" width="290" height="140" rx="6" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1.6"></rect>
+          <text x="398" y="37" font-size="12.5" font-weight="700" fill="currentColor">CONTENCIÓN MECÁNICA + FÁRMACOS</text>
+          <text x="398" y="58" font-size="11" fill="currentColor">Decúbito dorsal, sobre suelo o camilla</text>
+          <text x="398" y="74" font-size="11" fill="currentColor">Sujetar próximo a las articulaciones</text>
+          <text x="398" y="90" font-size="11" fill="currentColor">2 puntos (brazo y pierna contralaterales)</text>
+          <text x="398" y="106" font-size="11" fill="currentColor">o 5 puntos (4 extremidades + cintura)</text>
+          <text x="398" y="122" font-size="11" fill="currentColor">Cabeza incorporada: evitar aspiración</text>
+          <text x="398" y="144" font-size="11" fill="currentColor">Signos vitales cada 30 min</text>
+
+          <line x1="350" y1="174" x2="350" y2="158" stroke="currentColor" stroke-width="1.6" marker-end="url(#urg-c)"></line>
+          <text x="360" y="170" font-size="10" font-weight="700" fill="currentColor">escala</text>
+
+          <rect x="24" y="174" width="346" height="140" rx="6" fill="var(--c)" fill-opacity="0.2" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="36" y="195" font-size="12.5" font-weight="700" fill="currentColor">2 · VIOLENCIA INMINENTE</text>
+          <text x="36" y="214" font-size="11" fill="currentColor">Cierra los puños y los muestra</text>
+          <text x="36" y="229" font-size="11" fill="currentColor">Agita el puño cerrado</text>
+          <text x="36" y="244" font-size="11" fill="currentColor">Levanta el puño por encima del hombro</text>
+          <text x="36" y="259" font-size="11" fill="currentColor">Golpea la palma de la mano con el puño</text>
+          <text x="36" y="274" font-size="11" fill="currentColor">Asume posición de ataque</text>
+          <text x="36" y="289" font-size="11" fill="currentColor">Expande el tórax y ensancha los hombros</text>
+          <text x="36" y="304" font-size="11" fill="currentColor">Busca un objeto utilizable como arma</text>
+
+          <rect x="386" y="174" width="290" height="140" rx="6" fill="var(--c)" fill-opacity="0.1" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="398" y="195" font-size="12.5" font-weight="700" fill="currentColor">SUMISIÓN + ALERTA AL EQUIPO</text>
+          <text x="398" y="214" font-size="11" fill="currentColor">No hablar de manera autoritaria</text>
+          <text x="398" y="229" font-size="11" fill="currentColor">Disminuir el contacto visual cara a cara</text>
+          <text x="398" y="244" font-size="11" fill="currentColor">Hundir el pecho y encoger los hombros</text>
+          <text x="398" y="259" font-size="11" fill="currentColor">No elevar las manos ni cerrar los puños</text>
+          <text x="398" y="274" font-size="11" fill="currentColor">No acercarse ni tocar al paciente</text>
+          <text x="398" y="289" font-size="11" fill="currentColor">Asegurar el acceso a la puerta</text>
+          <text x="398" y="304" font-size="11" fill="currentColor">Emitir la señal convenida</text>
+
+          <line x1="350" y1="332" x2="350" y2="316" stroke="currentColor" stroke-width="1.6" marker-end="url(#urg-c)"></line>
+          <text x="360" y="328" font-size="10" font-weight="700" fill="currentColor">escala</text>
+
+          <rect x="24" y="332" width="346" height="140" rx="6" fill="var(--c)" fill-opacity="0.1" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="36" y="353" font-size="12.5" font-weight="700" fill="currentColor">1 · VIOLENCIA POSIBLE</text>
+          <text x="36" y="372" font-size="11" fill="currentColor">Aumento creciente de la actividad motora</text>
+          <text x="36" y="387" font-size="11" fill="currentColor">Amenazas verbales, gritos, violencia sobre objetos</text>
+          <text x="36" y="402" font-size="11" fill="currentColor">Habla más rápido, sube el tono de voz, sarcasmo</text>
+          <text x="36" y="417" font-size="11" fill="currentColor">Deambula; se niega a tomar asiento</text>
+          <text x="36" y="432" font-size="11" fill="currentColor">Señala con el dedo; aprieta la mandíbula</text>
+          <text x="36" y="447" font-size="11" fill="currentColor">Alucinaciones; sospecha de consumo de tóxicos</text>
+          <text x="36" y="462" font-size="11" fill="currentColor">Antecedentes previos de conducta violenta</text>
+
+          <rect x="386" y="332" width="290" height="140" rx="6" fill="none" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="398" y="353" font-size="12.5" font-weight="700" fill="currentColor">CONTENCIÓN VERBAL</text>
+          <text x="398" y="372" font-size="11" fill="currentColor">Transmitir que se lo está tratando de ayudar</text>
+          <text x="398" y="387" font-size="11" fill="currentColor">Evitar mostrar miedo; mostrarse en control</text>
+          <text x="398" y="402" font-size="11" fill="currentColor">Tono de voz calmo y neutro</text>
+          <text x="398" y="417" font-size="11" fill="currentColor">Firmeza y claridad en las indicaciones</text>
+          <text x="398" y="432" font-size="11" fill="currentColor">Preguntas cortas y directas</text>
+          <text x="398" y="447" font-size="11" fill="currentColor">Escuchar y dejar hablar al paciente</text>
+          <text x="398" y="462" font-size="11" fill="currentColor">No confrontar, discutir ni desafiar</text>
+        </svg>
+        <figcaption>La columna izquierda son <em>signos que se observan</em>; la derecha, <em>conductas que se ejecutan</em>. La distinción entre los dos primeros niveles es concreta y motora: en la violencia <strong>posible</strong> el paciente todavía habla y se mueve; en la <strong>inminente</strong> ya está armando el cuerpo para golpear. Reconocer el pasaje de uno a otro es lo que da el margen para pedir ayuda antes del golpe.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-tratamiento" id="contencion">
+      <span class="seccion__pestana"><b>07</b> Conducta</span>
+      <h2 class="seccion__titulo">Contención</h2>
+
+      <p>Controlar la conducta significa <strong>tomar medidas para intentar controlar la agitación del paciente</strong>. No es un fin en sí mismo: deben <strong>ayudar a posibilitar la evaluación, el diagnóstico y el comienzo del tratamiento</strong>. Son dos, y en este orden: <strong>verbal</strong> y <strong>mecánica</strong>.</p>
+
+      <h3>Contención verbal</h3>
+      <ul>
+        <li><strong>Transmitirle al enfermo que se lo está tratando de ayudar.</strong></li>
+        <li><strong>Evitar mostrar miedo.</strong></li>
+        <li><strong>Mostrarse permanentemente en control de la situación.</strong></li>
+        <li><strong>Firmeza y claridad</strong> en las indicaciones.</li>
+        <li>Usar un <strong>tono de voz calmo y neutro</strong>.</li>
+        <li><strong>Escuchar y dejar hablar</strong> al paciente.</li>
+        <li>Realizar <strong>preguntas cortas y directas</strong>.</li>
+        <li><strong>No confrontar, discutir ni desafiar</strong> al paciente.</li>
+      </ul>
+
+      <h3>Contención mecánica</h3>
+      <p><strong>Inmovilización física.</strong> Se aplica cuando <strong>fracasa o no es posible la contención verbal</strong>, y <strong>siempre es de aplicación temporal</strong>.</p>
+
+      <h4>Técnica</h4>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Elemento</th><th>Cómo se hace</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Equipo</strong></td><td>Al menos <strong>5 personas</strong>; <strong>una dirige el procedimiento</strong></td></tr>
+            <tr><td><strong>Posición</strong></td><td>Colocar al sujeto <strong>de espaldas</strong>, sobre el suelo o la camilla</td></tr>
+            <tr><td><strong>Toma</strong></td><td>Sujetar las extremidades <strong>con ambas manos y próximas a las articulaciones</strong></td></tr>
+            <tr><td><strong>Puntos de sujeción</strong></td><td><strong>2 puntos</strong>: brazo y pierna <strong>contralaterales</strong>. <strong>5 puntos</strong>: las cuatro extremidades y la cintura</td></tr>
+            <tr><td><strong>Cabeza</strong></td><td><strong>Ligeramente incorporada</strong>, para <strong>evitar aspiraciones</strong></td></tr>
+            <tr><td><strong>Violencia extrema</strong></td><td>La inmovilización será realizada por <strong>personal de seguridad o policial</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Dos errores de técnica que matan. <strong>La inmovilización aplicada exclusivamente sobre el abdomen puede producir traumatismo abdominal cerrado</strong> — por eso se sujeta por las extremidades, próximo a las articulaciones, y nunca cargando el peso sobre el abdomen. Y <strong>la cabeza debe quedar ligeramente incorporada</strong>: en decúbito dorsal plano, un paciente sedado o que vomita <strong>aspira</strong>.</p>
+      </div>
+
+      <h4>Cuidados mientras dura la contención</h4>
+      <ul>
+        <li><strong>Aflojar periódica y alternantemente las ataduras.</strong></li>
+        <li><strong>Control de signos vitales cada <span class="dato">30 minutos</span>.</strong></li>
+        <li>Asegurar la <strong>correcta hidratación</strong>, <strong>vigilar la vía aérea</strong> y la <strong>higiene</strong>.</li>
+      </ul>
+
+      <h3>Una vez contenido: la secuencia de manejo</h3>
+      <ol>
+        <li><strong>Evaluación</strong>: encuadrar al paciente dentro de uno de los <strong>tres grupos etiológicos</strong>.</li>
+        <li><strong>Control de los elementos que pudiesen gatillar el episodio.</strong></li>
+        <li><strong>Soporte vital clínico.</strong></li>
+        <li><strong>Elección del tratamiento farmacológico</strong> de acuerdo a la situación clínica y al paciente.</li>
+        <li><strong>Monitoreo del resultado terapéutico.</strong></li>
+        <li><strong>Reevaluación periódica.</strong></li>
+      </ol>
+    </section>
+
+    <!-- ============ 8 ============ -->
+    <section class="seccion s-tratamiento" id="farmacologico">
+      <span class="seccion__pestana"><b>08</b> Fármacos</span>
+      <h2 class="seccion__titulo">Tratamiento farmacológico de la agitación</h2>
+
+      <h3>Qué determina la elección inicial</h3>
+      <ul>
+        <li><strong>Rápido inicio de acción.</strong></li>
+        <li><strong>Sedación clínicamente útil</strong> — no la máxima posible, la útil.</li>
+        <li><strong>Limitado riesgo de efectos adversos</strong> peligrosos o intolerables.</li>
+        <li><strong>Disponibilidad de formulaciones inyectables o bucodispersables.</strong></li>
+        <li><strong>Historia de respuesta</strong> a la medicación.</li>
+        <li><strong>Preferencia del paciente.</strong></li>
+      </ul>
+
+      <h3>Vía oral</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Fármaco</th><th>Dosis</th><th>Intervalo de repetición</th><th>Máximo diario</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Risperidona</strong></td><td><span class="dato">1 – 2 mg</span></td><td>Cada 30 min a 2 h</td><td><span class="dato">6 mg/día</span></td></tr>
+            <tr><td><strong>Olanzapina</strong></td><td><span class="dato">5 – 10 mg</span></td><td>Cada 30 min a 2 h</td><td><span class="dato">30 – 40 mg/día</span></td></tr>
+            <tr><td><strong>Aripiprazol</strong></td><td><span class="dato">5 – 10 mg</span></td><td>Cada 2 h</td><td><span class="dato">30 mg/día</span></td></tr>
+            <tr><td><strong>Quetiapina</strong></td><td><span class="dato">50 – 300 mg</span></td><td>—</td><td><span class="dato">800 mg/día</span></td></tr>
+            <tr><td><strong>Ziprasidona</strong></td><td><span class="dato">40 – 120 mg</span></td><td>—</td><td><span class="dato">200 mg/día</span></td></tr>
+            <tr><td><strong>Haloperidol</strong></td><td><span class="dato">5 – 10 mg</span></td><td>Cada 30 min a 2 h</td><td><span class="dato">40 mg/día</span></td></tr>
+            <tr><td><strong>Lorazepam</strong></td><td><span class="dato">1 – 2 mg</span></td><td>Cada 30 min a 2 h</td><td><span class="dato">12 mg/día</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Vía intramuscular</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Fármaco</th><th>Dosis</th><th>Intervalo de repetición</th><th>Máximo diario</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Olanzapina</strong></td><td><span class="dato">5 – 10 mg</span></td><td>Cada 30 min a 2 h</td><td><span class="dato">30 – 40 mg/día</span></td></tr>
+            <tr><td><strong>Ziprasidona</strong></td><td><span class="dato">10 – 20 mg</span></td><td>—</td><td><span class="dato">40 mg/día</span></td></tr>
+            <tr><td><strong>Haloperidol</strong></td><td><span class="dato">5 mg</span></td><td>Cada 30 min a 2 h</td><td><span class="dato">40 mg/día</span></td></tr>
+            <tr><td><strong>Lorazepam</strong></td><td><span class="dato">1 – 2 mg</span></td><td>Cada 30 min a 2 h</td><td><span class="dato">12 mg/día</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>La <strong>olanzapina intramuscular tiene efecto sinérgico con las benzodiacepinas</strong>, por lo que <strong>no deben administrarse concomitantemente</strong>: se recomienda un <strong>intervalo mínimo de una hora</strong> entre ambas. Es la interacción más peligrosa de la guardia psiquiátrica, porque la combinación «olanzapina IM + lorazepam IM» es exactamente la que uno tiende a indicar junta cuando el paciente no cede — y produce <strong>depresión respiratoria e hipotensión graves</strong>.</p>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>El <strong>haloperidol prolonga el intervalo QT</strong> y puede producir <strong>torsades de pointes</strong>, con riesgo dosis-dependiente y mayor por vía parenteral. Los techos de <span class="dato">40 mg/día</span> que figuran en las tablas son máximos teóricos: en la práctica se usan las <strong>dosis mínimas eficaces</strong>, con <strong>ECG previo</strong> siempre que la situación lo permita y <strong>monitoreo</strong> si se repiten dosis. Vigilar también la <strong>distonía aguda</strong> y el <strong>síndrome neuroléptico maligno</strong>.</p>
+        <p class="cita">Fuente: FDA Drug Safety Information — Haloperidol (Haldol), alerta sobre prolongación del QT y torsades de pointes, 2007. Recogido en Kaplan &amp; Sadock, Sinopsis de Psiquiatría, cap. de urgencias psiquiátricas.</p>
+      </div>
+    </section>
+
+    <!-- ============ 9 ============ -->
+    <section class="seccion s-clinica" id="suicidio">
+      <span class="seccion__pestana"><b>09</b> Riesgo</span>
+      <h2 class="seccion__titulo">Intento de suicidio</h2>
+
+      <p><strong>Acto suicida (OMS):</strong> acción por la que un individuo <strong>se causa a sí mismo un daño, con independencia del grado de intención letal</strong>. En general surge del sentimiento de que <strong>la vida es tan insoportable que la muerte es la única forma de alivio o vía de escape</strong>.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Dos cifras que definen la magnitud del problema en la guardia. <strong>Uno de cada tres</strong> pacientes asistidos en servicios de urgencias psiquiátricas <strong>ha pensado en matarse o ha realizado un intento</strong>. Y <strong>uno de cada seis</strong> pacientes que consultó por un intento <strong>muere en los cinco años posteriores</strong>, por suicidio o por accidentes. El intento no es un episodio cerrado: es un marcador de mortalidad a mediano plazo.</p>
+      </div>
+
+      <h3>Trastornos con mayor incidencia de conductas suicidas</h3>
+      <ul>
+        <li><strong>Trastornos del estado de ánimo</strong>.</li>
+        <li><strong>Esquizofrenia</strong> y otros trastornos psicóticos.</li>
+        <li><strong>Trastornos de personalidad</strong>.</li>
+        <li><strong>Trastornos por consumo de sustancias y alcohol</strong>.</li>
+      </ul>
+      <p>La <strong>presencia de ansiedad incrementa el riesgo</strong> de conductas suicidas en cualquiera de estos trastornos. Más aún: la ansiedad <strong>incrementa 7 veces el riesgo de cometer suicidio en la población general</strong>, incluso sin otra patología psiquiátrica.</p>
+
+      <h3>Método de evaluación</h3>
+      <ol>
+        <li><strong>Entrevistar al paciente en un lugar tranquilo y privado.</strong></li>
+        <li><strong>Primera parte libre</strong>: relato espontáneo del paciente.</li>
+        <li><strong>Segunda parte dirigida</strong>: preguntar por <strong>la idea, los desencadenantes y la planificación</strong>.</li>
+      </ol>
+
+      <h4>Estresores que precipitan conductas suicidas</h4>
+      <ul>
+        <li>Presencia de <strong>depresión mayor</strong>.</li>
+        <li><strong>Intoxicación aguda con sustancias, especialmente alcohol</strong>.</li>
+        <li><strong>Disfunción psicosocial</strong>.</li>
+      </ul>
+
+      <h3>Factores de riesgo</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Factor</th><th>Detalle</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Sexo</strong></td><td><strong>Masculino: 4 veces más frecuente</strong> el suicidio consumado. Las <strong>mujeres lo intentan 4 veces más</strong>. La diferencia se relaciona con el <strong>método empleado</strong></td></tr>
+            <tr><td><strong>Edad</strong></td><td>Aumenta con la edad. En <strong>varones el pico se observa a partir de los 45 años</strong>; en <strong>mujeres a partir de los 55</strong>. Los <strong>gerontes lo intentan menos, pero lo logran más</strong></td></tr>
+            <tr><td><strong>Estado civil</strong></td><td><strong>Soltero</strong> duplicaría el riesgo; <strong>viudo y divorciado</strong> lo triplicarían</td></tr>
+            <tr><td><strong>Pérdidas recientes</strong></td><td>Las mujeres se adaptan mejor</td></tr>
+            <tr><td><strong>Aislamiento</strong></td><td>Falta de integración social y familiar</td></tr>
+            <tr><td><strong>Discapacidad</strong></td><td><strong>Secuelas físicas discapacitantes</strong>, en particular la pérdida de movilidad</td></tr>
+            <tr><td><strong>Enfermedad</strong></td><td><strong>Enfermedades crónicas</strong> y <strong>dolor crónico</strong></td></tr>
+            <tr><td><strong>Impulsividad</strong></td><td>Rasgo transversal, independiente del diagnóstico</td></tr>
+            <tr><td><strong>Sustancias</strong></td><td><strong>Abuso de sustancias o alcohol</strong></td></tr>
+            <tr><td><strong>Síndrome depresivo</strong></td><td>—</td></tr>
+            <tr><td><strong>Antecedentes</strong></td><td><strong>Intentos suicidas previos</strong>, personales —sobre todo en los <strong>3 meses previos</strong>— o familiares</td></tr>
+            <tr><td><strong>Ideación</strong></td><td><strong>Ideación suicida previa</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>La <strong>paradoja de género</strong> es la pregunta clásica: <strong>las mujeres intentan 4 veces más, los varones consuman 4 veces más</strong>, y la explicación está en el <strong>método empleado</strong> — los varones eligen métodos de mayor letalidad y menor oportunidad de rescate. La misma lógica explica a los gerontes: <strong>intentan menos pero lo logran más</strong>. En la evaluación del riesgo, entonces, <strong>la letalidad del método pesa más que la frecuencia del gesto</strong>.</p>
+      </div>
+
+      <h3>Factores protectores</h3>
+      <ul>
+        <li><strong>Niños en el hogar</strong> — con la excepción de las <strong>puérperas con depresión posparto</strong>.</li>
+        <li><strong>Estado civil</strong>: el matrimonio.</li>
+        <li><strong>Sentido de responsabilidad familiar</strong>.</li>
+        <li><strong>Religiosidad</strong>.</li>
+        <li><strong>Nivel de satisfacción con la vida</strong>.</li>
+        <li><strong>Habilidades positivas para enfrentar y resolver problemas</strong>.</li>
+        <li><strong>Soporte social activo</strong>.</li>
+        <li><strong>Relaciones interpersonales favorables</strong>.</li>
+      </ul>
+
+      <h3>Determinación de la gravedad del intento</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Variable</th><th>Qué se pregunta</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Premeditación</strong></td><td>¿Fue <strong>premeditado o impulsivo</strong>?</td></tr>
+            <tr><td><strong>Letalidad del método</strong></td><td>¿Qué probabilidad real de muerte tenía el método elegido?</td></tr>
+            <tr><td><strong>Oportunidad de rescate</strong></td><td>¿Podía ser encontrado? ¿Tomó precauciones para <strong>evitar el rescate</strong>?</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Conducta terapéutica inmediata</h3>
+      <ul>
+        <li><strong>No intentar disuadirlo de su actitud.</strong></li>
+        <li><strong>Derivación para asistencia especializada.</strong></li>
+      </ul>
+    </section>
+
+    <!-- ============ 10 ============ -->
+    <section class="seccion s-importantes" id="internacion">
+      <span class="seccion__pestana"><b>10</b> Decisión</span>
+      <h2 class="seccion__titulo">Decisión de internación</h2>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 356" role="img" aria-label="Árbol de decisión de internación tras un intento de suicidio o ante ideación suicida. Primero se pregunta si el paciente cumple algún criterio de riesgo mayor: si lo cumple, la internación es imprescindible. Si no, se pregunta si cumple algún criterio de riesgo moderado: si lo cumple, la internación puede estar indicada. Si tampoco, se pregunta si reúne las cuatro condiciones de manejo externo: crítica convincente del acto, baja letalidad, entorno estable y contenedor, y paciente confiable con turno acordado; si las reúne, corresponde tratamiento ambulatorio.">
+          <defs>
+            <marker id="urg-d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="40" y="12" width="360" height="34" rx="6" fill="var(--c)" fill-opacity="0.28" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="220" y="27" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">TRAS UN INTENTO</text>
+          <text x="220" y="41" text-anchor="middle" font-size="10.5" fill="currentColor">o ante ideación suicida</text>
+
+          <line x1="220" y1="46" x2="220" y2="66" stroke="currentColor" stroke-width="1.4" marker-end="url(#urg-d)"></line>
+
+          <rect x="40" y="66" width="360" height="40" rx="6" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="220" y="91" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">¿Cumple algún criterio de riesgo MAYOR?</text>
+
+          <line x1="400" y1="86" x2="436" y2="86" stroke="currentColor" stroke-width="1.4" marker-end="url(#urg-d)"></line>
+          <text x="418" y="81" text-anchor="middle" font-size="10" font-weight="700" fill="currentColor">SÍ</text>
+          <rect x="440" y="64" width="240" height="80" rx="6" fill="var(--c)" fill-opacity="0.3" stroke="currentColor" stroke-width="1.6"></rect>
+          <text x="452" y="83" font-size="11" font-weight="700" fill="currentColor">INTERNACIÓN IMPRESCINDIBLE</text>
+          <text x="452" y="101" font-size="10" fill="currentColor">psicótico · intento casi letal</text>
+          <text x="452" y="116" font-size="10" fill="currentColor">evitó el rescate · persiste ideación</text>
+          <text x="452" y="131" font-size="10" fill="currentColor">varón &gt; 45 · sin contención</text>
+
+          <line x1="220" y1="106" x2="220" y2="164" stroke="currentColor" stroke-width="1.4" marker-end="url(#urg-d)"></line>
+          <text x="228" y="140" font-size="10" font-weight="700" fill="currentColor">NO</text>
+
+          <rect x="40" y="164" width="360" height="40" rx="6" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="220" y="189" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">¿Cumple algún criterio de riesgo MODERADO?</text>
+
+          <line x1="400" y1="184" x2="436" y2="184" stroke="currentColor" stroke-width="1.4" marker-end="url(#urg-d)"></line>
+          <text x="418" y="179" text-anchor="middle" font-size="10" font-weight="700" fill="currentColor">SÍ</text>
+          <rect x="440" y="162" width="240" height="80" rx="6" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="452" y="181" font-size="11" font-weight="700" fill="currentColor">PUEDE ESTAR INDICADA</text>
+          <text x="452" y="199" font-size="10" fill="currentColor">psicosis · trastorno grave</text>
+          <text x="452" y="214" font-size="10" fill="currentColor">intentos previos con lesiones serias</text>
+          <text x="452" y="229" font-size="10" fill="currentColor">contención limitada · requiere TEC</text>
+
+          <line x1="220" y1="204" x2="220" y2="262" stroke="currentColor" stroke-width="1.4" marker-end="url(#urg-d)"></line>
+          <text x="228" y="238" font-size="10" font-weight="700" fill="currentColor">NO</text>
+
+          <rect x="40" y="262" width="360" height="40" rx="6" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="220" y="280" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">¿Reúne las CUATRO condiciones</text>
+          <text x="220" y="295" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">de manejo externo?</text>
+
+          <line x1="400" y1="282" x2="436" y2="282" stroke="currentColor" stroke-width="1.4" marker-end="url(#urg-d)"></line>
+          <text x="418" y="277" text-anchor="middle" font-size="10" font-weight="700" fill="currentColor">SÍ</text>
+          <rect x="440" y="260" width="240" height="80" rx="6" fill="none" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="452" y="279" font-size="11" font-weight="700" fill="currentColor">TRATAMIENTO AMBULATORIO</text>
+          <text x="452" y="297" font-size="10" fill="currentColor">crítica convincente del acto</text>
+          <text x="452" y="312" font-size="10" fill="currentColor">baja letalidad · entorno estable</text>
+          <text x="452" y="327" font-size="10" fill="currentColor">confiable · turno ya acordado</text>
+        </svg>
+        <figcaption>El árbol se recorre de arriba hacia abajo y <strong>se detiene en el primer sí</strong>. Obsérvese que el nivel más bajo no se alcanza por descarte: el manejo ambulatorio exige que se cumplan <em>las cuatro</em> condiciones a la vez, no que falten las de arriba. La ausencia de criterios de internación no equivale a un alta segura.</figcaption>
+      </figure>
+
+      <h3>La internación es imprescindible si…</h3>
+      <h4>Después de un intento suicida</h4>
+      <ul>
+        <li>El paciente está <strong>psicótico</strong>.</li>
+        <li>El intento fue <strong>violento, casi letal o premeditado</strong>.</li>
+        <li>Se tomaron <strong>precauciones para evitar el rescate</strong> o el descubrimiento de la situación.</li>
+        <li><strong>Persiste la ideación o la tentativa.</strong></li>
+        <li><strong>Aumentó el estrés</strong> o el paciente <strong>se arrepiente de haber sobrevivido</strong>.</li>
+        <li>El paciente es <strong>hombre, mayor de 45 años</strong>, o tiene <strong>enfermedad psiquiátrica</strong>, o presenta <strong>ideación suicida de inicio agudo</strong>.</li>
+        <li>Existe <strong>falta de contención familiar o social</strong>.</li>
+        <li>Se detecta <strong>conducta impulsiva, agitación severa, juicio empobrecido o falta de autocrítica</strong>.</li>
+        <li>Hay <strong>cambios en el cuadro psiquiátrico por causas tóxicas, metabólicas o infecciosas</strong> u otras que requieran evaluación y tratamiento de mayor complejidad.</li>
+      </ul>
+
+      <h4>Cuando no hubo intento pero existe ideación suicida</h4>
+      <ul>
+        <li>Existe un <strong>plan muy específico y de gran letalidad</strong>.</li>
+        <li>Se realizó previamente una <strong>tentativa de gran magnitud suicida</strong>.</li>
+      </ul>
+
+      <h3>La internación puede estar indicada si…</h3>
+      <p>Ante <strong>ideación suicida</strong> acompañada de:</p>
+      <ul>
+        <li><strong>Psicosis</strong> o <strong>trastornos psiquiátricos graves</strong>.</li>
+        <li><strong>Intentos anteriores con lesiones graves</strong> o médicamente serios.</li>
+        <li><strong>Sospecha de enfermedades concurrentes</strong>: cáncer, infecciones, cuadros neurológicos.</li>
+        <li><strong>Dificultad o imposibilidad de realizar tratamiento ambulatorio.</strong></li>
+        <li><strong>Necesidad de tratamientos complejos</strong> — medicación, <strong>TEC</strong>.</li>
+        <li>Necesidad de <strong>observación o evaluación especializada</strong> o de tratamiento clínico complejo.</li>
+        <li><strong>Contención familiar o social limitada.</strong></li>
+        <li><strong>Imposibilidad o dificultad para concurrir regularmente</strong> al tratamiento ambulatorio.</li>
+      </ul>
+      <p>Y también <strong>aun en ausencia de intentos o de ideación suicida</strong>, cuando la evaluación psiquiátrica o los antecedentes sugieren un <strong>alto nivel de riesgo</strong> o un <strong>incremento reciente del mismo</strong>.</p>
+
+      <h3>El tratamiento ambulatorio puede estar indicado cuando…</h3>
+      <ul>
+        <li>La crisis suicida es <strong>respuesta a un evento precipitante</strong>, el paciente <strong>cambia su punto de vista</strong> y expresa <strong>crítica convincente</strong> respecto de su acto o su ideación.</li>
+        <li>El <strong>plan, el método o el intento son de baja letalidad</strong>.</li>
+        <li>La <strong>situación vital del paciente es estable y contenedora</strong>.</li>
+        <li>El paciente es <strong>confiable a la hora de colaborar</strong> con las recomendaciones, y <strong>se acordó con el psiquiatra de consulta externa</strong> continuar el tratamiento en forma ambulatoria.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Dos criterios de internación imprescindible que se olvidan porque no suenan clínicos y son los más específicos que hay: <strong>haber tomado precauciones para evitar el rescate</strong> —cerrar la puerta con llave, elegir un horario en que no habría nadie— y <strong>arrepentirse de haber sobrevivido</strong>. Ambos hablan de <strong>intención letal sostenida</strong>, que es exactamente lo que la letalidad del método por sí sola no mide.</p>
+      </div>
+    </section>
+
+    <!-- ============ 11 ============ -->
+    <section class="seccion s-clinica" id="personalidad">
+      <span class="seccion__pestana"><b>11</b> Comorbilidad</span>
+      <h2 class="seccion__titulo">Trastornos de personalidad en la guardia</h2>
+
+      <p>Son <strong>patrones de percepción, reacción y relación relativamente fijos, inflexibles y socialmente desadaptados</strong>. Un rasgo define el manejo: las personas con trastornos de la personalidad <strong>generalmente no son conscientes de que su comportamiento o sus patrones de pensamiento son inapropiados</strong>.</p>
+
+      <h3>Qué significan para el servicio de urgencias</h3>
+      <ul>
+        <li><strong>Incremento en la demanda</strong>.</li>
+        <li><strong>Aumento en la complejidad y la agresividad</strong> de los pacientes agitados.</li>
+        <li><strong>Aumento de la intervención policial y judicial</strong>.</li>
+        <li>Aumento de pacientes <strong>«puerta giratoria»</strong> — internaciones breves y repetidas.</li>
+        <li>Aumento de pacientes <strong>«hiperfrecuentadores»</strong>.</li>
+      </ul>
+
+      <h3>Trastorno límite de personalidad</h3>
+      <h4>Clínica</h4>
+      <ul>
+        <li><strong>Inestabilidad emocional, irritabilidad, ira intensa.</strong></li>
+        <li><strong>Pensamiento extremadamente polarizado y dicotómico</strong> — amor/odio.</li>
+        <li><strong>Relaciones interpersonales caóticas e inestables.</strong></li>
+        <li><strong>Oscilación en la autoimagen.</strong></li>
+        <li><strong>Trastornos de la conducta.</strong></li>
+        <li><strong>Episodios de auto o heteroagresión.</strong></li>
+        <li><strong>Reacción desmedida frente a un abandono real o imaginario.</strong></li>
+        <li><strong>Sentimiento crónico de vacío o inutilidad.</strong></li>
+      </ul>
+
+      <h4>Epidemiología</h4>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Población</th><th>Prevalencia</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Población general</td><td><span class="dato">1 – 2 %</span></td></tr>
+            <tr><td>Pacientes psiquiátricos ambulatorios</td><td><span class="dato">10 %</span></td></tr>
+            <tr><td>Pacientes psiquiátricos internados</td><td><span class="dato">20 %</span></td></tr>
+            <tr><td>Dentro del conjunto de los trastornos de personalidad</td><td><span class="dato">30 – 60 %</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Predominio en <strong>mujeres</strong>, relación <span class="dato">3 : 1</span>.</p>
+
+      <h4>Conducta suicida en el trastorno límite</h4>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Dato</th><th>Cifra</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Intentan suicidarse</strong></td><td><span class="dato">73 %</span></td></tr>
+            <tr><td><strong>Promedio de intentos</strong></td><td><span class="dato">3,4</span> por paciente</td></tr>
+            <tr><td><strong>Se suicidan</strong></td><td><span class="dato">8 – 10 %</span></td></tr>
+            <tr><td>Proporción entre quienes <strong>mueren por suicidio</strong></td><td><span class="dato">30 %</span></td></tr>
+            <tr><td>Proporción entre quienes <strong>intentan suicidarse</strong></td><td><span class="dato">40 %</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul>
+        <li><strong>Mayor riesgo después de los 20 años.</strong></li>
+        <li><strong>Mayor riesgo en comorbilidad</strong> con patología psiquiátrica mayor.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>En el trastorno límite, la <strong>finalidad letal es menos relevante que la «función de comunicación»</strong> del acto: el intento funciona como <strong>estrategia de afrontamiento del estrés</strong>, como <strong>mecanismo para provocar cambios ambientales</strong> y como <strong>vía alternativa para internarse</strong>. Eso <strong>no lo vuelve inofensivo</strong>: el <span class="dato">8 – 10 %</span> se suicida. La lectura correcta no es «no lo va a hacer», sino que <strong>cada intento tiene baja intención letal y alta probabilidad de repetirse</strong>, y en la repetición está el riesgo.</p>
+      </div>
+
+      <h3>Trastorno antisocial de personalidad</h3>
+      <ul>
+        <li><strong>Rehúyen las normas preestablecidas</strong>: no saben o no pueden adaptarse a ellas.</li>
+        <li><strong>Actúan para alcanzar lo que desean</strong>, cometiendo en muchos casos <strong>delitos graves</strong>.</li>
+        <li><strong>Impulsividad</strong> o <strong>incapacidad para planificar el futuro</strong>.</li>
+        <li><strong>Irritabilidad y agresividad.</strong></li>
+        <li><strong>Despreocupación por su seguridad o la de los demás.</strong></li>
+        <li><strong>Falta de remordimiento.</strong></li>
+      </ul>
+    </section>
+
+    <!-- ============ 12 ============ -->
+    <section class="seccion s-diferenciales" id="precisiones">
+      <span class="seccion__pestana"><b>12</b> Control</span>
+      <h2 class="seccion__titulo">Precisiones al material de cátedra</h2>
+
+      <h3>1 · El haloperidol y el intervalo QT</h3>
+      <p>Las tablas de las diapositivas 28 y 29 dan haloperidol <strong>hasta 40 mg/día</strong> sin mencionar su principal riesgo. El haloperidol <strong>prolonga el intervalo QT de forma dosis-dependiente</strong> y puede producir <strong>torsades de pointes</strong>, con mayor riesgo por vía parenteral. La conducta actual es usar la <strong>dosis mínima eficaz</strong>, obtener <strong>ECG</strong> cuando la situación lo permita y <strong>monitorizar</strong> si se repiten dosis — no llegar al techo teórico. Tampoco figuran en el material la <strong>distonía aguda</strong> ni el <strong>síndrome neuroléptico maligno</strong>, que son las otras dos complicaciones a vigilar.</p>
+      <p class="cita">Fuente: FDA Drug Safety Information — Haloperidol (Haldol), 2007. Concordante con Kaplan &amp; Sadock, Sinopsis de Psiquiatría, capítulo de urgencias psiquiátricas.</p>
+
+      <h3>2 · El sistema multiaxial del DSM-IV</h3>
+      <p>El material razona con los <strong>ejes del DSM-IV</strong> (diapositiva 4: Eje IV para los acontecimientos vitales, Eje II para personalidad y discapacidad intelectual, Eje I para la patología mayor; diapositiva 11: Eje III para lo médico). Ese <strong>sistema multiaxial fue eliminado en el DSM-5 en 2013</strong>: los ejes I, II y III se fusionaron en un listado diagnóstico único, el eje IV pasó a los <strong>códigos Z</strong> de la CIE y el eje V se retiró. El razonamiento clínico que el material transmite sigue siendo válido —hay que evaluar personalidad, estresores y comorbilidad médica—; lo que cambió es la nomenclatura.</p>
+      <p class="cita">Fuente: American Psychiatric Association. DSM-5, Arlington, 2013 — «Highlights of Changes from DSM-IV to DSM-5».</p>
+
+      <h3>3 · Los cortes de edad de la tabla orgánico/funcional</h3>
+      <p>La diapositiva 5 asigna al cuadro orgánico la edad <strong>&lt; 12 o &gt; 40 años</strong>. Es una <strong>regla orientativa, no un criterio excluyente</strong>: un primer episodio psicótico a los 25 años puede ser perfectamente orgánico —encefalitis autoinmune, consumo de sustancias, tirotoxicosis— y el material mismo lo reconoce al exigir que <strong>siempre</strong> se descarte lo orgánico. La tabla se lee en conjunto: <strong>ninguna de las siete variables decide por sí sola</strong>.</p>
+
+      <h3>4 · Ambigüedad en las cifras del trastorno límite</h3>
+      <p>La diapositiva 41 enumera, en la misma lista, «<strong>8 – 10 % se suicidan</strong>» junto con «<strong>30 % individuos que mueren por suicidio</strong>» y «<strong>40 % individuos que intentan suicidarse</strong>». Las dos últimas <strong>no son porcentajes de pacientes con trastorno límite</strong>: son la proporción de <em>trastornos de personalidad</em> presentes en la población que consuma o intenta el suicidio. Leídas como si fueran del trastorno límite entran en contradicción directa con el 8 – 10 % de la línea anterior. En este cuadernillo se consignan como proporciones de población, que es la única lectura coherente.</p>
+
+      <h3>Erratas menores del material</h3>
+      <ul>
+        <li>Diapositiva 26: <strong>«cada 30 minuntos»</strong> → minutos.</li>
+        <li>Diapositiva 29: <strong>«adminsitradas»</strong> → administradas.</li>
+        <li>Diapositiva 3: <strong>«continencia familiar»</strong> se usa a lo largo del deck en el sentido de <em>contención</em> familiar; ambos términos aparecen indistintamente (diapositivas 3, 36 y 37).</li>
+      </ul>
+    </section>
+
+    <!-- ============ Repaso ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>¿Cuáles son las cuatro condiciones que justifican internación en una emergencia psiquiátrica?</summary>
+          <div class="fc__r"><strong>Riesgo grave, cierto e inminente</strong> para sí o para terceros · <strong>escasa o nula continencia familiar</strong> · <strong>riesgo de incumplimiento terapéutico</strong> · <strong>fracaso terapéutico</strong>.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Cuáles son los dos objetivos de la intervención en la emergencia?</summary>
+          <div class="fc__r"><strong>Aliviar la situación inmediata</strong> y <strong>planear la conducta a seguir</strong>. En la guardia no se resuelve la enfermedad: se resuelve el episodio y se decide el destino.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Enumerá las siete variables que separan un cuadro orgánico de uno funcional.</summary>
+          <div class="fc__r"><strong>Edad</strong> (&lt;12 o &gt;40 vs. 12–40) · <strong>inicio</strong> (abrupto vs. progresivo) · <strong>alteración de la conciencia</strong> (presente vs. ausente) · <strong>orientación</strong> (desorientado vs. orientado) · <strong>alucinaciones</strong> (visuales vs. auditivas) · <strong>curso</strong> (fluctuante vs. continuo) · <strong>historia psiquiátrica previa</strong> (ausente vs. presente).</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Qué modalidad de alucinación apunta a organicidad y cuál a lo funcional?</summary>
+          <div class="fc__r"><strong>Visuales → orgánico.</strong> <strong>Auditivas → funcional.</strong> Junto con la alteración de la conciencia, la alucinación visual es la variable de mayor peso de la tabla.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Cuáles son los cuatro aspectos a evaluar durante la entrevista en guardia?</summary>
+          <div class="fc__r"><strong>Seguridad</strong> (riesgo inminente de dañarse o dañar) · <strong>suicidalidad</strong> · <strong>agresividad</strong> (verbal, física o mixta) · <strong>abuso de sustancias</strong>, que confiere mayor riesgo de conductas violentas.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué proporción de las emergencias psiquiátricas corresponde a ansiedad y angustia?</summary>
+          <div class="fc__r">Casi el <strong>40 %</strong> del total. Es el motivo de consulta <strong>más frecuente y más inespecífico</strong>. Predominio femenino <strong>2 : 1</strong>, comienzo en la <strong>segunda década</strong>, y <strong>30 – 40 %</strong> presenta depresión asociada con el riesgo suicida que eso implica.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Un paciente joven con dolor precordial, disnea y sensación de muerte inminente. ¿Diagnóstico?</summary>
+          <div class="fc__r"><strong>Ninguno todavía.</strong> La crisis de angustia es un <strong>diagnóstico de exclusión</strong>: hay que descartar primero <strong>síndrome coronario agudo</strong>, <strong>tromboembolismo pulmonar</strong>, <strong>neumotórax</strong>, <strong>hipoglucemia</strong>, <strong>hipertiroidismo</strong>, <strong>feocromocitoma</strong> y <strong>abstinencia de alcohol o barbitúricos</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Cuál es la única benzodiacepina de la tabla con presentación intramuscular?</summary>
+          <div class="fc__r"><strong>Lorazepam</strong> (VO/IM), 1–6 mg. Por eso es la de elección cuando no hay vía oral disponible.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Traducí a equivalentes: 5 mg de diazepam son cuántos mg de lorazepam, alprazolam y clonazepam.</summary>
+          <div class="fc__r"><strong>1 mg</strong> de lorazepam · <strong>0,5 mg</strong> de alprazolam · <strong>0,25 mg</strong> de clonazepam. Sirve para rotar entre benzodiacepinas sin sobredosificar.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Por qué se dice que la excitación psicomotriz «no constituye en sí misma una enfermedad»?</summary>
+          <div class="fc__r">Porque es un <strong>síndrome</strong>, no un diagnóstico: puede ser consecuencia de trastornos <strong>psiquiátricos, reactivos u orgánicos</strong>. La tendencia a atribuirle origen psiquiátrico de entrada es el error más costoso de la guardia.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué diferencia a la excitación psicomotriz del paciente violento?</summary>
+          <div class="fc__r">La <strong>intencionalidad</strong>. La violencia es el <strong>uso intencional de la fuerza o el poder físico</strong>, de hecho o como amenaza. La excitación psicomotriz es un aumento de la actividad motora <strong>sin propósito definido</strong>.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>Nombrá cuatro signos de violencia <em>inminente</em>.</summary>
+          <div class="fc__r"><strong>Cerrar los puños y mostrarlos</strong> · <strong>agitar el puño cerrado</strong> · <strong>levantarlo por encima del hombro</strong> · <strong>golpear la palma con el puño</strong> · <strong>asumir posición de ataque</strong> · <strong>expandir el tórax y ensanchar los hombros</strong> · <strong>buscar un objeto utilizable como arma</strong>. Todos son motores: el paciente ya está armando el cuerpo para golpear.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>Ante amenaza de violencia, ¿qué es el «comportamiento de sumisión»?</summary>
+          <div class="fc__r">No hablar de manera autoritaria · evitar movimientos rápidos · <strong>disminuir el contacto visual cara a cara</strong> · no elevar las manos · <strong>no cerrar los puños ni esconder las manos</strong> · no acercarse ni tocar · <strong>hundir el pecho y encoger los hombros</strong> · <strong>asegurar el acceso a la puerta</strong> · emitir la señal convenida al equipo.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Cómo debe ser la sala donde se entrevista a un paciente potencialmente violento?</summary>
+          <div class="fc__r"><strong>Privada pero no aislada</strong>, con <strong>dos puertas sin traba</strong> (o una con acceso libre para ambos, sin objetos interpuestos), <strong>muebles sólidos y pesados</strong>, sin objetos de vidrio ni decoración usable como proyectil, y con <strong>sistema de llamada al exterior</strong>.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Contención mecánica: ¿cuántas personas hacen falta y en qué puntos se sujeta?</summary>
+          <div class="fc__r">Al menos <strong>5 personas</strong>, <strong>una dirige</strong>. Paciente <strong>de espaldas</strong>, sujeción de extremidades <strong>próxima a las articulaciones</strong>. <strong>2 puntos</strong> = brazo y pierna <strong>contralaterales</strong>; <strong>5 puntos</strong> = las cuatro extremidades más la cintura.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Dos errores de técnica de la contención mecánica que pueden matar al paciente.</summary>
+          <div class="fc__r">Inmovilizar <strong>exclusivamente sobre el abdomen</strong> — puede producir <strong>traumatismo abdominal cerrado</strong>. Y dejar la <strong>cabeza plana</strong> en vez de ligeramente incorporada — riesgo de <strong>aspiración</strong>.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Qué controles se hacen mientras dura la contención mecánica?</summary>
+          <div class="fc__r"><strong>Aflojar periódica y alternantemente las ataduras</strong> · <strong>signos vitales cada 30 minutos</strong> · asegurar <strong>hidratación</strong>, vigilar la <strong>vía aérea</strong> y la <strong>higiene</strong>. Y recordar que la contención <strong>siempre es de aplicación temporal</strong>.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Qué dos fármacos NO deben administrarse juntos y con qué intervalo mínimo?</summary>
+          <div class="fc__r"><strong>Olanzapina IM + benzodiacepinas</strong>: tienen efecto <strong>sinérgico</strong>. Se recomienda un <strong>intervalo mínimo de una hora</strong>. La combinación produce depresión respiratoria e hipotensión graves.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Explicá la paradoja de género en el suicidio.</summary>
+          <div class="fc__r">Los <strong>varones consuman 4 veces más</strong>; las <strong>mujeres lo intentan 4 veces más</strong>. La diferencia está en el <strong>método empleado</strong>: los varones eligen métodos de mayor letalidad y menor oportunidad de rescate. La misma lógica explica a los gerontes: <strong>intentan menos pero lo logran más</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Cuánto multiplica la ansiedad el riesgo de suicidio en población general sin otra patología?</summary>
+          <div class="fc__r"><strong>7 veces.</strong> Y en cualquiera de los trastornos de alto riesgo (ánimo, psicóticos, personalidad, sustancias), la presencia de ansiedad incrementa el riesgo de conductas suicidas.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Cuáles son las tres variables que determinan la gravedad de un intento?</summary>
+          <div class="fc__r"><strong>Premeditado o impulsivo</strong> · <strong>letalidad del método</strong> · <strong>oportunidad de rescate</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Cuál es la conducta terapéutica inmediata ante un paciente con ideación suicida?</summary>
+          <div class="fc__r"><strong>No intentar disuadirlo</strong> de su actitud, y <strong>derivar para asistencia especializada</strong>. La discusión frontal cierra el relato y hace perder la información sobre el plan.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>Dos criterios de internación imprescindible que no suenan clínicos pero son de los más específicos.</summary>
+          <div class="fc__r">Haber tomado <strong>precauciones para evitar el rescate</strong> o el descubrimiento, y <strong>arrepentirse de haber sobrevivido</strong>. Ambos hablan de <strong>intención letal sostenida</strong>, que la letalidad del método por sí sola no mide.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Cuáles son las cuatro condiciones que habilitan el manejo ambulatorio?</summary>
+          <div class="fc__r">Crisis <strong>reactiva a un precipitante con crítica convincente</strong> del acto · <strong>baja letalidad</strong> del plan, método o intento · <strong>situación vital estable y contenedora</strong> · <strong>paciente confiable</strong> y con el seguimiento <strong>ya acordado</strong> con el psiquiatra de consulta externa. Deben cumplirse <strong>las cuatro</strong>: la ausencia de criterios de internación no equivale a alta segura.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Trastorno límite: ¿qué porcentaje intenta suicidarse y qué porcentaje lo consuma?</summary>
+          <div class="fc__r"><strong>73 % intenta</strong>, con un promedio de <strong>3,4 intentos</strong>; <strong>8 – 10 % se suicida</strong>. Mayor riesgo <strong>después de los 20 años</strong> y en <strong>comorbilidad</strong> con patología psiquiátrica mayor.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Por qué la «función de comunicación» del intento en el trastorno límite no lo vuelve inofensivo?</summary>
+          <div class="fc__r">Porque aunque la <strong>finalidad letal sea menos relevante</strong> —el acto funciona como afrontamiento del estrés, como forma de provocar cambios ambientales o como vía para internarse—, <strong>el 8 – 10 % igual se suicida</strong>. Cada intento tiene <strong>baja intención letal pero alta probabilidad de repetirse</strong>, y el riesgo está en la repetición.</div>
+        </details>
+
+        <details class="fc s-diferenciales">
+          <summary>Si te preguntan por dosis de haloperidol, ¿qué hay que agregar al número?</summary>
+          <div class="fc__r">Que <strong>prolonga el QT</strong> de forma dosis-dependiente y puede producir <strong>torsades de pointes</strong>, con más riesgo por vía parenteral. Los 40 mg/día son un <strong>techo teórico</strong>: se usa la dosis mínima eficaz, con ECG cuando se pueda. Vigilar además <strong>distonía aguda</strong> y <strong>síndrome neuroléptico maligno</strong>.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">El orden de la guardia</dt>
+        <dd><strong>Seguridad</strong> → <strong>descartar lo orgánico</strong> → <strong>encuadrar en uno de los tres grupos</strong> (psiquiátrico, reactivo, orgánico) → <strong>conducta y destino</strong>. Nunca al revés: atribuirle origen psiquiátrico de entrada al paciente agitado es el error más costoso.</dd>
+
+        <dt class="r-gold">Orgánico vs. funcional</dt>
+        <dd><strong>Orgánico</strong>: &lt;12 o &gt;40 años · inicio abrupto · <strong>conciencia alterada</strong> · desorientado · <strong>alucinaciones visuales</strong> · curso fluctuante · sin antecedentes psiquiátricos. Un solo criterio obliga a estudiar antes de rotular.</dd>
+
+        <dt class="r-tto">Contención y fármacos</dt>
+        <dd><strong>Verbal primero</strong>; la <strong>mecánica</strong> sólo si fracasa, siempre temporal, equipo de <strong>5 personas</strong>, sujeción en <strong>2 o 5 puntos</strong>, <strong>cabeza incorporada</strong>, signos vitales <strong>c/30 min</strong>. Nunca <strong>olanzapina IM junto a benzodiacepinas</strong>: intervalo mínimo de <strong>1 hora</strong>.</dd>
+
+        <dt class="r-alerta">Internación imprescindible tras un intento</dt>
+        <dd><strong>Psicótico</strong> · intento <strong>violento, casi letal o premeditado</strong> · tomó <strong>precauciones para evitar el rescate</strong> · <strong>persiste la ideación</strong> · <strong>se arrepiente de haber sobrevivido</strong> · <strong>varón &gt; 45 años</strong> · <strong>sin contención familiar o social</strong> · impulsividad, agitación severa o falta de autocrítica.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir de la presentación «Urgencias en Psiquiatría — El Paciente en Guardia» de la cátedra de Psiquiatría. La sección 12 detalla los puntos en que el material fue corregido, ampliado o contextualizado, con las fuentes correspondientes. Material de estudio: no reemplaza el criterio clínico ni la guía institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link'));
+
+  function porMeta(hash){
+    for (var i = 0; i < enlaces.length; i++){
+      if (enlaces[i].getAttribute('href') === '#' + hash) return enlaces[i];
+    }
+    return null;
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var enlace = porMeta(e.target.id);
+        if (!enlace) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          enlace.setAttribute('aria-current', 'true');
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>
+<script>
+(function(){
+  "use strict";
+  var clave = document.body.dataset.clave || "";
+  var enApp = typeof window.WordmedApp !== "undefined";
+  var MEM = "wordmed:progreso";
+
+  function leer(){ try{ return JSON.parse(localStorage.getItem(MEM)) || {}; }catch(e){ return {}; } }
+  function guardar(m){ try{ localStorage.setItem(MEM, JSON.stringify(m)); }catch(e){} }
+
+  function alto(){
+    return Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+  }
+
+  /* retomar donde quedó */
+  if (clave) {
+    var m = leer()[clave];
+    if (m && m.y > 0) {
+      window.addEventListener("load", function(){
+        window.scrollTo(0, Math.min(m.y, alto()));
+      });
+    }
+  }
+
+  /* anotar el avance, sin ahogar el scroll */
+  var pendiente = false;
+  window.addEventListener("scroll", function(){
+    if (pendiente || !clave) return;
+    pendiente = true;
+    requestAnimationFrame(function(){
+      pendiente = false;
+      var y = window.scrollY;
+      var pct = Math.round((y / alto()) * 100);
+      pct = Math.max(0, Math.min(100, pct));
+      var m = leer();
+      m[clave] = { y: y, pct: pct, ts: Date.now() };
+      guardar(m);
+      if (enApp && window.WordmedApp.progreso) window.WordmedApp.progreso(clave, pct, y);
+    });
+  }, { passive: true });
+
+  /* volver: solo cuando vinimos de la cáscara web */
+  if (!enApp && document.referrer && document.referrer.indexOf(location.origin) === 0) {
+    var b = document.createElement("button");
+    b.className = "volver";
+    b.type = "button";
+    b.setAttribute("aria-label", "Volver");
+    b.innerHTML = '<svg class="volver__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg>';
+    b.addEventListener("click", function(){ history.back(); });
+    document.body.appendChild(b);
+  }
+})();
+</script>
+</body>
+</html>

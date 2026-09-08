@@ -1,0 +1,1218 @@
+<title>Salud Mental y Psiquiatría</title>
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+}
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índice lateral ---------- */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Ficha de sección ---------- */
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.35rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-row:1/3; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+.importante__titulo{
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso{ display:none !important; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-generalidades"  href="#carga">01 · La carga de los trastornos</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#determinantes">02 · Pobreza, estigma y derechos</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#barreras">03 · Barreras de acceso</a></li>
+      <li><a class="indice__link i-generalidades"  href="#definiciones">04 · Qué es la salud mental</a></li>
+      <li><a class="indice__link i-clinica"        href="#especialidad">05 · La psiquiatría</a></li>
+      <li><a class="indice__link i-importantes"    href="#clasificacion">06 · Clasificación</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#paradigma">07 · Del manicomio a la comunidad</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#tratamientos">08 · Tratamientos</a></li>
+      <li><a class="indice__link i-diferenciales"  href="#antipsiquiatria">09 · Movimientos antipsiquiatría</a></li>
+      <li><a class="indice__link i-clinica"        href="#epidemiologia">10 · Epidemiología argentina</a></li>
+      <li><a class="indice__link i-diferenciales"  href="#precisiones">11 · Precisiones al material</a></li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Psiquiatría · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Salud Mental y Psiquiatría</h1>
+      <p class="portada__bajada">Introducción a la disciplina: qué carga representan los trastornos mentales, por qué la pobreza y el estigma forman parte del problema, qué es la psiquiatría como especialidad médica y cómo se llegó del manicomio a la atención en la comunidad.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">11 secciones</span>
+        <span class="etiqueta s-fisiopatologia">Determinantes sociales</span>
+        <span class="etiqueta s-importantes">Clasificación</span>
+        <span class="etiqueta s-diferenciales">Antipsiquiatría</span>
+      </div>
+    </header>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="carga">
+      <span class="seccion__pestana"><b>01</b> Magnitud</span>
+      <h2 class="seccion__titulo">La carga de los trastornos mentales</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Indicador</th><th>Cifra</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Personas que sufren un <strong>trastorno mental o de la conducta</strong></td><td><span class="dato">450 millones</span></td></tr>
+            <tr><td>Personas que <strong>se suicidan cada año</strong></td><td>Alrededor de <span class="dato">1 millón</span></td></tr>
+            <tr><td>Familias con <strong>al menos un miembro afectado</strong></td><td><span class="dato">1 de cada 4</span></td></tr>
+            <tr><td>Personas que presentarán un <strong>trastorno psiquiátrico en algún momento de su vida</strong></td><td>Hasta el <span class="dato">25 %</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>La carga familiar</h3>
+      <p>La magnitud de la carga que recae sobre la familia es <strong>difícil de justipreciar, y por eso es frecuentemente ignorada</strong>. No obstante, es dable afirmar que <strong>el impacto sobre la calidad de vida familiar es importante</strong>.</p>
+
+      <h3>Las cuatro causas psiquiátricas de incapacidad</h3>
+      <p><strong>Cuatro de las diez principales causas mundiales de incapacidad</strong> corresponden a trastornos psiquiátricos:</p>
+      <ul>
+        <li><strong>Depresión</strong></li>
+        <li><strong>Alcoholismo</strong></li>
+        <li><strong>Trastornos bipolares</strong></li>
+        <li><strong>Esquizofrenias</strong></li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Además de los costos de salud y sociales, las personas afectadas por trastornos mentales son <strong>víctimas de violaciones de los derechos humanos, estigma y discriminación</strong> — y esto ocurre <strong>tanto dentro como fuera de las instituciones psiquiátricas</strong>. La carga del trastorno mental no se agota en el síntoma: incluye lo que la sociedad le hace a quien lo padece.</p>
+      </div>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-fisiopatologia" id="determinantes">
+      <span class="seccion__pestana"><b>02</b> Determinantes</span>
+      <h2 class="seccion__titulo">Pobreza, estigma y derechos humanos</h2>
+
+      <h3>El círculo vicioso</h3>
+      <p>La relación entre pobreza y trastorno mental <strong>corre en las dos direcciones</strong>, y por eso el material la describe como un círculo del que resulta difícil salir.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 320" role="img" aria-label="Círculo vicioso entre pobreza y trastorno mental. De la pobreza hacia el trastorno mental actúan la inseguridad, el bajo nivel educacional, la vivienda inadecuada y la subnutrición, todos reconocidos como factores asociados con los trastornos mentales. Del trastorno mental hacia la pobreza actúan los costos por tratamientos de largo alcance y la productividad perdida. Ambos quedan unidos en un ciclo que afecta diversas dimensiones del desarrollo individual y social.">
+          <defs>
+            <marker id="sm-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <text x="350" y="34" text-anchor="middle" font-size="11" fill="currentColor">inseguridad · bajo nivel educacional</text>
+          <text x="350" y="52" text-anchor="middle" font-size="11" fill="currentColor">vivienda inadecuada · subnutrición</text>
+
+          <line x1="130" y1="128" x2="130" y2="70" stroke="currentColor" stroke-width="1.6"></line>
+          <line x1="130" y1="70" x2="570" y2="70" stroke="currentColor" stroke-width="1.6"></line>
+          <line x1="570" y1="70" x2="570" y2="126" stroke="currentColor" stroke-width="1.6" marker-end="url(#sm-a)"></line>
+
+          <rect x="30" y="130" width="200" height="80" rx="8" fill="var(--c)" fill-opacity="0.26" stroke="currentColor" stroke-width="1.6"></rect>
+          <text x="130" y="165" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">POBREZA</text>
+          <text x="130" y="187" text-anchor="middle" font-size="10.5" fill="currentColor">determinante importante</text>
+
+          <rect x="470" y="130" width="200" height="80" rx="8" fill="var(--c)" fill-opacity="0.26" stroke="currentColor" stroke-width="1.6"></rect>
+          <text x="570" y="161" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">TRASTORNO</text>
+          <text x="570" y="178" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">MENTAL</text>
+          <text x="570" y="197" text-anchor="middle" font-size="10.5" fill="currentColor">y de la conducta</text>
+
+          <line x1="570" y1="212" x2="570" y2="270" stroke="currentColor" stroke-width="1.6"></line>
+          <line x1="570" y1="270" x2="130" y2="270" stroke="currentColor" stroke-width="1.6"></line>
+          <line x1="130" y1="270" x2="130" y2="214" stroke="currentColor" stroke-width="1.6" marker-end="url(#sm-a)"></line>
+
+          <text x="350" y="292" text-anchor="middle" font-size="11" fill="currentColor">costos por tratamientos de largo alcance</text>
+          <text x="350" y="310" text-anchor="middle" font-size="11" fill="currentColor">productividad perdida</text>
+        </svg>
+        <figcaption>Cada flecha lleva su mecanismo, y eso es lo que convierte la frase «círculo vicioso» en un argumento verificable: arriba, los factores sociales que la pobreza produce y que se asocian a los trastornos; abajo, los costos que el trastorno genera y que empobrecen. El ciclo afecta <strong>diversas dimensiones del desarrollo individual y social</strong>.</figcaption>
+      </figure>
+
+      <p>En tanto que los trastornos mentales generan <strong>costos por tratamientos de largo alcance</strong> y <strong>productividad perdida</strong>, <strong>contribuyen a la pobreza</strong>. Al mismo tiempo, la <strong>inseguridad</strong>, un <strong>bajo nivel educacional</strong>, la <strong>vivienda inadecuada</strong> y la <strong>subnutrición</strong> han sido reconocidos como <strong>factores asociados con los trastornos mentales</strong>. La pobreza puede entonces considerarse un <strong>determinante importante de los trastornos mentales, y viceversa</strong>.</p>
+      <p class="cita">Fuente: Organización Mundial de la Salud. <em>Invertir en salud mental</em>.</p>
+
+      <h3>Estigma y derechos humanos</h3>
+      <p>Hablar de los trastornos mentales es hablar de estigma y de derechos humanos. Además del peso social y económico, las personas que sufren enfermedades mentales son <strong>también víctimas de violaciones de los derechos humanos, de estigma y de discriminación</strong>.</p>
+      <ul>
+        <li>Las violaciones de los derechos humanos <strong>en las instituciones psiquiátricas distan de ser infrecuentes</strong>.</li>
+        <li>Las violaciones <strong>también tienen lugar fuera de las instituciones</strong>: ahí el mecanismo es <strong>el estigma de la enfermedad mental</strong>.</li>
+      </ul>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-diagnostico" id="barreras">
+      <span class="seccion__pestana"><b>03</b> Acceso</span>
+      <h2 class="seccion__titulo">Barreras de acceso a la atención</h2>
+
+      <p>Cinco barreras impiden que las personas accedan a una atención apropiada en salud mental. Ninguna es clínica: todas son del sistema.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 396" role="img" aria-label="Las cinco barreras que se interponen entre una persona con un trastorno mental y la atención apropiada en salud mental. En orden: el estigma; las prioridades erradas; los medicamentos inexistentes; el personal del nivel primario de atención no capacitado; y las políticas y la legislación en salud mental que carecen de bases racionales y de integralidad.">
+          <defs>
+            <marker id="sm-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="120" y="12" width="460" height="34" rx="6" fill="var(--c)" fill-opacity="0.28" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="350" y="34" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">PERSONA CON UN TRASTORNO MENTAL</text>
+          <line x1="350" y1="46" x2="350" y2="58" stroke="currentColor" stroke-width="1.4" marker-end="url(#sm-b)"></line>
+
+          <rect x="120" y="60" width="460" height="44" rx="5" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="350" y="88" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">ESTIGMA</text>
+          <line x1="350" y1="104" x2="350" y2="116" stroke="currentColor" stroke-width="1.4" marker-end="url(#sm-b)"></line>
+
+          <rect x="120" y="118" width="460" height="44" rx="5" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="350" y="146" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">PRIORIDADES ERRADAS</text>
+          <line x1="350" y1="162" x2="350" y2="174" stroke="currentColor" stroke-width="1.4" marker-end="url(#sm-b)"></line>
+
+          <rect x="120" y="176" width="460" height="44" rx="5" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="350" y="204" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">MEDICAMENTOS INEXISTENTES</text>
+          <line x1="350" y1="220" x2="350" y2="232" stroke="currentColor" stroke-width="1.4" marker-end="url(#sm-b)"></line>
+
+          <rect x="120" y="234" width="460" height="44" rx="5" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="350" y="255" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">PERSONAL DEL NIVEL PRIMARIO DE ATENCIÓN</text>
+          <text x="350" y="271" text-anchor="middle" font-size="11" fill="currentColor">no capacitado</text>
+          <line x1="350" y1="278" x2="350" y2="290" stroke="currentColor" stroke-width="1.4" marker-end="url(#sm-b)"></line>
+
+          <rect x="120" y="292" width="460" height="44" rx="5" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="350" y="313" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">POLÍTICAS Y LEGISLACIÓN EN SALUD MENTAL</text>
+          <text x="350" y="329" text-anchor="middle" font-size="11" fill="currentColor">que carecen de bases racionales y de integralidad</text>
+          <line x1="350" y1="336" x2="350" y2="348" stroke="currentColor" stroke-width="1.4" marker-end="url(#sm-b)"></line>
+
+          <rect x="120" y="350" width="460" height="36" rx="6" fill="var(--c)" fill-opacity="0.28" stroke="currentColor" stroke-width="1.6"></rect>
+          <text x="350" y="373" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">ATENCIÓN APROPIADA EN SALUD MENTAL</text>
+        </svg>
+        <figcaption>Las barreras están dibujadas en serie porque así operan: sortear el estigma no sirve de nada si el primer nivel de atención no reconoce el cuadro, y reconocerlo no sirve de nada si no hay medicación disponible. Cada una <strong>anula el efecto de haber superado las anteriores</strong>, y por eso las intervenciones aisladas rinden poco.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-generalidades" id="definiciones">
+      <span class="seccion__pestana"><b>04</b> Definición</span>
+      <h2 class="seccion__titulo">Qué es la salud mental</h2>
+
+      <h3>Salud</h3>
+      <p>«Estado de <strong>completo bienestar físico, mental y social</strong> y <strong>no solamente la ausencia de afecciones o enfermedades</strong>.»</p>
+
+      <h3>Salud mental</h3>
+      <p>La salud mental es <strong>más que la mera ausencia de trastornos mentales</strong>. Es un</p>
+      <p>«<strong>estado de bienestar</strong> que permite a los individuos <strong>realizar sus habilidades</strong>, <strong>afrontar el estrés normal de la vida</strong>, <strong>trabajar de manera productiva y fructífera</strong>, y <strong>hacer una contribución significativa a sus comunidades</strong>.»</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Las dos definiciones comparten la misma estructura y ese es el punto: <strong>ambas son positivas, no negativas</strong>. La salud no se define por la ausencia de enfermedad, y la salud mental no se define por la ausencia de trastorno. Los <strong>cuatro verbos</strong> de la definición de salud mental —<strong>realizar</strong> las propias habilidades, <strong>afrontar</strong> el estrés normal, <strong>trabajar</strong> productivamente y <strong>contribuir</strong> a la comunidad— son el criterio operativo, y conviene saberlos enumerar.</p>
+      </div>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-clinica" id="especialidad">
+      <span class="seccion__pestana"><b>05</b> Disciplina</span>
+      <h2 class="seccion__titulo">La psiquiatría como especialidad médica</h2>
+
+      <p>La psiquiatría es la <strong>rama de la medicina que se ocupa de los trastornos mentales, emocionales y conductuales</strong>.</p>
+
+      <h3>Su objetivo</h3>
+      <p>El estudio de la <strong>enfermedad mental</strong>, de los <strong>efectos bioquímicos y ambientales sobre la dinámica del comportamiento</strong>, y de <strong>cómo interaccionan con el organismo para enfrentarse al medio ambiente</strong>.</p>
+
+      <p>La psiquiatría <strong>suele adoptar un modelo médico</strong> para afrontar los trastornos mentales, <strong>pero considera tanto los factores biológicos como los psicológicos, socio-culturales y antropológicos</strong>.</p>
+
+      <h3>El enfoque biopsicosocial</h3>
+      <p>La psiquiatría <strong>enriquece el estudio y el manejo interdisciplinario</strong> de la problemática de los pacientes precisamente por su enfoque biopsicosocial. El contraste es con la enseñanza médica general, donde <strong>el énfasis recae sobre la enfermedad aguda y el tratamiento curativo</strong> y <strong>no sobre el tratamiento de las enfermedades crónicas</strong>.</p>
+
+      <p>Por eso la formación médica habitual <strong>no atiende la necesidad de afrontar factores asociados</strong> como:</p>
+      <ul>
+        <li><strong>Antecedentes personales y familiares</strong>.</li>
+        <li><strong>Contexto social</strong> que rodea al paciente.</li>
+        <li><strong>Sintomatología psiquiátrica</strong> — que puede, en sí misma, <strong>producir un trastorno psiquiátrico</strong>.</li>
+        <li><strong>Recomendaciones terapéuticas</strong> para el paciente <strong>y su familia</strong>.</li>
+        <li><strong>Consulta con los otros miembros del equipo</strong> por la evolución del paciente — el seguimiento.</li>
+        <li><strong>Remisión a centros especializados</strong> para su tratamiento.</li>
+      </ul>
+
+      <h3>El problema de la enseñanza en psiquiatría</h3>
+      <p>La crítica que el material formula tiene un punto de partida concreto: la <strong>capacitación psiquiátrica se hace en hospitales psiquiátricos</strong>, mientras que el paciente con sufrimiento psíquico consulta en el hospital general. Las consecuencias:</p>
+      <ul>
+        <li><strong>No se aprende a identificar las emociones que acompañan las manifestaciones somáticas</strong> de los pacientes, ni <strong>los síntomas psicológicos que constituyen su queja principal</strong>.</li>
+        <li>Se instala una <strong>dicotomía entre lo psicológico y lo somático</strong>.</li>
+        <li><strong>No hay diseño curricular estandarizado</strong> para la psiquiatría en la carrera de medicina.</li>
+        <li>El estudiante de medicina <strong>juzga a la psiquiatría</strong> como <strong>poco efectiva</strong> y <strong>carente de intervenciones científicas sólidas</strong>.</li>
+        <li>Detrás de ese juicio hay un sesgo comprensible: <strong>las mediciones objetivas son más sencillas que las del comportamiento humano</strong>.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>El argumento de la sección se cierra sobre sí mismo y conviene reconstruirlo entero: <strong>se enseña psiquiatría en el psiquiátrico</strong> → el estudiante <strong>nunca ve el sufrimiento psíquico en el hospital general</strong>, que es donde consulta la mayoría → se consolida la <strong>dicotomía psicológico/somático</strong> → el estudiante concluye que la psiquiatría es <strong>poco efectiva</strong>. La crítica no es a la disciplina sino <strong>al lugar donde se la enseña</strong>.</p>
+      </div>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-importantes" id="clasificacion">
+      <span class="seccion__pestana"><b>06</b> Clasificación</span>
+      <h2 class="seccion__titulo">Clasificación de los trastornos psiquiátricos</h2>
+
+      <p>La primera partición es por el <strong>origen</strong>: las enfermedades psiquiátricas pueden originarse en <strong>factores físicos definidos</strong> o tener <strong>causas multifactoriales desconocidas</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 336" role="img" aria-label="Mapa de las enfermedades psiquiátricas. Se dividen en orgánicas, con base física u orgánica demostrable, que incluyen demencias, epilepsias y delirium febril; y funcionales, sin causa física evidente y de causas multifactoriales desconocidas. Las funcionales se subdividen en cuatro grupos: trastornos de ansiedad, en los que no hay pérdida del contacto con la realidad; esquizofrenia y psicosis similares, en las que hay ruptura del contacto con la realidad; trastornos del estado de ánimo o afectivos; y trastornos de la personalidad.">
+          <defs>
+            <marker id="sm-c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="240" y="12" width="220" height="32" rx="6" fill="var(--c)" fill-opacity="0.3" stroke="currentColor" stroke-width="1.6"></rect>
+          <text x="350" y="32" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">ENFERMEDADES PSIQUIÁTRICAS</text>
+
+          <line x1="350" y1="44" x2="350" y2="56" stroke="currentColor" stroke-width="1.2"></line>
+          <line x1="150" y1="56" x2="550" y2="56" stroke="currentColor" stroke-width="1.2"></line>
+          <line x1="150" y1="56" x2="150" y2="76" stroke="currentColor" stroke-width="1.2" marker-end="url(#sm-c)"></line>
+          <line x1="550" y1="56" x2="550" y2="76" stroke="currentColor" stroke-width="1.2" marker-end="url(#sm-c)"></line>
+
+          <rect x="24" y="76" width="252" height="80" rx="6" fill="var(--c)" fill-opacity="0.12" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="150" y="97" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">ORGÁNICAS</text>
+          <text x="150" y="116" text-anchor="middle" font-size="10.5" fill="currentColor">base física u orgánica</text>
+          <text x="150" y="130" text-anchor="middle" font-size="10.5" fill="currentColor">demostrable</text>
+          <text x="150" y="148" text-anchor="middle" font-size="10.5" font-style="italic" fill="currentColor">demencias · epilepsias · delirium febril</text>
+
+          <rect x="424" y="76" width="252" height="80" rx="6" fill="var(--c)" fill-opacity="0.22" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="550" y="97" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">FUNCIONALES</text>
+          <text x="550" y="116" text-anchor="middle" font-size="10.5" fill="currentColor">sin causa física evidente</text>
+          <text x="550" y="130" text-anchor="middle" font-size="10.5" fill="currentColor">causas multifactoriales</text>
+          <text x="550" y="144" text-anchor="middle" font-size="10.5" fill="currentColor">desconocidas</text>
+
+          <line x1="550" y1="156" x2="550" y2="176" stroke="currentColor" stroke-width="1.2"></line>
+          <text x="558" y="171" font-size="9.5" fill="currentColor">se subdividen en</text>
+          <line x1="110" y1="176" x2="590" y2="176" stroke="currentColor" stroke-width="1.2"></line>
+          <line x1="110" y1="176" x2="110" y2="196" stroke="currentColor" stroke-width="1.2" marker-end="url(#sm-c)"></line>
+          <line x1="270" y1="176" x2="270" y2="196" stroke="currentColor" stroke-width="1.2" marker-end="url(#sm-c)"></line>
+          <line x1="430" y1="176" x2="430" y2="196" stroke="currentColor" stroke-width="1.2" marker-end="url(#sm-c)"></line>
+          <line x1="590" y1="176" x2="590" y2="196" stroke="currentColor" stroke-width="1.2" marker-end="url(#sm-c)"></line>
+
+          <rect x="35" y="196" width="150" height="126" rx="6" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="110" y="215" text-anchor="middle" font-size="10.5" font-weight="700" fill="currentColor">TRASTORNOS DE</text>
+          <text x="110" y="229" text-anchor="middle" font-size="10.5" font-weight="700" fill="currentColor">ANSIEDAD</text>
+          <text x="110" y="250" text-anchor="middle" font-size="10" fill="currentColor">síntomas físicos y</text>
+          <text x="110" y="264" text-anchor="middle" font-size="10" fill="currentColor">mentales de ansiedad</text>
+          <text x="110" y="292" text-anchor="middle" font-size="10" font-weight="700" fill="currentColor">sin pérdida del</text>
+          <text x="110" y="306" text-anchor="middle" font-size="10" font-weight="700" fill="currentColor">contacto con la realidad</text>
+
+          <rect x="195" y="196" width="150" height="126" rx="6" fill="var(--c)" fill-opacity="0.18" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="270" y="215" text-anchor="middle" font-size="10.5" font-weight="700" fill="currentColor">ESQUIZOFRENIA Y</text>
+          <text x="270" y="229" text-anchor="middle" font-size="10.5" font-weight="700" fill="currentColor">PSICOSIS SIMILARES</text>
+          <text x="270" y="250" text-anchor="middle" font-size="10" fill="currentColor">alteraciones graves del</text>
+          <text x="270" y="264" text-anchor="middle" font-size="10" fill="currentColor">pensamiento, emociones</text>
+          <text x="270" y="278" text-anchor="middle" font-size="10" fill="currentColor">y conducta</text>
+          <text x="270" y="298" text-anchor="middle" font-size="10" font-weight="700" fill="currentColor">RUPTURA del contacto</text>
+          <text x="270" y="312" text-anchor="middle" font-size="10" font-weight="700" fill="currentColor">con la realidad</text>
+
+          <rect x="355" y="196" width="150" height="126" rx="6" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="430" y="215" text-anchor="middle" font-size="10.5" font-weight="700" fill="currentColor">TRASTORNOS DEL</text>
+          <text x="430" y="229" text-anchor="middle" font-size="10.5" font-weight="700" fill="currentColor">ESTADO DE ÁNIMO</text>
+          <text x="430" y="245" text-anchor="middle" font-size="10" font-style="italic" fill="currentColor">(afectivos)</text>
+          <text x="430" y="266" text-anchor="middle" font-size="10" fill="currentColor">estados de ánimo</text>
+          <text x="430" y="280" text-anchor="middle" font-size="10" fill="currentColor">inestables y anormales</text>
+          <text x="430" y="302" text-anchor="middle" font-size="10" font-weight="700" fill="currentColor">depresión y manía</text>
+
+          <rect x="515" y="196" width="150" height="126" rx="6" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="590" y="215" text-anchor="middle" font-size="10.5" font-weight="700" fill="currentColor">TRASTORNOS DE LA</text>
+          <text x="590" y="229" text-anchor="middle" font-size="10.5" font-weight="700" fill="currentColor">PERSONALIDAD</text>
+          <text x="590" y="250" text-anchor="middle" font-size="10" fill="currentColor">rasgos inflexibles</text>
+          <text x="590" y="264" text-anchor="middle" font-size="10" fill="currentColor">e inadaptativos</text>
+          <text x="590" y="292" text-anchor="middle" font-size="10" font-weight="700" fill="currentColor">interfieren en el</text>
+          <text x="590" y="306" text-anchor="middle" font-size="10" font-weight="700" fill="currentColor">funcionamiento diario</text>
+        </svg>
+        <figcaption>El material anota el <strong>contacto con la realidad</strong> sólo en dos de los cuatro grupos, y son justamente los dos que enfrenta: conservado en la ansiedad, roto en la esquizofrenia. Para los trastornos afectivos y de la personalidad no lo consigna — y hace bien en no hacerlo, porque un episodio afectivo puede cursar con síntomas psicóticos.</figcaption>
+      </figure>
+
+      <h3>Orgánicas vs. funcionales</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>&nbsp;</th><th>Orgánicas</th><th>Funcionales</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Base</strong></td><td><strong>Base física u orgánica demostrable</strong></td><td><strong>Sin causa física evidente</strong></td></tr>
+            <tr><td><strong>Origen</strong></td><td><strong>Factores físicos definidos</strong></td><td><strong>Causas multifactoriales desconocidas</strong></td></tr>
+            <tr><td><strong>Ejemplos</strong></td><td>Demencias · epilepsias · delirium febril</td><td>Esquizofrenias · depresión · ansiedad</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Los cuatro grupos de trastornos funcionales</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Grupo</th><th>Caracterización</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Trastornos de ansiedad</strong></td>
+              <td>Caracterizados principalmente por <strong>síntomas físicos y mentales de ansiedad</strong>. <strong>No hay pérdida de contacto con la realidad</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Esquizofrenia y psicosis similares</strong></td>
+              <td>Grupo de <strong>alteraciones psiquiátricas graves</strong> que afectan <strong>pensamiento, emociones y conducta</strong>. <strong>Ruptura del contacto con la realidad</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Trastornos del estado de ánimo</strong> (afectivos)</td>
+              <td>Se caracterizan por <strong>estados de ánimo inestables y anormales</strong>, como la <strong>depresión</strong> y la <strong>manía</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Trastornos de la personalidad</strong></td>
+              <td>Cuando los <strong>rasgos de la personalidad son inflexibles</strong> e <strong>interfieren en el funcionamiento diario</strong> de las personas: son <strong>inadaptativos</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>El criterio que separa <strong>ansiedad</strong> de <strong>esquizofrenia</strong> en esta clasificación es el <strong>contacto con la realidad</strong>: conservado en la primera, roto en la segunda. Es la línea que divide lo <strong>neurótico</strong> de lo <strong>psicótico</strong>, y es la pregunta que ordena toda la clasificación funcional.</p>
+      </div>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-fisiopatologia" id="paradigma">
+      <span class="seccion__pestana"><b>07</b> Paradigma</span>
+      <h2 class="seccion__titulo">Del manicomio a la comunidad</h2>
+
+      <p>La atención y el tratamiento de las personas con enfermedad mental <strong>evolucionaron mucho desde el siglo pasado</strong>: la <strong>internación prolongada</strong> de los pacientes <strong>fue reemplazada por la atención sustentada en la comunidad</strong>. Tres factores incidieron positivamente en ese cambio.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 250" role="img" aria-label="Cambio de paradigma en la atención de la salud mental. La internación prolongada fue reemplazada por la atención sustentada en la comunidad. Tres factores lo hicieron posible: la psicofarmacología, con el desarrollo de antipsicóticos y antidepresivos que mejoraron notoriamente la calidad de vida; el progreso en materia de derechos humanos; y la inclusión de elementos sociales y mentales en la definición y concepción de salud por parte de la Organización Mundial de la Salud.">
+          <defs>
+            <marker id="sm-d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="40" y="20" width="240" height="64" rx="6" fill="var(--c)" fill-opacity="0.1" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="160" y="45" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">INTERNACIÓN</text>
+          <text x="160" y="62" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">PROLONGADA</text>
+          <text x="160" y="78" text-anchor="middle" font-size="10" font-style="italic" fill="currentColor">el manicomio</text>
+
+          <line x1="284" y1="52" x2="414" y2="52" stroke="currentColor" stroke-width="2" marker-end="url(#sm-d)"></line>
+          <text x="349" y="44" text-anchor="middle" font-size="10" fill="currentColor">reemplazada por</text>
+
+          <rect x="420" y="20" width="240" height="64" rx="6" fill="var(--c)" fill-opacity="0.3" stroke="currentColor" stroke-width="1.6"></rect>
+          <text x="540" y="45" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">ATENCIÓN SUSTENTADA</text>
+          <text x="540" y="62" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">EN LA COMUNIDAD</text>
+          <text x="540" y="78" text-anchor="middle" font-size="10" font-style="italic" fill="currentColor">el modelo actual</text>
+
+          <line x1="129" y1="130" x2="129" y2="116" stroke="currentColor" stroke-width="1.2"></line>
+          <line x1="571" y1="130" x2="571" y2="116" stroke="currentColor" stroke-width="1.2"></line>
+          <line x1="350" y1="130" x2="350" y2="116" stroke="currentColor" stroke-width="1.2"></line>
+          <line x1="129" y1="116" x2="571" y2="116" stroke="currentColor" stroke-width="1.2"></line>
+          <line x1="350" y1="116" x2="350" y2="74" stroke="currentColor" stroke-width="1.6" marker-end="url(#sm-d)"></line>
+          <text x="358" y="98" font-size="10" font-weight="700" fill="currentColor">lo hicieron posible</text>
+
+          <rect x="24" y="130" width="210" height="110" rx="6" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="129" y="154" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">LA PSICOFARMACOLOGÍA</text>
+          <text x="129" y="180" text-anchor="middle" font-size="10" fill="currentColor">el desarrollo de fármacos</text>
+          <text x="129" y="194" text-anchor="middle" font-size="10" fill="currentColor">como los antipsicóticos y</text>
+          <text x="129" y="208" text-anchor="middle" font-size="10" fill="currentColor">antidepresivos mejoró la</text>
+          <text x="129" y="222" text-anchor="middle" font-size="10" fill="currentColor">calidad de vida</text>
+
+          <rect x="245" y="130" width="210" height="110" rx="6" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="350" y="154" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">EL PROGRESO EN</text>
+          <text x="350" y="170" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">MATERIA DE</text>
+          <text x="350" y="186" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">DERECHOS HUMANOS</text>
+
+          <rect x="466" y="130" width="210" height="110" rx="6" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="571" y="154" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">LA DEFINICIÓN DE</text>
+          <text x="571" y="170" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">SALUD DE LA OMS</text>
+          <text x="571" y="194" text-anchor="middle" font-size="10" fill="currentColor">incluyó elementos sociales</text>
+          <text x="571" y="208" text-anchor="middle" font-size="10" fill="currentColor">y mentales en la definición</text>
+          <text x="571" y="222" text-anchor="middle" font-size="10" fill="currentColor">y concepción de salud</text>
+
+        </svg>
+        <figcaption>Los tres factores son de naturaleza distinta —uno <strong>técnico</strong>, uno <strong>político</strong> y uno <strong>conceptual</strong>— y ninguno habría bastado solo. Sin psicofármacos no había cómo sostener al paciente afuera; sin el avance en derechos humanos no había por qué sacarlo; y sin la definición ampliada de salud de la OMS no había con qué justificarlo.</figcaption>
+      </figure>
+
+      <h3>Los tres factores</h3>
+      <ol>
+        <li><strong>La psicofarmacología.</strong> El desarrollo de fármacos como los <strong>antipsicóticos</strong> y los <strong>antidepresivos</strong> mejoró notoriamente la <strong>calidad de vida</strong> de las personas con enfermedad mental.</li>
+        <li><strong>El progreso en materia de derechos humanos.</strong></li>
+        <li><strong>La inclusión de elementos sociales y mentales</strong> en la definición y la concepción de salud por parte de la <strong>OMS</strong>.</li>
+      </ol>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>El material cierra su argumento con una afirmación que vale como síntesis del tema: la salud mental <strong>«ha estado oculta tras una cortina de estigma y discriminación durante largo tiempo»</strong>, y <strong>la magnitud, el sufrimiento y la carga en términos de discapacidad y costos son abrumadores</strong>. Pero el punto no es el diagnóstico del problema sino la conclusión: <strong>podemos lograr un cambio usando el conocimiento que ya está presto a ser aplicado</strong>. La brecha no es de conocimiento sino de implementación.</p>
+      </div>
+    </section>
+
+    <!-- ============ 8 ============ -->
+    <section class="seccion s-tratamiento" id="tratamientos">
+      <span class="seccion__pestana"><b>08</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Tratamientos en psiquiatría</h2>
+
+      <p>Los tratamientos psiquiátricos <strong>suelen dividirse en dos tipos</strong>: <strong>biológicos</strong> y <strong>psicoterapéuticos</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>&nbsp;</th><th>Biológicos</th><th>Psicoterapéuticos</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Cómo actúan</strong></td>
+              <td>Actúan <strong>a nivel bioquímico en el cerebro</strong> del paciente</td>
+              <td>Se valen de <strong>técnicas de psicoterapia</strong> para mejorar la condición del paciente</td>
+            </tr>
+            <tr>
+              <td><strong>Ejemplos</strong></td>
+              <td><strong>Psicofármacos</strong> · <strong>terapia electroconvulsiva</strong></td>
+              <td><strong>Psicoanálisis</strong> · <strong>terapia Gestalt</strong> · <strong>psicología humanista</strong> · <strong>terapia cognitiva</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="cita">El material de cátedra denomina «electroshock» a la terapia electroconvulsiva. Ver sección 11.</p>
+    </section>
+
+    <!-- ============ 9 ============ -->
+    <section class="seccion s-diferenciales" id="antipsiquiatria">
+      <span class="seccion__pestana"><b>09</b> Crítica</span>
+      <h2 class="seccion__titulo">Los movimientos antipsiquiatría</h2>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Esta sección reproduce lo que dice el material, pero conviene leerla sabiendo <strong>desde dónde está escrita</strong>: las diapositivas 17 a 20 <strong>exponen la posición antipsiquiátrica en su propia voz</strong>, no como un relato neutral con sus contraargumentos. Es un <strong>texto de posición</strong>, no un consenso disciplinar. Ver sección 11.</p>
+      </div>
+
+      <h3>Origen histórico</h3>
+      <p>Durante el <strong>siglo XX</strong> se popularizaron muchos tratamientos psiquiátricos para trastornos mentales, <strong>incluyendo algunos muy cuestionables en un sentido ético y práctico</strong>. La extrema medicalización de problemas como la esquizofrenia ha tenido y sigue teniendo, en un gran número de casos, <strong>componentes coercitivos</strong> que son criticados con frecuencia.</p>
+
+      <p>En <strong>1967</strong>, el psiquiatra <strong>David Cooper</strong> acuñó el término <strong>«antipsiquiatría»</strong> para dar nombre al movimiento del que formaba parte, que a esas alturas tenía ya <strong>alcance internacional</strong> —previamente había sido bastante específico del mundo anglosajón—. Muchos profesionales se adherían entonces al movimiento, <strong>influido de forma clave por el marxismo</strong>.</p>
+
+      <p>En las décadas posteriores la breve unidad de la antipsiquiatría <strong>se diluyó</strong>, si bien surgieron con fuerza demandas similares en torno a los <strong>derechos de las personas homosexuales y transgénero</strong>, patologizadas por las clasificaciones diagnósticas. Lo mismo puede decirse de otros colectivos, como las personas con <strong>diversidad funcional</strong> y con <strong>trastornos mentales severos</strong>.</p>
+
+      <h3>Los argumentos del movimiento</h3>
+      <ul>
+        <li><strong>Acción política como método.</strong> El movimiento aboga por la acción política para cambiar la visión de la población —y especialmente de los líderes institucionales— respecto de los trastornos mentales.</li>
+        <li><strong>Los trastornos como herramienta de control.</strong> Para quienes se adhieren a esta orientación, los «trastornos mentales» <strong>constituyen herramientas de control de los ciudadanos</strong>, pues los <strong>estigmatizan y los patologizan</strong>.</li>
+        <li><strong>El trastorno es relativo al contexto.</strong> Los teóricos de la antipsiquiatría clásica defendían que las conductas y problemas concebidos como trastornos eran <strong>el resultado de unos valores sociales determinados</strong>, y <strong>no de la presencia de características patológicas en sí mismas</strong>. Así, <strong>el trastorno sólo puede ser designado como tal en relación al contexto sociocultural</strong>.</li>
+        <li><strong>Crítica al psicoanálisis.</strong> Otro de los blancos tradicionales fue el psicoanálisis, al que se acusó de provocar con frecuencia <strong>efectos iatrogénicos</strong> —es decir, dañar la salud mental de los pacientes más que mejorarla—. Lo mismo se dijo de muchas otras terapias, <strong>en particular aquellas cuya eficacia no ha sido probada</strong>.</li>
+      </ul>
+
+      <p>Como dentro de cualquier movimiento, <strong>existen diferencias teóricas notables entre los promotores</strong> de la antipsiquiatría, lo cual <strong>ha dificultado significativamente su consolidación</strong>. En todo caso, se detecta una <strong>coincidencia general</strong> en torno a dos puntos: la <strong>medicalización excesiva de los problemas psicológicos</strong> y los <strong>potenciales peligros de las etiquetas diagnósticas</strong>.</p>
+
+      <h3>La antipsiquiatría en la actualidad</h3>
+      <p>En la actualidad el movimiento <strong>se encuentra tan vigente como hace 50 años</strong>, a pesar —o precisamente a causa— de la clara predominancia de las intervenciones médicas en el área de la salud mental. La oposición es fuerte en muchos <strong>pacientes y familiares</strong>, así como en la <strong>psicología clínica</strong>.</p>
+
+      <p>Los campos donde las críticas son más intensas:</p>
+      <ul>
+        <li><strong>La medicalización de determinados comportamientos infantiles</strong>, y en particular el patrón de conducta denominado <strong>Trastorno por Déficit de Atención con Hiperactividad</strong>, caracterizado por el <strong>sobrediagnóstico</strong> y el <strong>uso a largo plazo de fármacos estimulantes insuficientemente estudiados</strong>.</li>
+        <li><strong>El creciente poder de las grandes corporaciones farmacéuticas</strong> y sus estrechos vínculos con la clase política, los medios de comunicación e incluso muchos miembros de la comunidad científica. Todo ello genera <strong>prejuicios comprensibles en torno a la fiabilidad de los fármacos y de los estudios que la respaldan</strong>.</li>
+        <li><strong>Los trastornos mentales severos.</strong> En la esquizofrenia y el trastorno bipolar el tratamiento farmacológico y psicológico <strong>ha mejorado en los últimos años</strong>, pero <strong>muchas instituciones psiquiátricas siguen utilizando procedimientos poco recomendables</strong>. Asimismo, la <strong>estigmatización</strong> de estos y otros trastornos <strong>seguirá contribuyendo a un manejo menos que ideal</strong>.</li>
+      </ul>
+    </section>
+
+    <!-- ============ 10 ============ -->
+    <section class="seccion s-clinica" id="epidemiologia">
+      <span class="seccion__pestana"><b>10</b> Argentina</span>
+      <h2 class="seccion__titulo">Epidemiología del suicidio en la Argentina</h2>
+
+      <p>Bajo el lema promovido por la OMS <strong>«Atención de salud mental para todos: hagámosla realidad»</strong>, el Gobierno nacional amplió el Plan de Salud Mental con nuevas medidas. La salud mental es <strong>una cuestión de salud pública</strong> que debe ser abordada mediante <strong>acciones estratégicas</strong>.</p>
+
+      <h3>Las cifras nacionales</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Indicador</th><th>Cifra</th><th>Período</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Muertes por suicidio</strong></td><td><span class="dato">31.847</span></td><td>2010 – 2019</td></tr>
+            <tr><td><strong>Promedio anual</strong></td><td><span class="dato">3.185</span> muertes por año</td><td>2010 – 2019</td></tr>
+            <tr><td><strong>Promedio diario</strong></td><td><span class="dato">8</span> fallecimientos por día</td><td>2010 – 2019</td></tr>
+            <tr><td><strong>Tasa de mortalidad por suicidio</strong></td><td><span class="dato">7,3</span> por cada 100.000 habitantes</td><td>2019</td></tr>
+            <tr><td><strong>Media mundial</strong></td><td>Supera los <span class="dato">11</span> decesos cada 100.000</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="cita">Fuente: Boletín Epidemiológico Nacional (BEN), con datos de la Dirección de Estadísticas e Información en Salud (DEIS), Ministerio de Salud de la Nación. Recogido en nota de Infobae, 2023.</p>
+
+      <h3>La Región de las Américas</h3>
+      <ul>
+        <li>Los trastornos <strong>mentales, neurológicos y por uso de sustancias</strong> representan <strong>más de un tercio del total de años vividos con discapacidad</strong>.</li>
+        <li>Los <strong>trastornos depresivos</strong> son la <strong>principal causa de discapacidad</strong>.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>La tasa argentina de <span class="dato">7,3</span> por 100.000 es <strong>inferior a la media mundial</strong>, que supera los 11. Eso no autoriza a bajar la guardia, y el propio material lo dice con la frase que conviene retener: <strong>«El suicidio es prevenible y se requiere de un enfoque intersectorial para que las estrategias sean eficaces de acuerdo a cada realidad local»</strong>. Prevenible e intersectorial: las dos palabras que resumen la política sanitaria del tema.</p>
+      </div>
+    </section>
+
+    <!-- ============ 11 ============ -->
+    <section class="seccion s-diferenciales" id="precisiones">
+      <span class="seccion__pestana"><b>11</b> Control</span>
+      <h2 class="seccion__titulo">Precisiones al material de cátedra</h2>
+
+      <h3>1 · Una contradicción interna en las cifras de suicidio</h3>
+      <p>El material da <strong>dos cifras mundiales de suicidio anual que difieren en un orden de magnitud</strong>:</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Diapositiva</th><th>Afirmación</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>2</strong></td><td>«Alrededor de <strong>1 millón</strong> de personas se suicidan cada año»</td></tr>
+            <tr><td><strong>21</strong></td><td>«casi <strong>100.000</strong> personas mueren por suicidio cada año <strong>en el mundo</strong>»</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La segunda cifra aparece <strong>en el mismo párrafo que habla de la Región de las Américas</strong>, y ese es el origen del error: <strong>las cerca de 100.000 muertes anuales corresponden a la Región de las Américas, no al mundo</strong>. El «en el mundo» quedó pegado por arrastre. La cifra mundial es la del orden que consigna la diapositiva 2.</p>
+
+      <h3>2 · Las diapositivas 17 a 20 son un texto de posición</h3>
+      <p>El bloque de antipsiquiatría <strong>no está escrito como una exposición neutral</strong>: presenta los argumentos del movimiento <strong>en su propia voz</strong> y sin contraargumentos. Expresiones como que la psicología clínica está <strong>«lastrada por el intrusismo profesional sistemático por parte de la psiquiatría»</strong> son <strong>valorativas, no descriptivas</strong>.</p>
+      <p>Esto <strong>no invalida el contenido</strong> —la crítica antipsiquiátrica es un hecho histórico real, con efectos concretos sobre la despatologización de la homosexualidad y sobre la reforma de las instituciones—, pero sí obliga a leerlo como <strong>una posición dentro de un debate</strong> y no como el estado de la cuestión. Conviene saber distinguir, al responder, entre <strong>lo que la antipsiquiatría sostiene</strong> y <strong>lo que la disciplina acepta</strong>.</p>
+
+      <h3>3 · Terminología: «electroshock»</h3>
+      <p>La diapositiva 15 llama <strong>«electroshock»</strong> al procedimiento. La denominación correcta y actual es <strong>terapia electroconvulsiva (TEC)</strong>. La diferencia no es sólo cosmética: el término antiguo remite a la técnica sin anestesia ni relajación muscular de mediados del siglo XX, mientras que la TEC actual se realiza bajo <strong>anestesia general y relajación muscular</strong>. En el cuadernillo se usó la denominación actual.</p>
+
+      <h3>4 · «Delirio febril»</h3>
+      <p>La diapositiva 10 lista entre las enfermedades psiquiátricas orgánicas el <strong>«delirio febril»</strong>. El término correcto es <strong>delirium</strong> —el cuadro confusional agudo—, que es cosa distinta del <strong>delirio</strong>, que es una alteración del contenido del pensamiento. Son dos entidades diferentes y la confusión terminológica entre ambas es frecuente en castellano.</p>
+
+      <h3>Lo que el material no cubre</h3>
+      <p>El deck desarrolla la <strong>desmanicomialización</strong> y los <strong>derechos humanos</strong> pero <strong>no menciona en ningún momento la Ley Nacional de Salud Mental 26.657</strong>, que es el marco normativo vigente en la Argentina y el que traduce esos principios en obligaciones concretas. Queda señalado por si el examen lo requiere: no se desarrolla acá porque excede el material de entrada.</p>
+
+      <h3>Las diapositivas 23 y 24</h3>
+      <p>Son <strong>únicamente imágenes y sin contenido clínico</strong>: una fotografía de una persona sosteniendo un cartel que dice «Ayuda», y una cita de <strong>Viktor Frankl</strong> sobre la libertad de elegir la actitud frente al sufrimiento. Cierran la clase en clave motivacional y no se incorporaron al cuadernillo.</p>
+    </section>
+
+    <!-- ============ Repaso ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>¿Cuántas personas sufren un trastorno mental y qué proporción de familias tiene un miembro afectado?</summary>
+          <div class="fc__r"><strong>450 millones</strong> de personas con un trastorno mental o de la conducta. <strong>Una de cada cuatro familias</strong> tiene por lo menos un miembro afectado.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Cuáles son las cuatro causas psiquiátricas entre las diez principales causas mundiales de incapacidad?</summary>
+          <div class="fc__r"><strong>Depresión</strong>, <strong>alcoholismo</strong>, <strong>trastornos bipolares</strong> y <strong>esquizofrenias</strong>. Y hasta un <strong>25 %</strong> de las personas presentará un trastorno psiquiátrico en algún momento de su vida.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>Explicá el círculo vicioso entre pobreza y trastorno mental en sus dos direcciones.</summary>
+          <div class="fc__r"><strong>Del trastorno a la pobreza</strong>: genera <strong>costos por tratamientos de largo alcance</strong> y <strong>productividad perdida</strong>. <strong>De la pobreza al trastorno</strong>: la <strong>inseguridad</strong>, el <strong>bajo nivel educacional</strong>, la <strong>vivienda inadecuada</strong> y la <strong>subnutrición</strong> son factores asociados a los trastornos mentales.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Dónde ocurren las violaciones de derechos humanos de las personas con enfermedad mental?</summary>
+          <div class="fc__r"><strong>Dentro</strong> de las instituciones psiquiátricas, donde «distan de ser infrecuentes», y <strong>fuera</strong> de ellas, donde el mecanismo es <strong>el estigma</strong> de la enfermedad mental.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Enumerá las cinco barreras que impiden el acceso a una atención apropiada.</summary>
+          <div class="fc__r"><strong>Estigma</strong> · <strong>prioridades erradas</strong> · <strong>medicamentos inexistentes</strong> · <strong>personal del nivel primario de atención no capacitado</strong> · <strong>políticas y legislación que carecen de bases racionales y de integralidad</strong>. Ninguna es clínica: todas son del sistema.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Definí salud mental según la OMS.</summary>
+          <div class="fc__r"><strong>Estado de bienestar</strong> que permite a los individuos <strong>realizar sus habilidades</strong>, <strong>afrontar el estrés normal de la vida</strong>, <strong>trabajar de manera productiva y fructífera</strong> y <strong>hacer una contribución significativa a sus comunidades</strong>. Y es <strong>más que la mera ausencia de trastornos mentales</strong>.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Qué tienen en común la definición de salud y la de salud mental de la OMS?</summary>
+          <div class="fc__r">Que <strong>ambas son positivas, no negativas</strong>: la salud es «completo bienestar físico, mental y social <strong>y no solamente la ausencia</strong> de afecciones o enfermedades», y la salud mental es <strong>más que la mera ausencia</strong> de trastornos.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Cuál es el objetivo de la psiquiatría como especialidad?</summary>
+          <div class="fc__r">El estudio de la <strong>enfermedad mental</strong>, de los <strong>efectos bioquímicos y ambientales sobre la dinámica del comportamiento</strong> y de <strong>cómo interaccionan con el organismo para enfrentarse al medio ambiente</strong>. Adopta un <strong>modelo médico</strong>, pero considera factores <strong>biológicos, psicológicos, socio-culturales y antropológicos</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Cuál es la crítica del material a la enseñanza médica general?</summary>
+          <div class="fc__r">Que el <strong>énfasis recae sobre la enfermedad aguda y el tratamiento curativo</strong>, y <strong>no sobre el tratamiento de las enfermedades crónicas</strong>. Por eso no atiende antecedentes, contexto social, sintomatología psiquiátrica, recomendaciones a la familia, seguimiento en equipo ni derivación.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Reconstruí el argumento del «problema de la enseñanza en psiquiatría».</summary>
+          <div class="fc__r">Se enseña psiquiatría <strong>en el hospital psiquiátrico</strong> → el estudiante <strong>no ve el sufrimiento psíquico en el hospital general</strong>, que es donde consulta la mayoría → no aprende a <strong>identificar las emociones tras las manifestaciones somáticas</strong> → se consolida la <strong>dicotomía psicológico/somático</strong> → concluye que la psiquiatría es <strong>poco efectiva y carente de intervenciones científicas sólidas</strong>. Todo agravado por la ausencia de <strong>diseño curricular estandarizado</strong>.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Qué separa a las enfermedades psiquiátricas orgánicas de las funcionales?</summary>
+          <div class="fc__r"><strong>Orgánicas</strong>: <strong>base física u orgánica demostrable</strong>, originadas en <strong>factores físicos definidos</strong> — demencias, epilepsias, delirium febril. <strong>Funcionales</strong>: <strong>sin causa física evidente</strong>, de <strong>causas multifactoriales desconocidas</strong> — esquizofrenias, depresión, ansiedad.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>Enumerá los cuatro grupos de trastornos psiquiátricos funcionales.</summary>
+          <div class="fc__r"><strong>Trastornos de ansiedad</strong> · <strong>esquizofrenia y psicosis similares</strong> · <strong>trastornos del estado de ánimo (afectivos)</strong> · <strong>trastornos de la personalidad</strong>.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Qué criterio separa a los trastornos de ansiedad de la esquizofrenia en esta clasificación?</summary>
+          <div class="fc__r">El <strong>contacto con la realidad</strong>: <strong>no hay pérdida</strong> en los trastornos de ansiedad, hay <strong>ruptura</strong> en la esquizofrenia y psicosis similares. Es la línea que divide lo <strong>neurótico</strong> de lo <strong>psicótico</strong>.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué tres factores hicieron posible pasar de la internación prolongada a la atención en la comunidad?</summary>
+          <div class="fc__r"><strong>La psicofarmacología</strong> (antipsicóticos y antidepresivos mejoraron la calidad de vida) · <strong>el progreso en materia de derechos humanos</strong> · <strong>la inclusión de elementos sociales y mentales en la definición de salud de la OMS</strong>. Uno técnico, uno político y uno conceptual.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿En qué dos tipos se dividen los tratamientos psiquiátricos y qué incluye cada uno?</summary>
+          <div class="fc__r"><strong>Biológicos</strong>: actúan a nivel <strong>bioquímico en el cerebro</strong> — psicofármacos y <strong>terapia electroconvulsiva</strong>. <strong>Psicoterapéuticos</strong>: técnicas de psicoterapia — <strong>psicoanálisis, terapia Gestalt, psicología humanista, terapia cognitiva</strong>.</div>
+        </details>
+
+        <details class="fc s-diferenciales">
+          <summary>¿Quién acuñó el término «antipsiquiatría», en qué año, y qué corriente influyó al movimiento?</summary>
+          <div class="fc__r">El psiquiatra <strong>David Cooper</strong>, en <strong>1967</strong>. El movimiento estuvo <strong>influido de forma clave por el marxismo</strong>. Hasta entonces había sido bastante específico del mundo anglosajón.</div>
+        </details>
+
+        <details class="fc s-diferenciales">
+          <summary>¿Cuál es el argumento central de la antipsiquiatría clásica sobre qué es un trastorno?</summary>
+          <div class="fc__r">Que las conductas concebidas como trastornos son <strong>resultado de unos valores sociales determinados</strong> y <strong>no de características patológicas en sí mismas</strong>. Por lo tanto, <strong>el trastorno sólo puede designarse como tal en relación al contexto sociocultural</strong>.</div>
+        </details>
+
+        <details class="fc s-diferenciales">
+          <summary>¿En qué dos puntos coinciden todas las corrientes de la antipsiquiatría?</summary>
+          <div class="fc__r">En la <strong>medicalización excesiva de los problemas psicológicos</strong> y en los <strong>potenciales peligros de las etiquetas diagnósticas</strong>. Fuera de eso, las diferencias teóricas entre sus promotores <strong>dificultaron significativamente su consolidación</strong>.</div>
+        </details>
+
+        <details class="fc s-diferenciales">
+          <summary>¿Cuál es hoy el blanco más intenso de la crítica antipsiquiátrica en el terreno infantil?</summary>
+          <div class="fc__r">La medicalización de comportamientos infantiles, y en particular el <strong>Trastorno por Déficit de Atención con Hiperactividad</strong>, por el <strong>sobrediagnóstico</strong> y el <strong>uso a largo plazo de fármacos estimulantes insuficientemente estudiados</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Cifras del suicidio en la Argentina: total 2010–2019, promedio diario y tasa 2019.</summary>
+          <div class="fc__r"><strong>31.847</strong> muertes en 2010–2019 → <strong>3.185 por año</strong> → <strong>8 por día</strong>. Tasa 2019: <strong>7,3 por cada 100.000</strong> habitantes, <strong>inferior a la media mundial</strong>, que supera los 11.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>En la Región de las Américas, ¿qué peso tienen los trastornos mentales en la discapacidad?</summary>
+          <div class="fc__r">Los trastornos <strong>mentales, neurológicos y por uso de sustancias</strong> representan <strong>más de un tercio del total de años vividos con discapacidad</strong>, y los <strong>trastornos depresivos</strong> son la <strong>principal causa de discapacidad</strong>.</div>
+        </details>
+
+        <details class="fc s-diferenciales">
+          <summary>El material da dos cifras mundiales de suicidio anual. ¿Cuál es el problema?</summary>
+          <div class="fc__r">Se contradicen en un <strong>orden de magnitud</strong>: la diapositiva 2 dice «<strong>1 millón</strong>» y la 21 dice «casi <strong>100.000</strong> en el mundo». Las ~100.000 corresponden en realidad a la <strong>Región de las Américas</strong> —de la que habla ese mismo párrafo—, no al mundo.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Las cifras de la carga</dt>
+        <dd><strong>450 millones</strong> de personas con un trastorno mental · <strong>1 de cada 4 familias</strong> afectada · <strong>25 %</strong> de prevalencia a lo largo de la vida · <strong>4 de las 10</strong> principales causas mundiales de incapacidad son psiquiátricas: <strong>depresión, alcoholismo, trastorno bipolar y esquizofrenia</strong>.</dd>
+
+        <dt class="r-gold">La definición que se toma</dt>
+        <dd>Salud mental: <strong>estado de bienestar</strong> que permite <strong>realizar</strong> las propias habilidades, <strong>afrontar</strong> el estrés normal de la vida, <strong>trabajar</strong> productiva y fructíferamente y <strong>contribuir</strong> a la comunidad. Es <strong>más que la ausencia de trastorno</strong>.</dd>
+
+        <dt class="r-tto">Clasificación</dt>
+        <dd><strong>Orgánicas</strong> (base física demostrable: demencias, epilepsias, delirium) vs. <strong>funcionales</strong> (causas multifactoriales desconocidas). Las funcionales, en cuatro grupos: <strong>ansiedad</strong> (contacto con la realidad conservado) · <strong>esquizofrenia y psicosis</strong> (ruptura del contacto) · <strong>afectivos</strong> · <strong>personalidad</strong>.</dd>
+
+        <dt class="r-alerta">Argentina</dt>
+        <dd><strong>8 muertes diarias</strong> por suicidio · <strong>31.847</strong> en 2010–2019 · tasa <strong>7,3/100.000</strong> en 2019, por debajo de la media mundial de más de 11. <strong>El suicidio es prevenible</strong> y requiere <strong>un enfoque intersectorial</strong> adaptado a cada realidad local.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir de la presentación «Salud Mental y Psiquiatría — Introducción» de la cátedra de Psiquiatría. La sección 11 detalla las contradicciones internas, los sesgos de encuadre y las correcciones terminológicas del material de entrada. Material de estudio: no reemplaza el criterio clínico ni la guía institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link'));
+
+  function porMeta(hash){
+    for (var i = 0; i < enlaces.length; i++){
+      if (enlaces[i].getAttribute('href') === '#' + hash) return enlaces[i];
+    }
+    return null;
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var enlace = porMeta(e.target.id);
+        if (!enlace) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          enlace.setAttribute('aria-current', 'true');
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>

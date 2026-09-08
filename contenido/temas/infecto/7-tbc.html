@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tuberculosis</title>
+<link rel="stylesheet" href="../../fuentes/fuentes.css">
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+}
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índice lateral ---------- */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Ficha de sección ---------- */
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.35rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-row:1/3; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+.importante__titulo{
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso{ display:none !important; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+<style>
+/* Fuentes de la capa de contenido. Va después del estilo del
+   cuadernillo para pisar las de Windows, que no se pueden
+   redistribuir y no existen en Android. */
+:root{
+  --f-titulo:'Spectral',Georgia,'Times New Roman',serif;
+  --f-texto:'Open Sans',system-ui,-apple-system,sans-serif;
+  --f-dato:'Cascadia Mono','Cascadia Code',ui-monospace,Consolas,monospace;
+}
+/* Botón de volver, espejo del de tema que ya trae el cuadernillo. */
+.volver{
+  position:fixed; top:.7rem; left:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.volver:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.volver__icono{ width:1.15rem; height:1.15rem; display:block; }
+</style>
+</head>
+<body data-clave="infecto/7-tbc">
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-generalidades"  href="#generalidades">Generalidades &amp; Epidemiología</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#fisiopatologia">Fisiopatología</a></li>
+      <li><a class="indice__link i-clinica"        href="#clinica">Cuadro Clínico</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#diagnostico">Diagnóstico &amp; Complementarios</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#tratamiento">Tratamiento</a></li>
+      <li><a class="indice__link i-diferenciales"  href="#latente">Tuberculosis Latente</a></li>
+      <li><a class="indice__link i-importantes"    href="#importantes">Aspectos Importantes</a></li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Infectología · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Tuberculosis</h1>
+      <p class="portada__bajada">Enfermedad infecciosa curable causada por <em>Mycobacterium tuberculosis</em>. Cuadernillo de razonamiento clínico secuencial, del granuloma a la conducta terapéutica.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">7 secciones</span>
+        <span class="etiqueta s-diagnostico">Baciloscopía · Xpert</span>
+        <span class="etiqueta s-tratamiento">2 HRZE / 4 HR</span>
+        <span class="etiqueta s-diferenciales">PPD ≥ 10 mm</span>
+      </div>
+    </header>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="generalidades">
+      <span class="seccion__pestana"><b>01</b> Base</span>
+      <h2 class="seccion__titulo">Generalidades &amp; Epidemiología</h2>
+
+      <p>Enfermedad infecciosa <strong>curable</strong> causada por <em>Mycobacterium tuberculosis</em> — el <strong>bacilo de Koch</strong>, un <strong>BAAR</strong> (bacilo ácido-alcohol resistente). Esa propiedad de tinción es la que explota la baciloscopía y define todo el diagnóstico microbiológico.</p>
+
+      <h3>Peso epidemiológico</h3>
+      <ul>
+        <li><strong>Primera causa de muerte por enfermedades infecciosas</strong> en el mundo, con <span class="dato">500.000</span> muertes anuales según el material de cátedra.</li>
+        <li>Afecta a <strong>poblaciones vulnerables</strong>, atravesadas por pobreza, hacinamiento, desnutrición y barreras de acceso a la atención de salud.</li>
+        <li>El determinante social no es un dato accesorio: condiciona la exposición, la progresión a enfermedad activa y la adherencia al tratamiento.</li>
+      </ul>
+
+      <h3>Transmisión</h3>
+      <ul>
+        <li>Se transmite de <strong>persona a persona por microgotas</strong> — vía aérea, a partir de un enfermo bacilífero que tose, habla o estornuda.</li>
+        <li>El contagio depende de la <strong>proximidad y del tiempo de exposición</strong>, no del contacto con objetos ni con superficies.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Sólo las formas <strong>pulmonares y laríngeas son contagiosas</strong>. Una tuberculosis ganglionar, ósea o meníngea aislada <strong>no transmite</strong> y no requiere aislamiento respiratorio. Es el dato que ordena toda la conducta epidemiológica.</p>
+      </div>
+
+      <p class="cita">Fuente: Guía para el diagnóstico y tratamiento de la tuberculosis. Ministerio de Salud de la Nación, Argentina, 2021 — fuente declarada del material de cátedra. Nota: el Global Tuberculosis Report de la OMS estima cifras de mortalidad global sensiblemente mayores; el número del material puede corresponder a un recorte regional o a un subgrupo. Conviene confirmarlo con la cátedra.</p>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-fisiopatologia" id="fisiopatologia">
+      <span class="seccion__pestana"><b>02</b> Mecanismo</span>
+      <h2 class="seccion__titulo">Fisiopatología</h2>
+
+      <p>Toda la tuberculosis se explica por un solo hecho: el bacilo <strong>sobrevive dentro del macrófago</strong> que debería destruirlo. El granuloma es el arreglo con el que el sistema inmune lo encierra sin poder eliminarlo, y de si ese arreglo se sostiene o se rompe dependen las dos formas de la enfermedad.</p>
+
+      <ol>
+        <li><strong>Transmisión:</strong> microgotas de un enfermo bacilífero llegan al alvéolo de un nuevo huésped.</li>
+        <li><strong>Infección del macrófago alveolar:</strong> el bacilo es fagocitado pero <strong>resiste la destrucción intracelular</strong> y se replica dentro del fagocito.</li>
+        <li><strong>Formación del granuloma:</strong> macrófagos infectados y <strong>linfocitos</strong> rodean el foco. Dentro del granuloma <strong>la bacteria está viva, pero impedida de multiplicarse</strong>.</li>
+        <li><strong>Bifurcación:</strong>
+          <ul>
+            <li>Si la contención se sostiene → <strong>TBC latente</strong>, infección controlada por el sistema inmune.</li>
+            <li>Si el sistema inmune falla → <strong>necrosis del granuloma</strong>, los bacilos se replican y diseminan → <strong>TBC activa</strong>, limitada al pulmón o migrada a otros órganos.</li>
+          </ul>
+        </li>
+      </ol>
+
+      <p>Aproximadamente un <span class="dato">10 %</span> de los infectados progresa a formas activas, generalmente en <strong>períodos de inmunodepresión</strong>. Ese porcentaje es la bisagra clínica: justifica tratar la infección latente en quienes tienen el riesgo aumentado.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 420" role="img" aria-label="Cascada fisiopatológica de la tuberculosis: la transmisión por microgotas lleva al bacilo al macrófago alveolar, donde sobrevive; se forma el granuloma que lo contiene vivo pero sin multiplicarse; si la inmunidad es competente resulta una tuberculosis latente asintomática que no contagia, y si la inmunidad falla el granuloma se necrosa, el bacilo se replica y se genera una tuberculosis activa pulmonar o extrapulmonar.">
+          <defs>
+            <marker id="pta-fis" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="200" y="10" width="300" height="56" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="216" y="34" font-size="13" font-weight="700" fill="currentColor">1 · Transmisión</text>
+          <text x="216" y="54" font-size="11.5" fill="currentColor" opacity="0.75">Microgotas de un enfermo bacilífero</text>
+
+          <line x1="350" y1="66" x2="350" y2="88" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-fis)"></line>
+          <text x="358" y="82" font-size="11" fill="currentColor" opacity="0.65">llega al alvéolo</text>
+
+          <rect x="200" y="90" width="300" height="56" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="216" y="114" font-size="13" font-weight="700" fill="currentColor">2 · Infección del macrófago</text>
+          <text x="216" y="134" font-size="11.5" fill="currentColor" opacity="0.75">Sobrevive dentro del fagocito</text>
+
+          <line x1="350" y1="146" x2="350" y2="168" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-fis)"></line>
+          <text x="358" y="162" font-size="11" fill="currentColor" opacity="0.65">reclutamiento linfocitario</text>
+
+          <rect x="200" y="170" width="300" height="56" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="216" y="194" font-size="13" font-weight="700" fill="currentColor">3 · Granuloma</text>
+          <text x="216" y="214" font-size="11.5" fill="currentColor" opacity="0.75">Bacilo vivo, impedido de multiplicarse</text>
+
+          <line x1="350" y1="226" x2="350" y2="256" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="170" y1="256" x2="530" y2="256" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="170" y1="256" x2="170" y2="282" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-fis)"></line>
+          <line x1="530" y1="256" x2="530" y2="282" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-fis)"></line>
+
+          <text x="178" y="276" font-size="11" font-weight="700" fill="currentColor">contiene</text>
+          <text x="538" y="276" font-size="11" font-weight="700" fill="currentColor">falla inmune · 10 %</text>
+
+          <rect x="15" y="286" width="310" height="112" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="31" y="310" font-size="12.5" font-weight="700" fill="currentColor">TBC LATENTE</text>
+          <text x="31" y="331" font-size="11.5" fill="currentColor" opacity="0.75">Infección controlada por el huésped</text>
+          <text x="31" y="349" font-size="11.5" fill="currentColor" opacity="0.75">Asintomática · Rx normal</text>
+          <text x="31" y="367" font-size="11.5" fill="currentColor" opacity="0.75">Esputo negativo · no contagia</text>
+          <text x="31" y="385" font-size="11.5" fill="currentColor" opacity="0.75">No requiere aislamiento</text>
+
+          <rect x="375" y="286" width="310" height="112" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="currentColor" stroke-opacity="0.5" stroke-width="1.5"></rect>
+          <text x="391" y="310" font-size="12.5" font-weight="700" fill="currentColor">TBC ACTIVA</text>
+          <text x="391" y="331" font-size="11.5" fill="currentColor" opacity="0.75">Necrosis del granuloma y replicación</text>
+          <text x="391" y="349" font-size="11.5" fill="currentColor" opacity="0.75">Pulmonar — contagia</text>
+          <text x="391" y="367" font-size="11.5" fill="currentColor" opacity="0.75">o extrapulmonar por diseminación</text>
+          <text x="391" y="385" font-size="11.5" fill="currentColor" opacity="0.75">Síntomas · Rx patológica</text>
+        </svg>
+        <figcaption>El granuloma no esteriliza: guarda el bacilo vivo. Latente y activa no son enfermedades distintas sino los dos destinos posibles de la misma contención inmunológica.</figcaption>
+      </figure>
+
+      <p class="cita">Fuente: Cambier CJ, Falkow S, Ramakrishnan L. Host evasion and exploitation schemes of <em>Mycobacterium tuberculosis</em>. Cell 2014 — esquema del ciclo de vida e infección citado en el material de cátedra.</p>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-clinica" id="clinica">
+      <span class="seccion__pestana"><b>03</b> Clínica</span>
+      <h2 class="seccion__titulo">Cuadro Clínico</h2>
+
+      <h3>Forma pulmonar — la más frecuente</h3>
+      <ul>
+        <li><strong>Tos y expectoración por más de <span class="dato">15 días</span></strong> — define al <strong>sintomático respiratorio</strong>, la puerta de entrada de toda la pesquisa.</li>
+        <li>Con o sin <strong>hemoptisis</strong>.</li>
+        <li><strong>Síntomas generales:</strong> pérdida de peso, fiebre, <strong>sudoración nocturna</strong> e hiporexia.</li>
+      </ul>
+
+      <p>El curso es <strong>subagudo o crónico</strong>: semanas a meses de deterioro progresivo. Esa temporalidad es lo que separa clínicamente a la tuberculosis de una neumonía aguda.</p>
+
+      <h3>Formas extrapulmonares</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Localización</th><th>Presentación característica</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Ganglionar</strong></td><td>Adenomegalias <strong>grandes, asimétricas</strong> y en ocasiones dolorosas</td></tr>
+            <tr><td><strong>Pleural</strong></td><td>Derrame pleural con <strong>exudado a predominio linfocitario</strong></td></tr>
+            <tr><td><strong>Meníngea</strong></td><td><strong>Cefalea persistente</strong>, meningismo, síndrome confusional</td></tr>
+            <tr><td><strong>Pericárdica</strong></td><td>Derrame pericárdico con <strong>exudado linfocítico</strong></td></tr>
+            <tr><td><strong>Ósea</strong></td><td>Compromiso vertebral — <strong>«Mal de Pott»</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>El denominador común de las formas serosas — pleural y pericárdica — es el <strong>exudado linfocitario</strong>. Ante un derrame con esa fórmula, la tuberculosis entra en la lista corta.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Todo paciente con <strong>tos y expectoración de más de 15 días</strong> es un <strong>sintomático respiratorio</strong> y debe estudiarse con baciloscopía, sin excepción. Buscar el caso es responsabilidad del primer nivel de atención: la tuberculosis se diagnostica cuando alguien la piensa.</p>
+      </div>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-diagnostico" id="diagnostico">
+      <span class="seccion__pestana"><b>04</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">Diagnóstico &amp; Exámenes Complementarios</h2>
+
+      <p>Es <strong>fundamental identificar al agente causal</strong>. La clínica y la radiografía orientan, pero el diagnóstico de certeza es microbiológico.</p>
+
+      <h3>Radiografía de tórax</h3>
+      <p>Es <strong>inespecífica</strong>. Orienta, pero <strong>no es suficiente para confirmar el diagnóstico</strong>. Una radiografía sugestiva obliga a buscar el bacilo; una radiografía normal no descarta las formas extrapulmonares.</p>
+
+      <h3>Métodos microbiológicos</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Método</th><th>Qué aporta</th><th>Rendimiento y tiempo</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Baciloscopía</strong><br>(Ziehl-Neelsen)</td>
+              <td>Busca <strong>BAAR</strong> al microscopio en muestra teñida. Barato, simple y rápido. Un resultado positivo <strong>permite iniciar tratamiento</strong>.</td>
+              <td>Sensibilidad <span class="dato">80 %</span><br>Resultado en <strong>horas</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Cultivo</strong><br>(Löwenstein-Jensen)</td>
+              <td>Aumenta la sensibilidad de la baciloscopía un <span class="dato">30 %</span> y <strong>permite detectar sensibilidad a antifímicos</strong>.</td>
+              <td><span class="dato">2 semanas</span> en medio líquido<br><span class="dato">8 semanas</span> en medio sólido</td>
+            </tr>
+            <tr>
+              <td><strong>Xpert®</strong><br>(PCR)</td>
+              <td>Detección <strong>simultánea</strong> de <em>M. tuberculosis</em> y de <strong>resistencia a rifampicina</strong>. Útil en esputo y otros tejidos (LCR, ganglios).</td>
+              <td>Sensibilidad <span class="dato">88 %</span> · especificidad <span class="dato">99 %</span><br>Resultado en <span class="dato">2 h</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>El <strong>Xpert está recomendado en la urgencia</strong> y cuando no se puede esperar: <strong>niños, personas con HIV y meningitis tuberculosa</strong>.</p>
+
+      <h3>El cultivo no puede faltar en…</h3>
+      <ul>
+        <li>Pacientes con <strong>TBC previa</strong> — riesgo de resistencias.</li>
+        <li>Provenientes de <strong>regiones con alta prevalencia de cepas resistentes</strong>.</li>
+        <li><strong>Alta sospecha clínica con baciloscopía negativa</strong>.</li>
+        <li><strong>Inmunocomprometidos</strong> y <strong>niños</strong>.</li>
+        <li><strong>Formas extrapulmonares</strong>.</li>
+        <li>Baciloscopía <strong>persistentemente positiva tras 2 meses</strong> de tratamiento.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Una <strong>baciloscopía negativa no descarta tuberculosis</strong>. En <strong>niños, personas con HIV y formas extrapulmonares</strong> es característicamente negativa — por eso en esos casos <strong>siempre se debe solicitar cultivo</strong>, y considerar Xpert.</p>
+      </div>
+
+      <h3>Estudios que acompañan siempre</h3>
+      <ul>
+        <li><strong>Serología HIV:</strong> debe solicitarse <strong>SIEMPRE</strong> que se diagnostique tuberculosis, porque <strong>cambia la estrategia terapéutica</strong>.</li>
+        <li><strong>Hepatograma basal:</strong> los antifímicos son <strong>hepatotóxicos</strong> y hace falta un valor de partida para interpretar los controles.</li>
+        <li><strong>Reacción de Mantoux (PPD):</strong> establece <strong>contacto previo</strong> con el bacilo, pero <strong>no hace diagnóstico de TBC activa</strong>.</li>
+      </ul>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 406" role="img" aria-label="Algoritmo diagnóstico: ante un sintomático respiratorio con tos de más de quince días se solicita baciloscopía de esputo. Si es positiva se confirma el caso y se inicia tratamiento. Si es negativa no se descarta la tuberculosis y se avanza con Xpert y cultivo, especialmente en niños, personas con HIV y formas extrapulmonares. En paralelo, todo caso confirmado requiere serología HIV, hepatograma basal y radiografía de tórax, que orienta pero no confirma.">
+          <defs>
+            <marker id="pta-dx" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="110" y="8" width="480" height="54" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--ct)" stroke-width="1.5"></rect>
+          <text x="350" y="30" font-size="13" font-weight="700" fill="currentColor" text-anchor="middle">Sintomático respiratorio</text>
+          <text x="350" y="50" font-size="11.5" fill="currentColor" opacity="0.75" text-anchor="middle">Tos y expectoración por más de 15 días</text>
+
+          <line x1="350" y1="62" x2="350" y2="84" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-dx)"></line>
+          <text x="358" y="78" font-size="11" fill="currentColor" opacity="0.65">estudiar siempre</text>
+
+          <rect x="175" y="86" width="350" height="44" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--ct)" stroke-width="2.5"></rect>
+          <text x="350" y="113" font-size="13" font-weight="700" fill="currentColor" text-anchor="middle">Baciloscopía de esputo</text>
+
+          <line x1="350" y1="130" x2="350" y2="156" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="165" y1="156" x2="535" y2="156" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="165" y1="156" x2="165" y2="182" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-dx)"></line>
+          <line x1="535" y1="156" x2="535" y2="182" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-dx)"></line>
+
+          <text x="173" y="174" font-size="11" font-weight="700" fill="currentColor">positiva</text>
+          <text x="543" y="174" font-size="11" font-weight="700" fill="currentColor">negativa</text>
+
+          <rect x="20" y="184" width="290" height="86" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="currentColor" stroke-opacity="0.5" stroke-width="1.5"></rect>
+          <text x="36" y="208" font-size="12.5" font-weight="700" fill="currentColor">Caso confirmado</text>
+          <text x="36" y="229" font-size="11.5" fill="currentColor" opacity="0.75">Iniciar tratamiento</text>
+          <text x="36" y="247" font-size="11.5" fill="currentColor" opacity="0.75">Cultivo si hay riesgo</text>
+          <text x="36" y="265" font-size="11.5" fill="currentColor" opacity="0.75">de resistencia</text>
+
+          <rect x="390" y="184" width="290" height="86" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="406" y="208" font-size="12.5" font-weight="700" fill="currentColor">No descarta TBC</text>
+          <text x="406" y="229" font-size="11.5" fill="currentColor" opacity="0.75">Xpert® + cultivo</text>
+          <text x="406" y="247" font-size="11.5" fill="currentColor" opacity="0.75">Niños · HIV · meningitis</text>
+          <text x="406" y="265" font-size="11.5" fill="currentColor" opacity="0.75">Formas extrapulmonares</text>
+
+          <rect x="20" y="300" width="660" height="86" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.25" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="36" y="322" font-size="11.5" font-weight="700" fill="currentColor">En paralelo, en todo caso</text>
+          <text x="36" y="343" font-size="11.5" fill="currentColor" opacity="0.75">Serología HIV — es obligatoria y cambia la estrategia terapéutica</text>
+          <text x="36" y="361" font-size="11.5" fill="currentColor" opacity="0.75">Hepatograma basal — los antifímicos son hepatotóxicos</text>
+          <text x="36" y="379" font-size="11.5" fill="currentColor" opacity="0.75">Rx de tórax — orienta, pero no confirma el diagnóstico</text>
+        </svg>
+        <figcaption>La baciloscopía positiva alcanza para tratar; la negativa no alcanza para descartar. Ese es el eje asimétrico de todo el algoritmo.</figcaption>
+      </figure>
+
+      <p class="cita">Fuente: Guía para el diagnóstico y tratamiento de la tuberculosis, Ministerio de Salud de la Nación, Argentina, 2021. Rendimiento del Xpert MTB/RIF según WHO Consolidated Guidelines on Tuberculosis, Module 3: Diagnosis — rapid diagnostics for tuberculosis detection, 2021.</p>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-tratamiento" id="tratamiento">
+      <span class="seccion__pestana"><b>05</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Tratamiento</h2>
+
+      <p>El tratamiento efectivo <strong>cura la enfermedad y reduce la transmisión</strong> del bacilo. Eso lo convierte en una <strong>prioridad de salud pública</strong>, no sólo en una decisión individual: es <strong>gratuito</strong>, lo provee el <strong>programa nacional</strong> y puede administrarse en <strong>atención primaria</strong>.</p>
+
+      <h3>Esquema de primera línea</h3>
+      <p>Una <strong>fase intensiva de 2 meses con 4 drogas (HRZE)</strong> seguida de una <strong>fase de consolidación de 4 meses con 2 drogas (HR)</strong>. Se abrevia <span class="dato">2 HRZE / 4 HR</span>.</p>
+      <p>La fase intensiva mata rápido la población bacilar en replicación y corta el contagio; la consolidación persigue a los bacilos persistentes y es la que evita las recaídas. Acortarla es la vía más directa a la resistencia.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Fármaco</th><th>Dosis diaria (adulto)</th><th>Máximo</th><th>Efecto adverso característico</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Isoniacida (H)</strong></td><td><span class="dato">5 mg/kg</span> (4 – 6)</td><td><span class="dato">300 mg</span></td><td>Neuropatía sensitiva · hepatotoxicidad</td></tr>
+            <tr><td><strong>Rifampicina (R)</strong></td><td><span class="dato">10 mg/kg</span> (8 – 12)</td><td><span class="dato">600 mg</span></td><td>Orina anaranjada · interacciones · hepatotoxicidad</td></tr>
+            <tr><td><strong>Pirazinamida (Z)</strong></td><td><span class="dato">25 mg/kg</span> (20 – 30)</td><td><span class="dato">2000 mg</span></td><td>Artralgias · hiperuricemia · hepatotoxicidad</td></tr>
+            <tr><td><strong>Etambutol (E)</strong></td><td><span class="dato">15 mg/kg</span> (15 – 20)</td><td><span class="dato">1600 mg</span></td><td><strong>Neuritis óptica</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Fuente: WHO Consolidated Guidelines on Tuberculosis, Module 4: Treatment — drug-susceptible tuberculosis treatment, 2022. Las dosis por peso no figuran en el material de cátedra; se incorporan de la guía de referencia que el programa nacional adopta. Verificar siempre la presentación disponible antes de prescribir.</p>
+
+      <h3>Presentaciones combinadas de dosis fija</h3>
+      <p>El programa entrega comprimidos combinados, que mejoran la adherencia y <strong>evitan la monoterapia encubierta</strong> si el paciente saltea alguna droga.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Peso corporal</th><th>Fase intensiva — HRZE 75/150/400/275</th><th>Consolidación — HR 75/150</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>30 – 37 kg</td><td><span class="dato">2</span> comprimidos/día</td><td><span class="dato">2</span> comprimidos/día</td></tr>
+            <tr><td>38 – 54 kg</td><td><span class="dato">3</span> comprimidos/día</td><td><span class="dato">3</span> comprimidos/día</td></tr>
+            <tr><td>55 – 70 kg</td><td><span class="dato">4</span> comprimidos/día</td><td><span class="dato">4</span> comprimidos/día</td></tr>
+            <tr><td>≥ 71 kg</td><td><span class="dato">5</span> comprimidos/día</td><td><span class="dato">5</span> comprimidos/día</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Situaciones que requieren extender la segunda fase</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Situación</th><th>Esquema</th><th>Duración total</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Ósea o articular</strong></td><td>2 HRZE / <strong>7 HR</strong></td><td><span class="dato">9 meses</span></td></tr>
+            <tr><td><strong>Sistema nervioso central</strong></td><td>2 HRZE / <strong>10 HR</strong></td><td><span class="dato">12 meses</span></td></tr>
+            <tr><td>TB sensible con <strong>lesiones extensas o cavitarias</strong> y cultivo de control positivo a los 2 meses</td><td>2 HRZE / <strong>7 HR</strong></td><td><span class="dato">9 meses</span></td></tr>
+            <tr><td><strong>Monorresistencia confirmada a isoniacida</strong></td><td><strong>9 RZE</strong> — puede agregarse una fluoroquinolona</td><td><span class="dato">9 meses</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 296" role="img" aria-label="Línea de tiempo de la duración del tratamiento en meses. El esquema estándar dura seis meses: dos meses de fase intensiva con HRZE y cuatro de consolidación con HR. La tuberculosis ósea o articular extiende la consolidación a siete meses, con nueve meses en total. La tuberculosis del sistema nervioso central la extiende a diez meses, con doce en total. La forma cavitaria con cultivo positivo a los dos meses también llega a nueve meses. Aparte, la monorresistencia confirmada a isoniacida se trata con nueve meses de RZE.">
+          <defs>
+            <marker id="pta-tto" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <text x="14" y="24" font-size="11.5" font-weight="700" fill="currentColor">Meses de tratamiento</text>
+
+          <line x1="190" y1="48" x2="662" y2="48" stroke="currentColor" stroke-width="1.2" stroke-opacity="0.55"></line>
+          <line x1="190" y1="44" x2="190" y2="52" stroke="currentColor" stroke-width="1.2" stroke-opacity="0.55"></line>
+          <line x1="268" y1="44" x2="268" y2="52" stroke="currentColor" stroke-width="1.2" stroke-opacity="0.55"></line>
+          <line x1="346" y1="44" x2="346" y2="52" stroke="currentColor" stroke-width="1.2" stroke-opacity="0.55"></line>
+          <line x1="424" y1="44" x2="424" y2="52" stroke="currentColor" stroke-width="1.2" stroke-opacity="0.55"></line>
+          <line x1="502" y1="44" x2="502" y2="52" stroke="currentColor" stroke-width="1.2" stroke-opacity="0.55"></line>
+          <line x1="580" y1="44" x2="580" y2="52" stroke="currentColor" stroke-width="1.2" stroke-opacity="0.55"></line>
+          <line x1="658" y1="44" x2="658" y2="52" stroke="currentColor" stroke-width="1.2" stroke-opacity="0.55"></line>
+          <text x="190" y="36" font-size="11" fill="currentColor" opacity="0.7" text-anchor="middle">0</text>
+          <text x="268" y="36" font-size="11" fill="currentColor" opacity="0.7" text-anchor="middle">2</text>
+          <text x="346" y="36" font-size="11" fill="currentColor" opacity="0.7" text-anchor="middle">4</text>
+          <text x="424" y="36" font-size="11" fill="currentColor" opacity="0.7" text-anchor="middle">6</text>
+          <text x="502" y="36" font-size="11" fill="currentColor" opacity="0.7" text-anchor="middle">8</text>
+          <text x="580" y="36" font-size="11" fill="currentColor" opacity="0.7" text-anchor="middle">10</text>
+          <text x="658" y="36" font-size="11" fill="currentColor" opacity="0.7" text-anchor="middle">12</text>
+
+          <text x="14" y="79" font-size="11.5" font-weight="700" fill="currentColor">Estándar · 6 m</text>
+          <rect x="190" y="62" width="78" height="26" rx="2" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="1.5"></rect>
+          <rect x="268" y="62" width="156" height="26" rx="2" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.2"></rect>
+          <text x="229" y="79" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">HRZE</text>
+          <text x="346" y="79" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">HR</text>
+
+          <text x="14" y="123" font-size="11.5" font-weight="700" fill="currentColor">Ósea / articular · 9 m</text>
+          <rect x="190" y="106" width="78" height="26" rx="2" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="1.5"></rect>
+          <rect x="268" y="106" width="273" height="26" rx="2" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.2"></rect>
+          <text x="229" y="123" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">HRZE</text>
+          <text x="404" y="123" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">HR</text>
+
+          <text x="14" y="167" font-size="11.5" font-weight="700" fill="currentColor">SNC / meníngea · 12 m</text>
+          <rect x="190" y="150" width="78" height="26" rx="2" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="1.5"></rect>
+          <rect x="268" y="150" width="390" height="26" rx="2" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.2"></rect>
+          <text x="229" y="167" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">HRZE</text>
+          <text x="463" y="167" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">HR</text>
+
+          <text x="14" y="211" font-size="11.5" font-weight="700" fill="currentColor">Cavitaria · BK + mes 2</text>
+          <rect x="190" y="194" width="78" height="26" rx="2" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="1.5"></rect>
+          <rect x="268" y="194" width="273" height="26" rx="2" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.2"></rect>
+          <text x="229" y="211" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">HRZE</text>
+          <text x="404" y="211" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">HR</text>
+
+          <rect x="14" y="238" width="648" height="46" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.25" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="30" y="258" font-size="11.5" font-weight="700" fill="currentColor">Fuera de la línea estándar · monorresistencia confirmada a isoniacida</text>
+          <text x="30" y="276" font-size="11.5" fill="currentColor" opacity="0.75">9 meses de RZE — puede agregarse una fluoroquinolona</text>
+        </svg>
+        <figcaption>La fase intensiva dura siempre 2 meses; lo que se estira es la consolidación. El hueso suma 3 meses y el sistema nervioso central suma 6.</figcaption>
+      </figure>
+
+      <h3>Efectos adversos menores — no suspenden el tratamiento</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Efecto adverso</th><th>Fármaco probablemente responsable</th><th>Manejo recomendado</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Dolor abdominal · náuseas · anorexia</td>
+              <td>Isoniacida · Rifampicina · Pirazinamida</td>
+              <td>Dar la medicación antes de acostarse o con comidas pequeñas. Si continúa o se acompaña de <strong>vómitos persistentes o sangrado</strong>, tratar como efecto adverso mayor y descartar hepatotoxicidad.</td>
+            </tr>
+            <tr>
+              <td><strong>Orina roja o anaranjada</strong></td>
+              <td>Rifampicina</td>
+              <td><strong>Efecto esperado sin impacto clínico.</strong> Tranquilizar al paciente — anticiparlo evita abandonos.</td>
+            </tr>
+            <tr>
+              <td>Artralgias</td>
+              <td>Pirazinamida</td>
+              <td>Antiinflamatorios no esteroideos</td>
+            </tr>
+            <tr>
+              <td>Somnolencia</td>
+              <td>Isoniacida</td>
+              <td>Dar la medicación antes de acostarse. Tranquilizar</td>
+            </tr>
+            <tr>
+              <td><strong>Neuropatía sensitiva</strong><br>(hormigueo o adormecimiento)</td>
+              <td>Isoniacida</td>
+              <td>Suplementar con <strong>piridoxina <span class="dato">50 – 75 mg/día</span></strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Efectos adversos serios — suspender medicación y evaluar internación</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Efecto adverso mayor</th><th>Fármacos probablemente responsables</th><th>Umbral / observación</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Exantema con o sin prurito</td>
+              <td>Isoniacida · Rifampicina · Pirazinamida · Estreptomicina</td>
+              <td>Vigilar progresión a <strong>DRESS</strong> (<em>Drug Rash with Eosinophilia and Systemic Symptoms</em>)</td>
+            </tr>
+            <tr>
+              <td>Trastornos visuales — <strong>neuritis óptica</strong></td>
+              <td><strong>Etambutol</strong></td>
+              <td><strong>Evaluación oftalmológica previa en niños</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Hepatotoxicidad severa</strong></td>
+              <td>Isoniacida · Pirazinamida · Rifampicina</td>
+              <td>Transaminasas <strong>× 3 con síntomas</strong> o <strong>× 5 sin síntomas</strong></td>
+            </tr>
+            <tr>
+              <td>Trombocitopenia severa · púrpura · anemia hemolítica · insuficiencia renal</td>
+              <td><strong>Rifampicina</strong></td>
+              <td>Cuadro inmunoalérgico — contraindica la reintroducción del fármaco</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Ante un <strong>efecto adverso mayor</strong> la conducta es <strong>suspender la medicación y evaluar internación</strong>. El umbral de hepatotoxicidad que obliga a frenar es <strong>transaminasas × 3 si hay síntomas</strong> o <strong>× 5 si el paciente está asintomático</strong>.</p>
+      </div>
+
+      <h3>Interacciones y profilaxis que hay que anticipar</h3>
+      <ul>
+        <li><strong>Rifampicina</strong> reduce la eficacia de los <strong>anticonceptivos orales</strong> — indicar método de barrera — y de los <strong>antirretrovirales</strong> — ajustar dosis.</li>
+        <li>En pacientes con <strong>riesgo de polineuropatía</strong> que toman isoniacida hay que suplementar con <strong>piridoxina <span class="dato">25 mg/día</span></strong> (vitamina B6): embarazo o lactancia, HIV, diabetes, consumo de alcohol, malnutrición e insuficiencia renal.</li>
+      </ul>
+
+      <p>Las dos cifras de piridoxina no se contradicen: <span class="dato">25 mg/día</span> es la <strong>profilaxis</strong> en el paciente de riesgo, <span class="dato">50 – 75 mg/día</span> es el <strong>tratamiento</strong> de la neuropatía ya instalada.</p>
+
+      <h3>Seguimiento — control mensual</h3>
+      <ul>
+        <li>Evaluar <strong>efectos adversos</strong> (hepatograma), <strong>adherencia</strong>, <strong>peso</strong> — y <strong>ajustar dosis</strong> — y la evolución de los síntomas.</li>
+        <li><strong>Baciloscopía al finalizar la fase inicial (mes 2)</strong>; si es positiva → cultivo con pruebas de sensibilidad.</li>
+        <li><strong>Baciloscopía al finalizar el 5.º mes</strong>; si es positiva → cultivo con pruebas de sensibilidad y <strong>sospecha de fracaso</strong>.</li>
+        <li><strong>Radiografía sólo al finalizar</strong>, para valorar secuelas. No se repite durante el tratamiento.</li>
+      </ul>
+
+      <p class="cita">Fuente: Guía para el diagnóstico y tratamiento de la tuberculosis, Ministerio de Salud de la Nación, Argentina, 2021. En tuberculosis meníngea y pericárdica, la OMS recomienda además corticoides adyuvantes — WHO Consolidated Guidelines, Module 4: Treatment, 2022.</p>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-diferenciales" id="latente">
+      <span class="seccion__pestana"><b>06</b> Latente</span>
+      <h2 class="seccion__titulo">Tuberculosis Latente</h2>
+
+      <p>Infección por <em>M. tuberculosis</em> <strong>contenida efectivamente por el sistema inmune</strong>, sin ninguna evidencia de actividad clínica. Las personas con TBC latente <strong>no están enfermas</strong>: no tienen síntomas, no tienen alteraciones radiológicas y las muestras de esputo son negativas.</p>
+
+      <p>Un <span class="dato">10 %</span> puede progresar a formas activas, generalmente asociado a <strong>períodos de inmunodepresión</strong>. Tratarla es tratar ese riesgo futuro, no una enfermedad presente.</p>
+
+      <p><strong>No requiere aislamiento</strong>, porque estos pacientes <strong>no eliminan bacilos</strong>.</p>
+
+      <h3>Diagnóstico — reacción de Mantoux (PPD)</h3>
+      <ul>
+        <li>Se aplica el <strong>derivado proteico purificado</strong> extraído del bacilo por vía intradérmica.</li>
+        <li>El sistema inmune del paciente infectado lo reconoce y produce una <strong>reacción de hipersensibilidad retardada</strong>, evidenciada por una sobreelevación en la piel <strong>a las <span class="dato">48 – 72 h</span></strong>.</li>
+        <li>Se mide la <strong>induración</strong> palpable, <strong>no el eritema</strong>. Medir el enrojecimiento es el error clásico y sobreestima el resultado.</li>
+      </ul>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Población</th><th>Punto de corte de positividad</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Población general</td><td>Induración <strong>&gt; <span class="dato">10 mm</span></strong></td></tr>
+            <tr><td><strong>Inmunosuprimidos</strong></td><td>Induración <strong>&gt; <span class="dato">5 mm</span></strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>La PPD establece <strong>contacto previo</strong> con el bacilo. No distingue infección latente de enfermedad activa, ni de una vacunación BCG antigua — por eso nunca se interpreta sola.</p>
+
+      <h3>¿A quién tratar?</h3>
+      <ul>
+        <li>Pacientes con <strong>VIH</strong>, <strong>independientemente de su recuento de CD4</strong>.</li>
+        <li>Otros tipos de <strong>inmunocompromiso</strong>: tratamiento <strong>anti-TNF</strong>, <strong>diálisis</strong>, <strong>preparación para trasplante</strong>, <strong>silicosis</strong>.</li>
+        <li><strong>Menores de 20 años</strong>.</li>
+      </ul>
+
+      <h3>Tratamiento</h3>
+      <p><strong>Isoniacida <span class="dato">10 mg/kg/día</span> durante <span class="dato">6 meses</span></strong>, según el material de cátedra.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>Siempre radiografía y examen físico antes de iniciar</strong>, para no tratar erróneamente una <strong>TBC activa como si fuera latente</strong>. Al usarse una <strong>sola droga</strong>, tratar una enfermedad activa con isoniacida en monoterapia <strong>genera resistencia</strong>.</p>
+      </div>
+
+      <h3>Pesquisa de contactos de un caso</h3>
+      <ul>
+        <li>Se estudia a las personas que <strong>comparten el mismo espacio por una o más noches</strong>, o durante <strong>períodos extensos del día (mayor a <span class="dato">4 h</span>)</strong>, en los <strong>últimos 3 meses</strong> desde la identificación del caso índice — convivientes, escuela, oficina.</li>
+        <li>En cada contacto: <strong>interrogar síntomas</strong> para descartar TBC activa, y solicitar <strong>radiografía y PPD</strong>.</li>
+      </ul>
+
+      <p class="cita">Fuente: Guía para el diagnóstico y tratamiento de la tuberculosis, Ministerio de Salud de la Nación, Argentina, 2021. Nota sobre la dosis: las guías diferencian <strong>5 mg/kg/día en adultos</strong> y <strong>10 mg/kg/día en niños</strong>, con tope de 300 mg/día en ambos casos. La OMS contempla además esquemas alternativos más cortos — 3HP, 3HR y 4R — en WHO Consolidated Guidelines, Module 1: Prevention — tuberculosis preventive treatment, 2020. Confirmar con la cátedra cuál es el esquema que se toma como respuesta.</p>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-importantes" id="importantes">
+      <span class="seccion__pestana"><b>07</b> Alerta</span>
+      <h2 class="seccion__titulo">Aspectos Importantes &amp; Situaciones Especiales</h2>
+
+      <h3>Embarazo y lactancia</h3>
+      <ul>
+        <li><strong>Tratamiento estándar de primera línea</strong> — no se han demostrado efectos teratogénicos.</li>
+        <li><strong>No interrumpir la lactancia.</strong></li>
+        <li>Al recién nacido: colocar <strong>BCG</strong> y <strong>profilaxis con isoniacida</strong>.</li>
+        <li>Recordar la <strong>piridoxina 25 mg/día</strong>: el embarazo y la lactancia son de por sí condiciones de riesgo de polineuropatía por isoniacida.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>El esquema HRZE es seguro en el embarazo, pero la <strong>estreptomicina está contraindicada</strong>: es <strong>ototóxica para el feto</strong> y puede causar sordera congénita. Es la excepción que hay que tener presente al armar esquemas de segunda línea en una embarazada.</p>
+      </div>
+
+      <h3>Coinfección con HIV</h3>
+      <ul>
+        <li>La <strong>clínica puede ser sutil</strong> y la <strong>baciloscopía tiene menor sensibilidad</strong> — considerar <strong>Xpert</strong> desde el inicio.</li>
+        <li>Iniciar el <strong>TARV dentro de las primeras <span class="dato">8 semanas</span></strong> del inicio de los antifímicos.</li>
+        <li>El esquema antituberculoso <strong>se extiende a <span class="dato">9 meses</span></strong>.</li>
+        <li><strong>Rifampicina reduce la biodisponibilidad de los inhibidores de proteasa</strong> — el punto de conflicto farmacológico central entre ambos tratamientos.</li>
+      </ul>
+
+      <h3>Tuberculosis resistente</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Categoría</th><th>Definición</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>MDR</strong><br>Multirresistente</td>
+              <td>Causada por organismos resistentes a las dos drogas anti-TB más efectivas: <strong>isoniacida y rifampicina conjuntamente</strong>.</td>
+            </tr>
+            <tr>
+              <td><strong>XDR</strong><br>Extensamente resistente</td>
+              <td>Resistencia a <strong>isoniacida y rifampicina</strong>, más <strong>una fluoroquinolona</strong> con acción antituberculosa y <strong>al menos una droga inyectable de segunda línea</strong> — kanamicina, amikacina o capreomicina.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 136" role="img" aria-label="Mapa acumulativo de la resistencia antituberculosa: la tuberculosis resistente es aquella con resistencia a alguno de los antifímicos; sumando resistencia conjunta a isoniacida y rifampicina se define la multirresistente o MDR; y sumando además resistencia a una fluoroquinolona y a un inyectable de segunda línea se define la extensamente resistente o XDR.">
+          <defs>
+            <marker id="pta-res" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="14" y="20" width="176" height="96" rx="3" fill="var(--c)" fill-opacity="0.08" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.2"></rect>
+          <text x="30" y="48" font-size="12.5" font-weight="700" fill="currentColor">TB resistente</text>
+          <text x="30" y="70" font-size="11.5" fill="currentColor" opacity="0.75">Resistencia a alguno</text>
+          <text x="30" y="88" font-size="11.5" fill="currentColor" opacity="0.75">de los antifímicos</text>
+
+          <line x1="190" y1="68" x2="248" y2="68" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-res)"></line>
+          <text x="192" y="60" font-size="11" font-weight="700" fill="currentColor">+ H y R</text>
+
+          <rect x="252" y="20" width="166" height="96" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="268" y="48" font-size="12.5" font-weight="700" fill="currentColor">MDR</text>
+          <text x="268" y="70" font-size="11.5" fill="currentColor" opacity="0.75">Isoniacida + rifampicina</text>
+          <text x="268" y="88" font-size="11.5" fill="currentColor" opacity="0.75">conjuntamente</text>
+
+          <line x1="418" y1="68" x2="476" y2="68" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-res)"></line>
+          <text x="420" y="60" font-size="11" font-weight="700" fill="currentColor">+ FQ e iny.</text>
+
+          <rect x="480" y="20" width="206" height="96" rx="3" fill="var(--c)" fill-opacity="0.26" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="496" y="48" font-size="12.5" font-weight="700" fill="currentColor">XDR</text>
+          <text x="496" y="70" font-size="11.5" fill="currentColor" opacity="0.75">MDR + fluoroquinolona</text>
+          <text x="496" y="88" font-size="11.5" fill="currentColor" opacity="0.75">+ inyectable de 2.ª línea</text>
+        </svg>
+        <figcaption>La resistencia se define por acumulación: XDR contiene a MDR. Los inyectables de segunda línea de la definición son kanamicina, amikacina y capreomicina.</figcaption>
+      </figure>
+
+      <h3>Origen de la resistencia</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Tipo</th><th>Mecanismo</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Primaria</strong></td>
+              <td>Infección <strong>directa por bacilos ya resistentes</strong>. El material de cátedra señala como ejemplo epidemiológico regional a los pacientes provenientes de <strong>Bolivia y Perú</strong>.</td>
+            </tr>
+            <tr>
+              <td><strong>Secundaria</strong></td>
+              <td>La resistencia <strong>se genera durante el tratamiento</strong>, porque el paciente <strong>no realiza el régimen apropiado</strong>.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>La resistencia secundaria <strong>la fabrica el sistema de salud</strong>, no el bacilo: nace de esquemas incompletos, monoterapias encubiertas y abandonos no detectados. Por eso el control mensual de adherencia no es burocracia — es la principal medida de prevención de la MDR.</p>
+      </div>
+
+      <p class="cita">Fuente: Guía para el diagnóstico y tratamiento de la tuberculosis, Ministerio de Salud de la Nación, Argentina, 2021. Nota: la OMS <strong>redefinió la XDR en 2021</strong> como MDR/RR-TB con resistencia adicional a una fluoroquinolona y a al menos un fármaco del Grupo A (bedaquilina o linezolid), retirando los inyectables de la definición. El cuadernillo conserva la definición del material de cátedra; conviene saber que coexisten las dos.</p>
+    </section>
+
+    <!-- ============ Repaso activo ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>¿Qué formas de tuberculosis son contagiosas?</summary>
+          <div class="fc__r">Sólo las <strong>pulmonares y laríngeas</strong>. Una TBC ganglionar, ósea o meníngea aislada no transmite y no requiere aislamiento respiratorio.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué le pasa al bacilo dentro del granuloma, y qué define que la infección sea latente o activa?</summary>
+          <div class="fc__r">Dentro del granuloma <strong>la bacteria está viva pero impedida de multiplicarse</strong>. Si la contención inmunológica se sostiene queda como <strong>TBC latente</strong>; si el sistema inmune falla, el granuloma se necrosa, los bacilos se replican y diseminan → <strong>TBC activa</strong>. Progresa cerca del <strong>10 %</strong> de los infectados.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué define a un sintomático respiratorio y qué hay que hacer con él?</summary>
+          <div class="fc__r"><strong>Tos y expectoración por más de 15 días</strong>. Se le debe solicitar <strong>baciloscopía</strong>, sin excepción. Los síntomas generales acompañantes son pérdida de peso, fiebre, sudoración nocturna e hiporexia.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Baciloscopía negativa con alta sospecha clínica: ¿qué hacés?</summary>
+          <div class="fc__r">No descarta TBC. Solicitar <strong>cultivo</strong> — suma un 30 % de sensibilidad y da pruebas de sensibilidad a antifímicos — y considerar <strong>Xpert</strong>, sobre todo en <strong>niños, HIV, meningitis y formas extrapulmonares</strong>.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Escribí el esquema estándar y las dos extensiones principales de la segunda fase.</summary>
+          <div class="fc__r">Estándar: <strong>2 HRZE / 4 HR</strong> — 6 meses. <strong>Ósea o articular</strong>: 2 HRZE / <strong>7 HR</strong> (9 meses). <strong>SNC</strong>: 2 HRZE / <strong>10 HR</strong> (12 meses). La fase intensiva siempre dura 2 meses; lo que se estira es la consolidación.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Qué umbral de transaminasas obliga a suspender el tratamiento?</summary>
+          <div class="fc__r"><strong>× 3 con síntomas</strong> o <strong>× 5 sin síntomas</strong>. Ante cualquier efecto adverso mayor: <strong>suspender la medicación y evaluar internación</strong>.</div>
+        </details>
+
+        <details class="fc s-diferenciales">
+          <summary>¿Cuáles son los puntos de corte de la PPD y qué se mide exactamente?</summary>
+          <div class="fc__r">Se mide la <strong>induración</strong> — no el eritema — a las <strong>48 – 72 h</strong>. Positiva con <strong>&gt; 10 mm</strong> en población general y <strong>&gt; 5 mm</strong> en inmunosuprimidos.</div>
+        </details>
+
+        <details class="fc s-diferenciales">
+          <summary>¿Por qué hay que pedir siempre Rx antes de tratar una TBC latente?</summary>
+          <div class="fc__r">Para <strong>no tratar una TBC activa como si fuera latente</strong>. Como el tratamiento de la latente es <strong>monoterapia con isoniacida</strong>, usarlo sobre una enfermedad activa <strong>genera resistencia</strong>.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>Definí MDR y XDR.</summary>
+          <div class="fc__r"><strong>MDR</strong>: resistencia a <strong>isoniacida + rifampicina</strong> conjuntamente. <strong>XDR</strong>: eso mismo <strong>más una fluoroquinolona</strong> y <strong>al menos un inyectable de segunda línea</strong> (kanamicina, amikacina o capreomicina).</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Triada clave</dt>
+        <dd><strong>Tos y expectoración &gt; 15 días</strong> + <strong>pérdida de peso</strong> + <strong>sudoración nocturna</strong>, con o sin hemoptisis, en un curso subagudo de semanas a meses.</dd>
+
+        <dt class="r-gold">Estudio de elección</dt>
+        <dd><strong>Baciloscopía de esputo</strong> (Ziehl-Neelsen) — sensibilidad 80 %, resultado en horas, y positiva ya permite tratar. El <strong>cultivo</strong> es el que da sensibilidad a antifímicos; el <strong>Xpert</strong> resuelve en 2 h y detecta resistencia a rifampicina.</dd>
+
+        <dt class="r-tto">Tratamiento de 1ª línea</dt>
+        <dd><strong>2 HRZE / 4 HR</strong> — 2 meses de isoniacida, rifampicina, pirazinamida y etambutol, seguidos de 4 meses de isoniacida y rifampicina. Gratuito y provisto por el programa nacional.</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd><strong>Efecto adverso mayor → suspender y evaluar internación</strong>: hepatotoxicidad (transaminasas × 3 con síntomas o × 5 sin síntomas), exantema, neuritis óptica por etambutol o citopenias por rifampicina.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir del material de cátedra sobre tuberculosis y de la Guía para el diagnóstico y tratamiento de la tuberculosis del Ministerio de Salud de la Nación (Argentina, 2021), complementada con las WHO Consolidated Guidelines on Tuberculosis. Material de estudio: no reemplaza el criterio clínico ni la guía institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link'));
+
+  function porMeta(hash){
+    for (var i = 0; i < enlaces.length; i++){
+      if (enlaces[i].getAttribute('href') === '#' + hash) return enlaces[i];
+    }
+    return null;
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var enlace = porMeta(e.target.id);
+        if (!enlace) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          enlace.setAttribute('aria-current', 'true');
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>
+<script>
+(function(){
+  "use strict";
+  var clave = document.body.dataset.clave || "";
+  var enApp = typeof window.WordmedApp !== "undefined";
+  var MEM = "wordmed:progreso";
+
+  function leer(){ try{ return JSON.parse(localStorage.getItem(MEM)) || {}; }catch(e){ return {}; } }
+  function guardar(m){ try{ localStorage.setItem(MEM, JSON.stringify(m)); }catch(e){} }
+
+  function alto(){
+    return Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+  }
+
+  /* retomar donde quedó */
+  if (clave) {
+    var m = leer()[clave];
+    if (m && m.y > 0) {
+      window.addEventListener("load", function(){
+        window.scrollTo(0, Math.min(m.y, alto()));
+      });
+    }
+  }
+
+  /* anotar el avance, sin ahogar el scroll */
+  var pendiente = false;
+  window.addEventListener("scroll", function(){
+    if (pendiente || !clave) return;
+    pendiente = true;
+    requestAnimationFrame(function(){
+      pendiente = false;
+      var y = window.scrollY;
+      var pct = Math.round((y / alto()) * 100);
+      pct = Math.max(0, Math.min(100, pct));
+      var m = leer();
+      m[clave] = { y: y, pct: pct, ts: Date.now() };
+      guardar(m);
+      if (enApp && window.WordmedApp.progreso) window.WordmedApp.progreso(clave, pct, y);
+    });
+  }, { passive: true });
+
+  /* volver: solo cuando vinimos de la cáscara web */
+  if (!enApp && document.referrer && document.referrer.indexOf(location.origin) === 0) {
+    var b = document.createElement("button");
+    b.className = "volver";
+    b.type = "button";
+    b.setAttribute("aria-label", "Volver");
+    b.innerHTML = '<svg class="volver__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg>';
+    b.addEventListener("click", function(){ history.back(); });
+    document.body.appendChild(b);
+  }
+})();
+</script>
+</body>
+</html>

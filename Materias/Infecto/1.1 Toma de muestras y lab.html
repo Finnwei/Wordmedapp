@@ -1,0 +1,1608 @@
+<title>Toma de Muestras Microbiológicas</title>
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+}
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índice lateral ---------- */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Ficha de sección ---------- */
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.35rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-row:1/3; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+.importante__titulo{
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso{ display:none !important; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Base</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-generalidades" href="#general">Consideraciones generales</a></li>
+    </ul>
+    <p class="indice__rotulo" style="margin-top:1.2rem">Por sospecha clínica</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-diagnostico" href="#sangre">Bacteriemia · Hemocultivos</a></li>
+      <li><a class="indice__link i-diagnostico" href="#cateter">Infección por catéter</a></li>
+      <li><a class="indice__link i-diagnostico" href="#orina">Infección urinaria</a></li>
+      <li><a class="indice__link i-diagnostico" href="#vas">Vía aérea superior</a></li>
+      <li><a class="indice__link i-diagnostico" href="#vai">Vía aérea inferior</a></li>
+      <li><a class="indice__link i-diagnostico" href="#snc">Sistema nervioso central</a></li>
+      <li><a class="indice__link i-diagnostico" href="#liquidos">Líquidos de punción</a></li>
+      <li><a class="indice__link i-diagnostico" href="#ippb">Piel y partes blandas</a></li>
+      <li><a class="indice__link i-diagnostico" href="#osteo">Osteoarticulares</a></li>
+      <li><a class="indice__link i-diagnostico" href="#gastro">Gastrointestinales</a></li>
+      <li><a class="indice__link i-diagnostico" href="#mdr">Vigilancia de MDR</a></li>
+    </ul>
+    <p class="indice__rotulo" style="margin-top:1.2rem">Cierre</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-importantes"   href="#rechazo">Criterios de rechazo</a></li>
+      <li><a class="indice__link i-diferenciales" href="#tabla">Tabla maestra</a></li>
+      <li><a class="indice__link i-clinica"       href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"   href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Infectología · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Toma de Muestras Microbiológicas</h1>
+      <p class="portada__bajada">Toma, transporte y conservación. El cultivo más caro no sirve si la muestra se tomó mal: esta clase es la que decide si el resto del diagnóstico infectológico tiene sentido o no.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">Punción vs hisopado</span>
+        <span class="etiqueta s-diagnostico">11 sitios de muestra</span>
+        <span class="etiqueta s-tratamiento">Siempre antes del ATB</span>
+        <span class="etiqueta s-importantes">Criterios de rechazo</span>
+      </div>
+    </header>
+
+    <!-- ═══════════ BASE ═══════════ -->
+    <section class="seccion s-generalidades" id="general">
+      <span class="seccion__pestana"><b>00</b> Base</span>
+      <h2 class="seccion__titulo">Consideraciones Generales</h2>
+
+      <p>El diagnóstico de una enfermedad infecciosa sigue tres pasos encadenados: <strong>diagnóstico sindrómico</strong> → <strong>sospecha de etiología</strong> → <strong>toma de muestra</strong>. La muestra no es un trámite al final: es lo que convierte una sospecha en un diagnóstico.</p>
+
+      <h3>De qué depende un diagnóstico microbiológico correcto</h3>
+      <ul>
+        <li><strong>Calidad de la muestra.</strong></li>
+        <li><strong>Condiciones de conservación y transporte.</strong></li>
+        <li><strong>Procesamiento</strong> e inoculación en <strong>medios de cultivo apropiados</strong>.</li>
+        <li><strong>Experiencia del personal de laboratorio.</strong></li>
+      </ul>
+      <p>Los dos primeros dependen enteramente de quien toma la muestra. Los dos últimos, del laboratorio.</p>
+
+      <h3>Normas para una correcta toma de muestra</h3>
+      <ul>
+        <li><strong>Rotulado</strong> de la muestra con los <strong>datos del paciente</strong>.</li>
+        <li><strong>Petición correctamente cumplimentada</strong>: <strong>firma</strong>, <strong>sello</strong> y <strong>diagnóstico presuntivo</strong>.</li>
+      </ul>
+
+      <h3>Características de una muestra clínica adecuada</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Requisito</th><th>Qué significa en la práctica</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Representativa del proceso infeccioso</strong></td><td>Tomada del sitio donde realmente está la infección</td></tr>
+            <tr><td><strong>Evitar contaminación con la microbiota habitual</strong></td><td>Es el motivo por el que se prefiere la punción al hisopado</td></tr>
+            <tr><td><strong>Momento óptimo para realizar la toma</strong></td><td>Por ejemplo, apenas establecida la fiebre en el hemocultivo</td></tr>
+            <tr><td><strong>Volumen suficiente</strong></td><td>Que permita realizar <strong>todos</strong> los estudios solicitados</td></tr>
+            <tr><td><strong>ANTES del inicio del tratamiento con antibióticos</strong></td><td>Es la regla que atraviesa todo el capítulo</td></tr>
+            <tr><td><strong>Medios de transporte adecuados</strong></td><td>Que permitan la <strong>viabilidad del patógeno</strong></td></tr>
+            <tr><td><strong>Identificación adecuada</strong></td><td>Nombre, n.º de identificación, origen, <strong>fecha y hora de la toma</strong></td></tr>
+            <tr><td><strong>Transporte inmediato al laboratorio</strong></td><td><span class="dato">2 – 4 h</span> como norma general</td></tr>
+            <tr><td><strong>Conservación a temperatura adecuada</strong></td><td>Varía según la muestra — y hay muestras que <strong>nunca</strong> se refrigeran</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>El eje que gobierna todo el capítulo: punción o hisopado</h3>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 350" role="img" aria-label="Comparación entre muestras obtenidas por punción y muestras obtenidas por hisopado o emisión espontánea. Las obtenidas por punción no tienen microbiota normal acompañante, por lo que la microscopía y el cultivo son muy significativos y cualquier desarrollo es patógeno hasta demostrar lo contrario; ejemplos son el líquido cefalorraquídeo, la punción suprapúbica, la punción pleural y la sangre. Las obtenidas por hisopado o emisión espontánea contienen microbiota acompañante, por lo que hay que disminuir esa carga, diferenciar el patógeno de la microbiota normal y usar cultivos cuantitativos o semicuantitativos; por eso la recomendación general es no usar hisopados para cultivo.">
+          <text x="10" y="26" font-size="12.5" font-weight="700" fill="currentColor">¿Cómo se obtuvo la muestra? De eso depende cómo se interpreta</text>
+
+          <rect x="10" y="40" width="334" height="230" rx="3" fill="var(--c)" fill-opacity="0.20" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="26" y="66" font-size="12.5" font-weight="700" fill="currentColor">OBTENIDAS POR PUNCIÓN</text>
+          <line x1="26" y1="78" x2="328" y2="78" stroke="currentColor" stroke-opacity="0.3" stroke-width="1"></line>
+          <text x="26" y="102" font-size="11" font-weight="700" fill="currentColor">Sin microbiota normal acompañante</text>
+          <text x="26" y="126" font-size="10.5" fill="currentColor" opacity="0.85">Microscopía y cultivo MUY significativos</text>
+          <text x="26" y="150" font-size="10.5" fill="currentColor" opacity="0.85">Cualquier desarrollo es patógeno hasta que</text>
+          <text x="26" y="166" font-size="10.5" fill="currentColor" opacity="0.85">se demuestre lo contrario</text>
+          <line x1="26" y1="186" x2="328" y2="186" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="26" y="208" font-size="10.5" font-weight="700" fill="currentColor">Ejemplos</text>
+          <text x="26" y="228" font-size="10.5" fill="currentColor" opacity="0.85">LCR · punción suprapúbica</text>
+          <text x="26" y="246" font-size="10.5" fill="currentColor" opacity="0.85">punción pleural · sangre</text>
+
+          <rect x="356" y="40" width="334" height="230" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.45" stroke-width="1.4"></rect>
+          <text x="372" y="66" font-size="12.5" font-weight="700" fill="currentColor">HISOPADO / EMISIÓN ESPONTÁNEA</text>
+          <line x1="372" y1="78" x2="674" y2="78" stroke="currentColor" stroke-opacity="0.3" stroke-width="1"></line>
+          <text x="372" y="102" font-size="11" font-weight="700" fill="currentColor">Contiene microbiota acompañante</text>
+          <text x="372" y="126" font-size="10.5" fill="currentColor" opacity="0.85">Hay que DISMINUIR la carga de microbiota</text>
+          <text x="372" y="142" font-size="10.5" fill="currentColor" opacity="0.85">acompañante</text>
+          <text x="372" y="164" font-size="10.5" fill="currentColor" opacity="0.85">Hay que DIFERENCIAR patógeno de</text>
+          <text x="372" y="180" font-size="10.5" fill="currentColor" opacity="0.85">microbiota normal</text>
+          <text x="372" y="202" font-size="10.5" fill="currentColor" opacity="0.85">Requiere cultivos CUANTITATIVOS o</text>
+          <text x="372" y="218" font-size="10.5" fill="currentColor" opacity="0.85">semicuantitativos</text>
+          <line x1="372" y1="234" x2="674" y2="234" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="372" y="256" font-size="11" font-weight="700" fill="currentColor">Por eso: NO se recomiendan los hisopados</text>
+
+          <rect x="10" y="286" width="680" height="56" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.3" stroke-dasharray="5 3"></rect>
+          <text x="26" y="308" font-size="11.5" font-weight="700" fill="currentColor">La consecuencia práctica</text>
+          <text x="26" y="330" font-size="11" fill="currentColor" opacity="0.8">Siempre que exista la opción, se prefiere el aspirado o la biopsia al hisopado. Y el hisopado para cultivo es criterio de rechazo.</text>
+        </svg>
+        <figcaption>La diferencia no es de técnica sino de interpretación: en una muestra estéril un solo germen ya significa algo; en un hisopado hay que demostrar que ese germen no venía de la flora normal.</figcaption>
+      </figure>
+
+      <h3>Los siete pasos de la selección y toma</h3>
+      <ol>
+        <li><strong>Sitio anatómico adecuado.</strong></li>
+        <li><strong>Evitar la contaminación con microbiota endógena.</strong></li>
+        <li><strong>No se recomiendan los hisopados.</strong></li>
+        <li>Tomar un <strong>volumen suficiente</strong> que permita la realización de <strong>todos</strong> los estudios.</li>
+        <li><strong>Rotular</strong> con nombre del paciente, número de identificación, <strong>origen de la muestra</strong>, <strong>fecha y hora de la toma</strong>.</li>
+        <li>Utilizar un <strong>recipiente</strong> que permita la <strong>viabilidad del patógeno</strong>, que <strong>no pueda sufrir fisuras o roturas</strong> y que cumpla con las <strong>normas de bioseguridad</strong>.</li>
+        <li><strong>Evitar enviar material en jeringa con aguja.</strong></li>
+      </ol>
+
+      <p class="cita">Fuente: clase «Toma, transporte y conservación de muestras microbiológicas» del Prof. Danilo Barcudi, PhD, Facultad de Medicina UM — Sede San Rafael.</p>
+    </section>
+
+    <!-- ═══════════ SANGRE ═══════════ -->
+    <section class="seccion s-diagnostico" id="sangre">
+      <span class="seccion__pestana"><b>01</b> Bacteriemia</span>
+      <h2 class="seccion__titulo">Sospecha de Bacteriemia — Hemocultivos</h2>
+
+      <p><strong>Muestra: sangre</strong> (arterial o venosa) <strong>obtenida por punción</strong>.</p>
+
+      <h3>¿Cuándo realizar hemocultivos?</h3>
+      <h4>Con fiebre</h4>
+      <ul>
+        <li>Signos o síntomas de bacteriemia: <strong>hipertermia (&gt; 38 °C)</strong> o <strong>hipotermia (&lt; 36 °C)</strong>, <strong>leucocitosis o leucopenia</strong>, <strong>escalofríos</strong>, <strong>taquicardia</strong>.</li>
+        <li><strong>Fiebre</strong> con <strong>bajo nivel sérico de albúmina</strong>, <strong>insuficiencia renal</strong> o <strong>pobre estado funcional</strong>.</li>
+        <li><strong>Fiebre o hipotensión no explicadas</strong> por causas no infecciosas.</li>
+      </ul>
+      <h4>En ausencia de fiebre</h4>
+      <ul>
+        <li><strong>Infecciones focales:</strong> <strong>neumonía grave que requiere internación</strong>, <strong>meningitis</strong>, <strong>osteomielitis aguda</strong>.</li>
+        <li><strong>Pacientes añosos con deterioro</strong>: confusión mental, caídas frecuentes.</li>
+        <li><strong>Insuficiencia renal</strong> con <strong>leucocitosis o alteración mental</strong>.</li>
+        <li><strong>Inmunocomprometidos</strong> con insuficiencia <strong>respiratoria, renal o hepática</strong>.</li>
+        <li><strong>Control de tratamiento antibiótico</strong> relacionado a un episodio previo de <strong>bacteriemia o fungemia</strong>.</li>
+        <li><strong>Inestabilidad hemodinámica</strong>, deterioro, o <strong>falla en responder al tratamiento</strong>.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Los <strong>hemocultivos de vigilancia</strong> en poblaciones de riesgo —UTI, trasplantados— son de <strong>alto costo</strong> y tienen una <strong>utilidad clínica muy cuestionable</strong>. El hemocultivo se pide ante una sospecha, no como rutina de control.</p>
+      </div>
+
+      <h3>Cuándo y con qué intervalo</h3>
+      <ul>
+        <li>Lo más importante en la práctica: que las muestras <strong>se tomen ANTES de iniciar el tratamiento antimicrobiano</strong> y <strong>lo más pronto posible luego de establecida la fiebre</strong>.</li>
+        <li><strong>Pacientes estables</strong>, cuando el juicio clínico indica que se puede esperar: <strong>intervalo de 1 hora</strong> entre cada muestra.</li>
+        <li><strong>Pacientes hemodinámicamente inestables:</strong> se obtienen de <strong>vasos sanguíneos diferentes</strong>, con separación de <strong>sólo algunos minutos</strong>, y <strong>se empieza inmediatamente la terapéutica</strong>.</li>
+      </ul>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 400" role="img" aria-label="Técnica y volumen del hemocultivo. La técnica de obtención consiste en retirar los tapones externos de los frascos, desinfectar los tapones de goma con alcohol setenta por ciento dejando secar un minuto, preparar la piel con alcohol isopropílico dejando secar, aplicar soluciones yodadas o clorhexidina alcohólica al dos por ciento durante treinta segundos, y extraer la sangre sin tocar en ningún momento el campo desinfectado. En cuanto al volumen, en adultos son veinte mililitros en dos botellas de diez, con un ideal de veinte a treinta mililitros por punción en dos o tres frascos con dilución un décimo y nunca menos de diez mililitros; en pediatría son seis mililitros en dos botellas de uno a tres mililitros, según el peso. En adultos hay que incluir un frasco anaeróbico en el set, que se llena primero. Nunca refrigerar los frascos ya inoculados, no colocar cinta sobre el código de barras y transportar en menos de dos horas a temperatura ambiente.">
+          <text x="10" y="26" font-size="12.5" font-weight="700" fill="currentColor">Sospecha de bacteriemia — sangre obtenida por punción</text>
+
+          <rect x="10" y="40" width="380" height="262" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="26" y="66" font-size="12" font-weight="700" fill="currentColor">TÉCNICA DE OBTENCIÓN</text>
+
+          <circle cx="40" cy="94" r="11" fill="var(--c)" fill-opacity="0.85"></circle>
+          <text x="40" y="98" font-size="10.5" font-weight="700" fill="#FFFFFF" text-anchor="middle">1</text>
+          <text x="60" y="98" font-size="10.5" fill="currentColor" opacity="0.9">Retirar los tapones externos de los frascos</text>
+
+          <circle cx="40" cy="130" r="11" fill="var(--c)" fill-opacity="0.85"></circle>
+          <text x="40" y="134" font-size="10.5" font-weight="700" fill="#FFFFFF" text-anchor="middle">2</text>
+          <text x="60" y="128" font-size="10.5" fill="currentColor" opacity="0.9">Desinfectar los tapones de goma con alcohol</text>
+          <text x="60" y="143" font-size="10.5" fill="currentColor" opacity="0.9">70 %, dejándolo secar un minuto</text>
+
+          <circle cx="40" cy="172" r="11" fill="var(--c)" fill-opacity="0.85"></circle>
+          <text x="40" y="176" font-size="10.5" font-weight="700" fill="#FFFFFF" text-anchor="middle">3</text>
+          <text x="60" y="176" font-size="10.5" fill="currentColor" opacity="0.9">Preparar la piel con alcohol isopropílico y dejar secar</text>
+
+          <circle cx="40" cy="212" r="11" fill="var(--c)" fill-opacity="0.85"></circle>
+          <text x="40" y="216" font-size="10.5" font-weight="700" fill="#FFFFFF" text-anchor="middle">4</text>
+          <text x="60" y="204" font-size="10.5" fill="currentColor" opacity="0.9">Aplicar yodopovidona, tintura de yodo o</text>
+          <text x="60" y="219" font-size="10.5" fill="currentColor" opacity="0.9">clorhexidina alcohólica al 2 % durante 30 s</text>
+          <text x="60" y="234" font-size="10" fill="currentColor" opacity="0.7">La clorhexidina, no en menores de 2 meses</text>
+
+          <circle cx="40" cy="266" r="11" fill="var(--c)" fill-opacity="0.85"></circle>
+          <text x="40" y="270" font-size="10.5" font-weight="700" fill="#FFFFFF" text-anchor="middle">5</text>
+          <text x="60" y="264" font-size="10.5" font-weight="700" fill="currentColor">Extraer la sangre SIN TOCAR en ningún</text>
+          <text x="60" y="280" font-size="10.5" font-weight="700" fill="currentColor">momento el campo desinfectado</text>
+
+          <rect x="406" y="40" width="284" height="262" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.45" stroke-width="1.4"></rect>
+          <text x="422" y="66" font-size="12" font-weight="700" fill="currentColor">VOLUMEN</text>
+          <text x="422" y="92" font-size="11" font-weight="700" fill="currentColor">Adultos: 20 ml</text>
+          <text x="422" y="110" font-size="10.5" fill="currentColor" opacity="0.85">2 botellas de 10 ml cada una</text>
+          <text x="422" y="132" font-size="10.5" fill="currentColor" opacity="0.85">Ideal 20 – 30 ml por punción,</text>
+          <text x="422" y="148" font-size="10.5" fill="currentColor" opacity="0.85">en 2 – 3 frascos, dilución 1/10</text>
+          <text x="422" y="166" font-size="10.5" font-weight="700" fill="currentColor">Nunca menos de 10 ml</text>
+          <line x1="422" y1="184" x2="674" y2="184" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="422" y="206" font-size="11" font-weight="700" fill="currentColor">Pediátricos: 6 ml</text>
+          <text x="422" y="224" font-size="10.5" fill="currentColor" opacity="0.85">2 botellas de 1 – 3 ml</text>
+          <text x="422" y="240" font-size="10.5" fill="currentColor" opacity="0.85">El volumen depende del peso</text>
+          <line x1="422" y1="258" x2="674" y2="258" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="422" y="278" font-size="10.5" font-weight="700" fill="currentColor">En adultos, incluir un frasco</text>
+          <text x="422" y="294" font-size="10.5" font-weight="700" fill="currentColor">ANAERÓBICO — se llena PRIMERO</text>
+
+          <rect x="10" y="318" width="680" height="70" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="26" y="342" font-size="11.5" font-weight="700" fill="currentColor">Tres reglas que no se negocian</text>
+          <text x="26" y="364" font-size="11" font-weight="700" fill="currentColor">NUNCA REFRIGERAR los frascos ya inoculados</text>
+          <text x="26" y="382" font-size="11" fill="currentColor" opacity="0.85">NO colocar cinta sobre el código de barras   ·   TRANSPORTAR en menos de 2 h, a temperatura ambiente</text>
+        </svg>
+        <figcaption>Los dos errores más caros del hemocultivo son gratis de evitar: refrigerarlo, y tocar la piel ya desinfectada antes de puncionar.</figcaption>
+      </figure>
+
+      <p class="cita">Fuente: clase «Toma, transporte y conservación de muestras microbiológicas» de la cátedra. Volúmenes según A Guide to Utilization of the Microbiology Laboratory for Diagnosis of Infectious Diseases, CID 2018:67.</p>
+    </section>
+
+    <!-- ═══════════ CATÉTER ═══════════ -->
+    <section class="seccion s-diagnostico" id="cateter">
+      <span class="seccion__pestana"><b>02</b> Catéter</span>
+      <h2 class="seccion__titulo">Sospecha de Infección Asociada a Catéter</h2>
+
+      <p>La conducta depende de si el catéter es <strong>removible</strong> o de <strong>larga permanencia</strong>: en el primer caso se cultiva la punta, en el segundo se recurre al <strong>retrocultivo por tiempo diferencial</strong> sin retirar la vía.</p>
+
+      <h3>Catéter removible — punta de catéter</h3>
+      <ul>
+        <li><strong>Muestra: punta de catéter + hemocultivo.</strong></li>
+        <li>Se envía la <strong>porción distal de <span class="dato">4 – 6 cm</span></strong>.</li>
+        <li>Debe tomarse <strong>dentro de los 30 minutos posteriores a retirar la vía</strong>.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>Criterio de rechazo: puntas de catéter SIN hemocultivo.</strong> La punta sola no permite distinguir colonización de infección — hace falta el hemocultivo simultáneo para interpretarla.</p>
+      </div>
+
+      <h3>Catéter de larga permanencia — retrocultivo por tiempo diferencial</h3>
+      <p>Se toman <strong>hemocultivo periférico</strong> y <strong>retrocultivo</strong> —extraído a través del catéter— con un <strong>intervalo no mayor a 15 minutos</strong>. Lo que se compara después es <strong>cuál se positiviza primero y con cuánta diferencia</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 380" role="img" aria-label="Interpretación del retrocultivo por tiempo diferencial. Se toman hemocultivo periférico y retrocultivo del catéter con un intervalo no mayor a quince minutos. Si el retrocultivo es positivo y el hemocultivo negativo, se trata de colonización del catéter. Si el retrocultivo es negativo y el hemocultivo positivo, o si ambos son positivos dentro de las dos horas, se trata de bacteriemia no asociada a catéter. Si primero se positiviza el retrocultivo y recién después de dos horas el hemocultivo, se trata de bacteriemia asociada a catéter. La punta de catéter debe ser la porción distal de cuatro a seis centímetros, tomada dentro de los treinta minutos de retirar la vía, y las puntas sin hemocultivo son criterio de rechazo.">
+          <defs>
+            <marker id="pta-cat" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="100" y="8" width="500" height="56" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--ct)" stroke-width="2.5"></rect>
+          <text x="350" y="32" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">Hemocultivo periférico (H) + Retrocultivo (R)</text>
+          <text x="350" y="53" font-size="11" fill="currentColor" opacity="0.8" text-anchor="middle">Intervalo no mayor a 15 minutos entre ambos</text>
+
+          <line x1="350" y1="64" x2="350" y2="90" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="118" y1="90" x2="582" y2="90" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="118" y1="90" x2="118" y2="114" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-cat)"></line>
+          <line x1="350" y1="90" x2="350" y2="114" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-cat)"></line>
+          <line x1="582" y1="90" x2="582" y2="114" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-cat)"></line>
+
+          <rect x="10" y="116" width="216" height="180" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.3"></rect>
+          <text x="118" y="146" font-size="14" font-weight="700" fill="currentColor" text-anchor="middle">R (+)   H (−)</text>
+          <line x1="26" y1="164" x2="210" y2="164" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="26" y="188" font-size="10.5" fill="currentColor" opacity="0.85">Crece en el catéter</text>
+          <text x="26" y="206" font-size="10.5" fill="currentColor" opacity="0.85">pero no en la sangre</text>
+          <text x="26" y="240" font-size="12" font-weight="700" fill="currentColor">COLONIZACIÓN</text>
+          <text x="26" y="258" font-size="12" font-weight="700" fill="currentColor">del catéter</text>
+          <text x="26" y="282" font-size="10" fill="currentColor" opacity="0.7">No hay bacteriemia</text>
+
+          <rect x="242" y="116" width="216" height="180" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.3"></rect>
+          <text x="350" y="146" font-size="14" font-weight="700" fill="currentColor" text-anchor="middle">R (−)   H (+)</text>
+          <line x1="258" y1="164" x2="442" y2="164" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="258" y="188" font-size="10.5" fill="currentColor" opacity="0.85">…o ambos positivos</text>
+          <text x="258" y="206" font-size="10.5" fill="currentColor" opacity="0.85">dentro de las 2 h</text>
+          <text x="258" y="240" font-size="12" font-weight="700" fill="currentColor">BACTERIEMIA</text>
+          <text x="258" y="258" font-size="12" font-weight="700" fill="currentColor">NO asociada</text>
+          <text x="258" y="282" font-size="10" fill="currentColor" opacity="0.7">El foco está en otra parte</text>
+
+          <rect x="474" y="116" width="216" height="180" rx="3" fill="var(--c)" fill-opacity="0.18" stroke="var(--c)" stroke-width="2.2"></rect>
+          <text x="582" y="146" font-size="13" font-weight="700" fill="currentColor" text-anchor="middle">1.º R (+)</text>
+          <line x1="490" y1="164" x2="674" y2="164" stroke="currentColor" stroke-opacity="0.3" stroke-width="1"></line>
+          <text x="490" y="188" font-size="10.5" font-weight="700" fill="currentColor">Y recién tras 2 h,</text>
+          <text x="490" y="206" font-size="10.5" font-weight="700" fill="currentColor">se positiviza H</text>
+          <text x="490" y="240" font-size="12" font-weight="700" fill="currentColor">BACTERIEMIA</text>
+          <text x="490" y="258" font-size="12" font-weight="700" fill="currentColor">ASOCIADA a catéter</text>
+          <text x="490" y="282" font-size="10" fill="currentColor" opacity="0.75">El catéter es el foco</text>
+
+          <rect x="10" y="312" width="680" height="60" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.3" stroke-dasharray="5 3"></rect>
+          <text x="26" y="334" font-size="11.5" font-weight="700" fill="currentColor">Si el catéter se retira: punta de catéter</text>
+          <text x="26" y="356" font-size="11" fill="currentColor" opacity="0.8">Porción distal de 4 – 6 cm, tomada dentro de los 30 minutos de retirar la vía. Punta SIN hemocultivo = criterio de rechazo.</text>
+        </svg>
+        <figcaption>La lógica es de carga bacteriana: si el catéter es el foco, tiene muchas más bacterias que la sangre periférica y por eso su cultivo se positiviza al menos dos horas antes.</figcaption>
+      </figure>
+
+      <p class="cita">Fuente: clase «Toma, transporte y conservación de muestras microbiológicas» de la cátedra. Concordante con Soloaga R. «Bacteriemias y el manejo de las muestras microbiológicas de infecciones del torrente sanguíneo», nov. 2023.</p>
+    </section>
+
+    <!-- ═══════════ ORINA ═══════════ -->
+    <section class="seccion s-diagnostico" id="orina">
+      <span class="seccion__pestana"><b>03</b> Orina</span>
+      <h2 class="seccion__titulo">Sospecha de Infección Urinaria</h2>
+
+      <h3>Métodos de obtención</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Método</th><th>Observación</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Micción limpia o «al acecho»</strong></td><td>Requiere higiene previa y colaboración del paciente</td></tr>
+            <tr><td><strong>Orina por chorro medio</strong></td><td>El método habitual en el paciente que colabora</td></tr>
+            <tr><td><strong>Sondaje transitorio o intermitente</strong></td><td>Cuando el paciente no puede miccionar espontáneamente</td></tr>
+            <tr><td><strong>Sondaje permanente</strong></td><td>Se obtiene <strong>por punción de la sonda</strong>, y <strong>con recambio</strong> de la misma</td></tr>
+            <tr><td><strong>Punción suprapúbica</strong></td><td>Muestra <strong>estéril, sin microbiota acompañante</strong> — la de mayor valor interpretativo</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Consideraciones generales</h3>
+      <ul>
+        <li>Las muestras de orina <strong>no deben dejarse a temperatura ambiente por más de <span class="dato">30 minutos</span></strong>.</li>
+        <li>Los <strong>cultivos polimicrobianos con respuesta inflamatoria</strong> —<span class="dato">&gt; 10 leucocitos por campo</span>— <strong>requieren repetir el urocultivo</strong>, mejorando las condiciones de toma de muestra.</li>
+        <li><strong>Informar junto con la muestra</strong> si el paciente <strong>comenzó terapia antibiótica antes de la toma</strong>.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>No se procesan</strong> las muestras de <strong>bolsas colectoras</strong> ni las <strong>puntas de sondas vesicales</strong>. Ambas reflejan colonización del dispositivo, no infección del tracto urinario.</p>
+      </div>
+
+      <p class="cita">Fuente: clase «Toma, transporte y conservación de muestras microbiológicas» de la cátedra.</p>
+    </section>
+
+    <!-- ═══════════ VAS ═══════════ -->
+    <section class="seccion s-diagnostico" id="vas">
+      <span class="seccion__pestana"><b>04</b> Vía aérea superior</span>
+      <h2 class="seccion__titulo">Infecciones del Tracto Respiratorio Superior</h2>
+
+      <p>Comprende <strong>faringitis y faringoamigdalitis</strong>, <strong>sinusitis</strong> y <strong>otitis</strong>. Es el único bloque del capítulo donde el hisopado sigue siendo válido — y sólo en uno de los tres cuadros.</p>
+
+      <h3>Faringoamigdalitis</h3>
+      <ul>
+        <li><strong>Sin requerimientos especiales</strong> de conservación y transporte <strong>si se envía al laboratorio dentro de las <span class="dato">2 h</span></strong>. En caso contrario, el laboratorio provee <strong>medio de transporte (Stuart)</strong>.</li>
+        <li>El estudio está <strong>dirigido a la búsqueda de <em>Streptococcus</em> β-hemolíticos</strong>: <strong><em>S. pyogenes</em></strong> y <strong><em>S. dysgalactiae</em> subesp. <em>equisimilis</em></strong>.</li>
+      </ul>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Determinación</th><th>Resultado</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Test rápido antigénico (TR)</strong></td><td><strong>Inmediato</strong></td></tr>
+            <tr><td><strong>Cultivo en agar sangre de carnero (C)</strong></td><td><span class="dato">24 – 48 h</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Especificar en el pedido médico la determinación solicitada:</strong> <strong>TR</strong>, <strong>C</strong> o <strong>TR + C</strong>. Sin esa aclaración el laboratorio no sabe qué procesar.</p>
+
+      <h3>Sinusitis</h3>
+      <ul>
+        <li><strong>Muestra: punción-aspiración de senos paranasales.</strong></li>
+        <li>Enviar al laboratorio <strong>al menos <span class="dato">1 ml</span></strong>.</li>
+        <li><strong>NO se procesan hisopados nasofaríngeos ni moco obtenido por expulsión voluntaria</strong> (moco nasal).</li>
+      </ul>
+
+      <h3>Otitis media</h3>
+      <ul>
+        <li><strong>Muestra de elección: timpanocentesis.</strong></li>
+        <li><strong>Muestras alternativas:</strong> aspiración en pacientes con <strong>otorrea</strong> o con <strong>tubos de miringotomía</strong>.</li>
+        <li><strong>NO se procesan hisopados.</strong></li>
+      </ul>
+
+      <p class="cita">Fuente: clase «Toma, transporte y conservación de muestras microbiológicas» de la cátedra.</p>
+    </section>
+
+    <!-- ═══════════ VAI ═══════════ -->
+    <section class="seccion s-diagnostico" id="vai">
+      <span class="seccion__pestana"><b>05</b> Vía aérea inferior</span>
+      <h2 class="seccion__titulo">Infecciones del Tracto Respiratorio Inferior</h2>
+
+      <p>Comprende <strong>bronquitis</strong>, <strong>bronquiolitis</strong>, <strong>neumonía</strong> y <strong>abscesos pulmonares</strong>. La muestra cambia por completo según sea una <strong>NAC</strong> o una <strong>neumonía intrahospitalaria / asociada a ventilador</strong>.</p>
+
+      <h3>Neumonía adquirida en la comunidad (NAC)</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Muestra</th><th>Detalle</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Esputo</strong></td><td><strong>Previo lavado bucal con bicarbonato de sodio</strong></td></tr>
+            <tr><td><strong>Esputo seriado</strong></td><td><strong>Al menos 2 muestras</strong>, para <strong>BAAR</strong></td></tr>
+            <tr><td><strong>Líquido pleural</strong></td><td>En caso de <strong>empiema</strong></td></tr>
+            <tr><td><strong>Hemocultivos</strong></td><td><strong>Sólo en casos graves</strong> que requieran internación</td></tr>
+            <tr><td><strong>Lavado gástrico</strong></td><td><strong>3 muestras seriadas</strong> — <strong>ENVÍO INMEDIATO</strong></td></tr>
+            <tr><td><strong>Aspirado nasofaríngeo</strong></td><td>Para <em>Mycoplasma pneumoniae</em> y <em>Chlamydia pneumoniae</em>, por <strong>RT-PCR / qPCR</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Criterios de aptitud del esputo</h3>
+      <p><strong>No todas las muestras con desarrollo microbiano en cultivo deben jerarquizarse: sólo las que son consideradas APTAS.</strong> Hay dos sistemas de puntuación, y ambos miden lo mismo — cuánta saliva contaminó la muestra.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 402" role="img" aria-label="Criterios de aptitud del esputo. Según los criterios de Bartlett, los neutrófilos menores a diez suman cero, de diez a veinticinco suman más uno, mayores a veinticinco suman más dos, y la presencia de mucus suma más uno; las células epiteliales escamosas de diez a veinticinco restan uno y las mayores a veinticinco restan dos. Un puntaje final de cero o menos indica que no se siembra. Según los criterios de Murray de Mayo Clinic, hay cinco grupos según el número de células por campo de diez aumentos: el grupo uno tiene más de veinticinco epiteliales y menos de diez leucocitos, el dos más de veinticinco epiteliales y de diez a veinticinco leucocitos, el tres más de veinticinco epiteliales y más de veinticinco leucocitos, el cuatro de diez a veinticinco epiteliales y más de veinticinco leucocitos, y el cinco menos de diez epiteliales y más de veinticinco leucocitos. Sólo el grupo cinco se siembra. Las muestras con más de diez células epiteliales y menos de veinticinco polimorfonucleares por campo se consideran no representativas, y más de diez células epiteliales por campo indica contaminación con saliva.">
+          <text x="10" y="26" font-size="12" font-weight="700" fill="currentColor">Sólo se siembran las muestras APTAS — el resto es saliva</text>
+
+          <rect x="10" y="40" width="334" height="256" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="26" y="64" font-size="12" font-weight="700" fill="currentColor">CRITERIOS DE BARTLETT</text>
+          <text x="26" y="80" font-size="10" fill="currentColor" opacity="0.7">Cumitech — sistema de puntaje</text>
+          <line x1="26" y1="92" x2="328" y2="92" stroke="currentColor" stroke-opacity="0.3" stroke-width="1"></line>
+          <text x="26" y="112" font-size="10.5" font-weight="700" fill="currentColor">Neutrófilos por campo de 10×</text>
+          <text x="40" y="132" font-size="10.5" fill="currentColor" opacity="0.9">&lt; 10</text>
+          <text x="290" y="132" font-size="11" font-weight="700" fill="currentColor" text-anchor="end">0</text>
+          <text x="40" y="150" font-size="10.5" fill="currentColor" opacity="0.9">10 – 25</text>
+          <text x="290" y="150" font-size="11" font-weight="700" fill="currentColor" text-anchor="end">+1</text>
+          <text x="40" y="168" font-size="10.5" fill="currentColor" opacity="0.9">&gt; 25</text>
+          <text x="290" y="168" font-size="11" font-weight="700" fill="currentColor" text-anchor="end">+2</text>
+          <text x="40" y="186" font-size="10.5" fill="currentColor" opacity="0.9">Presencia de mucus</text>
+          <text x="290" y="186" font-size="11" font-weight="700" fill="currentColor" text-anchor="end">+1</text>
+          <text x="26" y="212" font-size="10.5" font-weight="700" fill="currentColor">Células epiteliales escamosas</text>
+          <text x="40" y="232" font-size="10.5" fill="currentColor" opacity="0.9">10 – 25</text>
+          <text x="290" y="232" font-size="11" font-weight="700" fill="currentColor" text-anchor="end">−1</text>
+          <text x="40" y="250" font-size="10.5" fill="currentColor" opacity="0.9">&gt; 25</text>
+          <text x="290" y="250" font-size="11" font-weight="700" fill="currentColor" text-anchor="end">−2</text>
+          <line x1="26" y1="264" x2="328" y2="264" stroke="currentColor" stroke-opacity="0.3" stroke-width="1"></line>
+          <text x="26" y="286" font-size="11.5" font-weight="700" fill="currentColor">Puntaje final ≤ 0 → NO SE SIEMBRA</text>
+
+          <rect x="356" y="40" width="334" height="256" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="372" y="64" font-size="12" font-weight="700" fill="currentColor">CRITERIOS DE MURRAY</text>
+          <text x="372" y="80" font-size="10" fill="currentColor" opacity="0.7">Mayo Clinic — sistema de grupos</text>
+          <line x1="372" y1="92" x2="674" y2="92" stroke="currentColor" stroke-opacity="0.3" stroke-width="1"></line>
+          <text x="372" y="112" font-size="10" font-weight="700" fill="currentColor" opacity="0.75">GRUPO</text>
+          <text x="490" y="112" font-size="10" font-weight="700" fill="currentColor" opacity="0.75">EPITELIALES</text>
+          <text x="596" y="112" font-size="10" font-weight="700" fill="currentColor" opacity="0.75">LEUCOCITOS</text>
+          <text x="380" y="136" font-size="10.5" fill="currentColor" opacity="0.9">1</text>
+          <text x="490" y="136" font-size="10.5" fill="currentColor" opacity="0.9">&gt; 25</text>
+          <text x="596" y="136" font-size="10.5" fill="currentColor" opacity="0.9">&lt; 10</text>
+          <text x="380" y="158" font-size="10.5" fill="currentColor" opacity="0.9">2</text>
+          <text x="490" y="158" font-size="10.5" fill="currentColor" opacity="0.9">&gt; 25</text>
+          <text x="596" y="158" font-size="10.5" fill="currentColor" opacity="0.9">10 – 25</text>
+          <text x="380" y="180" font-size="10.5" fill="currentColor" opacity="0.9">3</text>
+          <text x="490" y="180" font-size="10.5" fill="currentColor" opacity="0.9">&gt; 25</text>
+          <text x="596" y="180" font-size="10.5" fill="currentColor" opacity="0.9">&gt; 25</text>
+          <text x="380" y="202" font-size="10.5" fill="currentColor" opacity="0.9">4</text>
+          <text x="490" y="202" font-size="10.5" fill="currentColor" opacity="0.9">10 – 25</text>
+          <text x="596" y="202" font-size="10.5" fill="currentColor" opacity="0.9">&gt; 25</text>
+          <rect x="368" y="212" width="310" height="26" rx="2" fill="var(--c)" fill-opacity="0.25"></rect>
+          <text x="380" y="230" font-size="10.5" font-weight="700" fill="currentColor">5</text>
+          <text x="490" y="230" font-size="10.5" font-weight="700" fill="currentColor">&lt; 10</text>
+          <text x="596" y="230" font-size="10.5" font-weight="700" fill="currentColor">&gt; 25</text>
+          <line x1="372" y1="256" x2="674" y2="256" stroke="currentColor" stroke-opacity="0.3" stroke-width="1"></line>
+          <text x="372" y="278" font-size="11.5" font-weight="700" fill="currentColor">SÓLO EL GRUPO 5 SE SIEMBRA</text>
+
+          <rect x="10" y="312" width="680" height="78" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="26" y="336" font-size="11.5" font-weight="700" fill="currentColor">La célula epitelial es el marcador de contaminación</text>
+          <text x="26" y="358" font-size="11" fill="currentColor" opacity="0.85">Más de 10 células epiteliales por campo de 10× indica que la muestra está contaminada con saliva.</text>
+          <text x="26" y="380" font-size="11" font-weight="700" fill="currentColor">Muestras con &gt; 10 células epiteliales y &lt; 25 PMN por campo → NO REPRESENTATIVAS / NO APTAS.</text>
+        </svg>
+        <figcaption>Los dos sistemas dicen lo mismo con distinta aritmética: <em>muchos neutrófilos y pocas células epiteliales</em> es una muestra de pulmón; lo inverso es una muestra de boca.</figcaption>
+      </figure>
+
+      <h3>Neumonía intrahospitalaria (NIH) y asociada a ventilador (NAV)</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Tipo</th><th>Muestra</th><th>Volumen</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Broncoscópicas</strong></td><td><strong>Lavado broncoalveolar (BAL)</strong></td><td><span class="dato">100 – 120 ml</span> en alícuotas de 20 ml</td></tr>
+            <tr><td><strong>No broncoscópicas</strong></td><td><strong>miniBAL</strong></td><td><span class="dato">10 – 20 ml</span></td></tr>
+            <tr><td><strong>No broncoscópicas</strong></td><td><strong>Aspirado endotraqueal</strong></td><td>—</td></tr>
+            <tr><td><strong>Quirúrgica</strong></td><td><strong>Biopsia de pulmón</strong></td><td>—</td></tr>
+            <tr><td><strong>Complementarias</strong></td><td><strong>Hemocultivos</strong> y <strong>líquido pleural</strong></td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>En la NIH y la NAV los cultivos son <strong>CUANTITATIVOS</strong>, expresados en <strong>UFC/ml</strong>. El recuento es lo que separa infección de colonización de la vía aérea: en un paciente intubado siempre hay bacterias, la pregunta es cuántas.</p>
+      </div>
+
+      <h3>Conservación del BAL</h3>
+      <ul>
+        <li><strong>Idealmente dentro de los <span class="dato">30 minutos</span></strong>; <strong>no más de <span class="dato">2 horas</span></strong>.</li>
+        <li>La demora produce <strong>sobrecrecimiento de colonizantes</strong> y <strong>disminución del recuento de <em>S. pneumoniae</em> y <em>H. influenzae</em></strong> — es decir, falsea el resultado en las dos direcciones a la vez.</li>
+        <li><strong>Conservación a <span class="dato">4 °C</span>.</strong></li>
+        <li><strong>Frascos plásticos de boca ancha y tapa a rosca.</strong></li>
+        <li><strong>Fracciones separadas e identificadas.</strong></li>
+      </ul>
+
+      <p class="cita">Fuente: clase «Toma, transporte y conservación de muestras microbiológicas» de la cátedra. En la tabla de criterios de Murray, la diapositiva original omite los signos de desigualdad; se restituyen según la clasificación de Murray-Washington, con la que los cinco grupos resultan coherentes.</p>
+    </section>
+
+    <!-- ═══════════ SNC ═══════════ -->
+    <section class="seccion s-diagnostico" id="snc">
+      <span class="seccion__pestana"><b>06</b> SNC</span>
+      <h2 class="seccion__titulo">Infecciones del Sistema Nervioso Central</h2>
+
+      <h3>Muestras según la sospecha</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Sospecha</th><th>Muestra de elección</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Meningitis / encefalitis</strong></td>
+              <td><strong>LCR</strong> obtenido por <strong>punción lumbar</strong> o por <strong>derivación ventriculoperitoneal (shunt)</strong> + <strong>hemocultivo</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Absceso cerebral</strong></td>
+              <td><strong>Punción-aspiración intracraneal</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 322" role="img" aria-label="Manejo del líquido cefalorraquídeo obtenido por punción lumbar. Se recogen tres tubos estériles con tapa a rosca: el primero para el estudio físico-químico, el segundo para el estudio bacteriológico y el tercero para estudios especiales virológicos, serológicos y citológicos. El envío al laboratorio debe ser inmediato y el líquido no se refrigera. El volumen mínimo para el estudio bacteriológico rutinario es de un mililitro, aunque es preferible disponer de volúmenes superiores; para hongos o micobacterias se necesitan al menos dos mililitros adicionales, y para el estudio de virus uno o dos mililitros más.">
+          <text x="10" y="26" font-size="12.5" font-weight="700" fill="currentColor">LCR por punción lumbar — 3 tubos estériles, tapa a rosca</text>
+
+          <rect x="10" y="42" width="216" height="180" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <circle cx="118" cy="76" r="18" fill="var(--c)" fill-opacity="0.85"></circle>
+          <text x="118" y="82" font-size="16" font-weight="700" fill="#FFFFFF" text-anchor="middle">1</text>
+          <text x="118" y="122" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">Físico-químico</text>
+          <text x="118" y="152" font-size="10.5" fill="currentColor" opacity="0.8" text-anchor="middle">Aspecto, proteínas,</text>
+          <text x="118" y="170" font-size="10.5" fill="currentColor" opacity="0.8" text-anchor="middle">glucosa, recuento</text>
+
+          <rect x="242" y="42" width="216" height="180" rx="3" fill="var(--c)" fill-opacity="0.24" stroke="var(--c)" stroke-width="2.5"></rect>
+          <circle cx="350" cy="76" r="18" fill="var(--c)" fill-opacity="0.9"></circle>
+          <text x="350" y="82" font-size="16" font-weight="700" fill="#FFFFFF" text-anchor="middle">2</text>
+          <text x="350" y="122" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">Bacteriológico</text>
+          <text x="350" y="152" font-size="10.5" fill="currentColor" opacity="0.85" text-anchor="middle">Gram y cultivo</text>
+          <text x="350" y="176" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">Mínimo 1 ml</text>
+
+          <rect x="474" y="42" width="216" height="180" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <circle cx="582" cy="76" r="18" fill="var(--c)" fill-opacity="0.85"></circle>
+          <text x="582" y="82" font-size="16" font-weight="700" fill="#FFFFFF" text-anchor="middle">3</text>
+          <text x="582" y="122" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">Estudios especiales</text>
+          <text x="582" y="152" font-size="10.5" fill="currentColor" opacity="0.8" text-anchor="middle">Virológicos</text>
+          <text x="582" y="170" font-size="10.5" fill="currentColor" opacity="0.8" text-anchor="middle">Serológicos · citológicos</text>
+
+          <rect x="10" y="238" width="680" height="74" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="26" y="262" font-size="11.5" font-weight="700" fill="currentColor">ENVÍO INMEDIATO AL LABORATORIO   ·   NO REFRIGERAR</text>
+          <text x="26" y="284" font-size="11" fill="currentColor" opacity="0.85">Volumen mínimo: 1 ml para el bacteriológico rutinario, aunque es preferible disponer de más.</text>
+          <text x="26" y="304" font-size="11" fill="currentColor" opacity="0.85">Sumar al menos 2 ml para hongos o micobacterias, y 1 – 2 ml más para el estudio de virus.</text>
+        </svg>
+        <figcaption>El orden de los tubos no es arbitrario: el segundo es el bacteriológico porque el primero arrastra la contaminación cutánea de la punción.</figcaption>
+      </figure>
+
+      <h3>Volumen mínimo del LCR</h3>
+      <ul>
+        <li><strong>Estudio bacteriológico rutinario:</strong> es suficiente <span class="dato">1 ml</span>, aunque <strong>es preferible disponer de volúmenes superiores</strong>.</li>
+        <li><strong>Hongos o micobacterias:</strong> se necesitan <strong>al menos <span class="dato">2 ml adicionales</span></strong>.</li>
+        <li><strong>Estudio de virus:</strong> se necesita <strong>al menos <span class="dato">1 o 2 ml más</span></strong>.</li>
+      </ul>
+
+      <p class="cita">Fuente: clase «Toma, transporte y conservación de muestras microbiológicas» de la cátedra. La justificación del orden de los tubos no figura en la presentación y se agrega como fundamento habitual del procedimiento.</p>
+    </section>
+
+    <!-- ═══════════ LÍQUIDOS ═══════════ -->
+    <section class="seccion s-diagnostico" id="liquidos">
+      <span class="seccion__pestana"><b>07</b> Líquidos</span>
+      <h2 class="seccion__titulo">Líquidos Obtenidos por Punción</h2>
+
+      <p>Comparten manejo porque comparten condición: son <strong>muestras estériles obtenidas por punción</strong>, y por eso cualquier desarrollo es significativo.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Líquido</th><th>Origen</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Líquido pleural</strong></td><td>Espacio pleural</td></tr>
+            <tr><td><strong>Líquido peritoneal / ascítico</strong></td><td>Cavidad peritoneal</td></tr>
+            <tr><td><strong>Líquido articular / sinovial</strong></td><td>Cavidad articular</td></tr>
+            <tr><td><strong>Líquido pericárdico</strong></td><td>Saco pericárdico</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Cómo se envían</h3>
+      <ul>
+        <li><strong>1 o 2 tubos secos estériles</strong> para el estudio microbiológico.</li>
+        <li><strong>1 tubo anticoagulado con EDTA</strong> para el <strong>recuento celular</strong>.</li>
+        <li><strong>Volumen de muestra: <span class="dato">1 – 10 ml</span>.</strong></li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>¡Tener en cuenta el enrase!</strong> El tubo con EDTA está calibrado para un volumen determinado: llenarlo de menos o de más altera la proporción de anticoagulante y, con ella, el recuento celular que se informa.</p>
+      </div>
+
+      <p class="cita">Fuente: clase «Toma, transporte y conservación de muestras microbiológicas» de la cátedra.</p>
+    </section>
+
+    <!-- ═══════════ IPPB ═══════════ -->
+    <section class="seccion s-diagnostico" id="ippb">
+      <span class="seccion__pestana"><b>08</b> Piel y partes blandas</span>
+      <h2 class="seccion__titulo">Infecciones de Piel y Partes Blandas</h2>
+
+      <h3>1. Úlceras, exantemas y heridas superficiales</h3>
+      <ul>
+        <li><strong>Desinfectar la superficie de la herida con alcohol 70°.</strong></li>
+        <li><strong>Recoger el pus mediante jeringa y aguja</strong> (punción-aspiración), <strong>preferentemente de zonas profundas</strong>.</li>
+        <li>Enviar al laboratorio en <strong>tubo estéril tapa a rosca</strong>.</li>
+        <li>Cuando la muestra sea <strong>insuficiente</strong>: <strong>instilar solución fisiológica y aspirar nuevamente</strong>.</li>
+        <li>Para muestras líquidas se intentará obtener <span class="dato">1 – 10 ml</span>.</li>
+      </ul>
+
+      <h3>2. Abscesos cerrados</h3>
+      <ul>
+        <li><strong>Desinfectar la piel:</strong> limpiar con <strong>alcohol 70°</strong>, <strong>de forma concéntrica comenzando por el centro</strong>, abarcando <span class="dato">10 cm</span>. <strong>Repetir con povidona</strong> y dejar actuar <span class="dato">1 minuto</span>.</li>
+        <li><strong>Realizar punción-aspiración del absceso.</strong></li>
+        <li>Enviar en <strong>tubo estéril tapa a rosca</strong>; volumen <span class="dato">1 – 5 ml</span>.</li>
+        <li><strong>Enviar tan pronto sea posible</strong>, manteniendo a <strong>temperatura ambiente</strong>.</li>
+        <li><strong>Es de suma importancia identificar de qué zona proviene el absceso.</strong></li>
+      </ul>
+
+      <h3>3. Biopsias</h3>
+      <ul>
+        <li><strong>Muestras sólidas:</strong> tejido por <strong>escisión quirúrgica</strong>, procurando <strong>incluir las zonas más afectadas</strong>. Pieza de <strong>al menos <span class="dato">5 cm²</span></strong>.</li>
+        <li><strong>Muestras líquidas:</strong> <strong>aspiración con jeringa y aguja</strong>, entre <span class="dato">1 – 5 ml</span>.</li>
+        <li><strong>Enviar tan pronto sea posible</strong>, a <strong>temperatura ambiente</strong>.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>¡No introducir las muestras en soluciones con formol!</strong> El formol fija el tejido para histología pero <strong>mata al microorganismo</strong>: una biopsia en formol es inservible para cultivo. La única excepción del capítulo es el <strong>coproparasitológico</strong>, donde el formol sí se usa porque se buscan estructuras parasitarias, no gérmenes viables.</p>
+      </div>
+
+      <h3>4. Biopsia en quemados</h3>
+      <ul>
+        <li>Se realizará la toma del <strong>área que muestre los hallazgos más marcados de infección</strong> de la quemadura.</li>
+        <li>La muestra debe ser de aproximadamente <span class="dato">500 mg</span>.</li>
+        <li><strong>El agente anestésico se inyecta en la periferia del sitio de biopsia</strong>, para <strong>evitar la distorsión de la morfología del tejido</strong>.</li>
+        <li><strong>Limpiar la superficie con alcohol 70° previo a la toma.</strong></li>
+        <li><strong>Incluir tejido viable</strong> en la muestra sospechada de infección.</li>
+        <li>Enviar en <strong>frasco estéril con solución fisiológica</strong>, para <strong>evitar la desecación</strong>.</li>
+        <li><strong>Complementar con estudios histológicos.</strong></li>
+      </ul>
+
+      <p class="cita">Fuente: clase «Toma, transporte y conservación de muestras microbiológicas» de la cátedra.</p>
+    </section>
+
+    <!-- ═══════════ OSTEOARTICULARES ═══════════ -->
+    <section class="seccion s-diagnostico" id="osteo">
+      <span class="seccion__pestana"><b>09</b> Osteoarticulares</span>
+      <h2 class="seccion__titulo">Infecciones Osteoarticulares</h2>
+
+      <h3>Consideraciones generales</h3>
+      <ul>
+        <li><strong>No se recomiendan los hisopos</strong> para la recolección de muestras: son <strong>preferibles los aspirados y las biopsias de tejido</strong>.</li>
+        <li>Los <strong>hemocultivos están indicados</strong> para la detección de algunos agentes de <strong>osteomielitis e infección articular</strong>.</li>
+        <li>Para el diagnóstico de <strong>infección de prótesis articular</strong> se deben enviar <strong>varias muestras de tejido separadas</strong>.</li>
+        <li><strong>Suspender el antibiótico 2 semanas antes de la toma de muestra.</strong></li>
+      </ul>
+
+      <h3>Osteomielitis</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Muestra</th><th>Detalle</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Hemocultivo</strong></td><td>Rendimiento del <span class="dato">30 – 60 %</span></td></tr>
+            <tr><td><strong>Punción-aspiración ósea</strong></td><td>Muestra directa del foco</td></tr>
+            <tr><td><strong>Punción articular</strong></td><td>Si hay compromiso articular asociado</td></tr>
+            <tr><td><strong>Drenaje quirúrgico</strong></td><td>Material obtenido en el acto</td></tr>
+            <tr><td><strong>Material óseo</strong></td><td>Biopsia — <strong>no introducir en formol</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Infecciones asociadas a prótesis articulares</h3>
+      <ul>
+        <li><strong>Tejido tomado durante el acto quirúrgico:</strong> <strong>4 – 5 muestras de tejido adyacente y de la interfase tejido-cemento</strong>.</li>
+        <li><strong>Punción-aspiración de material purulento.</strong></li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Tres cosas que <strong>NO se envían</strong> en este bloque: <strong>muestras de hisopado o aspiración de fístula</strong> —reflejan la flora que colonizó el trayecto, no el germen del hueso—, <strong>la prótesis completa</strong>, y <strong>cualquier muestra en formol</strong>.</p>
+      </div>
+
+      <p class="cita">Fuente: clase «Toma, transporte y conservación de muestras microbiológicas» de la cátedra. La presentación consigna «3 o 4 muestras» en la diapositiva de consideraciones generales y «4-5 muestras» en la específica de prótesis; se toma esta última, que es la más detallada.</p>
+    </section>
+
+    <!-- ═══════════ GASTRO ═══════════ -->
+    <section class="seccion s-diagnostico" id="gastro">
+      <span class="seccion__pestana"><b>10</b> Gastrointestinal</span>
+      <h2 class="seccion__titulo">Infecciones Gastrointestinales</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Estudio</th><th>Muestra</th><th>Conservación</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Coprocultivo</strong><br>(enteropatógenos)</td>
+              <td><strong>Heces diarreicas</strong>, <strong>muco-sanguinolentas</strong></td>
+              <td>Enviar dentro de las <span class="dato">2 h</span>; en caso contrario, <strong>refrigerar</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Investigación de <em>Clostridium difficile</em></strong></td>
+              <td><strong>Heces diarreicas</strong> o <strong>no formes</strong>. Sólo en pacientes con <strong>terapia antibiótica prolongada</strong></td>
+              <td>Hasta <span class="dato">48 h</span> en refrigeración; <strong>congelada a −20 °C se mantiene indefinidamente</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Coproparasitológico</strong></td>
+              <td><strong>Seriado</strong> (al menos <span class="dato">5 días</span>), o en muestra aislada. <strong>Hisopado anal o cinta — test de Graham</strong></td>
+              <td><strong>Colocar las heces en solución de formol</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>NO se procesan heces formes</strong> — ni para coprocultivo ni para <em>C. difficile</em>. Y la investigación de <em>C. difficile</em> <strong>no está sugerida en pediatría</strong>, por el <strong>elevado porcentaje de colonización</strong> asintomática en esa población: un resultado positivo no significaría enfermedad.</p>
+      </div>
+
+      <h3>Sospecha de botulismo</h3>
+      <p>La <strong>sospecha clínica y epidemiológica debe ser confirmada por exámenes de laboratorio</strong>, mediante la <strong>investigación de <em>C. botulinum</em> y su toxina</strong>.</p>
+      <ul>
+        <li><strong>Suero.</strong></li>
+        <li><strong>Contenido intestinal</strong>, que permite confirmar el diagnóstico <strong>en aquellos casos en que el estudio en suero resulte negativo</strong>.</li>
+      </ul>
+
+      <p class="cita">Fuente: clase «Toma, transporte y conservación de muestras microbiológicas» de la cátedra. Botulismo según la Guía de Botulismo Alimentario 2016, Ministerio de Salud de la Provincia de Mendoza.</p>
+    </section>
+
+    <!-- ═══════════ MDR ═══════════ -->
+    <section class="seccion s-diagnostico" id="mdr">
+      <span class="seccion__pestana"><b>11</b> Vigilancia MDR</span>
+      <h2 class="seccion__titulo">Investigación de Multirresistentes</h2>
+
+      <p>Es el único bloque donde <strong>el hisopado es la muestra correcta</strong>, y por una razón conceptual: <strong>acá no se busca una infección sino una colonización</strong>. La superficie es exactamente lo que interesa.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Germen buscado</th><th>Muestra</th><th>A quién</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong><em>S. aureus</em> meticilino-resistente (SAMR)</strong></td>
+              <td><strong>Hisopado nasal, inguinal o faríngeo</strong></td>
+              <td>Pacientes con <strong>cirugías programadas</strong>, con el objetivo de <strong>reducir el riesgo de infecciones endógenas</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Bacilos gramnegativos productores de carbapenemasas</strong> (KPC / MBL / OXA)</td>
+              <td><strong>Hisopado anal</strong></td>
+              <td>Pacientes con <strong>internación prolongada</strong>, <strong>cambio de servicio</strong>, <strong>provenientes de otra institución</strong>, o con <strong>colonización previa</strong> (6 meses como mínimo)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>En ambos casos hay que <strong>solicitar al laboratorio los tubos con medio de transporte</strong> antes de tomar la muestra.</p>
+
+      <p class="cita">Fuente: clase «Toma, transporte y conservación de muestras microbiológicas» de la cátedra. Programa Nacional de Vigilancia de Infecciones Hospitalarias de Argentina (VIHDA), Instituto Nacional de Epidemiología «Dr. Juan H. Jara».</p>
+    </section>
+
+    <!-- ═══════════ RECHAZO ═══════════ -->
+    <section class="seccion s-importantes" id="rechazo">
+      <span class="seccion__pestana"><b>12</b> Alerta</span>
+      <h2 class="seccion__titulo">Criterios de Rechazo &amp; Muestras que No se Procesan</h2>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 386" role="img" aria-label="Criterios de rechazo y muestras que no se procesan. Se rechaza una muestra si está deficientemente identificada, si está derramada, si es para cultivo y fue obtenida por hisopado, o si el transporte o la conservación fueron inadecuados; también se rechazan las puntas de catéter sin hemocultivo simultáneo. No se procesan las muestras de bolsas colectoras de orina, las puntas de sondas vesicales, los hisopados nasofaríngeos y el moco nasal en sinusitis, los hisopados de oído en otitis, las heces formes, el hisopado o aspiración de fístula, la prótesis completa, y las muestras para cultivo colocadas en formol. La regla que atraviesa todo el capítulo es que la muestra se toma antes del antibiótico.">
+          <rect x="10" y="8" width="334" height="290" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="26" y="34" font-size="12.5" font-weight="700" fill="currentColor">SE RECHAZA LA MUESTRA SI…</text>
+          <line x1="26" y1="46" x2="328" y2="46" stroke="currentColor" stroke-opacity="0.3" stroke-width="1"></line>
+          <text x="26" y="72" font-size="11" fill="currentColor" opacity="0.9">· Está deficientemente identificada</text>
+          <text x="26" y="102" font-size="11" fill="currentColor" opacity="0.9">· Está derramada</text>
+          <text x="26" y="132" font-size="11" font-weight="700" fill="currentColor">· Es para cultivo y fue obtenida</text>
+          <text x="26" y="148" font-size="11" font-weight="700" fill="currentColor">  por HISOPADO</text>
+          <text x="26" y="178" font-size="11" fill="currentColor" opacity="0.9">· El transporte o la conservación</text>
+          <text x="26" y="194" font-size="11" fill="currentColor" opacity="0.9">  fueron inadecuados</text>
+          <line x1="26" y1="216" x2="328" y2="216" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="26" y="240" font-size="11" font-weight="700" fill="currentColor">· Es una punta de catéter</text>
+          <text x="26" y="256" font-size="11" font-weight="700" fill="currentColor">  SIN hemocultivo simultáneo</text>
+          <text x="26" y="282" font-size="10" fill="currentColor" opacity="0.7">Sin el hemocultivo no se puede interpretar.</text>
+
+          <rect x="356" y="8" width="334" height="290" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.45" stroke-width="1.4"></rect>
+          <text x="372" y="34" font-size="12.5" font-weight="700" fill="currentColor">NUNCA SE PROCESAN</text>
+          <line x1="372" y1="46" x2="674" y2="46" stroke="currentColor" stroke-opacity="0.3" stroke-width="1"></line>
+          <text x="372" y="70" font-size="10.5" fill="currentColor" opacity="0.9">· Bolsas colectoras de orina</text>
+          <text x="372" y="92" font-size="10.5" fill="currentColor" opacity="0.9">· Puntas de sondas vesicales</text>
+          <text x="372" y="114" font-size="10.5" fill="currentColor" opacity="0.9">· Hisopado nasofaríngeo y moco nasal</text>
+          <text x="372" y="130" font-size="10.5" fill="currentColor" opacity="0.7">  (en sinusitis)</text>
+          <text x="372" y="152" font-size="10.5" fill="currentColor" opacity="0.9">· Hisopados de oído (en otitis)</text>
+          <text x="372" y="174" font-size="10.5" fill="currentColor" opacity="0.9">· Heces formes</text>
+          <text x="372" y="196" font-size="10.5" fill="currentColor" opacity="0.9">· Hisopado o aspiración de fístula</text>
+          <text x="372" y="218" font-size="10.5" fill="currentColor" opacity="0.9">· La prótesis completa</text>
+          <text x="372" y="240" font-size="10.5" fill="currentColor" opacity="0.9">· Muestras para cultivo en FORMOL</text>
+          <text x="372" y="256" font-size="10.5" fill="currentColor" opacity="0.7">  (única excepción: coproparasitológico)</text>
+          <line x1="372" y1="272" x2="674" y2="272" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="372" y="290" font-size="10" fill="currentColor" opacity="0.7">Todas reflejan colonización, no infección.</text>
+
+          <rect x="10" y="314" width="680" height="62" rx="3" fill="var(--c)" fill-opacity="0.9"></rect>
+          <text x="26" y="340" font-size="13" font-weight="700" fill="#FFFFFF">La regla que atraviesa todo el capítulo</text>
+          <text x="26" y="364" font-size="12" font-weight="700" fill="#FFFFFF">LA MUESTRA SE TOMA ANTES DEL ANTIBIÓTICO.</text>
+        </svg>
+        <figcaption>Casi todos los rechazos tienen el mismo origen conceptual: la muestra representa una superficie colonizada y no el sitio donde está la infección.</figcaption>
+      </figure>
+
+      <h3>Los cuatro criterios formales de rechazo</h3>
+      <ol>
+        <li><strong>Muestras deficientemente identificadas.</strong></li>
+        <li><strong>Muestras derramadas.</strong></li>
+        <li><strong>Muestras para cultivo obtenidas por hisopado.</strong></li>
+        <li><strong>Transporte o conservación inadecuados.</strong></li>
+      </ol>
+
+      <h3>Errores frecuentes reunidos</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Error</th><th>Por qué invalida la muestra</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Refrigerar frascos de hemocultivo ya inoculados</strong></td><td>Compromete la viabilidad del germen</td></tr>
+            <tr><td><strong>Refrigerar el LCR</strong></td><td>Se envía inmediato y a temperatura ambiente</td></tr>
+            <tr><td><strong>Colocar cinta sobre el código de barras</strong> del frasco</td><td>Impide la lectura automatizada del equipo</td></tr>
+            <tr><td><strong>Enviar material en jeringa con aguja</strong></td><td>Riesgo de bioseguridad; se transfiere a tubo estéril</td></tr>
+            <tr><td><strong>Cultivar la fístula por hisopado</strong></td><td>Refleja la flora del trayecto, no el germen del hueso</td></tr>
+            <tr><td><strong>Poner una biopsia en formol</strong></td><td>Mata al microorganismo: sirve para histología, no para cultivo</td></tr>
+            <tr><td><strong>Dejar la orina más de 30 minutos a temperatura ambiente</strong></td><td>Sobrecrecimiento bacteriano que falsea el recuento</td></tr>
+            <tr><td><strong>Demorar el BAL más de 2 h</strong></td><td>Sobrecrecen los colonizantes y cae el recuento de <em>S. pneumoniae</em> y <em>H. influenzae</em></td></tr>
+            <tr><td><strong>Enviar la punta de catéter sin hemocultivo</strong></td><td>No permite distinguir colonización de bacteriemia</td></tr>
+            <tr><td><strong>No especificar TR, C o TR + C</strong> en el pedido de fauces</td><td>El laboratorio no sabe qué determinación realizar</td></tr>
+            <tr><td><strong>Tomar la muestra con el paciente antibioticado</strong></td><td>Negativiza el cultivo sin que la infección esté curada</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Fuente: clase «Toma, transporte y conservación de muestras microbiológicas» de la cátedra. La tabla de errores frecuentes reúne, en un solo lugar, advertencias que en la presentación aparecen dispersas en cada bloque temático.</p>
+    </section>
+
+    <!-- ═══════════ TABLA MAESTRA ═══════════ -->
+    <section class="seccion s-diferenciales" id="tabla">
+      <span class="seccion__pestana"><b>—</b> Resumen</span>
+      <h2 class="seccion__titulo">Tabla Maestra: sospecha → muestra → transporte</h2>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 380" role="img" aria-label="Tiempos y temperaturas de transporte y conservación de muestras microbiológicas. Envío inmediato y sin refrigerar: hemocultivos en menos de dos horas a temperatura ambiente, líquido cefalorraquídeo y lavado gástrico. Dentro de los treinta minutos: orina a temperatura ambiente, lavado broncoalveolar idealmente, y punta de catéter tras retirar la vía. Dentro de las dos horas: transporte general de dos a cuatro horas, hisopado de fauces —y si no, medio de Stuart—, materia fecal y lavado broncoalveolar como máximo. Refrigerar o congelar: materia fecal si se demora, lavado broncoalveolar a cuatro grados, y Clostridium difficile hasta cuarenta y ocho horas refrigerado o congelado a menos veinte grados indefinidamente.">
+          <text x="10" y="26" font-size="12.5" font-weight="700" fill="currentColor">Tiempos y temperaturas — lo que más se olvida</text>
+
+          <rect x="10" y="42" width="162" height="228" rx="3" fill="var(--c)" fill-opacity="0.20" stroke="var(--c)" stroke-width="2.2"></rect>
+          <text x="24" y="66" font-size="11" font-weight="700" fill="currentColor">INMEDIATO</text>
+          <text x="24" y="82" font-size="11" font-weight="700" fill="currentColor">y NO refrigerar</text>
+          <line x1="24" y1="94" x2="158" y2="94" stroke="currentColor" stroke-opacity="0.3" stroke-width="1"></line>
+          <text x="24" y="118" font-size="10.5" fill="currentColor" opacity="0.9">Hemocultivos</text>
+          <text x="24" y="134" font-size="10" fill="currentColor" opacity="0.7">&lt; 2 h, T° ambiente</text>
+          <text x="24" y="162" font-size="10.5" fill="currentColor" opacity="0.9">LCR</text>
+          <text x="24" y="178" font-size="10" fill="currentColor" opacity="0.7">Envío inmediato</text>
+          <text x="24" y="206" font-size="10.5" fill="currentColor" opacity="0.9">Lavado gástrico</text>
+          <text x="24" y="222" font-size="10" fill="currentColor" opacity="0.7">3 muestras seriadas</text>
+          <text x="24" y="252" font-size="10" font-weight="700" fill="currentColor">El frío los mata.</text>
+
+          <rect x="184" y="42" width="162" height="228" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="1.6"></rect>
+          <text x="198" y="66" font-size="11" font-weight="700" fill="currentColor">≤ 30 MINUTOS</text>
+          <line x1="198" y1="94" x2="332" y2="94" stroke="currentColor" stroke-opacity="0.3" stroke-width="1"></line>
+          <text x="198" y="118" font-size="10.5" fill="currentColor" opacity="0.9">Orina</text>
+          <text x="198" y="134" font-size="10" fill="currentColor" opacity="0.7">A T° ambiente</text>
+          <text x="198" y="162" font-size="10.5" fill="currentColor" opacity="0.9">BAL (ideal)</text>
+          <text x="198" y="178" font-size="10" fill="currentColor" opacity="0.7">Máximo 2 h</text>
+          <text x="198" y="206" font-size="10.5" fill="currentColor" opacity="0.9">Punta de catéter</text>
+          <text x="198" y="222" font-size="10" fill="currentColor" opacity="0.7">Tras retirar la vía</text>
+
+          <rect x="358" y="42" width="162" height="228" rx="3" fill="var(--c)" fill-opacity="0.08" stroke="currentColor" stroke-opacity="0.45" stroke-width="1.4"></rect>
+          <text x="372" y="66" font-size="11" font-weight="700" fill="currentColor">≤ 2 HORAS</text>
+          <line x1="372" y1="94" x2="506" y2="94" stroke="currentColor" stroke-opacity="0.3" stroke-width="1"></line>
+          <text x="372" y="118" font-size="10.5" fill="currentColor" opacity="0.9">Transporte general</text>
+          <text x="372" y="134" font-size="10" fill="currentColor" opacity="0.7">Norma: 2 – 4 h</text>
+          <text x="372" y="162" font-size="10.5" fill="currentColor" opacity="0.9">Hisopado de fauces</text>
+          <text x="372" y="178" font-size="10" fill="currentColor" opacity="0.7">Si no, medio de Stuart</text>
+          <text x="372" y="206" font-size="10.5" fill="currentColor" opacity="0.9">Materia fecal</text>
+          <text x="372" y="222" font-size="10" fill="currentColor" opacity="0.7">Si no, refrigerar</text>
+
+          <rect x="532" y="42" width="158" height="228" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.45" stroke-width="1.4"></rect>
+          <text x="546" y="66" font-size="11" font-weight="700" fill="currentColor">REFRIGERAR o</text>
+          <text x="546" y="82" font-size="11" font-weight="700" fill="currentColor">CONGELAR</text>
+          <line x1="546" y1="94" x2="676" y2="94" stroke="currentColor" stroke-opacity="0.3" stroke-width="1"></line>
+          <text x="546" y="118" font-size="10.5" fill="currentColor" opacity="0.9">Materia fecal</text>
+          <text x="546" y="134" font-size="10" fill="currentColor" opacity="0.7">Si se demora</text>
+          <text x="546" y="162" font-size="10.5" fill="currentColor" opacity="0.9">BAL</text>
+          <text x="546" y="178" font-size="10" fill="currentColor" opacity="0.7">A 4 °C</text>
+          <text x="546" y="206" font-size="10.5" fill="currentColor" opacity="0.9">C. difficile</text>
+          <text x="546" y="222" font-size="10" fill="currentColor" opacity="0.7">48 h a 4 °C, o</text>
+          <text x="546" y="236" font-size="10" fill="currentColor" opacity="0.7">−20 °C indefinido</text>
+
+          <rect x="10" y="288" width="680" height="80" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.3" stroke-dasharray="5 3"></rect>
+          <text x="26" y="312" font-size="11.5" font-weight="700" fill="currentColor">Dos reglas que resumen la columna izquierda</text>
+          <text x="26" y="334" font-size="11" fill="currentColor" opacity="0.85">NUNCA se refrigeran: los frascos de hemocultivo ya inoculados, ni el LCR.</text>
+          <text x="26" y="356" font-size="11" fill="currentColor" opacity="0.85">El transporte general al laboratorio es de 2 a 4 h; toda demora mayor exige un medio de transporte adecuado.</text>
+        </svg>
+        <figcaption>La regla no es «frío = mejor». Refrigerar un hemocultivo o un LCR mata justamente lo que se quiere cultivar.</figcaption>
+      </figure>
+
+      <h3>Resumen por sospecha clínica</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Sospecha</th><th>Muestra de elección</th><th>Transporte y conservación</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Bacteriemia</strong></td><td>Hemocultivo por punción — 20 ml en 2 frascos (adultos)</td><td>&lt; 2 h, T° ambiente. <strong>Nunca refrigerar</strong></td></tr>
+            <tr><td><strong>Infección por catéter</strong></td><td>Punta distal 4 – 6 cm + hemocultivo, o retrocultivo por tiempo diferencial</td><td>Punta dentro de los 30 min de retirar la vía</td></tr>
+            <tr><td><strong>Infección urinaria</strong></td><td>Chorro medio, sondaje o punción suprapúbica</td><td>Máximo 30 min a T° ambiente</td></tr>
+            <tr><td><strong>Faringoamigdalitis</strong></td><td>Hisopado de fauces — especificar TR, C o TR + C</td><td>&lt; 2 h; si no, medio de Stuart</td></tr>
+            <tr><td><strong>Sinusitis</strong></td><td>Punción-aspiración de senos, ≥ 1 ml</td><td>No se procesan hisopados nasofaríngeos</td></tr>
+            <tr><td><strong>Otitis media</strong></td><td>Timpanocentesis</td><td>No se procesan hisopados</td></tr>
+            <tr><td><strong>NAC</strong></td><td>Esputo con lavado bucal previo; seriado × 2 para BAAR</td><td>Debe cumplir criterios de aptitud (Bartlett o Murray)</td></tr>
+            <tr><td><strong>NIH / NAV</strong></td><td>BAL 100 – 120 ml, miniBAL 10 – 20 ml, aspirado endotraqueal</td><td>Ideal &lt; 30 min, máximo 2 h; a 4 °C. <strong>Cuantitativo</strong></td></tr>
+            <tr><td><strong>Meningitis</strong></td><td>LCR en 3 tubos + hemocultivo</td><td>Envío inmediato. <strong>No refrigerar</strong></td></tr>
+            <tr><td><strong>Líquidos de punción</strong></td><td>1 – 2 tubos secos + 1 tubo con EDTA; 1 – 10 ml</td><td>Tener en cuenta el enrase del tubo con EDTA</td></tr>
+            <tr><td><strong>Piel y partes blandas</strong></td><td>Punción-aspiración de zonas profundas; biopsia</td><td>T° ambiente, lo antes posible. <strong>Nunca formol</strong></td></tr>
+            <tr><td><strong>Osteoarticulares</strong></td><td>Aspirado o biopsia; 4 – 5 muestras si hay prótesis</td><td>Suspender ATB 2 semanas antes. <strong>Nunca fístula ni formol</strong></td></tr>
+            <tr><td><strong>Gastrointestinal</strong></td><td>Heces diarreicas o no formes</td><td>&lt; 2 h; si no, refrigerar. Coproparasitológico <strong>en formol</strong></td></tr>
+            <tr><td><strong>Vigilancia de MDR</strong></td><td>Hisopado nasal/inguinal/faríngeo (SAMR); anal (carbapenemasas)</td><td>Solicitar tubos con medio de transporte</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Fuente: clase «Toma, transporte y conservación de muestras microbiológicas» de la cátedra. La tabla maestra consolida datos que en la presentación aparecen distribuidos entre las distintas secciones.</p>
+    </section>
+
+    <!-- ============ Repaso activo ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>¿De qué cuatro factores depende un diagnóstico microbiológico correcto?</summary>
+          <div class="fc__r"><strong>Calidad de la muestra</strong>; <strong>condiciones de conservación y transporte</strong>; <strong>procesamiento e inoculación en medios apropiados</strong>; y <strong>experiencia del personal de laboratorio</strong>. Los dos primeros dependen de quien toma la muestra.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Diferenciá una muestra obtenida por punción de una obtenida por hisopado.</summary>
+          <div class="fc__r"><strong>Por punción:</strong> <strong>sin microbiota normal acompañante</strong>; microscopía y cultivo <strong>muy significativos</strong> (LCR, punción suprapúbica, punción pleural, sangre).<br><strong>Por hisopado o emisión espontánea:</strong> <strong>contiene microbiota acompañante</strong>; hay que disminuir esa carga, diferenciar patógeno de flora normal y usar <strong>cultivos cuantitativos o semicuantitativos</strong>. Por eso <strong>no se recomiendan los hisopados</strong>.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Qué datos debe llevar el rotulado de una muestra?</summary>
+          <div class="fc__r"><strong>Nombre del paciente</strong>, <strong>número de identificación</strong>, <strong>origen de la muestra</strong>, <strong>fecha y hora de la toma</strong>. Y la petición con <strong>firma, sello y diagnóstico presuntivo</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Volumen del hemocultivo en adultos y en pediatría. ¿Qué frasco se llena primero?</summary>
+          <div class="fc__r"><strong>Adultos:</strong> 20 ml en 2 botellas de 10 ml (ideal 20 – 30 ml por punción, 2 – 3 frascos, dilución 1/10, <strong>nunca menos de 10 ml</strong>). <strong>Pediatría:</strong> 6 ml en 2 botellas de 1 – 3 ml, según el peso.<br>En adultos se incluye un <strong>frasco anaeróbico</strong> en el set, que <strong>se llena PRIMERO</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Qué intervalo entre hemocultivos según el estado del paciente?</summary>
+          <div class="fc__r"><strong>Estables</strong> (cuando el juicio clínico permite esperar): <strong>1 hora</strong> entre cada muestra. <strong>Inestables hemodinámicamente</strong>: de <strong>vasos diferentes</strong>, con <strong>separación de sólo algunos minutos</strong>, e <strong>iniciar inmediatamente la terapéutica</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Tres reglas de transporte del hemocultivo.</summary>
+          <div class="fc__r"><strong>NUNCA refrigerar</strong> los frascos ya inoculados · <strong>NO colocar cinta sobre el código de barras</strong> · <strong>transportar en menos de 2 h a temperatura ambiente</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Interpretá las tres combinaciones del retrocultivo por tiempo diferencial.</summary>
+          <div class="fc__r"><strong>R (+) y H (−)</strong> → <strong>colonización del catéter</strong>.<br><strong>R (−) y H (+)</strong>, o <strong>ambos (+) dentro de las 2 h</strong> → <strong>bacteriemia NO asociada a catéter</strong>.<br><strong>Primero R (+) y recién tras 2 h H (+)</strong> → <strong>bacteriemia ASOCIADA a catéter</strong>.<br>El intervalo entre ambas tomas no debe superar los <strong>15 minutos</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Punta de catéter: longitud, tiempo y criterio de rechazo.</summary>
+          <div class="fc__r"><strong>Porción distal de 4 – 6 cm</strong>, tomada <strong>dentro de los 30 minutos</strong> posteriores a retirar la vía. <strong>Criterio de rechazo: puntas SIN hemocultivo.</strong></div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Qué muestras de orina no se procesan, y cuánto tiempo tolera la orina a temperatura ambiente?</summary>
+          <div class="fc__r">No se procesan <strong>bolsas colectoras</strong> ni <strong>puntas de sondas vesicales</strong>. La orina <strong>no debe permanecer más de 30 minutos</strong> a temperatura ambiente.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Muestra de elección en sinusitis y en otitis media. ¿Qué no se procesa?</summary>
+          <div class="fc__r"><strong>Sinusitis:</strong> <strong>punción-aspiración de senos paranasales</strong>, al menos 1 ml. NO se procesan hisopados nasofaríngeos ni moco nasal.<br><strong>Otitis media:</strong> <strong>timpanocentesis</strong>; alternativas, aspiración en otorrea o tubos de miringotomía. NO se procesan hisopados.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>En el hisopado de fauces, ¿qué se busca y qué hay que aclarar en el pedido?</summary>
+          <div class="fc__r">Se busca <strong><em>Streptococcus</em> β-hemolítico</strong> — <em>S. pyogenes</em> y <em>S. dysgalactiae</em> subesp. <em>equisimilis</em>. Hay que <strong>especificar la determinación: TR, C o TR + C</strong>. El test rápido es inmediato; el cultivo en agar sangre de carnero demora <strong>24 – 48 h</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Criterios de Bartlett: ¿qué suma, qué resta y cuál es el punto de corte?</summary>
+          <div class="fc__r"><strong>Suman:</strong> neutrófilos 10 – 25 (+1), &gt; 25 (+2); presencia de mucus (+1). <strong>Restan:</strong> células epiteliales escamosas 10 – 25 (−1), &gt; 25 (−2). Neutrófilos &lt; 10 = 0.<br><strong>Puntaje final de 0 o menos → NO SE SIEMBRA.</strong></div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Criterios de Murray: ¿cuál es el único grupo que se siembra?</summary>
+          <div class="fc__r"><strong>Sólo el grupo 5</strong>: <strong>&lt; 10 células epiteliales</strong> y <strong>&gt; 25 leucocitos</strong> por campo de 10×. Más de 10 células epiteliales por campo indica <strong>contaminación con saliva</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Muestras de la NIH/NAV y su volumen. ¿Qué tipo de cultivo se hace?</summary>
+          <div class="fc__r"><strong>BAL</strong> 100 – 120 ml en alícuotas de 20 ml; <strong>miniBAL</strong> 10 – 20 ml; <strong>aspirado endotraqueal</strong>; biopsia de pulmón; hemocultivos y líquido pleural. Los cultivos son <strong>CUANTITATIVOS, en UFC/ml</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Qué pasa si el BAL demora más de 2 horas?</summary>
+          <div class="fc__r"><strong>Sobrecrecen los colonizantes</strong> y <strong>disminuye el recuento de <em>S. pneumoniae</em> y <em>H. influenzae</em></strong>: el resultado se falsea en las dos direcciones. Ideal: dentro de los <strong>30 minutos</strong>, conservado a <strong>4 °C</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Para qué es cada uno de los tres tubos de LCR?</summary>
+          <div class="fc__r"><strong>1.º</strong> físico-químico · <strong>2.º</strong> <strong>bacteriológico</strong> · <strong>3.º</strong> estudios especiales (virológicos, serológicos, citológicos). <strong>Envío inmediato y NO refrigerar.</strong></div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Volúmenes mínimos de LCR según el estudio.</summary>
+          <div class="fc__r"><strong>Bacteriológico rutinario:</strong> 1 ml (preferible más). <strong>Hongos o micobacterias:</strong> al menos <strong>2 ml adicionales</strong>. <strong>Virus:</strong> <strong>1 o 2 ml más</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Cómo se desinfecta la piel antes de puncionar un absceso cerrado?</summary>
+          <div class="fc__r">Con <strong>alcohol 70°</strong>, <strong>de forma concéntrica comenzando por el centro</strong>, abarcando <strong>10 cm</strong>. Luego <strong>repetir con povidona</strong> y dejar actuar <strong>1 minuto</strong>. Después se hace la <strong>punción-aspiración</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Biopsia en quemados: dónde se toma, cuánto pesa y cómo se envía.</summary>
+          <div class="fc__r">Del <strong>área con hallazgos más marcados de infección</strong>, aproximadamente <strong>500 mg</strong>, <strong>incluyendo tejido viable</strong>. El anestésico se inyecta <strong>en la periferia</strong> para no distorsionar la morfología. Se limpia con alcohol 70° previo y se envía en <strong>frasco estéril con solución fisiológica</strong> para evitar la desecación. <strong>Complementar con histología.</strong></div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Osteoarticulares: ¿qué NO se envía nunca?</summary>
+          <div class="fc__r"><strong>Hisopado o aspiración de fístula</strong>, <strong>la prótesis completa</strong> y <strong>cualquier muestra en formol</strong>. Para prótesis se envían <strong>4 – 5 muestras de tejido</strong> adyacente y de la interfase tejido-cemento, y hay que <strong>suspender el ATB 2 semanas antes</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Cuándo se investiga <em>C. difficile</em> y por qué no en pediatría?</summary>
+          <div class="fc__r">Sólo en pacientes con <strong>terapia antibiótica prolongada</strong>, en <strong>heces diarreicas o no formes</strong>. <strong>No está sugerido en pediatría</strong> por el <strong>elevado porcentaje de colonización</strong> asintomática. Se conserva hasta 48 h refrigerada, o congelada a −20 °C indefinidamente.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿En qué situación el hisopado SÍ es la muestra correcta?</summary>
+          <div class="fc__r">En la <strong>vigilancia de multirresistentes</strong>, porque ahí se busca <strong>colonización y no infección</strong>: <strong>hisopado nasal, inguinal o faríngeo</strong> para SAMR, e <strong>hisopado anal</strong> para BGN productores de carbapenemasas. También sigue siendo válido el <strong>hisopado de fauces</strong> en la faringoamigdalitis.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>Enumerá los cuatro criterios de rechazo de una muestra.</summary>
+          <div class="fc__r">1) <strong>Deficientemente identificadas</strong>. 2) <strong>Derramadas</strong>. 3) <strong>Para cultivo, obtenidas por hisopado</strong>. 4) <strong>Transporte o conservación inadecuados</strong>. Se suma el rechazo específico de <strong>puntas de catéter sin hemocultivo</strong>.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Qué muestras nunca se refrigeran?</summary>
+          <div class="fc__r">Los <strong>frascos de hemocultivo ya inoculados</strong> y el <strong>LCR</strong>. Ambos van a <strong>temperatura ambiente</strong> y con envío inmediato.</div>
+        </details>
+
+        <details class="fc s-diferenciales">
+          <summary>¿Cuál es la única muestra del capítulo que sí va en formol?</summary>
+          <div class="fc__r">El <strong>coproparasitológico</strong>. En todo el resto, el formol <strong>mata al microorganismo</strong> y arruina el cultivo — especialmente en biopsias de partes blandas y material óseo.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">El principio que ordena todo</dt>
+        <dd><strong>Punción</strong> = sin microbiota acompañante → <strong>cualquier desarrollo es significativo</strong>. <strong>Hisopado o emisión espontánea</strong> = con microbiota → hay que <strong>cuantificar y diferenciar</strong>. Por eso <strong>no se recomiendan los hisopados</strong>, salvo en <strong>fauces</strong> y en la <strong>vigilancia de MDR</strong>, donde se busca colonización.</dd>
+
+        <dt class="r-gold">Los números que se preguntan</dt>
+        <dd><strong>Hemocultivo:</strong> 20 ml adultos (2 × 10 ml), 6 ml pediatría; <strong>anaeróbico primero</strong>; &lt; 2 h. <strong>Punta de catéter:</strong> 4 – 6 cm, ≤ 30 min. <strong>Retrocultivo:</strong> intervalo ≤ 15 min; <strong>2 h</strong> de diferencia define la asociación al catéter. <strong>Orina:</strong> ≤ 30 min. <strong>LCR:</strong> 3 tubos, 1 ml bacteriológico + 2 ml hongos/micobacterias + 1 – 2 ml virus. <strong>BAL:</strong> 100 – 120 ml; miniBAL 10 – 20 ml. <strong>Prótesis:</strong> 4 – 5 muestras, ATB suspendido 2 semanas antes.</dd>
+
+        <dt class="r-tto">Aptitud del esputo</dt>
+        <dd><strong>Bartlett:</strong> neutrófilos suman (10 – 25 → +1; &gt; 25 → +2; mucus +1), células epiteliales restan (10 – 25 → −1; &gt; 25 → −2). <strong>Puntaje ≤ 0 → no se siembra.</strong><br><strong>Murray:</strong> <strong>sólo el grupo 5</strong> (&lt; 10 epiteliales y &gt; 25 leucocitos) se siembra. <strong>&gt; 10 células epiteliales por campo = contaminación con saliva.</strong></dd>
+
+        <dt class="r-alerta">Criterios de rechazo</dt>
+        <dd><strong>Mal identificada · derramada · hisopado para cultivo · transporte o conservación inadecuados.</strong> Nunca se procesan: <strong>bolsas colectoras, puntas de sonda vesical, hisopado nasofaríngeo en sinusitis, hisopado de oído, heces formes, fístula, prótesis completa</strong> y <strong>muestras en formol</strong> (excepto coproparasitológico). <strong>Nunca refrigerar hemocultivos ni LCR.</strong> Y sobre todo: <strong>la muestra va ANTES del antibiótico.</strong></dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir de la clase «Toma, transporte y conservación de muestras microbiológicas» del Prof. Danilo Barcudi, PhD, Facultad de Medicina de la Universidad de Mendoza — Sede San Rafael. Bibliografía de la cátedra: Programa Nacional de Vigilancia de Infecciones Hospitalarias de Argentina (VIHDA), Instituto Nacional de Epidemiología «Dr. Juan H. Jara»; A Guide to Utilization of the Microbiology Laboratory for Diagnosis of Infectious Diseases, actualización 2018, IDSA Guideline; Procedimientos en Microbiología Clínica, Sociedad Española de Enfermedades Infecciosas y Microbiología Clínica (SEIMC); Comité de Infecciones Hospitalarias del Hospital T. J. Schestakow; Soloaga R., «Bacteriemias y el manejo de las muestras microbiológicas de infecciones del torrente sanguíneo», nov. 2023. Material de estudio: no reemplaza el criterio clínico ni la guía institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link'));
+
+  function porMeta(hash){
+    for (var i = 0; i < enlaces.length; i++){
+      if (enlaces[i].getAttribute('href') === '#' + hash) return enlaces[i];
+    }
+    return null;
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var enlace = porMeta(e.target.id);
+        if (!enlace) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          enlace.setAttribute('aria-current', 'true');
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>

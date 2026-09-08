@@ -1,0 +1,1583 @@
+<title>Sepsis y Shock Séptico</title>
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+}
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índice lateral ---------- */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Ficha de sección ---------- */
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.35rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-row:1/3; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+.importante__titulo{
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso{ display:none !important; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Sepsis</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-generalidades"  href="#sep-generalidades">Generalidades &amp; Etiología</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#sep-fisiopatologia">Fisiopatología</a></li>
+      <li><a class="indice__link i-clinica"        href="#sep-clinica">Cuadro Clínico &amp; Riesgo</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#sep-diagnostico">Scores Diagnósticos</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#sep-tratamiento">Tratamiento</a></li>
+      <li><a class="indice__link i-importantes"    href="#sep-importantes">Aspectos Importantes</a></li>
+      <li><a class="indice__link i-diferenciales"  href="#sep-diferenciales">Diagnósticos Diferenciales</a></li>
+    </ul>
+    <p class="indice__rotulo" style="margin-top:1.2rem">Shock séptico</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-generalidades"  href="#sh-definicion">Definición &amp; Criterios</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#sh-lactato">El Lactato</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#sh-tratamiento">Manejo — Hour One Bundle</a></li>
+    </ul>
+    <p class="indice__rotulo" style="margin-top:1.2rem">Cierre</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Infectología · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Sepsis y Shock Séptico</h1>
+      <p class="portada__bajada">Perspectiva infectológica según las definiciones Sepsis-3, la Surviving Sepsis Campaign 2021 y las guías NICE 2024. Dos entidades encadenadas: la sepsis y el subconjunto que la vuelve mucho más letal.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">Definiciones Sepsis-3</span>
+        <span class="etiqueta s-diagnostico">SIRS · qSOFA · NEWS 2</span>
+        <span class="etiqueta s-tratamiento">Hour One Bundle</span>
+        <span class="etiqueta s-importantes">Emergencia médica</span>
+      </div>
+    </header>
+
+    <!-- ═══════════════ PARTE I · SEPSIS ═══════════════ -->
+
+    <section class="seccion s-generalidades" id="sep-generalidades">
+      <span class="seccion__pestana"><b>01</b> Sepsis · Base</span>
+      <h2 class="seccion__titulo">Sepsis — Generalidades &amp; Etiología</h2>
+
+      <p><strong>Sepsis</strong> es la <strong>disfunción orgánica potencialmente mortal causada por una desregulación de la respuesta del huésped a la infección</strong>. La palabra clave es <strong>disfunción orgánica</strong>: sin ella hay infección, pero no sepsis.</p>
+
+      <p><strong>Shock séptico</strong> es un <strong>subconjunto dentro de la sepsis</strong> en el que las alteraciones subyacentes circulatorias, celulares o metabólicas son <strong>lo suficientemente profundas como para aumentar considerablemente la mortalidad</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 372" role="img" aria-label="Definiciones Sepsis-3. Ante una infección documentada o sospechada se pregunta si hay disfunción orgánica causada por una respuesta desregulada del huésped. Si no la hay, es una infección sin sepsis. Si la hay, es sepsis. Dentro de la sepsis, si además hay hipotensión que requiere vasopresores para mantener una presión arterial media de sesenta y cinco milímetros de mercurio y lactato mayor a dos milimoles por litro pese al volumen, se trata de shock séptico. Sepsis-3 eliminó los términos SIRS y sepsis grave, y las guías de dos mil veintiuno eliminaron el qSOFA como criterio diagnóstico de disfunción orgánica.">
+          <defs>
+            <marker id="pta-s3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="20" y="8" width="360" height="44" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.45" stroke-width="1.3"></rect>
+          <text x="200" y="35" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">Infección documentada o sospechada</text>
+
+          <line x1="200" y1="52" x2="200" y2="70" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-s3)"></line>
+
+          <rect x="20" y="72" width="360" height="52" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="200" y="95" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">¿Hay disfunción orgánica por</text>
+          <text x="200" y="113" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">respuesta desregulada del huésped?</text>
+
+          <line x1="200" y1="124" x2="200" y2="142" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="100" y1="142" x2="300" y2="142" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="100" y1="142" x2="100" y2="164" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-s3)"></line>
+          <line x1="300" y1="142" x2="300" y2="164" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-s3)"></line>
+          <text x="66" y="158" font-size="11" font-weight="700" fill="currentColor">no</text>
+          <text x="308" y="158" font-size="11" font-weight="700" fill="currentColor">sí</text>
+
+          <rect x="20" y="166" width="160" height="44" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="100" y="193" font-size="11.5" fill="currentColor" opacity="0.8" text-anchor="middle">Infección sin sepsis</text>
+
+          <rect x="220" y="166" width="160" height="44" rx="3" fill="var(--c)" fill-opacity="0.9"></rect>
+          <text x="300" y="194" font-size="13.5" font-weight="700" fill="#FFFFFF" text-anchor="middle">SEPSIS</text>
+
+          <line x1="300" y1="210" x2="300" y2="228" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-s3)"></line>
+
+          <rect x="20" y="230" width="360" height="66" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="36" y="252" font-size="11" font-weight="700" fill="currentColor">Pese al volumen adecuado, ¿además hay…</text>
+          <text x="36" y="270" font-size="10.5" fill="currentColor" opacity="0.85">· vasopresores para mantener PAM ≥ 65 mmHg, y</text>
+          <text x="36" y="287" font-size="10.5" fill="currentColor" opacity="0.85">· lactato &gt; 2 mmol/L (&gt; 18 mg/dL)?</text>
+
+          <line x1="200" y1="296" x2="200" y2="314" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-s3)"></line>
+          <text x="210" y="310" font-size="11" font-weight="700" fill="currentColor">sí — los dos</text>
+
+          <rect x="20" y="316" width="360" height="46" rx="3" fill="var(--c)" fill-opacity="0.9"></rect>
+          <text x="200" y="345" font-size="13.5" font-weight="700" fill="#FFFFFF" text-anchor="middle">SHOCK SÉPTICO</text>
+
+          <rect x="416" y="8" width="270" height="354" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.28" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="432" y="34" font-size="12" font-weight="700" fill="currentColor">Lo que cambió con Sepsis-3</text>
+
+          <text x="432" y="62" font-size="10.5" font-weight="700" fill="currentColor">Se eliminó «SIRS»</text>
+          <text x="432" y="79" font-size="10.5" fill="currentColor" opacity="0.75">Puede ser sólo la respuesta</text>
+          <text x="432" y="95" font-size="10.5" fill="currentColor" opacity="0.75">apropiada y adaptativa</text>
+          <text x="432" y="111" font-size="10.5" fill="currentColor" opacity="0.75">del huésped.</text>
+
+          <text x="432" y="141" font-size="10.5" font-weight="700" fill="currentColor">Se eliminó «sepsis grave»</text>
+          <text x="432" y="158" font-size="10.5" fill="currentColor" opacity="0.75">Era redundante: toda sepsis</text>
+          <text x="432" y="174" font-size="10.5" fill="currentColor" opacity="0.75">implica ya disfunción orgánica.</text>
+
+          <text x="432" y="204" font-size="10.5" font-weight="700" fill="currentColor">Las guías 2021 eliminan qSOFA</text>
+          <text x="432" y="221" font-size="10.5" fill="currentColor" opacity="0.75">…como criterio diagnóstico de</text>
+          <text x="432" y="237" font-size="10.5" fill="currentColor" opacity="0.75">disfunción orgánica. Queda</text>
+          <text x="432" y="253" font-size="10.5" fill="currentColor" opacity="0.75">como herramienta de alerta.</text>
+
+          <line x1="432" y1="278" x2="670" y2="278" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+
+          <text x="432" y="302" font-size="10.5" font-weight="700" fill="currentColor">Consecuencia práctica</text>
+          <text x="432" y="319" font-size="10.5" fill="currentColor" opacity="0.75">El diagnóstico ya no se apoya</text>
+          <text x="432" y="335" font-size="10.5" fill="currentColor" opacity="0.75">en un puntaje: se apoya en</text>
+          <text x="432" y="351" font-size="10.5" fill="currentColor" opacity="0.75">demostrar disfunción de órgano.</text>
+        </svg>
+        <figcaption>Los puntajes ayudan a sospechar, pero ninguno define la sepsis. Lo que la define es la disfunción orgánica atribuible a una respuesta desregulada frente a la infección.</figcaption>
+      </figure>
+
+      <h3>Etiología — sitios de infección</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Sitio</th><th>Frecuencia</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Pulmón</strong></td><td><strong><span class="dato">64 %</span></strong></td></tr>
+            <tr><td>Abdomen</td><td><span class="dato">20 %</span></td></tr>
+            <tr><td>Sangre</td><td><span class="dato">15 %</span></td></tr>
+            <tr><td>Aparato genitourinario</td><td><span class="dato">14 %</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Etiología — gérmenes</h3>
+      <p>Del <span class="dato">70 %</span> de los pacientes infectados <strong>con cultivos positivos</strong>:</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Grupo</th><th>Proporción</th><th>Principales</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Gramnegativos</strong></td><td><strong><span class="dato">62 %</span></strong></td><td><em>Pseudomonas</em> spp. <span class="dato">20 %</span> · <em>Escherichia coli</em> <span class="dato">16 %</span></td></tr>
+            <tr><td><strong>Grampositivos</strong></td><td><strong><span class="dato">47 %</span></strong></td><td><em>Staphylococcus aureus</em> <span class="dato">20 %</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Las proporciones suman más de 100 % porque una parte importante de los cuadros es <strong>polimicrobiana</strong>: en un mismo paciente se aíslan gérmenes de los dos grupos.</p>
+
+      <h3>Factores de riesgo</h3>
+      <ul>
+        <li><strong>Mayores de 75 años.</strong></li>
+        <li><strong>Inmunocomprometidos:</strong>
+          <ul>
+            <li>Quimioterapia.</li>
+            <li>Disfunciones inmunológicas: <strong>diabetes</strong>, <strong>esplenectomía</strong>.</li>
+            <li>Corticoterapia prolongada.</li>
+            <li>Inmunosupresores.</li>
+          </ul>
+        </li>
+        <li>Antecedente de <strong>cirugía o procedimiento invasivo en las últimas <span class="dato">6 semanas</span></strong>.</li>
+        <li>Alteraciones de la <strong>integridad cutánea</strong>: heridas, quemaduras.</li>
+        <li><strong>Adictos a drogas endovenosas.</strong></li>
+        <li>Pacientes con <strong>catéteres o accesos venosos centrales</strong>.</li>
+        <li><strong>Puerperio.</strong></li>
+      </ul>
+
+      <p class="cita">Fuente: Singer M et al. The Third International Consensus Definitions for Sepsis and Septic Shock (Sepsis-3). Evans L et al. Surviving Sepsis Campaign: International Guidelines for Management of Sepsis and Septic Shock 2021. Critical Care Medicine. Font MD et al. Sepsis and Septic Shock — Basics of diagnosis, pathophysiology and clinical decision making. Med Clin North Am 2020;104(4).</p>
+    </section>
+
+    <section class="seccion s-fisiopatologia" id="sep-fisiopatologia">
+      <span class="seccion__pestana"><b>02</b> Sepsis · Mecanismo</span>
+      <h2 class="seccion__titulo">Sepsis — Fisiopatología</h2>
+
+      <p>Al momento <strong>no está claro por qué algunos pacientes desarrollan una respuesta adecuada frente a un proceso infeccioso mientras que otros generan un estado desregulado</strong>. Múltiples mediadores celulares están bajo investigación, principalmente el <strong>factor de necrosis tumoral alfa (TNF-α)</strong> y la <strong>interleuquina 1 (IL-1)</strong>.</p>
+
+      <h3>Las dos fases de la respuesta desregulada</h3>
+      <p>La sepsis no es simplemente «demasiada inflamación». La respuesta inflamatoria desregulada conduce <strong>secundariamente</strong> a la liberación de <strong>agentes antiinflamatorios</strong>, generando un <strong>estado de inmunosupresión</strong>. Esto se describió como <strong>síndrome compensatorio de respuesta antiinflamatoria (CARS)</strong> — que, por supuesto, <strong>continúa siendo una respuesta desregulada</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 292" role="img" aria-label="Las dos fases de la respuesta desregulada en la sepsis. La infección desencadena una respuesta inflamatoria desregulada mediada principalmente por factor de necrosis tumoral alfa e interleuquina uno. Secundariamente se liberan agentes antiinflamatorios, lo que se describió como síndrome compensatorio de respuesta antiinflamatoria. Eso genera un estado de inmunosupresión que sigue siendo una respuesta desregulada. Las dos consecuencias son el fallo en la eliminación del foco infeccioso inicial y la aparición de infecciones oportunistas.">
+          <defs>
+            <marker id="pta-cars" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="14" y="6" width="326" height="46" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.45" stroke-width="1.3"></rect>
+          <text x="30" y="34" font-size="12" font-weight="700" fill="currentColor">Infección — el foco inicial</text>
+
+          <rect x="14" y="72" width="326" height="52" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="94" font-size="12" font-weight="700" fill="currentColor">1 · Respuesta inflamatoria desregulada</text>
+          <text x="30" y="113" font-size="10.5" fill="currentColor" opacity="0.75">TNF-α e IL-1 — mediadores bajo investigación</text>
+
+          <rect x="14" y="144" width="326" height="52" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="166" font-size="12" font-weight="700" fill="currentColor">2 · Agentes antiinflamatorios</text>
+          <text x="30" y="185" font-size="10.5" fill="currentColor" opacity="0.75">Síndrome compensatorio (CARS)</text>
+
+          <rect x="14" y="216" width="326" height="52" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="30" y="238" font-size="12" font-weight="700" fill="currentColor">3 · Estado de inmunosupresión</text>
+          <text x="30" y="257" font-size="10.5" fill="currentColor" opacity="0.75">Sigue siendo una respuesta desregulada</text>
+
+          <line x1="177" y1="52" x2="177" y2="66" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-cars)"></line>
+          <line x1="177" y1="124" x2="177" y2="138" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-cars)"></line>
+          <line x1="177" y1="196" x2="177" y2="210" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-cars)"></line>
+          <text x="187" y="135" font-size="10.5" fill="currentColor" opacity="0.65">liberación secundaria</text>
+
+          <rect x="380" y="6" width="306" height="262" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.28" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="396" y="32" font-size="12" font-weight="700" fill="currentColor">Las dos consecuencias</text>
+          <text x="396" y="58" font-size="10.5" font-weight="700" fill="currentColor">· Fallo en la eliminación del</text>
+          <text x="396" y="74" font-size="10.5" font-weight="700" fill="currentColor">  foco infeccioso inicial</text>
+          <text x="396" y="98" font-size="10.5" font-weight="700" fill="currentColor">· Aparición de infecciones</text>
+          <text x="396" y="114" font-size="10.5" font-weight="700" fill="currentColor">  oportunistas</text>
+
+          <line x1="396" y1="138" x2="670" y2="138" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+
+          <text x="396" y="162" font-size="10.5" font-weight="700" fill="currentColor">Por qué importa</text>
+          <text x="396" y="180" font-size="10.5" fill="currentColor" opacity="0.75">La fase antiinflamatoria no es</text>
+          <text x="396" y="196" font-size="10.5" fill="currentColor" opacity="0.75">la recuperación del paciente.</text>
+          <text x="396" y="220" font-size="10.5" fill="currentColor" opacity="0.75">Explica por qué el enfermo no</text>
+          <text x="396" y="236" font-size="10.5" fill="currentColor" opacity="0.75">logra limpiar su propio foco y</text>
+          <text x="396" y="252" font-size="10.5" fill="currentColor" opacity="0.75">se sobreinfecta más adelante.</text>
+        </svg>
+        <figcaption>Una fase proinflamatoria seguida de otra antiinflamatoria. Ninguna de las dos es apropiada: las dos son parte de la misma desregulación.</figcaption>
+      </figure>
+
+      <h3>Compromiso multiorgánico — sistema por sistema</h3>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 524" role="img" aria-label="Mapa del compromiso multiorgánico en la sepsis. Cardiovascular: vasodilatación arterial y venosa que conduce a hipotensión, estado de alto gasto cardíaco, depresión miocárdica con aumento leve a moderado de troponina y cardiomiopatía séptica tardía. Pulmonar: injuria mediada por citocinas que aumenta la permeabilidad alveolar y capilar, edema pulmonar no cardiogénico, hipoxia y acidosis metabólica que producen taquipnea, y síndrome de distrés respiratorio agudo en aproximadamente el siete por ciento. Renal: daño multifactorial por alteraciones hemodinámicas, disfunción endotelial, inflamación del parénquima y obstrucción tubular por células necróticas. Hematológico: anemia, leucocitosis o neutropenia, trombocitopenia y coagulación intravascular diseminada. Hepático: fallo hepático en menos del dos por ciento, diagnosticado por bilirrubina mayor a dos con RIN mayor a uno coma cinco. Endócrino: hiperglucemia e insuficiencia suprarrenal en ocho a nueve por ciento. Neurológico: encefalopatía con alteración del estado mental. Gastrointestinal: shock liver, colestasis inducida por sepsis, coagulopatía e hiperamonemia.">
+          <rect x="10" y="8" width="334" height="118" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="26" y="32" font-size="12" font-weight="700" fill="currentColor">CARDIOVASCULAR</text>
+          <text x="26" y="54" font-size="10.5" fill="currentColor" opacity="0.85">Vasodilatación arterial y venosa → hipotensión</text>
+          <text x="26" y="71" font-size="10.5" fill="currentColor" opacity="0.85">Estado de alto gasto cardíaco</text>
+          <text x="26" y="88" font-size="10.5" fill="currentColor" opacity="0.85">Depresión miocárdica → ↑ leve-moderado</text>
+          <text x="26" y="104" font-size="10.5" fill="currentColor" opacity="0.85">de troponina</text>
+          <text x="26" y="120" font-size="10.5" fill="currentColor" opacity="0.7">Cardiomiopatía séptica (etapa tardía)</text>
+
+          <rect x="356" y="8" width="334" height="118" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="372" y="32" font-size="12" font-weight="700" fill="currentColor">PULMONAR</text>
+          <text x="372" y="54" font-size="10.5" fill="currentColor" opacity="0.85">Injuria por citocinas → ↑ permeabilidad</text>
+          <text x="372" y="71" font-size="10.5" fill="currentColor" opacity="0.85">alveolar y del endotelio capilar</text>
+          <text x="372" y="88" font-size="10.5" font-weight="700" fill="currentColor">Edema pulmonar NO cardiogénico</text>
+          <text x="372" y="104" font-size="10.5" fill="currentColor" opacity="0.85">Hipoxia + acidosis metabólica → taquipnea</text>
+          <text x="372" y="120" font-size="10.5" font-weight="700" fill="currentColor">SDRA en ≈ 7 % de los casos</text>
+
+          <rect x="10" y="138" width="334" height="118" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="26" y="162" font-size="12" font-weight="700" fill="currentColor">RENAL</text>
+          <text x="26" y="184" font-size="10.5" fill="currentColor" opacity="0.85">Daño multifactorial: alteraciones</text>
+          <text x="26" y="201" font-size="10.5" fill="currentColor" opacity="0.85">hemodinámicas, disfunción endotelial,</text>
+          <text x="26" y="218" font-size="10.5" fill="currentColor" opacity="0.85">inflamación del parénquima y obstrucción</text>
+          <text x="26" y="234" font-size="10.5" fill="currentColor" opacity="0.85">tubular por células necróticas</text>
+          <text x="26" y="250" font-size="10.5" font-weight="700" fill="currentColor">Prevenible: volumen precoz, sin nefrotóxicos</text>
+
+          <rect x="356" y="138" width="334" height="118" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="372" y="162" font-size="12" font-weight="700" fill="currentColor">HEMATOLÓGICO</text>
+          <text x="372" y="184" font-size="10.5" fill="currentColor" opacity="0.85">Anemia · leucocitosis o neutropenia</text>
+          <text x="372" y="201" font-size="10.5" fill="currentColor" opacity="0.85">Trombocitopenia · CID</text>
+          <text x="372" y="218" font-size="10.5" fill="currentColor" opacity="0.85">Plaquetopenia sin CID: inhibición de la</text>
+          <text x="372" y="234" font-size="10.5" fill="currentColor" opacity="0.85">trombopoyesis + destrucción inmunológica</text>
+          <text x="372" y="250" font-size="10.5" font-weight="700" fill="currentColor">CID: plaquetopenia + TP o TTPA prolongados</text>
+
+          <rect x="10" y="268" width="334" height="118" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="26" y="292" font-size="12" font-weight="700" fill="currentColor">HEPÁTICO</text>
+          <text x="26" y="314" font-size="10.5" fill="currentColor" opacity="0.85">Fallo hepático poco frecuente: &lt; 2 %,</text>
+          <text x="26" y="331" font-size="10.5" fill="currentColor" opacity="0.85">pero de gran impacto en la mortalidad</text>
+          <text x="26" y="348" font-size="10.5" font-weight="700" fill="currentColor">Diagnóstico: bilirrubina &gt; 2 + RIN &gt; 1,5</text>
+          <text x="26" y="364" font-size="10.5" fill="currentColor" opacity="0.85">Causa principal: hipoxia del parénquima</text>
+          <text x="26" y="380" font-size="10.5" fill="currentColor" opacity="0.7">Hepatitis hipóxica · colestasis · encefalopatía</text>
+
+          <rect x="356" y="268" width="334" height="118" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="372" y="292" font-size="12" font-weight="700" fill="currentColor">ENDÓCRINO</text>
+          <text x="372" y="314" font-size="10.5" font-weight="700" fill="currentColor">Hiperglucemia — es lo frecuente</text>
+          <text x="372" y="331" font-size="10.5" fill="currentColor" opacity="0.85">Por glucagón, catecolaminas y cortisol</text>
+          <text x="372" y="348" font-size="10.5" fill="currentColor" opacity="0.85">inducidos por el estrés, más resistencia</text>
+          <text x="372" y="364" font-size="10.5" fill="currentColor" opacity="0.85">a la insulina por citocinas</text>
+          <text x="372" y="380" font-size="10.5" font-weight="700" fill="currentColor">Insuficiencia suprarrenal en 8 – 9 %</text>
+
+          <rect x="10" y="398" width="334" height="118" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="26" y="422" font-size="12" font-weight="700" fill="currentColor">NEUROLÓGICO</text>
+          <text x="26" y="444" font-size="10.5" font-weight="700" fill="currentColor">Encefalopatía — manifestación frecuente</text>
+          <text x="26" y="461" font-size="10.5" fill="currentColor" opacity="0.85">Alteración del estado mental y del ciclo</text>
+          <text x="26" y="478" font-size="10.5" fill="currentColor" opacity="0.85">sueño-vigilia · desorientación · excitación</text>
+          <text x="26" y="494" font-size="10.5" fill="currentColor" opacity="0.85">Alucinaciones</text>
+          <text x="26" y="510" font-size="10.5" font-weight="700" fill="currentColor">Déficit focal → descartar ACV</text>
+
+          <rect x="356" y="398" width="334" height="118" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="372" y="422" font-size="12" font-weight="700" fill="currentColor">GASTROINTESTINAL</text>
+          <text x="372" y="444" font-size="10.5" fill="currentColor" opacity="0.85">Shock liver</text>
+          <text x="372" y="461" font-size="10.5" fill="currentColor" opacity="0.85">Colestasis inducida por sepsis</text>
+          <text x="372" y="478" font-size="10.5" fill="currentColor" opacity="0.85">Coagulopatía</text>
+          <text x="372" y="494" font-size="10.5" fill="currentColor" opacity="0.85">Hiperamonemia</text>
+          <text x="372" y="510" font-size="10.5" fill="currentColor" opacity="0.7">Las convulsiones son una complicación muy rara</text>
+        </svg>
+        <figcaption>La sepsis se manifiesta simultáneamente en todos los sistemas. Buscar activamente cada uno es lo que permite demostrar la disfunción orgánica que define el diagnóstico.</figcaption>
+      </figure>
+
+      <h4>Detalles que conviene retener de cada sistema</h4>
+      <ul>
+        <li><strong>Renal:</strong> la <strong>rápida resucitación con volumen</strong>, la <strong>prevención de la hipotensión</strong> y <strong>evitar agentes nefrotóxicos</strong> pueden disminuir la probabilidad de desarrollar daño renal agudo. Sigue siendo <strong>controvertido</strong> si la hemodiálisis precoz es más beneficiosa que la tardía.</li>
+        <li><strong>Hematológico:</strong> la <strong>anemia</strong> es secundaria a la inflamación, a la reducción de la sobrevida de los glóbulos rojos y, en contexto de CID, a la <strong>hemólisis</strong>. La <strong>CID</strong> puede presentarse con <strong>múltiples sitios de sangrado</strong> o con <strong>trombosis de pequeños y medianos vasos</strong>.</li>
+        <li><strong>Neurológico:</strong> las <strong>convulsiones son una complicación muy rara</strong> de la encefalopatía séptica; si aparecen, hay que buscar otra causa.</li>
+      </ul>
+
+      <p class="cita">Fuente: Font MD et al. Sepsis and Septic Shock — Basics of diagnosis, pathophysiology and clinical decision making. Medical Clinics of North America 2020;104(4).</p>
+    </section>
+
+    <section class="seccion s-clinica" id="sep-clinica">
+      <span class="seccion__pestana"><b>03</b> Sepsis · Clínica</span>
+      <h2 class="seccion__titulo">Sepsis — Cuadro Clínico &amp; Evaluación del Riesgo</h2>
+
+      <p>Las guías <strong>NICE 2024</strong> no usan un puntaje: estratifican por <strong>categorías de riesgo</strong>. Basta <strong>un criterio de riesgo alto</strong> para activar la conducta de emergencia.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Categoría</th><th>Riesgo alto</th><th>Riesgo moderado</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Antecedentes</strong></td>
+              <td><strong>Evidencia objetiva de nueva alteración del sensorio</strong></td>
+              <td>Nueva alteración del comportamiento o del estado mental <strong>referida por familiares o cuidadores</strong> · impotencia funcional, deterioro del estado general, alteraciones inmunológicas · <strong>trauma, cirugía o procedimientos invasivos en las últimas 6 semanas</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Respiratorio</strong></td>
+              <td><strong>FR &gt; 25/min</strong> · nuevo requerimiento de O₂ (&gt; 40 %) para mantener SpO₂ de al menos 92 %, u 88 % en EPOC</td>
+              <td>Aumento de la FR de <strong>21 a 24/min</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Presión arterial</strong></td>
+              <td><strong>TAS &lt; 90 mmHg</strong>, o <strong>40 mmHg por debajo de su valor normal</strong></td>
+              <td>TAS entre <strong>91 y 100 mmHg</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Circulación e hidratación</strong></td>
+              <td><strong>FC &gt; 130/min</strong> · anuria de <strong>18 h</strong> de evolución · con sonda vesical: <strong>&lt; 0,5 mL/kg/hora</strong></td>
+              <td>FC entre <strong>91 y 130/min</strong> · <strong>arritmia de nuevo comienzo</strong> · anuria de <strong>12 a 18 h</strong> · con sonda vesical: 0,5 a 1 mL/kg/hora</td>
+            </tr>
+            <tr>
+              <td><strong>Piel y otros</strong></td>
+              <td><strong>Reticulado marmóreo</strong> o piel <strong>grisácea/terrosa</strong> · <strong>cianosis</strong> en piel, labios o lengua · <strong>petequias o rash purpúrico</strong></td>
+              <td>Signos potenciales de infección: <strong>eritema o crepitación</strong> · <strong>drenaje purulento</strong> por heridas quirúrgicas u otras heridas de piel</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Además hay que <strong>indagar los antecedentes de la enfermedad actual</strong>: fiebre o equivalentes, y presencia de síntomas <strong>urinarios, respiratorios o gastrointestinales</strong> que orienten al foco.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>Ni toda fiebre es sepsis, ni la ausencia de fiebre la descarta.</strong> La fiebre no figura entre los criterios de riesgo alto de NICE: lo que estratifica es la <strong>disfunción de órgano</strong> — sensorio, respiración, presión, perfusión y piel.</p>
+      </div>
+
+      <h3>El signo cutáneo que más pesa</h3>
+      <p>El <strong>reticulado marmóreo</strong> (livedo reticularis) y la <strong>piel grisácea o terrosa</strong> son marcadores de <strong>hipoperfusión periférica</strong> y clasifican directamente como <strong>riesgo alto</strong>. Lo mismo la <strong>cianosis</strong> en piel, labios o lengua y las <strong>petequias o el rash purpúrico</strong>, que además sugieren <strong>CID</strong> o infección meningocócica.</p>
+
+      <p class="cita">Fuente: Suspected sepsis: recognition, diagnosis and early management. Guías NICE 2024.</p>
+    </section>
+
+    <section class="seccion s-diagnostico" id="sep-diagnostico">
+      <span class="seccion__pestana"><b>04</b> Sepsis · Scores</span>
+      <h2 class="seccion__titulo">Sepsis — Scores Diagnósticos</h2>
+
+      <p>Los tres puntajes miden cosas distintas y ninguno diagnostica sepsis por sí solo. Entender <strong>para qué sirve cada uno</strong> —y cuál es su límite— es más útil que memorizarlos sueltos.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 386" role="img" aria-label="Comparación de los tres scores. El SIRS requiere dos o más de temperatura mayor a treinta y ocho o menor a treinta y seis grados, frecuencia cardíaca mayor a noventa, frecuencia respiratoria mayor a veinte o presión parcial de dióxido de carbono menor a treinta y dos, y leucocitos mayores a doce mil o menores a cuatro mil o más de diez por ciento en cayado; sirve para el diagnóstico inicial de proceso inflamatorio, pero puede reflejar la respuesta apropiada del huésped y Sepsis-3 lo eliminó. El qSOFA requiere al menos dos de Glasgow menor a quince, frecuencia respiratoria mayor o igual a veintidós y tensión arterial sistólica menor o igual a cien; predice muerte o estancia prolongada en terapia intensiva y sirve como alerta extrahospitalaria, pero tiene baja sensibilidad y las guías dos mil veintiuno lo eliminaron como criterio diagnóstico. El NEWS 2 no es específico de sepsis: mayor a siete indica alto riesgo, cinco a seis riesgo moderado, uno a cuatro bajo riesgo y cero muy bajo riesgo, y no reemplaza el juicio clínico. El NEWS 2 debe recalcularse cada treinta minutos si es mayor a siete, cada hora si es cinco a seis y cada cuatro a seis horas si es uno a cuatro.">
+          <rect x="10" y="8" width="218" height="296" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="26" y="32" font-size="13" font-weight="700" fill="currentColor">SIRS</text>
+          <text x="26" y="54" font-size="10.5" font-weight="700" fill="currentColor">Dos o más de:</text>
+          <text x="26" y="71" font-size="10.5" fill="currentColor" opacity="0.85">T &gt; 38 °C o &lt; 36 °C</text>
+          <text x="26" y="87" font-size="10.5" fill="currentColor" opacity="0.85">FC &gt; 90/min</text>
+          <text x="26" y="103" font-size="10.5" fill="currentColor" opacity="0.85">FR &gt; 20/min o PaCO₂ &lt; 32</text>
+          <text x="26" y="119" font-size="10.5" fill="currentColor" opacity="0.85">Leucocitos &gt; 12.000 o</text>
+          <text x="26" y="135" font-size="10.5" fill="currentColor" opacity="0.85">&lt; 4.000, o &gt; 10 % cayados</text>
+          <line x1="26" y1="152" x2="212" y2="152" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="26" y="173" font-size="10.5" font-weight="700" fill="currentColor">Para qué sirve</text>
+          <text x="26" y="190" font-size="10.5" fill="currentColor" opacity="0.75">Diagnóstico inicial de un</text>
+          <text x="26" y="206" font-size="10.5" fill="currentColor" opacity="0.75">proceso inflamatorio</text>
+          <line x1="26" y1="223" x2="212" y2="223" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="26" y="244" font-size="10.5" font-weight="700" fill="currentColor">Su límite</text>
+          <text x="26" y="261" font-size="10.5" fill="currentColor" opacity="0.75">Puede ser sólo la respuesta</text>
+          <text x="26" y="277" font-size="10.5" fill="currentColor" opacity="0.75">apropiada y adaptativa.</text>
+          <text x="26" y="295" font-size="10.5" font-weight="700" fill="currentColor">Sepsis-3 lo eliminó.</text>
+
+          <rect x="241" y="8" width="218" height="296" rx="3" fill="var(--c)" fill-opacity="0.08" stroke="currentColor" stroke-opacity="0.45" stroke-width="1.4"></rect>
+          <text x="257" y="32" font-size="13" font-weight="700" fill="currentColor">qSOFA</text>
+          <text x="257" y="54" font-size="10.5" font-weight="700" fill="currentColor">Al menos dos de:</text>
+          <text x="257" y="71" font-size="10.5" fill="currentColor" opacity="0.85">Glasgow &lt; 15</text>
+          <text x="257" y="87" font-size="10.5" fill="currentColor" opacity="0.85">FR ≥ 22/min</text>
+          <text x="257" y="103" font-size="10.5" fill="currentColor" opacity="0.85">TAS ≤ 100 mmHg</text>
+          <line x1="257" y1="152" x2="443" y2="152" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="257" y="173" font-size="10.5" font-weight="700" fill="currentColor">Para qué sirve</text>
+          <text x="257" y="190" font-size="10.5" fill="currentColor" opacity="0.75">Predecir muerte o estancia</text>
+          <text x="257" y="206" font-size="10.5" fill="currentColor" opacity="0.75">prolongada en UTI</text>
+          <line x1="257" y1="223" x2="443" y2="223" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="257" y="244" font-size="10.5" font-weight="700" fill="currentColor">Su límite</text>
+          <text x="257" y="261" font-size="10.5" fill="currentColor" opacity="0.75">Baja sensibilidad: no usar</text>
+          <text x="257" y="277" font-size="10.5" fill="currentColor" opacity="0.75">como única herramienta.</text>
+          <text x="257" y="295" font-size="10.5" font-weight="700" fill="currentColor">Es una ALERTA, no un test.</text>
+
+          <rect x="472" y="8" width="218" height="296" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="488" y="32" font-size="13" font-weight="700" fill="currentColor">NEWS 2</text>
+          <text x="488" y="54" font-size="10.5" font-weight="700" fill="currentColor">No es específico de sepsis</text>
+          <text x="488" y="71" font-size="10.5" fill="currentColor" opacity="0.85">&gt; 7 → alto riesgo</text>
+          <text x="488" y="87" font-size="10.5" fill="currentColor" opacity="0.85">5 – 6 → riesgo moderado</text>
+          <text x="488" y="103" font-size="10.5" fill="currentColor" opacity="0.85">1 – 4 → bajo riesgo</text>
+          <text x="488" y="119" font-size="10.5" fill="currentColor" opacity="0.85">0 → muy bajo riesgo</text>
+          <line x1="488" y1="152" x2="674" y2="152" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="488" y="173" font-size="10.5" font-weight="700" fill="currentColor">Para qué sirve</text>
+          <text x="488" y="190" font-size="10.5" fill="currentColor" opacity="0.75">Riesgo de enfermedad severa</text>
+          <text x="488" y="206" font-size="10.5" fill="currentColor" opacity="0.75">y muerte por sepsis</text>
+          <line x1="488" y1="223" x2="674" y2="223" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="488" y="244" font-size="10.5" font-weight="700" fill="currentColor">Su límite</text>
+          <text x="488" y="261" font-size="10.5" fill="currentColor" opacity="0.75">No reemplaza el juicio clínico,</text>
+          <text x="488" y="277" font-size="10.5" fill="currentColor" opacity="0.75">que surge de la anamnesis, el</text>
+          <text x="488" y="295" font-size="10.5" fill="currentColor" opacity="0.75">examen y los complementarios.</text>
+
+          <rect x="10" y="322" width="680" height="56" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="26" y="344" font-size="11.5" font-weight="700" fill="currentColor">Frente a la sospecha de sepsis, el NEWS 2 se RECALCULA — no se mide una sola vez</text>
+          <text x="26" y="366" font-size="11" fill="currentColor" opacity="0.8">Cada 30 minutos si es &gt; 7 (alto riesgo)  ·  cada 1 hora si es 5 – 6 (moderado)  ·  cada 4 – 6 horas si es 1 – 4 (bajo)</text>
+        </svg>
+        <figcaption>El SIRS detecta inflamación, el qSOFA alerta sobre gravedad, el NEWS 2 sigue la evolución. Ninguno demuestra disfunción orgánica, que es lo que define la sepsis.</figcaption>
+      </figure>
+
+      <h3>SIRS</h3>
+      <p><strong>Dos o más</strong> de los siguientes:</p>
+      <ul>
+        <li>Temperatura <span class="dato">&gt; 38 °C</span> o <span class="dato">&lt; 36 °C</span>.</li>
+        <li>Frecuencia cardíaca <span class="dato">&gt; 90/min</span>.</li>
+        <li>Frecuencia respiratoria <span class="dato">&gt; 20/min</span> o PaCO₂ <span class="dato">&lt; 32 mmHg</span>.</li>
+        <li>Leucocitos <span class="dato">&gt; 12.000/mm³</span> o <span class="dato">&lt; 4.000/mm³</span>, o <span class="dato">&gt; 10 %</span> de células en cayado.</li>
+      </ul>
+      <p>Contribuye al <strong>diagnóstico inicial de proceso inflamatorio</strong> y se complementa con las características de infecciones específicas que indican el posible <strong>origen anatómico</strong> y el <strong>microorganismo infectante</strong>. Sin embargo, el SIRS <strong>puede reflejar simplemente la respuesta apropiada del huésped, que con frecuencia es adaptativa</strong>, mientras que la sepsis implica <strong>disfunción orgánica</strong> — un proceso más complejo que la infección con su respuesta inflamatoria acompañante.</p>
+
+      <h3>qSOFA</h3>
+      <p>Utiliza <strong>tres variables</strong> para predecir <strong>muerte o estancia prolongada en UTI</strong> en pacientes con sospecha de sepsis o sepsis confirmada:</p>
+      <ul>
+        <li><strong>Glasgow &lt; 15.</strong></li>
+        <li><strong>Frecuencia respiratoria <span class="dato">≥ 22/min</span>.</strong></li>
+        <li><strong>Tensión arterial sistólica <span class="dato">≤ 100 mmHg</span>.</strong></li>
+      </ul>
+      <p>Cuando <strong>al menos 2</strong> están presentes, se considera <strong>qSOFA positivo</strong>. Un qSOFA positivo debe <strong>alertar</strong> sobre la posibilidad de sepsis, pero dada su <strong>baja sensibilidad no debe ser utilizado como única herramienta diagnóstica</strong>. Su alteración debe orientar a <strong>seguir profundizando el estudio del paciente</strong>. Su utilidad es principalmente <strong>como alerta, sobre todo en el entorno extrahospitalario</strong>.</p>
+
+      <h3>NEWS 2</h3>
+      <p>El NEWS 2 <strong>no es un score específico de sepsis</strong>. Sus resultados en este contexto son útiles en pacientes con <strong>infección sospechada o confirmada</strong>.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Puntaje</th><th>Riesgo de enfermedad severa y muerte por sepsis</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>&gt; 7</strong></td><td><strong>Alto riesgo</strong></td></tr>
+            <tr><td><strong>5 – 6</strong></td><td>Riesgo moderado</td></tr>
+            <tr><td><strong>1 – 4</strong></td><td>Bajo riesgo</td></tr>
+            <tr><td><strong>0</strong></td><td>Muy bajo riesgo</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Tabla de puntuación NEWS 2</h4>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Parámetro fisiológico</th><th>3</th><th>2</th><th>1</th><th>0</th><th>1</th><th>2</th><th>3</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Frecuencia respiratoria</strong></td><td>≤ 8</td><td>—</td><td>9 – 11</td><td>12 – 20</td><td>—</td><td>21 – 24</td><td>≥ 25</td></tr>
+            <tr><td><strong>SpO₂</strong></td><td>≤ 91</td><td>92 – 93</td><td>94 – 95</td><td>≥ 96</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td><strong>SpO₂ en EPOC</strong></td><td>≤ 83</td><td>84 – 85</td><td>86 – 87</td><td>88 – 92, o ≥ 93 sin O₂</td><td>93 – 94 con O₂</td><td>95 – 96 con O₂</td><td>≥ 97 con O₂</td></tr>
+            <tr><td><strong>¿Oxígeno suplementario?</strong></td><td>—</td><td>Sí</td><td>—</td><td>Aire ambiente</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td><strong>Tensión arterial sistólica</strong></td><td>≤ 90</td><td>91 – 100</td><td>101 – 110</td><td>111 – 219</td><td>—</td><td>—</td><td>≥ 220</td></tr>
+            <tr><td><strong>Frecuencia cardíaca</strong></td><td>≤ 40</td><td>—</td><td>41 – 50</td><td>51 – 90</td><td>91 – 110</td><td>111 – 130</td><td>≥ 131</td></tr>
+            <tr><td><strong>Nivel de consciencia</strong></td><td>—</td><td>—</td><td>—</td><td>Alerta</td><td>—</td><td>—</td><td>C · V · D · I</td></tr>
+            <tr><td><strong>Temperatura</strong></td><td>≤ 35,0</td><td>—</td><td>35,1 – 36,0</td><td>36,1 – 38,0</td><td>38,1 – 39,0</td><td>≥ 39,1</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>En la fila de consciencia, <strong>C · V · D · I</strong> corresponde a <strong>Confusión</strong>, respuesta sólo a la <strong>Voz</strong>, respuesta sólo al <strong>Dolor</strong> e <strong>Inconsciente</strong>: cualquiera de esos estados suma <strong>3 puntos</strong>.</p>
+
+      <h3>Frecuencia de recálculo</h3>
+      <p>Frente a la sospecha de sepsis, el NEWS 2 <strong>debe ser recalculado</strong>:</p>
+      <ul>
+        <li>Cada <strong><span class="dato">30 minutos</span></strong> en pacientes de <strong>alto riesgo</strong> (NEWS 2 &gt; 7).</li>
+        <li>Cada <strong><span class="dato">1 hora</span></strong> en pacientes de <strong>riesgo moderado</strong> (NEWS 2 de 5 – 6).</li>
+        <li>Cada <strong><span class="dato">4 a 6 horas</span></strong> en pacientes de <strong>bajo riesgo</strong> (NEWS 2 de 1 – 4).</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>«Ya pedí hemocultivos, urocultivo y muestra respiratoria; ya indiqué antibióticos aunque no sé el foco; diagnostiqué una sepsis... hora de dormir». <strong>No.</strong> La sepsis no se diagnostica y se archiva: se <strong>reevalúa</strong>. En un paciente de alto riesgo eso significa <strong>recalcular el NEWS 2 cada 30 minutos</strong> y reevaluar el estado hemodinámico de forma frecuente.</p>
+      </div>
+
+      <p class="cita">Fuente: Qiu X, Lei YP, Zhou RX. SIRS, SOFA, qSOFA, and NEWS in the diagnosis of sepsis and prediction of adverse outcomes: a systematic review and meta-analysis. Expert Review of Anti-infective Therapy 2023;21(8):891-900. Guías NICE 2024. Surviving Sepsis Campaign 2021.</p>
+    </section>
+
+    <section class="seccion s-tratamiento" id="sep-tratamiento">
+      <span class="seccion__pestana"><b>05</b> Sepsis · Tratamiento</span>
+      <h2 class="seccion__titulo">Sepsis — Tratamiento</h2>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>La sepsis y el shock séptico son emergencias médicas.</strong> El tratamiento y la reanimación deben comenzar <strong>inmediatamente</strong>, sin esperar confirmación diagnóstica.</p>
+      </div>
+
+      <h3>Reanimación con fluidos</h3>
+      <ul>
+        <li>En la reanimación de la <strong>hipoperfusión inducida por sepsis</strong> se recomienda administrar <strong>al menos <span class="dato">30 mL/kg</span> de líquidos cristaloides IV en las primeras <span class="dato">3 horas</span></strong>.</li>
+        <li>Después de la reanimación inicial, la continuación del aporte de líquidos <strong>debe guiarse por frecuentes reevaluaciones del estado hemodinámico</strong>.</li>
+        <li><strong>Ya no se justifica el uso de la presión venosa central (PVC) sola</strong> para guiar la reanimación con líquido.</li>
+      </ul>
+
+      <h4>Cómo evaluar si el paciente necesita más volumen</h4>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Tipo de medida</th><th>Método</th><th>Disponibilidad</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Dinámicas</strong></td><td><strong>Elevación pasiva de las piernas</strong></td><td>Amplia — es la más accesible</td></tr>
+            <tr><td><strong>Dinámicas</strong></td><td>Mediciones del <strong>volumen sistólico</strong></td><td>Limitada, requiere monitoreo</td></tr>
+            <tr><td><strong>Dinámicas</strong></td><td>Variaciones de la presión sistólica, la presión de pulso o el volumen sistólico frente a los cambios de presión intratorácica inducidos por la ventilación mecánica</td><td><strong>No disponibles de rutina</strong>, y menos fuera de UTI</td></tr>
+            <tr><td><strong>Clínicas, al pie de la cama</strong></td><td><strong>Relleno capilar</strong> · <strong>temperatura de las extremidades</strong> · <strong>lividideces</strong></td><td>Siempre disponibles</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Las medidas dinámicas han demostrado <strong>precisión diagnóstica para predecir qué pacientes responderán</strong> a un mayor aporte de líquidos, a través del aumento del volumen sistólico.</p>
+
+      <h3>Cultivos: antes del antibiótico, sin retrasarlo</h3>
+      <ul>
+        <li>En pacientes con sospecha de sepsis o shock séptico se recomienda <strong>realizar cultivos microbiológicos —incluido el hemocultivo— antes de comenzar la terapia antimicrobiana</strong>.</li>
+        <li>Obtener hemocultivos antes de iniciar el antibiótico <strong>siempre que se pueda hacer con rapidez</strong>. Lo mismo cuando se decide cultivar múltiples sitios considerados fuentes potenciales. <strong>En general no se incluyen muestras que requieran un procedimiento invasivo.</strong></li>
+        <li>Si la historia o el examen clínico <strong>indican claramente un sitio anatómico infectado específico</strong>, es <strong>innecesario cultivar otros sitios</strong> (aparte del hemocultivo).</li>
+        <li>Se considera que una <strong>espera de <span class="dato">45 minutos</span></strong> mientras se obtienen los cultivos <strong>no implica un retraso importante</strong> en la terapia antimicrobiana.</li>
+      </ul>
+
+      <h3>Tiempo de inicio del antibiótico</h3>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 358" role="img" aria-label="Árbol de decisión del tiempo de inicio del antibiótico en la sepsis. Ante la sospecha, si hay shock séptico posible o alta probabilidad de sepsis, el antibiótico debe iniciarse dentro de la primera hora. Si la sepsis es posible pero no hay shock séptico, corresponde reevaluar antecedentes y examen físico y buscar etiologías no infecciosas como la pancreatitis; esa reevaluación no debe durar más de tres horas y, si las sospechas persisten, el antibiótico se inicia dentro de las tres horas.">
+          <defs>
+            <marker id="pta-atb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="225" y="8" width="250" height="44" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--ct)" stroke-width="2.5"></rect>
+          <text x="350" y="36" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">Sospecha de sepsis</text>
+
+          <line x1="350" y1="52" x2="350" y2="76" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="175" y1="76" x2="525" y2="76" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="175" y1="76" x2="175" y2="100" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-atb)"></line>
+          <line x1="525" y1="76" x2="525" y2="100" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-atb)"></line>
+
+          <rect x="10" y="102" width="330" height="82" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="26" y="126" font-size="11.5" font-weight="700" fill="currentColor">Shock séptico posible</text>
+          <text x="26" y="146" font-size="11.5" font-weight="700" fill="currentColor">o alta probabilidad de sepsis</text>
+          <text x="26" y="170" font-size="10.5" fill="currentColor" opacity="0.75">No hay margen para reevaluar primero</text>
+
+          <rect x="360" y="102" width="330" height="82" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.3"></rect>
+          <text x="376" y="126" font-size="11.5" font-weight="700" fill="currentColor">Sepsis posible, SIN shock séptico</text>
+          <text x="376" y="148" font-size="10.5" fill="currentColor" opacity="0.8">Reevaluar antecedentes y examen físico</text>
+          <text x="376" y="166" font-size="10.5" fill="currentColor" opacity="0.8">Buscar etiologías no infecciosas</text>
+          <text x="376" y="180" font-size="10.5" fill="currentColor" opacity="0.8">(por ejemplo, pancreatitis)</text>
+
+          <line x1="175" y1="184" x2="175" y2="204" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-atb)"></line>
+          <line x1="525" y1="184" x2="525" y2="204" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-atb)"></line>
+
+          <rect x="10" y="206" width="330" height="78" rx="3" fill="var(--c)" fill-opacity="0.9"></rect>
+          <text x="26" y="236" font-size="14" font-weight="700" fill="#FFFFFF">ATB dentro de la 1.ª HORA</text>
+          <text x="26" y="260" font-size="10.5" fill="#FFFFFF" opacity="0.9">Cada hora de demora cuenta. Los cultivos</text>
+          <text x="26" y="276" font-size="10.5" fill="#FFFFFF" opacity="0.9">no deben retrasar la primera dosis.</text>
+
+          <rect x="360" y="206" width="330" height="78" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.5" stroke-width="1.6"></rect>
+          <text x="376" y="232" font-size="11.5" font-weight="700" fill="currentColor">La reevaluación no debe superar las 3 h</text>
+          <text x="376" y="256" font-size="11.5" font-weight="700" fill="currentColor">Si la sospecha persiste →</text>
+          <text x="376" y="274" font-size="11.5" font-weight="700" fill="currentColor">ATB dentro de las 3 horas</text>
+
+          <rect x="10" y="300" width="680" height="50" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.28" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="26" y="322" font-size="11" font-weight="700" fill="currentColor">Por qué el margen es distinto en cada rama</text>
+          <text x="26" y="340" font-size="11" fill="currentColor" opacity="0.75">En sepsis sin shock, los estudios no han demostrado diferencias de mortalidad al demorar el ATB hasta 12 h esperando complementarios.</text>
+        </svg>
+        <figcaption>La urgencia no es la misma en las dos ramas: en el shock la demora mata, y en la sepsis sin shock conviene descartar primero una causa no infecciosa antes de comprometer el espectro.</figcaption>
+      </figure>
+
+      <h3>¿Monoterapia o doble cobertura?</h3>
+      <ul>
+        <li>Para sepsis y shock séptico en pacientes con <strong>alto riesgo de bacilos gramnegativos multirresistentes (BGN MDR)</strong> se sugiere <strong>doble cobertura antibiótica</strong> para ampliar el espectro empírico.</li>
+        <li>Para pacientes con <strong>bajo riesgo de BGN MDR</strong> se recomienda el uso de <strong>un solo agente</strong>.</li>
+      </ul>
+      <h4>Factores de riesgo de BGN multirresistentes</h4>
+      <ul>
+        <li><strong>Infección o colonización comprobada por BGN MDR durante el año previo.</strong></li>
+        <li><strong>Prevalencia local</strong> de BGN MDR en el ámbito hospitalario.</li>
+        <li>Uso de <strong>antibióticos de amplio espectro dentro de los 90 días previos</strong>.</li>
+        <li><strong>Hospitalización dentro de los 90 días previos.</strong></li>
+      </ul>
+
+      <h3>Esquema empírico según el foco</h3>
+      <p>Los esquemas se adecuan a la <strong>clínica</strong>, el <strong>origen del paciente</strong> y la <strong>presencia o ausencia de foco</strong>.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Foco</th><th>Esquema empírico</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Pielonefritis de la comunidad</strong>, sin ATB previo</td><td><strong>Ceftriaxona</strong></td></tr>
+            <tr><td><strong>Infecciones necrotizantes de piel y partes blandas</strong></td><td><strong>Piperacilina/tazobactam + vancomicina</strong> ± clindamicina</td></tr>
+            <tr><td><strong>NAC grave</strong></td><td><strong>Ampicilina/sulbactam + claritromicina</strong> ± vancomicina si hay factores de riesgo para SAMR</td></tr>
+            <tr><td><strong>Peritonitis secundaria</strong></td><td><strong>Ceftriaxona + metronidazol</strong></td></tr>
+            <tr><td><strong>Infecciones biliares</strong></td><td><strong>Piperacilina/tazobactam</strong></td></tr>
+            <tr><td><strong>Paciente hospitalizado</strong> — según epidemiología local, generalmente combinado para BGN MDR</td><td><strong>Meropenem</strong> ± colistina · <strong>fosfomicina + colistina</strong> · <strong>ceftazidima/avibactam</strong> ± aminoglucósido o quinolona</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Sobre cualquiera de estos esquemas: <strong>agregar vancomicina</strong> si hay factores de riesgo para SAMR, y <strong>agregar caspofungina</strong> si hay factores de riesgo de <em>Candida</em>.</p>
+
+      <h3>Cobertura de SAMR</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Factores de riesgo para SAMR</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Enfermedad de <strong>piel y partes blandas</strong></td></tr>
+            <tr><td>Presencia de <strong>catéter venoso central</strong></td></tr>
+            <tr><td>Presencia de <strong>prótesis articulares</strong> o <strong>marcapasos</strong></td></tr>
+            <tr><td><strong>Hemodiálisis</strong></td></tr>
+            <tr><td><strong>Adictos a drogas endovenosas</strong></td></tr>
+            <tr><td><strong>Procedimientos quirúrgicos recientes</strong></td></tr>
+            <tr><td><strong>Neumonía bilateral severa</strong></td></tr>
+            <tr><td>Infecciones <strong>nosocomiales o asociadas a cuidados sanitarios</strong></td></tr>
+            <tr><td><strong>Inmunosuprimidos</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Vancomicina:</strong> carga de <span class="dato">30 – 35 mg/kg</span> a pasar en <span class="dato">4 horas</span> (máximo <span class="dato">3 g</span>), y luego mantenimiento de <span class="dato">15 – 20 mg/kg</span> cada <span class="dato">8 a 12 horas</span> (máximo <span class="dato">4.500 mg/día</span>).</p>
+
+      <h3>Cobertura antifúngica</h3>
+      <p>El tratamiento antifúngico está indicado en pacientes con sepsis o shock séptico que tengan <strong>factores de riesgo para infección fúngica</strong>:</p>
+      <ul>
+        <li><strong>Cirugía abdominal.</strong></li>
+        <li><strong>Estancia prolongada en UTI.</strong></li>
+        <li><strong>Colonización por <em>Candida</em> en múltiples sitios.</strong></li>
+        <li><strong>Nutrición parenteral.</strong></li>
+        <li><strong>Neutropenia que persiste febril al 5.º – 7.º día.</strong></li>
+        <li>Uso de <strong>antibióticos de amplio espectro</strong>.</li>
+        <li><strong>Mucositis severa</strong> · <strong>pancreatitis severa</strong> · <strong>quemaduras extensas</strong>.</li>
+      </ul>
+      <p><strong>Caspofungina:</strong> carga de <span class="dato">75 mg</span> y luego <span class="dato">50 mg/día</span>.</p>
+
+      <h3>Control del foco</h3>
+      <p>El <strong>control apropiado del foco infeccioso es clave</strong> en el manejo de la sepsis y el shock séptico:</p>
+      <ul>
+        <li><strong>Drenaje de colecciones.</strong></li>
+        <li><strong>Limpieza de tejido necrótico infectado.</strong></li>
+        <li><strong>Remoción de catéteres o dispositivos infectados.</strong></li>
+        <li><strong>Resolución quirúrgica de focos abdominales.</strong></li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>Sin un adecuado control del foco, los esfuerzos de reanimación y los antibióticos por sí mismos difícilmente sean suficientes</strong> para estabilizar definitivamente al paciente. Un absceso no drenado o un catéter infectado no removido vuelven inútil el mejor esquema antibiótico.</p>
+      </div>
+
+      <p class="cita">Fuente: Evans L et al. Surviving Sepsis Campaign: International Guidelines for Management of Sepsis and Septic Shock 2021. Critical Care Medicine.</p>
+    </section>
+
+    <section class="seccion s-importantes" id="sep-importantes">
+      <span class="seccion__pestana"><b>06</b> Sepsis · Alerta</span>
+      <h2 class="seccion__titulo">Sepsis — Aspectos Importantes</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Trampa frecuente</th><th>Lo correcto</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>«No tiene fiebre, no es sepsis»</td>
+              <td><strong>Ni toda fiebre es sepsis ni la ausencia de fiebre la descarta.</strong> La fiebre no es criterio de riesgo alto en NICE 2024</td>
+            </tr>
+            <tr>
+              <td>«El qSOFA es negativo, descarto sepsis»</td>
+              <td>Tiene <strong>baja sensibilidad</strong>. Es una <strong>alerta</strong>, no una prueba diagnóstica. Las guías 2021 lo eliminaron como criterio de disfunción orgánica</td>
+            </tr>
+            <tr>
+              <td>«Cumple SIRS, entonces tiene sepsis»</td>
+              <td>El SIRS puede ser la <strong>respuesta apropiada y adaptativa</strong> del huésped. Sepsis exige <strong>disfunción orgánica</strong></td>
+            </tr>
+            <tr>
+              <td>«Ya pedí cultivos y di antibióticos, listo»</td>
+              <td>Hay que <strong>recalcular el NEWS 2</strong> (cada 30 min si es &gt; 7) y <strong>reevaluar la hemodinamia frecuentemente</strong></td>
+            </tr>
+            <tr>
+              <td>«Espero los cultivos antes de dar el antibiótico»</td>
+              <td>En shock séptico, <strong>ATB dentro de la 1.ª hora</strong>. Sólo se acepta una espera de <strong>45 minutos</strong> para tomar cultivos</td>
+            </tr>
+            <tr>
+              <td>«Guío la reanimación con la PVC»</td>
+              <td><strong>Ya no se justifica la PVC sola.</strong> Usar medidas dinámicas y los signos clínicos de perfusión</td>
+            </tr>
+            <tr>
+              <td>«El antibiótico va a resolver el cuadro»</td>
+              <td><strong>Sin control del foco</strong>, ni la reanimación ni los antibióticos alcanzan</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Los criterios de riesgo alto de NICE que exigen conducta inmediata</h3>
+      <ul>
+        <li><strong>Nueva alteración objetiva del sensorio.</strong></li>
+        <li><strong>FR &gt; 25/min</strong>, o nuevo requerimiento de O₂ &gt; 40 % para sostener la saturación.</li>
+        <li><strong>TAS &lt; 90 mmHg</strong> o 40 mmHg por debajo de su valor habitual.</li>
+        <li><strong>FC &gt; 130/min</strong>, anuria de 18 h, o diuresis &lt; 0,5 mL/kg/hora.</li>
+        <li><strong>Reticulado marmóreo</strong>, piel grisácea, <strong>cianosis</strong>, <strong>petequias o rash purpúrico</strong>.</li>
+      </ul>
+
+      <h3>Números para memorizar</h3>
+      <ul>
+        <li>Reanimación inicial: <span class="dato">30 mL/kg</span> de cristaloides en las primeras <span class="dato">3 h</span>.</li>
+        <li>Shock séptico: antibiótico dentro de la <span class="dato">1.ª hora</span>; PAM objetivo <span class="dato">≥ 65 mmHg</span>; lactato <span class="dato">&gt; 2 mmol/L</span>.</li>
+        <li>Espera aceptable para cultivos: <span class="dato">45 minutos</span>.</li>
+        <li>Sepsis sin shock: reevaluación de hasta <span class="dato">3 h</span> antes de iniciar antibiótico.</li>
+        <li>SDRA en la sepsis: <span class="dato">≈ 7 %</span>. Insuficiencia suprarrenal: <span class="dato">8 – 9 %</span>. Fallo hepático: <span class="dato">&lt; 2 %</span>.</li>
+        <li>Foco más frecuente: <strong>pulmón, <span class="dato">64 %</span></strong>.</li>
+      </ul>
+
+      <p class="cita">Fuente: Surviving Sepsis Campaign 2021; Guías NICE 2024; definiciones Sepsis-3.</p>
+    </section>
+
+    <section class="seccion s-diferenciales" id="sep-diferenciales">
+      <span class="seccion__pestana"><b>07</b> Sepsis · Diferenciales</span>
+      <h2 class="seccion__titulo">Sepsis — Diagnósticos Diferenciales</h2>
+
+      <p>Varios <strong>trastornos inflamatorios estériles</strong> pueden progresar a <strong>shock e insuficiencia multiorgánica</strong>, con un cuadro clínicamente indistinguible de la sepsis en las primeras horas. Reconocerlos es lo que justifica la <strong>ventana de reevaluación de hasta 3 horas</strong> en la sepsis sin shock.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 300" role="img" aria-label="Causas no infecciosas que simulan sepsis, agrupadas en cuatro categorías. Inflamación estéril: pancreatitis y quemaduras. Isquemia y lesión tisular: isquemia tisular, lesión traumática y quirúrgica, y tromboembolia. Inmunomediadas: vasculitis y procesos autoinmunes. Otras: reacciones a fármacos y procesos neoplásicos. Todas pueden progresar a shock e insuficiencia multiorgánica.">
+          <rect x="10" y="8" width="680" height="50" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="26" y="30" font-size="12" font-weight="700" fill="currentColor">Todos pueden progresar a shock e insuficiencia multiorgánica</text>
+          <text x="26" y="49" font-size="11" fill="currentColor" opacity="0.8">Al inicio el cuadro es indistinguible de una sepsis. Por eso, sin shock, la guía habilita reevaluar hasta 3 horas.</text>
+
+          <rect x="10" y="76" width="334" height="100" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.3"></rect>
+          <text x="26" y="100" font-size="12" font-weight="700" fill="currentColor">Inflamación estéril</text>
+          <text x="26" y="124" font-size="11" fill="currentColor" opacity="0.85">· Pancreatitis</text>
+          <text x="26" y="144" font-size="11" fill="currentColor" opacity="0.85">· Quemaduras</text>
+          <text x="26" y="166" font-size="10.5" fill="currentColor" opacity="0.65">La pancreatitis es el simulador que la guía nombra.</text>
+
+          <rect x="356" y="76" width="334" height="100" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.3"></rect>
+          <text x="372" y="100" font-size="12" font-weight="700" fill="currentColor">Isquemia y lesión tisular</text>
+          <text x="372" y="124" font-size="11" fill="currentColor" opacity="0.85">· Isquemia tisular</text>
+          <text x="372" y="144" font-size="11" fill="currentColor" opacity="0.85">· Lesión tisular traumática y quirúrgica</text>
+          <text x="372" y="164" font-size="11" fill="currentColor" opacity="0.85">· Tromboembolia</text>
+
+          <rect x="10" y="188" width="334" height="100" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.3"></rect>
+          <text x="26" y="212" font-size="12" font-weight="700" fill="currentColor">Inmunomediadas</text>
+          <text x="26" y="236" font-size="11" fill="currentColor" opacity="0.85">· Vasculitis</text>
+          <text x="26" y="256" font-size="11" fill="currentColor" opacity="0.85">· Procesos autoinmunes</text>
+          <text x="26" y="278" font-size="10.5" fill="currentColor" opacity="0.65">La vasculitis también da púrpura: no todo rash es séptico.</text>
+
+          <rect x="356" y="188" width="334" height="100" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.3"></rect>
+          <text x="372" y="212" font-size="12" font-weight="700" fill="currentColor">Otras</text>
+          <text x="372" y="236" font-size="11" fill="currentColor" opacity="0.85">· Reacciones a fármacos</text>
+          <text x="372" y="256" font-size="11" fill="currentColor" opacity="0.85">· Procesos neoplásicos</text>
+          <text x="372" y="278" font-size="10.5" fill="currentColor" opacity="0.65">Revisar siempre la medicación reciente.</text>
+        </svg>
+        <figcaption>La lista importa por una razón práctica: en la sepsis <em>sin</em> shock, buscar activamente estas causas antes de comprometer un espectro antibiótico amplio.</figcaption>
+      </figure>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Entidad</th><th>Pista que la orienta</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Pancreatitis</strong></td><td>Dolor epigástrico en cinturón, amilasa y lipasa elevadas — <strong>es el ejemplo que da la guía</strong></td></tr>
+            <tr><td><strong>Isquemia tisular</strong></td><td>Dolor desproporcionado al examen; acidosis láctica sin foco infeccioso</td></tr>
+            <tr><td><strong>Lesión tisular traumática o quirúrgica</strong></td><td>Antecedente evidente y reciente; el SIRS aparece sin infección</td></tr>
+            <tr><td><strong>Quemaduras</strong></td><td>Superficie corporal comprometida; respuesta inflamatoria proporcional a la extensión</td></tr>
+            <tr><td><strong>Tromboembolia</strong></td><td>Disnea e hipoxemia súbitas, factores protrombóticos, sin foco infeccioso</td></tr>
+            <tr><td><strong>Vasculitis</strong></td><td><strong>Púrpura palpable</strong>, compromiso multisistémico, marcadores inmunológicos</td></tr>
+            <tr><td><strong>Reacciones a fármacos</strong></td><td>Relación temporal con un fármaco nuevo; eosinofilia, exantema</td></tr>
+            <tr><td><strong>Procesos autoinmunes y neoplásicos</strong></td><td>Curso subagudo previo, síndrome consuntivo, citopenias</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Fuente: Font MD et al. Med Clin North Am 2020;104(4). Surviving Sepsis Campaign 2021.</p>
+    </section>
+
+    <!-- ═══════════════ PARTE II · SHOCK SÉPTICO ═══════════════ -->
+
+    <section class="seccion s-generalidades" id="sh-definicion">
+      <span class="seccion__pestana"><b>01</b> Shock · Criterios</span>
+      <h2 class="seccion__titulo">Shock Séptico — Definición &amp; Criterios</h2>
+
+      <p>El shock séptico es <strong>sepsis</strong> más <strong>los dos criterios siguientes, presentes a la vez</strong>:</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Criterio</th><th>Umbral</th><th>Condición</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Hipotensión persistente</strong></td>
+              <td>Requiere <strong>vasopresores</strong> para mantener una <strong>presión arterial media <span class="dato">≥ 65 mmHg</span></strong></td>
+              <td>Pese a la reanimación con volumen</td>
+            </tr>
+            <tr>
+              <td><strong>Hiperlactatemia</strong></td>
+              <td>Lactato <strong><span class="dato">&gt; 2 mmol/L</span></strong> (<span class="dato">&gt; 18 mg/dL</span>)</td>
+              <td><strong>En ausencia de hipovolemia</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Los dos criterios se exigen <strong>juntos</strong>, y ambos <strong>después</strong> de haber repuesto volumen. Un lactato elevado en un paciente hipovolémico no define shock séptico, y una hipotensión que corrige con fluidos tampoco.</p>
+      </div>
+
+      <p>Este subconjunto se separa del resto de la sepsis por una razón concreta: sus alteraciones circulatorias, celulares y metabólicas son <strong>lo suficientemente profundas como para aumentar considerablemente la mortalidad</strong>.</p>
+
+      <p class="cita">Fuente: Singer M et al. The Third International Consensus Definitions for Sepsis and Septic Shock (Sepsis-3). Surviving Sepsis Campaign 2021.</p>
+    </section>
+
+    <section class="seccion s-fisiopatologia" id="sh-lactato">
+      <span class="seccion__pestana"><b>02</b> Shock · Lactato</span>
+      <h2 class="seccion__titulo">Shock Séptico — Qué significa el lactato</h2>
+
+      <p>El aumento del lactato <strong>refleja la disfunción celular en la sepsis</strong>. No tiene una única causa: contribuyen <strong>múltiples factores</strong> simultáneos.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Factor que eleva el lactato</th><th>Qué representa</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Llegada insuficiente de oxígeno a los tejidos</strong></td><td>El componente clásico de hipoperfusión</td></tr>
+            <tr><td><strong>Alteración de la respiración aeróbica</strong></td><td>Disfunción mitocondrial: hay oxígeno, pero la célula no puede usarlo</td></tr>
+            <tr><td><strong>Aceleración de la glucólisis aeróbica</strong></td><td>Producción aumentada aun con oxígeno disponible</td></tr>
+            <tr><td><strong>Reducción de la depuración hepática</strong></td><td>Se elimina menos, no necesariamente se produce más</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Por qué hacen falta los dos criterios y no uno</h3>
+      <ul>
+        <li>Las cifras de lactato son un <strong>indicador sensible pero inespecífico</strong> de <strong>estrés celular o metabólico</strong>, más que de «shock» propiamente dicho.</li>
+        <li>Sin embargo, la <strong>asociación de hiperlactatemia con hipotensión resistente a los líquidos</strong> es característica de un grupo con <strong>mortalidad especialmente alta</strong>.</li>
+        <li>Por eso esa combinación <strong>ofrece un identificador más sólido</strong> del concepto fisiológico y epidemiológico del shock séptico <strong>que cualquiera de los dos criterios por separado</strong>.</li>
+      </ul>
+
+      <p class="cita">Fuente: Singer M et al. Sepsis-3. Font MD et al. Med Clin North Am 2020;104(4).</p>
+    </section>
+
+    <section class="seccion s-tratamiento" id="sh-tratamiento">
+      <span class="seccion__pestana"><b>03</b> Shock · Manejo</span>
+      <h2 class="seccion__titulo">Shock Séptico — Manejo Inicial (Hour One Bundle)</h2>
+
+      <p>Cinco medidas que se <strong>comienzan de inmediato</strong> ante sepsis o shock séptico. No es una secuencia rígida: varias se ejecutan en paralelo dentro de la <strong>primera hora</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 380" role="img" aria-label="Hour One Bundle para sepsis y shock séptico. Primero, medir el nivel de lactato, y repetirlo si el inicial estaba elevado por encima de dos milimoles por litro. Segundo, obtener hemocultivos antes de administrar antibióticos. Tercero, administrar antibióticos de amplio espectro. Cuarto, administrar rápidamente treinta mililitros por kilo de cristaloides ante hipotensión o lactato mayor o igual a cuatro milimoles por litro. Quinto, aplicar vasopresores si hay hipotensión durante o después de la reanimación con fluidos, para mantener una presión arterial media mayor o igual a sesenta y cinco milímetros de mercurio.">
+          <rect x="10" y="8" width="680" height="38" rx="3" fill="var(--c)" fill-opacity="0.9"></rect>
+          <text x="26" y="33" font-size="13" font-weight="700" fill="#FFFFFF">HOUR ONE BUNDLE — comenzar inmediatamente</text>
+
+          <rect x="10" y="58" width="680" height="56" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.4"></rect>
+          <circle cx="40" cy="86" r="15" fill="var(--c)" fill-opacity="0.85"></circle>
+          <text x="40" y="91" font-size="13" font-weight="700" fill="#FFFFFF" text-anchor="middle">1</text>
+          <text x="70" y="82" font-size="12" font-weight="700" fill="currentColor">Medir el nivel de lactato</text>
+          <text x="70" y="101" font-size="10.5" fill="currentColor" opacity="0.75">Repetir la medición si el lactato inicial estaba elevado (&gt; 2 mmol/L)</text>
+
+          <rect x="10" y="122" width="680" height="56" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.4"></rect>
+          <circle cx="40" cy="150" r="15" fill="var(--c)" fill-opacity="0.85"></circle>
+          <text x="40" y="155" font-size="13" font-weight="700" fill="#FFFFFF" text-anchor="middle">2</text>
+          <text x="70" y="146" font-size="12" font-weight="700" fill="currentColor">Obtener hemocultivos ANTES de administrar antibióticos</text>
+          <text x="70" y="165" font-size="10.5" fill="currentColor" opacity="0.75">Una espera de hasta 45 minutos no se considera un retraso importante</text>
+
+          <rect x="10" y="186" width="680" height="56" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.4"></rect>
+          <circle cx="40" cy="214" r="15" fill="var(--c)" fill-opacity="0.85"></circle>
+          <text x="40" y="219" font-size="13" font-weight="700" fill="#FFFFFF" text-anchor="middle">3</text>
+          <text x="70" y="210" font-size="12" font-weight="700" fill="currentColor">Administrar antibióticos de amplio espectro</text>
+          <text x="70" y="229" font-size="10.5" fill="currentColor" opacity="0.75">En shock séptico o alta probabilidad de sepsis: dentro de la 1.ª hora</text>
+
+          <rect x="10" y="250" width="680" height="56" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.4"></rect>
+          <circle cx="40" cy="278" r="15" fill="var(--c)" fill-opacity="0.85"></circle>
+          <text x="40" y="283" font-size="13" font-weight="700" fill="#FFFFFF" text-anchor="middle">4</text>
+          <text x="70" y="274" font-size="12" font-weight="700" fill="currentColor">30 mL/kg de cristaloides IV, rápidamente</text>
+          <text x="70" y="293" font-size="10.5" fill="currentColor" opacity="0.75">Indicado ante hipotensión o lactato ≥ 4 mmol/L · completar en las primeras 3 h</text>
+
+          <rect x="10" y="314" width="680" height="56" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2.2"></rect>
+          <circle cx="40" cy="342" r="15" fill="var(--c)" fill-opacity="0.85"></circle>
+          <text x="40" y="347" font-size="13" font-weight="700" fill="#FFFFFF" text-anchor="middle">5</text>
+          <text x="70" y="338" font-size="12" font-weight="700" fill="currentColor">Vasopresores si persiste la hipotensión</text>
+          <text x="70" y="357" font-size="10.5" fill="currentColor" opacity="0.75">Durante o después del volumen, para mantener PAM ≥ 65 mmHg</text>
+        </svg>
+        <figcaption>El paso 5 es el que define el shock séptico: si hace falta vasopresor para sostener la PAM después del volumen, el paciente ya no está sólo séptico.</figcaption>
+      </figure>
+
+      <h3>Detalle de cada medida</h3>
+      <ol>
+        <li><strong>Medir el lactato.</strong> Si el valor inicial está elevado (<span class="dato">&gt; 2 mmol/L</span>), <strong>repetir la medición</strong>: la evolución del lactato guía la respuesta a la reanimación.</li>
+        <li><strong>Obtener hemocultivos antes de administrar antibióticos</strong>, siempre que pueda hacerse con rapidez.</li>
+        <li><strong>Administrar antibióticos de amplio espectro.</strong> En shock séptico posible o alta probabilidad de sepsis, <strong>dentro de la 1.ª hora</strong>.</li>
+        <li><strong>Administrar rápidamente <span class="dato">30 mL/kg</span> de cristaloides</strong> ante <strong>hipotensión</strong> o <strong>lactato <span class="dato">≥ 4 mmol/L</span></strong>.</li>
+        <li><strong>Aplicar vasopresores</strong> si el paciente está hipotenso <strong>durante o después</strong> de la reanimación con fluidos, para mantener una <strong>PAM <span class="dato">≥ 65 mmHg</span></strong>.</li>
+      </ol>
+
+      <h3>Después de la primera hora</h3>
+      <ul>
+        <li>La continuación del aporte de líquidos se guía por <strong>frecuentes reevaluaciones del estado hemodinámico</strong>, no por un volumen fijo.</li>
+        <li>Evaluar la respuesta con <strong>medidas dinámicas</strong> —elevación pasiva de las piernas es la más accesible— y con los signos clínicos de perfusión: <strong>relleno capilar, temperatura de las extremidades y lividideces</strong>.</li>
+        <li><strong>Control del foco</strong> tan pronto como sea posible: drenaje, desbridamiento o remoción del dispositivo infectado.</li>
+      </ul>
+
+      <p class="cita">Fuente: Hour-1 Bundle, Society of Critical Care Medicine y European Society of Intensive Care Medicine, 2017 (survivingsepsis.org). Evans L et al. Surviving Sepsis Campaign 2021. Critical Care Medicine.</p>
+    </section>
+
+    <!-- ============ Repaso activo ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>Definí sepsis y shock séptico según Sepsis-3.</summary>
+          <div class="fc__r"><strong>Sepsis:</strong> disfunción orgánica potencialmente mortal causada por una <strong>desregulación de la respuesta del huésped a la infección</strong>.<br><strong>Shock séptico:</strong> subconjunto dentro de la sepsis en el que las alteraciones circulatorias, celulares o metabólicas son <strong>lo suficientemente profundas como para aumentar considerablemente la mortalidad</strong>.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Qué términos eliminó Sepsis-3, y qué eliminaron las guías 2021?</summary>
+          <div class="fc__r">Sepsis-3 eliminó <strong>SIRS</strong> y <strong>«sepsis grave»</strong> —era redundante, porque toda sepsis ya implica disfunción orgánica—. Las guías <strong>2021</strong> eliminan el <strong>qSOFA como criterio diagnóstico de disfunción orgánica</strong>; queda como herramienta de alerta.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Sitios de infección más frecuentes en la sepsis, en orden.</summary>
+          <div class="fc__r"><strong>Pulmón 64 %</strong> → abdomen 20 % → sangre 15 % → aparato genitourinario 14 %.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Del 70 % con cultivos positivos, ¿qué proporción y qué gérmenes se aíslan?</summary>
+          <div class="fc__r"><strong>62 % gramnegativos</strong> (<em>Pseudomonas</em> spp. 20 %, <em>E. coli</em> 16 %) y <strong>47 % grampositivos</strong> (<em>S. aureus</em> 20 %). Suman más de 100 % porque muchos cuadros son <strong>polimicrobianos</strong>.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Por qué la sepsis genera inmunosupresión si es un cuadro inflamatorio?</summary>
+          <div class="fc__r">Porque la respuesta inflamatoria desregulada conduce <strong>secundariamente</strong> a la liberación de <strong>agentes antiinflamatorios</strong> — el <strong>síndrome compensatorio de respuesta antiinflamatoria (CARS)</strong>, que <strong>sigue siendo una respuesta desregulada</strong>. Sus dos consecuencias son el <strong>fallo en eliminar el foco inicial</strong> y la <strong>aparición de infecciones oportunistas</strong>.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>Compromiso pulmonar en la sepsis: mecanismo y frecuencia de SDRA.</summary>
+          <div class="fc__r">La <strong>injuria pulmonar mediada por citocinas</strong> aumenta la <strong>permeabilidad alveolar y del endotelio capilar</strong>, causando <strong>edema no cardiogénico</strong>. La hipoxia y la acidosis metabólica producen <strong>taquipnea</strong>. La incidencia de <strong>SDRA es de aproximadamente el 7 %</strong>.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Cómo se diagnostica el fallo hepático de la sepsis y cuál es su causa principal?</summary>
+          <div class="fc__r">Por <strong>bilirrubina &gt; 2</strong> asociada a <strong>coagulopatía con RIN &gt; 1,5</strong>. La causa principal es la <strong>hipoxia del parénquima hepático</strong>. Es poco frecuente (<strong>&lt; 2 %</strong>) pero de gran impacto en la morbimortalidad.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Cómo se diagnostica la CID en la sepsis y cómo puede presentarse?</summary>
+          <div class="fc__r">Por <strong>trombocitopenia</strong> más <strong>prolongación del tiempo de protrombina o de la activación de la tromboplastina</strong>. Puede presentarse con <strong>múltiples sitios de sangrado</strong> o con <strong>trombosis de pequeños y medianos vasos</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Enumerá los criterios de RIESGO ALTO de NICE 2024.</summary>
+          <div class="fc__r"><strong>Sensorio:</strong> evidencia objetiva de nueva alteración. <strong>Respiratorio:</strong> FR &gt; 25/min, o nuevo requerimiento de O₂ &gt; 40 % para SpO₂ ≥ 92 % (88 % en EPOC). <strong>Presión:</strong> TAS &lt; 90 mmHg o 40 mmHg por debajo de su valor normal. <strong>Circulación:</strong> FC &gt; 130/min, anuria de 18 h, o &lt; 0,5 mL/kg/hora con sonda. <strong>Piel:</strong> reticulado marmóreo o piel grisácea, cianosis, petequias o rash purpúrico.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué papel juega la fiebre en el diagnóstico de sepsis?</summary>
+          <div class="fc__r"><strong>Ni toda fiebre es sepsis, ni la ausencia de fiebre la descarta.</strong> No figura entre los criterios de riesgo alto de NICE: lo que estratifica es la <strong>disfunción de órgano</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Enumerá los criterios de SIRS y explicá por qué se abandonó.</summary>
+          <div class="fc__r"><strong>Dos o más de:</strong> T &gt; 38 o &lt; 36 °C; FC &gt; 90/min; FR &gt; 20/min o PaCO₂ &lt; 32 mmHg; leucocitos &gt; 12.000 o &lt; 4.000/mm³, o &gt; 10 % en cayado.<br>Se abandonó porque <strong>puede reflejar simplemente la respuesta apropiada y adaptativa del huésped</strong>, mientras que la sepsis implica <strong>disfunción orgánica</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Cuáles son las tres variables del qSOFA y para qué sirve realmente?</summary>
+          <div class="fc__r"><strong>Glasgow &lt; 15</strong>, <strong>FR ≥ 22/min</strong> y <strong>TAS ≤ 100 mmHg</strong>; con <strong>al menos 2</strong> se considera positivo. Predice <strong>muerte o estancia prolongada en UTI</strong>. Por su <strong>baja sensibilidad no debe usarse como única herramienta diagnóstica</strong>: su utilidad es <strong>como alerta, sobre todo extrahospitalaria</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Interpretación del NEWS 2 y frecuencia con que hay que recalcularlo.</summary>
+          <div class="fc__r"><strong>&gt; 7</strong> alto riesgo · <strong>5 – 6</strong> moderado · <strong>1 – 4</strong> bajo · <strong>0</strong> muy bajo.<br>Recálculo: cada <strong>30 minutos</strong> si &gt; 7, cada <strong>1 hora</strong> si 5 – 6, cada <strong>4 a 6 horas</strong> si 1 – 4. <strong>No es un score específico de sepsis</strong> y no reemplaza el juicio clínico.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Cuánto volumen, de qué tipo y en cuánto tiempo en la reanimación inicial?</summary>
+          <div class="fc__r"><strong>Al menos 30 mL/kg de cristaloides IV en las primeras 3 horas</strong> para la hipoperfusión inducida por sepsis. Después, el aporte se guía por <strong>frecuentes reevaluaciones hemodinámicas</strong> — <strong>ya no se justifica la PVC sola</strong>.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿En cuánto tiempo hay que iniciar el antibiótico, según el escenario?</summary>
+          <div class="fc__r"><strong>Shock séptico posible o alta probabilidad de sepsis → dentro de la 1.ª hora.</strong><br><strong>Sepsis posible sin shock →</strong> reevaluar antecedentes, examen y causas no infecciosas; esa reevaluación <strong>no debe durar más de 3 horas</strong> y, si la sospecha persiste, <strong>iniciar dentro de las 3 horas</strong>.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Cuánto se puede esperar para tomar cultivos sin que se considere un retraso?</summary>
+          <div class="fc__r"><strong>45 minutos.</strong> Los cultivos —incluido el hemocultivo— van <strong>antes</strong> del antibiótico siempre que se puedan obtener con rapidez, pero <strong>no deben retrasar la primera dosis</strong> más allá de eso. No se incluyen muestras que requieran procedimiento invasivo.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Cuándo doble cobertura antibiótica, y cuáles son los factores de riesgo de BGN MDR?</summary>
+          <div class="fc__r"><strong>Doble cobertura</strong> si hay <strong>alto riesgo de BGN multirresistentes</strong>; <strong>un solo agente</strong> si el riesgo es bajo.<br>Factores: <strong>infección o colonización por BGN MDR en el año previo</strong>, <strong>prevalencia local</strong> hospitalaria, <strong>ATB de amplio espectro en los 90 días previos</strong> y <strong>hospitalización en los 90 días previos</strong>.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Esquema empírico para peritonitis secundaria, NAC grave y PPB necrotizante.</summary>
+          <div class="fc__r"><strong>Peritonitis 2.ª:</strong> ceftriaxona + metronidazol. <strong>NAC grave:</strong> ampicilina/sulbactam + claritromicina ± vancomicina si hay FR para SAMR. <strong>Infecciones necrotizantes de PPB:</strong> piperacilina/tazobactam + vancomicina ± clindamicina.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Dosis de carga y mantenimiento de vancomicina en sepsis.</summary>
+          <div class="fc__r"><strong>Carga:</strong> 30 – 35 mg/kg a pasar en <strong>4 horas</strong> (máximo <strong>3 g</strong>). <strong>Mantenimiento:</strong> 15 – 20 mg/kg cada <strong>8 a 12 horas</strong> (máximo <strong>4.500 mg/día</strong>).</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Por qué el control del foco es indispensable?</summary>
+          <div class="fc__r">Porque <strong>sin un adecuado control del foco, la reanimación y los antibióticos por sí mismos difícilmente sean suficientes</strong> para estabilizar definitivamente al paciente. Incluye <strong>drenaje de colecciones</strong>, <strong>limpieza de tejido necrótico</strong>, <strong>remoción de catéteres o dispositivos infectados</strong> y <strong>resolución quirúrgica de focos abdominales</strong>.</div>
+        </details>
+
+        <details class="fc s-diferenciales">
+          <summary>Nombrá causas no infecciosas que simulan sepsis.</summary>
+          <div class="fc__r">Trastornos inflamatorios estériles que pueden progresar a shock e insuficiencia multiorgánica: <strong>pancreatitis</strong>, isquemia tisular, lesión tisular <strong>traumática y quirúrgica</strong>, <strong>quemaduras</strong>, tromboembolia, <strong>vasculitis</strong>, reacciones a fármacos, y procesos <strong>autoinmunes y neoplásicos</strong>.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Criterios que definen el shock séptico, con sus umbrales exactos.</summary>
+          <div class="fc__r">Sepsis <strong>más los dos</strong>: <strong>hipotensión persistente que requiere vasopresores</strong> para mantener <strong>PAM ≥ 65 mmHg</strong>, y <strong>lactato &gt; 2 mmol/L (&gt; 18 mg/dL)</strong> <strong>en ausencia de hipovolemia</strong>. Ambos se evalúan <strong>después</strong> de reponer volumen.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Por qué el lactato solo no alcanza para hablar de shock?</summary>
+          <div class="fc__r">Porque es un indicador <strong>sensible pero inespecífico</strong> de estrés celular o metabólico. Contribuyen la <strong>hipoxia tisular</strong>, la <strong>alteración de la respiración aeróbica</strong>, la <strong>aceleración de la glucólisis aeróbica</strong> y la <strong>reducción de la depuración hepática</strong>. Es la <strong>combinación con hipotensión resistente a líquidos</strong> la que identifica al grupo de mortalidad especialmente alta.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Enumerá las cinco medidas del Hour One Bundle.</summary>
+          <div class="fc__r">1) <strong>Medir lactato</strong> (repetir si &gt; 2 mmol/L). 2) <strong>Hemocultivos antes del antibiótico</strong>. 3) <strong>Antibióticos de amplio espectro</strong>. 4) <strong>30 mL/kg de cristaloides</strong> ante hipotensión o <strong>lactato ≥ 4 mmol/L</strong>. 5) <strong>Vasopresores</strong> si persiste la hipotensión, para <strong>PAM ≥ 65 mmHg</strong>.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Definiciones que definen todo</dt>
+        <dd><strong>Sepsis</strong> = infección + <strong>disfunción orgánica</strong> por respuesta desregulada del huésped. <strong>Shock séptico</strong> = sepsis + <strong>vasopresores para PAM ≥ 65 mmHg</strong> + <strong>lactato &gt; 2 mmol/L</strong>, los dos tras reponer volumen. Sepsis-3 eliminó <strong>SIRS</strong> y <strong>«sepsis grave»</strong>; las guías 2021 sacaron el <strong>qSOFA</strong> como criterio diagnóstico.</dd>
+
+        <dt class="r-gold">Evaluación del riesgo</dt>
+        <dd><strong>NICE 2024 riesgo alto:</strong> nueva alteración objetiva del sensorio · <strong>FR &gt; 25</strong> · <strong>TAS &lt; 90</strong> o 40 por debajo de su basal · <strong>FC &gt; 130</strong> o anuria de 18 h · <strong>reticulado marmóreo, cianosis, petequias</strong>. <strong>NEWS 2 &gt; 7</strong> = alto riesgo, y se <strong>recalcula cada 30 min</strong>. Ni toda fiebre es sepsis ni su ausencia la descarta.</dd>
+
+        <dt class="r-tto">Manejo de 1ª línea</dt>
+        <dd><strong>Hour One Bundle:</strong> lactato → hemocultivos → <strong>ATB de amplio espectro</strong> → <strong>30 mL/kg de cristaloides</strong> (si hipotensión o lactato ≥ 4) → <strong>vasopresores para PAM ≥ 65</strong>. Shock o alta probabilidad → <strong>ATB en la 1.ª hora</strong>; sepsis sin shock → reevaluar hasta <strong>3 h</strong>. Espera aceptable para cultivos: <strong>45 min</strong>. Doble cobertura sólo si hay <strong>riesgo de BGN MDR</strong>.</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd><strong>Sepsis y shock séptico son emergencias médicas:</strong> tratamiento y reanimación comienzan de inmediato. <strong>Sin control del foco</strong> —drenaje, desbridamiento, remoción del catéter— ni la reanimación ni los antibióticos alcanzan. Y el diagnóstico no se archiva: se <strong>reevalúa</strong>.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir de la clase «Sepsis y shock séptico — perspectiva infectológica» de la Dra. Claudia Cabello, Cátedra de Enfermedades Infecciosas, Universidad de Mendoza sede San Rafael. Bibliografía de la cátedra: Surviving Sepsis Campaign 2021 (Critical Care Medicine); Suspected sepsis: recognition, diagnosis and early management, guías NICE 2024; Qiu X, Lei YP, Zhou RX, Expert Review of Anti-infective Therapy 2023;21(8):891-900; Font MD et al., Medical Clinics of North America 2020;104(4); Maves &amp; Enwezor, Infect Dis Clin North Am 2022;36. Material de estudio: no reemplaza el criterio clínico ni la guía institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link'));
+
+  function porMeta(hash){
+    for (var i = 0; i < enlaces.length; i++){
+      if (enlaces[i].getAttribute('href') === '#' + hash) return enlaces[i];
+    }
+    return null;
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var enlace = porMeta(e.target.id);
+        if (!enlace) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          enlace.setAttribute('aria-current', 'true');
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>

@@ -1,0 +1,1691 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Infecciones en Huéspedes Especiales</title>
+<link rel="stylesheet" href="../../fuentes/fuentes.css">
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+}
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índice lateral ---------- */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Ficha de sección ---------- */
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.35rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-row:1/3; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+.importante__titulo{
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso{ display:none !important; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+<style>
+/* Fuentes de la capa de contenido. Va después del estilo del
+   cuadernillo para pisar las de Windows, que no se pueden
+   redistribuir y no existen en Android. */
+:root{
+  --f-titulo:'Spectral',Georgia,'Times New Roman',serif;
+  --f-texto:'Open Sans',system-ui,-apple-system,sans-serif;
+  --f-dato:'Cascadia Mono','Cascadia Code',ui-monospace,Consolas,monospace;
+}
+/* Botón de volver, espejo del de tema que ya trae el cuadernillo. */
+.volver{
+  position:fixed; top:.7rem; left:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.volver:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.volver__icono{ width:1.15rem; height:1.15rem; display:block; }
+</style>
+</head>
+<body data-clave="infecto/10-huespedes-escpeciales">
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-generalidades"  href="#generalidades">Generalidades &amp; Niveles</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#fisiopatologia">Fisiopatología</a></li>
+      <li><a class="indice__link i-clinica"        href="#condiciones">El Huésped según su Condición</a></li>
+      <li><a class="indice__link i-diferenciales"  href="#neutropenia">Neutropenia Febril</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#riesgo">Evaluación del Riesgo</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#tratamiento">Tratamiento</a></li>
+      <li><a class="indice__link i-importantes"    href="#importantes">Aspectos Importantes</a></li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Infectología · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Infecciones en Huéspedes Especiales</h1>
+      <p class="portada__bajada">Cada compartimiento del sistema inmune abre una puerta distinta. Del defecto inmunológico al patógeno esperado, y de ahí a la neutropenia febril como urgencia infectológica.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">7 secciones</span>
+        <span class="etiqueta s-diagnostico">MASCC · CISNE</span>
+        <span class="etiqueta s-tratamiento">TEI y escalamiento</span>
+        <span class="etiqueta s-importantes">Urgencia infectológica</span>
+      </div>
+    </header>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="generalidades">
+      <span class="seccion__pestana"><b>01</b> Base</span>
+      <h2 class="seccion__titulo">Generalidades &amp; Niveles de Inmunosupresión</h2>
+
+      <p>Los mecanismos de defensa del huésped dependen de un sistema complejo e interrelacionado organizado en <strong>tres niveles</strong>:</p>
+
+      <ul>
+        <li><strong>Barreras físicas:</strong> piel, acidez gástrica, eliminación mucociliar, peristaltismo.</li>
+        <li><strong>Inmunidad innata o natural:</strong> fagocitos, células NK, complemento, péptidos antimicrobianos.</li>
+        <li><strong>Inmunidad adaptativa o adquirida:</strong> linfocitos B y T.</li>
+      </ul>
+
+      <p><strong>Inmunocomprometido</strong> es aquel individuo que tiene alteraciones en <strong>uno o más niveles</strong> de este sistema, lo que lo torna susceptible a infecciones debidas a <strong>patógenos específicos</strong>. Esa última palabra es la que organiza todo el cuadernillo: no se trata de «más infecciones», sino de <strong>infecciones predecibles según qué se rompió</strong>.</p>
+
+      <h3>Primarias y secundarias</h3>
+      <p>Las inmunodeficiencias pueden ser <strong>primarias</strong> o <strong>secundarias</strong>. Las secundarias son las relacionadas a una <strong>enfermedad</strong> o al <strong>tratamiento de la misma</strong> — y son, de lejos, las que se ven en la práctica.</p>
+
+      <p>El grado de inmunosupresión depende de la <strong>enfermedad de base</strong>, de las <strong>drogas utilizadas</strong>, y también de las <strong>dosis, la duración y las combinaciones</strong> que puedan actuar de forma sinérgica.</p>
+
+      <h3>Alto nivel de inmunosupresión</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Situación</th><th>Umbral que la define</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Inmunodeficiencia combinada primaria</td><td>—</td></tr>
+            <tr><td><strong>Quimioterapia por cáncer</strong></td><td>—</td></tr>
+            <tr><td>Trasplante de órganos sólidos</td><td>Los primeros <span class="dato">2 meses</span> postrasplante</td></tr>
+            <tr><td><strong>Infección por VIH</strong></td><td>Linfocitos <strong>CD4 &lt; <span class="dato">200/mm³</span></strong></td></tr>
+            <tr><td><strong>Corticoides</strong></td><td>Prednisona o equivalente <strong>≥ <span class="dato">20 mg/día</span></strong> — o <span class="dato">2 mg/kg/día</span> en menores de 10 kg — durante <strong>≥ <span class="dato">14 días</span></strong></td></tr>
+            <tr><td><strong>Inmunomoduladores biológicos</strong></td><td>Bloqueantes del <strong>TNF-α</strong> o <strong>rituximab</strong></td></tr>
+            <tr><td>Trasplante de células hematopoyéticas (TCH)</td><td>Gravedad y duración según <strong>tipo de trasplante</strong> — mayor en alogénico que en autólogo —, tipo de donante, origen de las células progenitoras y complicaciones como la <strong>EICH</strong> y su tratamiento</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Bajo nivel de inmunosupresión</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Situación</th><th>Umbral que la define</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Infección por VIH</strong> asintomática</td><td>Linfocitos <strong>CD4 <span class="dato">200 – 499/mm³</span></strong></td></tr>
+            <tr><td><strong>Corticoides</strong></td><td>Menos de <span class="dato">14 días</span>, con dosis diaria <strong>&lt; 20 mg</strong> o en <strong>días alternos</strong></td></tr>
+            <tr><td>Metotrexato</td><td>Dosis semanal <strong>&lt; <span class="dato">0,4 mg/kg</span></strong></td></tr>
+            <tr><td>Azatioprina</td><td>Dosis diaria <strong>&lt; <span class="dato">3 mg/kg</span></strong></td></tr>
+            <tr><td>6-mercaptopurina</td><td>Dosis diaria <strong>&lt; <span class="dato">1,5 mg/kg</span></strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Los cortes de corticoides son el ejemplo más claro de que <strong>la misma droga define ambos niveles</strong>: lo que cambia es la dosis y el tiempo. <span class="dato">20 mg</span> de prednisona por <span class="dato">14 días</span> es la frontera.</p>
+
+      <p class="cita">Fuente: material de cátedra — Dra. Claudia Cabello, Cátedra de Enfermedades Infecciosas, Universidad de Mendoza, Sede San Rafael.</p>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-fisiopatologia" id="fisiopatologia">
+      <span class="seccion__pestana"><b>02</b> Mecanismo</span>
+      <h2 class="seccion__titulo">Fisiopatología: Cada Defecto, su Patógeno</h2>
+
+      <p>Cada compartimiento funcional del sistema inmune juega un <strong>rol especializado</strong> en las defensas del huésped. De ahí la regla que hace previsible a este tema: <strong>cada déficit inmune predispone a determinados tipos de infecciones</strong>. Saber qué nivel está roto permite anticipar el germen antes de tener el cultivo.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 350" role="img" aria-label="Mapa de los tres niveles de defensa del huésped y los patógenos que emergen cuando cada uno falla. Cuando fallan las barreras físicas, por mucositis o por un catéter, transloca la microbiota endógena y emergen bacilos Gram negativos entéricos y Candida. Cuando falla la inmunidad innata, por neutropenia o asplenia, emergen bacilos Gram negativos, Pseudomonas, Staphylococcus aureus, Aspergillus y bacterias capsuladas si falta el bazo. Cuando falla la inmunidad adaptativa, por corticoides, anti factor de necrosis tumoral, VIH o rituximab, emergen patógenos intracelulares como los herpesvirus, la tuberculosis por reactivación, Pneumocystis jirovecii y Candida.">
+          <defs>
+            <marker id="pta-fis" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <text x="14" y="36" font-size="11" font-weight="700" fill="currentColor" opacity="0.7">Nivel de defensa</text>
+          <text x="256" y="36" font-size="11" font-weight="700" fill="currentColor" opacity="0.7">Dónde se rompe</text>
+          <text x="482" y="36" font-size="11" font-weight="700" fill="currentColor" opacity="0.7">Qué patógeno emerge</text>
+
+          <rect x="14" y="48" width="186" height="88" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="72" font-size="12.5" font-weight="700" fill="currentColor">Barreras físicas</text>
+          <text x="30" y="93" font-size="11.5" fill="currentColor" opacity="0.75">Piel · acidez gástrica</text>
+          <text x="30" y="111" font-size="11.5" fill="currentColor" opacity="0.75">Mucociliar · peristaltismo</text>
+
+          <line x1="200" y1="92" x2="250" y2="92" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-fis)"></line>
+          <text x="202" y="84" font-size="10.5" fill="currentColor" opacity="0.65">falla</text>
+
+          <rect x="256" y="48" width="170" height="88" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="272" y="72" font-size="12.5" font-weight="700" fill="currentColor">Mucositis · catéter</text>
+          <text x="272" y="93" font-size="11.5" fill="currentColor" opacity="0.75">Translocación de la</text>
+          <text x="272" y="111" font-size="11.5" fill="currentColor" opacity="0.75">microbiota endógena</text>
+
+          <line x1="426" y1="92" x2="476" y2="92" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-fis)"></line>
+          <text x="428" y="84" font-size="10.5" fill="currentColor" opacity="0.65">emergen</text>
+
+          <rect x="482" y="48" width="204" height="88" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="498" y="72" font-size="12.5" font-weight="700" fill="currentColor">BGN entéricos</text>
+          <text x="498" y="93" font-size="11.5" fill="currentColor" opacity="0.75">E. coli · Klebsiella</text>
+          <text x="498" y="111" font-size="11.5" fill="currentColor" opacity="0.75">Enterobacter · Candida</text>
+
+          <rect x="14" y="148" width="186" height="88" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="172" font-size="12.5" font-weight="700" fill="currentColor">Inmunidad innata</text>
+          <text x="30" y="193" font-size="11.5" fill="currentColor" opacity="0.75">Fagocitos · células NK</text>
+          <text x="30" y="211" font-size="11.5" fill="currentColor" opacity="0.75">Complemento · péptidos</text>
+
+          <line x1="200" y1="192" x2="250" y2="192" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-fis)"></line>
+          <text x="202" y="184" font-size="10.5" fill="currentColor" opacity="0.65">falla</text>
+
+          <rect x="256" y="148" width="170" height="88" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="272" y="172" font-size="12.5" font-weight="700" fill="currentColor">Neutropenia</text>
+          <text x="272" y="193" font-size="11.5" fill="currentColor" opacity="0.75">Quimioterapia</text>
+          <text x="272" y="211" font-size="11.5" fill="currentColor" opacity="0.75">Asplenia</text>
+
+          <line x1="426" y1="192" x2="476" y2="192" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-fis)"></line>
+          <text x="428" y="184" font-size="10.5" fill="currentColor" opacity="0.65">emergen</text>
+
+          <rect x="482" y="148" width="204" height="88" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="498" y="172" font-size="12.5" font-weight="700" fill="currentColor">BGN · P. aeruginosa</text>
+          <text x="498" y="193" font-size="11.5" fill="currentColor" opacity="0.75">S. aureus · Aspergillus</text>
+          <text x="498" y="211" font-size="11.5" fill="currentColor" opacity="0.75">Capsulados sin bazo</text>
+
+          <rect x="14" y="248" width="186" height="88" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="272" font-size="12.5" font-weight="700" fill="currentColor">Inmunidad adaptativa</text>
+          <text x="30" y="293" font-size="11.5" fill="currentColor" opacity="0.75">Linfocitos B y T</text>
+
+          <line x1="200" y1="292" x2="250" y2="292" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-fis)"></line>
+          <text x="202" y="284" font-size="10.5" fill="currentColor" opacity="0.65">falla</text>
+
+          <rect x="256" y="248" width="170" height="88" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="272" y="272" font-size="12.5" font-weight="700" fill="currentColor">Corticoides</text>
+          <text x="272" y="293" font-size="11.5" fill="currentColor" opacity="0.75">Anti-TNF · rituximab</text>
+          <text x="272" y="311" font-size="11.5" fill="currentColor" opacity="0.75">VIH · trasplante</text>
+
+          <line x1="426" y1="292" x2="476" y2="292" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-fis)"></line>
+          <text x="428" y="284" font-size="10.5" fill="currentColor" opacity="0.65">emergen</text>
+
+          <rect x="482" y="248" width="204" height="88" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="498" y="272" font-size="12.5" font-weight="700" fill="currentColor">Intracelulares</text>
+          <text x="498" y="293" font-size="11.5" fill="currentColor" opacity="0.75">Herpes · TBC (reactiva)</text>
+          <text x="498" y="311" font-size="11.5" fill="currentColor" opacity="0.75">P. jirovecii · Candida</text>
+        </svg>
+        <figcaption>El nivel roto predice el germen. Por eso la primera pregunta ante un inmunocomprometido febril no es «qué antibiótico», sino «qué compartimiento tiene fallado este paciente».</figcaption>
+      </figure>
+
+      <p class="cita">Fuente: material de cátedra. La correspondencia entre compartimiento inmune y patógeno esperado sigue el marco clásico de Harrison, Principios de Medicina Interna, capítulo de infecciones en el huésped inmunocomprometido.</p>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-clinica" id="condiciones">
+      <span class="seccion__pestana"><b>03</b> Condiciones</span>
+      <h2 class="seccion__titulo">El Huésped según su Condición</h2>
+
+      <h3>Corticoides</h3>
+      <p>Tienen efectos sobre la inmunidad <strong>innata y adaptativa</strong> a la vez:</p>
+      <ul>
+        <li>Alteran la <strong>quimiotaxis y la fagocitosis</strong> de neutrófilos y monocitos.</li>
+        <li>Alteran la producción de <strong>casi todas las citoquinas</strong> conocidas.</li>
+        <li>Afectan la <strong>presentación antigénica</strong>, alterando la función efectora de macrófagos y células dendríticas.</li>
+      </ul>
+      <p>La incidencia de infecciones es <strong>dosis y duración dependiente</strong>; también influyen la enfermedad de base y la combinación con otras drogas.</p>
+      <p>Predisponen a infecciones <strong>virales</strong> —sobre todo del grupo <strong>herpes</strong>—, <strong>bacterianas</strong> y <strong>fúngicas</strong> (género <em>Candida</em>, <em>P. jirovecii</em>), y a la <strong>reactivación de tuberculosis</strong>.</p>
+
+      <p class="cita">Fuente: material de cátedra. Profundización: ante corticoterapia con prednisona ≥ 20 mg/día por ≥ 4 semanas se recomienda profilaxis de <em>P. jirovecii</em> con trimetoprima-sulfametoxazol, y descartar TBC latente antes de iniciar biológicos anti-TNF — Fishman JA, Infection in Organ Transplantation, y guías de la American Thoracic Society.</p>
+
+      <h3>Tratamiento de neoplasias</h3>
+      <p>Además de destruir las células malignas, la quimioterapia afecta las <strong>células en rápida división</strong> —médula ósea y mucosa digestiva—, de ahí que la principal toxicidad sea la <strong>mielosupresión</strong> y la <strong>mucositis</strong>.</p>
+      <ul>
+        <li>La <strong>neutropenia</strong> es un efecto <strong>inevitable</strong> que aumenta significativamente el riesgo de infecciones.</li>
+        <li>El origen de las infecciones es habitualmente la <strong>microbiota endógena</strong> del paciente, que <strong>transloca la barrera mucocutánea</strong>, facilitado por la mucositis oral e intestinal y la presencia de <strong>catéter venoso central</strong>.</li>
+        <li>El curso de la mucositis va <strong>paralelo a la neutropenia</strong> y se resuelve cuando se recupera el recuento de PMN.</li>
+        <li>Predispone a infecciones <strong>bacterianas, fúngicas y virales</strong> — principalmente por herpes simple.</li>
+      </ul>
+
+      <h3>Graduación de la mucositis oral — OMS</h3>
+      <p>Hace falta conocerla porque el <strong>score CISNE</strong> puntúa la mucositis de grado ≥ 2.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Grado</th><th>Hallazgo</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>0</strong></td><td>No mucositis</td></tr>
+            <tr><td><strong>1</strong></td><td>Eritema y dolor</td></tr>
+            <tr><td><strong>2</strong></td><td>Úlceras y dolor, pero <strong>puede ingerir sólidos</strong></td></tr>
+            <tr><td><strong>3</strong></td><td>Úlceras y dolor; puede ingerir <strong>sólo dieta líquida</strong></td></tr>
+            <tr><td><strong>4</strong></td><td>Úlceras; <strong>incapacidad para alimentarse</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Diabetes mellitus</h3>
+      <p>El defecto es múltiple y afecta sobre todo a la inmunidad innata:</p>
+      <ul>
+        <li>Altera la <strong>fijación del complemento</strong> a la superficie microbiana y su capacidad de unión a las inmunoglobulinas, con deterioro de su actividad <strong>lítica y opsonizante</strong>.</li>
+        <li>El metabolismo alterado de la glucosa <strong>reduce la quimiotaxis de los PMN</strong> y genera menor producción de quimiocinas.</li>
+        <li>La <strong>actividad fagocítica</strong> de PMN y macrófagos está deteriorada por una síntesis reducida de <strong>peróxido de hidrógeno</strong>.</li>
+        <li>Hay defectos en la producción de citocinas proinflamatorias, actividad disminuida de las <strong>células NK</strong> y déficit del número y función de los <strong>linfocitos T CD4+ de memoria</strong>.</li>
+      </ul>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Infección característica</th><th>Detalle</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Piel y partes blandas</strong></td><td>Incluidas las formas <strong>necrotizantes</strong></td></tr>
+            <tr><td><strong>Osteoarticulares</strong></td><td>Particularmente del <strong>pie</strong></td></tr>
+            <tr><td>Respiratorias altas, neumonía y cistitis</td><td>—</td></tr>
+            <tr><td><strong>Otitis externa maligna</strong></td><td>Causada habitualmente por <strong><em>P. aeruginosa</em></strong></td></tr>
+            <tr><td>Tuberculosis</td><td>—</td></tr>
+            <tr><td>Candidiasis</td><td>De <strong>mucosas y urinaria</strong></td></tr>
+            <tr><td><strong>Mucormicosis rinocerebral</strong></td><td>En contexto de <strong>descontrol glucémico y cetoacidosis</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Como agentes hay que considerar especialmente <strong><em>S. aureus</em></strong>, <strong><em>K. pneumoniae</em></strong> y <strong><em>P. aeruginosa</em></strong>.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Las dos infecciones que definen al diabético en el examen son la <strong>otitis externa maligna</strong> por <em>P. aeruginosa</em> y la <strong>mucormicosis rinocerebral</strong>. Esta última aparece en el contexto de <strong>descontrol glucémico y cetoacidosis</strong>: es una emergencia quirúrgica, no sólo médica.</p>
+      </div>
+
+      <h3>Cirrosis hepática</h3>
+      <ul>
+        <li>Capacidad <strong>disminuida de los neutrófilos para migrar</strong> a los lugares de infección, con actividad <strong>fagocítica y microbicida</strong> disminuida de PMN y monocitos.</li>
+        <li><strong>Fracaso de la barrera intestinal</strong>, por monocitos activados pero disfuncionales en la lámina propia, reducción de la diversidad de la microbiota hacia especies más patógenas e incremento de los ácidos biliares secundarios.</li>
+        <li>Eso propicia la <strong>translocación bacteriana</strong> y su paso a la circulación sistémica a través de las <strong>derivaciones portosistémicas</strong> intra y extrahepáticas.</li>
+      </ul>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Infección</th><th>Agentes principales</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Peritonitis bacteriana espontánea</strong> e <strong>ITU</strong> — las más frecuentes</td><td><strong>BGN entéricos</strong>: <em>E. coli</em>, <em>K. pneumoniae</em>, junto a los <strong>estreptococos</strong></td></tr>
+            <tr><td>Neumonía, piel y partes blandas</td><td>CGP en la <strong>cirrosis compensada</strong>; predominio de <strong>BGN</strong> en las IPPB en contexto de <strong>descompensación</strong></td></tr>
+            <tr><td><strong>Bacteriemia primaria</strong></td><td>Estreptococos del grupo <strong>viridans</strong>; <strong><em>S. aureus</em></strong> puede ser la <strong>segunda causa</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Asplenia</h3>
+      <p>El bazo desempeña un papel central en la defensa contra <strong>bacterias capsuladas</strong>: los macrófagos de la <strong>zona marginal de la pulpa blanca</strong> las fagocitan e inician la respuesta inmunitaria humoral.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Agente</th><th>Peso relativo</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong><em>S. pneumoniae</em></strong></td><td>Implicado en el <strong><span class="dato">50 – 80 %</span></strong> de los casos</td></tr>
+            <tr><td>Meningococo, <em>S. pyogenes</em>, <em>E. coli</em> y <em>S. aureus</em></td><td>Causan el <strong><span class="dato">25 %</span></strong> de las infecciones</td></tr>
+            <tr><td><em>H. influenzae</em> tipo b, <em>S. agalactiae</em>, enterococos, <em>Bacteroides</em> spp., <em>P. aeruginosa</em></td><td>Más raramente</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Los pacientes esplenectomizados deben recibir vacunación <strong>antineumocócica, antimeningocócica y anti-HiB</strong> a las <strong><span class="dato">2 semanas</span></strong> de la esplenectomía.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>La <strong>fiebre en el paciente asplénico es una urgencia</strong> que obliga a <strong>internación e inicio inmediato de tratamiento</strong> frente a gérmenes capsulados. La <strong>ceftriaxona</strong> es el tratamiento empírico de elección en esta población.</p>
+      </div>
+
+      <p class="cita">Fuente: material de cátedra. Profundización sobre el momento de vacunar: en la esplenectomía <strong>programada</strong> las vacunas se aplican al menos 2 semanas <strong>antes</strong> de la cirugía, porque la respuesta humoral es mejor con el bazo aún funcionante; el intervalo de 2 semanas <strong>posteriores</strong> corresponde a la esplenectomía de urgencia. Recomendaciones del ACIP, Centers for Disease Control and Prevention.</p>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-diferenciales" id="neutropenia">
+      <span class="seccion__pestana"><b>04</b> Neutropenia febril</span>
+      <h2 class="seccion__titulo">Neutropenia Febril: Definiciones &amp; Etiología</h2>
+
+      <p>Los pacientes con <strong>neoplasias hematológicas</strong> que reciben drogas citotóxicas —las cuales afectan significativamente la hematopoyesis y la integridad de la mucosa gastrointestinal— presentan riesgo elevado de infecciones invasivas por <strong>translocación bacteriana o fúngica</strong>.</p>
+
+      <p>El problema central es este: el paciente neutropénico tiene <strong>afectada la capacidad de montar una respuesta inflamatoria adecuada</strong>. Las infecciones severas pueden ocurrir con <strong>mínimos síntomas y signos</strong>, y la <strong>fiebre es frecuentemente el único signo de infección</strong>. Estas infecciones pueden progresar rápidamente hacia la inestabilidad hemodinámica y comprometer la vida del paciente.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>La neutropenia febril es una <strong>urgencia infectológica</strong>. Sin neutrófilos no hay pus, no hay infiltrado franco y no hay signos de foco: <strong>la ausencia de hallazgos no descarta nada</strong>. Se actúa sobre la fiebre sola.</p>
+      </div>
+
+      <h3>Definiciones</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Término</th><th>Definición</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Fiebre</strong></td>
+              <td>Un <strong>único registro ≥ <span class="dato">38 °C</span></strong> de temperatura <strong>axilar</strong>. <strong>No se recomienda la temperatura rectal</strong>: puede precipitar bacteriemia en pacientes con mucositis, fisuras anales o hemorroides.</td>
+            </tr>
+            <tr>
+              <td><strong>Neutropenia</strong></td>
+              <td>Recuento de PMN <strong>≤ <span class="dato">500/mm³</span></strong>, o <strong>≤ <span class="dato">1000/mm³</span></strong> cuando se predice una caída a menos de 500 en las próximas <span class="dato">48 h</span>.</td>
+            </tr>
+            <tr><td><strong>Neutropenia profunda</strong></td><td>PMN <strong>≤ <span class="dato">100/mm³</span></strong></td></tr>
+            <tr><td><strong>Neutropenia prolongada</strong></td><td>Duración <strong>mayor a <span class="dato">7 días</span></strong></td></tr>
+            <tr>
+              <td><strong>Neutropenia funcional</strong></td>
+              <td>La enfermedad hematológica subyacente produce un <strong>defecto cualitativo</strong> de los neutrófilos circulantes <strong>pese a un recuento normal</strong>. Se manejan igual para el tratamiento empírico inicial ante fiebre, foco clínico evidente o sepsis.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>La <strong>ausencia de fiebre</strong> en pacientes neutropénicos que se presentan con signos clínicos que orientan a un foco —<strong>dificultad respiratoria, dolor abdominal, dolor en el sitio del catéter o molestia perianal</strong>— obliga igualmente al <strong>inicio de terapia antibiótica empírica sin demora</strong>.</p>
+
+      <h3>Infecciones bacterianas</h3>
+      <ul>
+        <li>La NF inducida por quimioterapia se presenta en el <span class="dato">10 – 50 %</span> de los pacientes con <strong>tumores sólidos</strong> y en más del <span class="dato">80 %</span> de aquellos con enfermedades <strong>oncohematológicas</strong>.</li>
+        <li>La infección <strong>clínicamente documentada</strong> ocurre en el <span class="dato">20 – 30 %</span> de los episodios febriles.</li>
+        <li>La <strong>bacteriemia</strong> se presenta en el <span class="dato">10 – 25 %</span> de los casos, en su mayoría en contexto de neutropenia <strong>profunda y prolongada</strong>.</li>
+        <li>Como las infecciones son secundarias a <strong>translocación</strong> por mucositis, los agentes más frecuentes son los <strong>BGN de la flora endógena</strong> del paciente.</li>
+        <li>Sitios más comunes: aparatos <strong>respiratorio, urinario y gastrointestinal</strong>, además de piel y partes blandas, con <strong><em>E. coli</em>, <em>Klebsiella</em>, <em>Enterobacter</em> y <em>P. aeruginosa</em></strong> como responsables mayoritarios.</li>
+      </ul>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 416" role="img" aria-label="Distribución de los agentes causales de bacteriemia en neutropenia febril según el registro ROCAS 2019, sobre 699 aislamientos de los cuales 485 fueron bacilos Gram negativos y 214 cocos Gram positivos. Klebsiella 24,9 por ciento; Escherichia coli 22,5; estafilococos coagulasa negativos 15; Pseudomonas aeruginosa 9,4; Staphylococcus aureus 6,8; Enterobacter 4,9; otros Gram negativos 4,3; Streptococcus viridans 4; Acinetobacter 3,6; Enterococcus 3,2; Stenotrophomonas 2,3; otros Gram positivos 1,5.">
+          <text x="14" y="26" font-size="11.5" font-weight="700" fill="currentColor">n = 699 aislamientos · 485 BGN · 214 CGP</text>
+
+          <rect x="195" y="42" width="423" height="20" rx="2" fill="var(--c)" fill-opacity="0.42" stroke="var(--c)" stroke-width="1"></rect>
+          <text x="14" y="56" font-size="11" fill="currentColor">Klebsiella spp.</text>
+          <text x="624" y="56" font-size="10.5" font-weight="700" fill="currentColor">24,9 %</text>
+
+          <rect x="195" y="70" width="383" height="20" rx="2" fill="var(--c)" fill-opacity="0.42" stroke="var(--c)" stroke-width="1"></rect>
+          <text x="14" y="84" font-size="11" fill="currentColor">E. coli</text>
+          <text x="584" y="84" font-size="10.5" font-weight="700" fill="currentColor">22,5 %</text>
+
+          <rect x="195" y="98" width="255" height="20" rx="2" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1" stroke-dasharray="3 2"></rect>
+          <text x="14" y="112" font-size="11" fill="currentColor">CONS</text>
+          <text x="456" y="112" font-size="10.5" font-weight="700" fill="currentColor">15,0 %</text>
+
+          <rect x="195" y="126" width="160" height="20" rx="2" fill="var(--c)" fill-opacity="0.42" stroke="var(--c)" stroke-width="1"></rect>
+          <text x="14" y="140" font-size="11" fill="currentColor">P. aeruginosa</text>
+          <text x="361" y="140" font-size="10.5" font-weight="700" fill="currentColor">9,4 %</text>
+
+          <rect x="195" y="154" width="116" height="20" rx="2" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1" stroke-dasharray="3 2"></rect>
+          <text x="14" y="168" font-size="11" fill="currentColor">S. aureus</text>
+          <text x="317" y="168" font-size="10.5" font-weight="700" fill="currentColor">6,8 %</text>
+
+          <rect x="195" y="182" width="83" height="20" rx="2" fill="var(--c)" fill-opacity="0.42" stroke="var(--c)" stroke-width="1"></rect>
+          <text x="14" y="196" font-size="11" fill="currentColor">Enterobacter spp.</text>
+          <text x="284" y="196" font-size="10.5" font-weight="700" fill="currentColor">4,9 %</text>
+
+          <rect x="195" y="210" width="73" height="20" rx="2" fill="var(--c)" fill-opacity="0.42" stroke="var(--c)" stroke-width="1"></rect>
+          <text x="14" y="224" font-size="11" fill="currentColor">Otros BGN</text>
+          <text x="274" y="224" font-size="10.5" font-weight="700" fill="currentColor">4,3 %</text>
+
+          <rect x="195" y="238" width="68" height="20" rx="2" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1" stroke-dasharray="3 2"></rect>
+          <text x="14" y="252" font-size="11" fill="currentColor">S. viridans</text>
+          <text x="269" y="252" font-size="10.5" font-weight="700" fill="currentColor">4,0 %</text>
+
+          <rect x="195" y="266" width="61" height="20" rx="2" fill="var(--c)" fill-opacity="0.42" stroke="var(--c)" stroke-width="1"></rect>
+          <text x="14" y="280" font-size="11" fill="currentColor">Acinetobacter spp.</text>
+          <text x="262" y="280" font-size="10.5" font-weight="700" fill="currentColor">3,6 %</text>
+
+          <rect x="195" y="294" width="54" height="20" rx="2" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1" stroke-dasharray="3 2"></rect>
+          <text x="14" y="308" font-size="11" fill="currentColor">Enterococcus spp.</text>
+          <text x="255" y="308" font-size="10.5" font-weight="700" fill="currentColor">3,2 %</text>
+
+          <rect x="195" y="322" width="39" height="20" rx="2" fill="var(--c)" fill-opacity="0.42" stroke="var(--c)" stroke-width="1"></rect>
+          <text x="14" y="336" font-size="11" fill="currentColor">Stenotrophomonas</text>
+          <text x="240" y="336" font-size="10.5" font-weight="700" fill="currentColor">2,3 %</text>
+
+          <rect x="195" y="350" width="26" height="20" rx="2" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1" stroke-dasharray="3 2"></rect>
+          <text x="14" y="364" font-size="11" fill="currentColor">Otros CGP</text>
+          <text x="227" y="364" font-size="10.5" font-weight="700" fill="currentColor">1,5 %</text>
+
+          <rect x="195" y="390" width="16" height="12" rx="2" fill="var(--c)" fill-opacity="0.42" stroke="var(--c)" stroke-width="1"></rect>
+          <text x="218" y="400" font-size="11" fill="currentColor" opacity="0.75">Bacilos Gram negativos</text>
+          <rect x="390" y="390" width="16" height="12" rx="2" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1" stroke-dasharray="3 2"></rect>
+          <text x="413" y="400" font-size="11" fill="currentColor" opacity="0.75">Cocos Gram positivos</text>
+        </svg>
+        <figcaption>Casi la mitad de las bacteriemias son <em>Klebsiella</em> o <em>E. coli</em>. Esa es la razón de que todo esquema empírico inicial sea antipseudomónico y de amplio espectro sobre Gram negativos, y de que la vancomicina no entre de rutina.</figcaption>
+      </figure>
+
+      <p class="cita">Fuente: Registro ROCAS 2019, citado en el material de cátedra. Los CONS son estafilococos coagulasa negativos, habitualmente asociados al catéter venoso central.</p>
+
+      <h3>Infecciones fúngicas</h3>
+      <ul>
+        <li>Se producen <strong>más tarde</strong> en el curso de la neutropenia que las bacterianas, y representan el <span class="dato">2 – 10 %</span> de las infecciones confirmadas microbiológicamente en NF.</li>
+        <li>La proporción se incrementa hasta el <span class="dato">30 %</span> cuando la <strong>neutropenia es prolongada</strong>.</li>
+        <li>El <span class="dato">80 – 90 %</span> de las infecciones fúngicas son causadas por <strong><em>Candida</em></strong>.</li>
+        <li>La <strong>neutropenia profunda y prolongada</strong> es el factor de riesgo más importante para el desarrollo de <strong>infección fúngica invasiva (IFI)</strong>, principalmente por <strong><em>Aspergillus</em></strong>, seguido de mucorales y <em>Fusarium</em>.</li>
+        <li>El uso de profilaxis con los nuevos azólicos —<strong>posaconazol, voriconazol</strong>— ha hecho <strong>emerger</strong> otros hongos como <em>Fusarium</em> spp. y zigomicetos, que tienden a aparecer <strong>luego de la segunda semana</strong> de neutropenia.</li>
+      </ul>
+
+      <h3>Infecciones virales</h3>
+      <ul>
+        <li>Los <strong>virus respiratorios de la comunidad</strong> —VSR, influenza, parainfluenza y adenovirus— ocurren con frecuencia en el paciente inmunocomprometido y tienen <strong>distribución estacional</strong>.</li>
+        <li>Pueden manifestarse como infección respiratoria alta o baja. Los que padecen un cuadro de vías aéreas superiores <strong>progresan a neumonía en el <span class="dato">35 – 58 %</span></strong>, con una mortalidad que ronda el <span class="dato">15 – 30 %</span>.</li>
+        <li>La <strong>coinfección bacteriana es frecuente</strong>.</li>
+      </ul>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-diagnostico" id="riesgo">
+      <span class="seccion__pestana"><b>05</b> Riesgo</span>
+      <h2 class="seccion__titulo">Evaluación del Riesgo &amp; Búsqueda de Focos</h2>
+
+      <h3>Evaluación inicial</h3>
+      <p>Examen físico dirigido a los sitios con mayor frecuencia de infección en estos pacientes. <strong>Nunca deben omitirse</strong> estos potenciales focos:</p>
+      <ul>
+        <li><strong>Faringe, focos periodontógenos, boca, senos paranasales.</strong></li>
+        <li><strong>Sitios de venopunción</strong>, sitio de <strong>PAMO</strong>, <strong>catéteres centrales</strong>.</li>
+        <li><strong>Pulmón.</strong></li>
+        <li><strong>Región perineal</strong> y abdomen (colon).</li>
+      </ul>
+      <p>Toma de muestras para <strong>hemocultivos por venas periféricas</strong> y a través del <strong>catéter venoso de larga permanencia (retrocultivo)</strong>. Otros cultivos según la clínica, hisopados de vigilancia e imágenes según la situación del paciente.</p>
+
+      <h3>Por qué se estratifica</h3>
+      <p>La evaluación del riesgo individual de infección severa o de evolución desfavorable determina dos cosas:</p>
+      <ul>
+        <li>El <strong>sitio inicial de atención</strong>: ambulatorio o internado, y si debe admitirse o no en una unidad de cuidados intensivos.</li>
+        <li>La <strong>elección del tratamiento antibiótico inicial</strong>.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Durante la evaluación inicial y <strong>luego de la toma de cultivos</strong>, se administra la <strong>primera dosis de antibiótico por vía parenteral dentro de los primeros <span class="dato">60 minutos</span></strong>, mientras se completa la evaluación. <strong>El retraso se asocia con prolongación de la internación y mayor mortalidad.</strong></p>
+      </div>
+
+      <h3>Criterios de bajo riesgo</h3>
+      <ul>
+        <li><strong>Estabilidad hemodinámica.</strong></li>
+        <li><strong>Ausencia de comorbilidades</strong>: alteración de la conciencia; mucositis severa que genere diarrea o dificultad para la ingesta oral; sangrado no controlado; alteración de la función hepática con <strong>transaminasas × 5</strong>; alteración renal con <strong>clearance de creatinina &lt; 30 mL/min</strong>.</li>
+        <li><strong>Buena tolerancia oral.</strong></li>
+        <li><strong>Ausencia de focos de mal pronóstico</strong>: neumonía, abdominal, IPPB, perianal o catéter.</li>
+        <li><strong>Neutropenia esperada menor a <span class="dato">7 días</span>.</strong></li>
+        <li><strong>Tumor de órgano sólido o linfoma.</strong></li>
+      </ul>
+      <p>Estos pacientes podrían ser pasibles de <strong>tratamiento oral y manejo ambulatorio</strong>, para lo que se aplican los scores <strong>MASCC</strong> y/o <strong>CISNE</strong>.</p>
+
+      <h3>Score MASCC</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Condición</th><th>Puntaje</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Severidad de la enfermedad: <strong>leve o ausente</strong></td><td><span class="dato">5</span></td></tr>
+            <tr><td>Severidad de la enfermedad: <strong>moderada</strong></td><td><span class="dato">3</span></td></tr>
+            <tr><td><strong>No hipotensión</strong></td><td><span class="dato">5</span></td></tr>
+            <tr><td><strong>No</strong> enfermedad pulmonar obstructiva crónica</td><td><span class="dato">4</span></td></tr>
+            <tr><td><strong>Tumor sólido</strong> o <strong>no</strong> infección fúngica invasiva</td><td><span class="dato">4</span></td></tr>
+            <tr><td><strong>No deshidratación</strong></td><td><span class="dato">3</span></td></tr>
+            <tr><td><strong>Ambulatorio</strong></td><td><span class="dato">3</span></td></tr>
+            <tr><td><strong>Menor de 60 años</strong></td><td><span class="dato">2</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La severidad se evalúa <strong>una sola vez</strong>, según una escala visual de 1 a 9 al ingreso que responde a la pregunta <strong>«¿cuán enfermo luce el paciente?»</strong>: nada 1–2, leve 3–4, moderado 5, severo 6–7, moribundo 8–9.</p>
+      <p>Estudios en pacientes con <strong>tumores sólidos o linfomas</strong> muestran que los elegibles con un <strong>punto de corte ≥ <span class="dato">21</span></strong> pueden tratarse de forma segura, <strong>ambulatoria y con antibióticos orales</strong>.</p>
+
+      <h3>Score CISNE</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Condición</th><th>Puntos</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><em>Performance Status</em> <strong>≥ 2</strong></td><td><span class="dato">2</span></td></tr>
+            <tr><td><strong>Hiperglucemia inducida por estrés</strong></td><td><span class="dato">2</span></td></tr>
+            <tr><td>EPOC</td><td><span class="dato">1</span></td></tr>
+            <tr><td>Enfermedad cardiovascular crónica</td><td><span class="dato">1</span></td></tr>
+            <tr><td><strong>Mucositis (OMS) ≥ 2</strong></td><td><span class="dato">1</span></td></tr>
+            <tr><td><strong>Monocitos ≤ <span class="dato">200/mm³</span></strong></td><td><span class="dato">1</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La <strong>hiperglucemia de estrés</strong> se define como <strong>≥ <span class="dato">125 mg/dL</span> en el no diabético</strong> y <strong>≥ <span class="dato">250 mg/dL</span> en el diabético</strong>.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Estrato</th><th>Puntaje</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Bajo riesgo (I)</strong></td><td><span class="dato">0</span> puntos</td></tr>
+            <tr><td>Riesgo intermedio (II)</td><td><span class="dato">1 – 2</span> puntos</td></tr>
+            <tr><td><strong>Alto riesgo (III)</strong></td><td><strong>≥ <span class="dato">3</span></strong> puntos</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>El modelo CISNE está validado para pacientes con NF y <strong>tumores sólidos o linfoma, clínicamente estables y sin foco de mal pronóstico</strong>. Es más exigente que el MASCC: sólo el puntaje <strong>cero</strong> califica como bajo riesgo.</p>
+
+      <h3>Criterios de alto riesgo</h3>
+      <ul>
+        <li><strong>Neutropenia profunda y prolongada.</strong></li>
+        <li><strong>Comorbilidades</strong>: inestabilidad hemodinámica; mucositis oral o gastrointestinal que interfiere con la deglución o produce diarrea severa; síntomas gastrointestinales (dolor abdominal, náuseas, vómitos o diarrea); deterioro neurológico o del estado de conciencia de nuevo comienzo; <strong>infección de catéter intravascular</strong>, especialmente del túnel subcutáneo; nuevos infiltrados pulmonares o hipoxemia; enfermedad pulmonar crónica subyacente; una o más infecciones complejas al momento de la presentación.</li>
+        <li><strong>Leucemia aguda en inducción</strong> o <strong>trasplante de células hematopoyéticas</strong>.</li>
+        <li>Pacientes que se encuentren <strong>internados</strong> al momento de presentar la neutropenia febril — se consideran de alto riesgo por ese solo hecho.</li>
+        <li>Antecedentes de <strong>colonización o infección por microorganismos multirresistentes</strong>.</li>
+        <li>Pacientes que han recibido <strong>profilaxis o tratamiento con fluoroquinolonas</strong>.</li>
+        <li><strong>Neoplasia no controlada o progresiva</strong>: leucemia aguda no en remisión completa, o enfermedad progresiva después de más de dos cursos de quimioterapia.</li>
+        <li><strong>Insuficiencia hepática</strong> (transaminasas &gt; 5 veces los valores normales) o <strong>renal</strong> (aclaramiento de creatinina &lt; 30 mL/min).</li>
+        <li><strong>MASCC &lt; <span class="dato">21</span></strong> o <strong>CISNE III</strong>.</li>
+      </ul>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 400" role="img" aria-label="Algoritmo de manejo inicial de la neutropenia febril. Ante fiebre mayor o igual a 38 grados axilar con recuento de neutrófilos menor o igual a 500 por milímetro cúbico, se toman hemocultivos y se administra la primera dosis parenteral en menos de sesenta minutos, y luego se evalúa el riesgo. El bajo riesgo, definido por estabilidad, ausencia de comorbilidades, neutropenia esperada menor a siete días, tumor sólido o linfoma y MASCC mayor o igual a veintiuno o CISNE cero, permite manejo ambulatorio con antibiótico oral. El alto riesgo, definido por neutropenia profunda o prolongada, inestabilidad, comorbilidades, internación previa, colonización por multirresistentes o MASCC menor a veintiuno o CISNE tres, obliga a internación con antibiótico intravenoso.">
+          <defs>
+            <marker id="pta-rg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="150" y="8" width="400" height="54" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--ct)" stroke-width="1.5"></rect>
+          <text x="350" y="30" font-size="13" font-weight="700" fill="currentColor" text-anchor="middle">Neutropenia febril</text>
+          <text x="350" y="50" font-size="11.5" fill="currentColor" opacity="0.75" text-anchor="middle">Fiebre ≥ 38 °C axilar + PMN ≤ 500/mm³</text>
+
+          <line x1="350" y1="62" x2="350" y2="84" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-rg)"></line>
+          <text x="358" y="78" font-size="11" fill="currentColor" opacity="0.65">urgencia infectológica</text>
+
+          <rect x="110" y="86" width="480" height="48" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--ct)" stroke-width="2.5"></rect>
+          <text x="350" y="116" font-size="13" font-weight="700" fill="currentColor" text-anchor="middle">Hemocultivos + 1.ª dosis parenteral en &lt; 60 min</text>
+
+          <line x1="350" y1="134" x2="350" y2="156" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-rg)"></line>
+
+          <rect x="245" y="158" width="210" height="44" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--ct)" stroke-width="1.5"></rect>
+          <text x="350" y="185" font-size="13" font-weight="700" fill="currentColor" text-anchor="middle">Evaluar el riesgo</text>
+
+          <line x1="350" y1="202" x2="350" y2="228" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="165" y1="228" x2="535" y2="228" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="165" y1="228" x2="165" y2="250" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-rg)"></line>
+          <line x1="535" y1="228" x2="535" y2="250" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-rg)"></line>
+
+          <text x="173" y="246" font-size="11" font-weight="700" fill="currentColor">bajo</text>
+          <text x="543" y="246" font-size="11" font-weight="700" fill="currentColor">alto</text>
+
+          <rect x="20" y="256" width="290" height="124" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="36" y="280" font-size="12.5" font-weight="700" fill="currentColor">BAJO RIESGO</text>
+          <text x="36" y="302" font-size="11.5" fill="currentColor" opacity="0.75">Estable · sin comorbilidades</text>
+          <text x="36" y="320" font-size="11.5" fill="currentColor" opacity="0.75">Neutropenia esperada &lt; 7 días</text>
+          <text x="36" y="338" font-size="11.5" fill="currentColor" opacity="0.75">Tumor sólido o linfoma</text>
+          <text x="36" y="356" font-size="11.5" fill="currentColor" opacity="0.75">MASCC ≥ 21 o CISNE 0</text>
+          <text x="36" y="374" font-size="11.5" font-weight="700" fill="currentColor">Ambulatorio · antibiótico oral</text>
+
+          <rect x="390" y="256" width="290" height="124" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="currentColor" stroke-opacity="0.5" stroke-width="1.5"></rect>
+          <text x="406" y="280" font-size="12.5" font-weight="700" fill="currentColor">ALTO RIESGO</text>
+          <text x="406" y="302" font-size="11.5" fill="currentColor" opacity="0.75">Neutropenia profunda o &gt; 7 días</text>
+          <text x="406" y="320" font-size="11.5" fill="currentColor" opacity="0.75">Inestabilidad · comorbilidades</text>
+          <text x="406" y="338" font-size="11.5" fill="currentColor" opacity="0.75">Internado · colonización MR</text>
+          <text x="406" y="356" font-size="11.5" fill="currentColor" opacity="0.75">MASCC &lt; 21 o CISNE III</text>
+          <text x="406" y="374" font-size="11.5" font-weight="700" fill="currentColor">Internación · antibiótico IV</text>
+        </svg>
+        <figcaption>Los cultivos y la primera dosis van antes que la estratificación, no después. El score decide dónde sigue el paciente, no si recibe antibiótico.</figcaption>
+      </figure>
+
+      <h3>Búsqueda de focos e infección fúngica invasiva</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Estudio</th><th>Cuándo se pide</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Hemocultivos y retrocultivo</strong></td><td>Siempre; el retrocultivo si hay catéteres</td></tr>
+            <tr><td>Urocultivo</td><td><strong>Sólo</strong> ante síntomas urinarios, sedimento anormal o dispositivos urinarios</td></tr>
+            <tr><td>Coprocultivo</td><td><strong>Sólo</strong> si hay diarrea persistente</td></tr>
+            <tr><td>Toxinas de <em>C. difficile</em></td><td>Si hay diarrea <strong>y</strong> dolor abdominal</td></tr>
+            <tr><td>Cultivos por punción de piel y partes blandas</td><td>Si hay lesiones</td></tr>
+            <tr><td>Esputo</td><td>Si hay tos productiva</td></tr>
+            <tr><td>Panel virológico</td><td>Si hay síntomas respiratorios</td></tr>
+            <tr><td><strong>BAL</strong></td><td>Infiltrados pulmonares que no responden al tratamiento empírico, nuevos intratratamiento, difusos o nodulares, o en neutropenias e internaciones prolongadas</td></tr>
+            <tr><td><strong>Galactomananos</strong></td><td>En la evaluación inicial de pacientes con <strong>alto riesgo de IFI</strong>, con determinaciones <strong>dos veces por semana</strong> para crear una curva que permita <strong>predecir y anticipar</strong> la infección fúngica, en los centros que lo tengan disponible</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Rendimiento de las imágenes</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Método</th><th>Utilidad real</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Rx de abdomen</td><td><strong>Baja</strong> sensibilidad y especificidad para enteritis neutropénica. Sólo detecta <strong>neumoperitoneo y neumatosis intestinal</strong></td></tr>
+            <tr><td>Rx de tórax</td><td><strong>Utilidad limitada</strong>: sensibilidad de <strong><span class="dato">46 %</span></strong> para la detección temprana de neumonía en el neutropénico</td></tr>
+            <tr><td>Rx de senos paranasales</td><td>Poco sensible y poco específica</td></tr>
+            <tr><td><strong>Ecografía abdominal</strong></td><td><strong>Método inicial</strong> para el abdomen del paciente inmunocomprometido con dolor. Detecta engrosamiento de la mucosa y de la pared colónica —por edema, necrosis o hemorragia— y ascitis. Buen método para <strong>microabscesos</strong> en vísceras</td></tr>
+            <tr><td><strong>TAC de abdomen</strong></td><td><strong>Método ideal</strong>: evaluación global de parénquimas sólidos, vísceras huecas, cavidades y estructuras musculoesqueléticas. Detecta con precisión el engrosamiento de la pared intestinal y su localización, y complicaciones como <strong>neumoperitoneo, neumatosis o megacolon tóxico</strong></td></tr>
+            <tr><td><strong>TAC de tórax</strong></td><td>Indicada ante <strong>sospecha de IFI</strong></td></tr>
+            <tr><td>TAC de senos paranasales</td><td>Sospecha de <strong>sinusitis fúngica</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Una <strong>radiografía de tórax normal no descarta neumonía</strong> en el neutropénico: su sensibilidad para la detección temprana es de apenas <strong>46 %</strong>. Sin neutrófilos no se forma el infiltrado. Ante sospecha, la conducta es <strong>tomografía</strong>.</p>
+      </div>
+
+      <h3>Signos tomográficos de la infección fúngica invasiva</h3>
+      <p>La aspergilosis invasiva y la mucormicosis se presentan con pequeños o grandes <strong>nódulos o masas</strong>:</p>
+      <ul>
+        <li><strong>Signo del halo:</strong> nódulo o masa <strong>rodeado por opacidad en vidrio esmerilado</strong>, dado por necrosis coagulativa — nódulos rodeados de hemorragia alveolar.</li>
+        <li><strong>Signo del halo reverso:</strong> <strong>vidrio esmerilado rodeado por un halo de mayor densidad</strong>. Puede observarse tanto en aspergilosis invasiva como en mucormicosis, en esta última frecuentemente asociado a <strong>múltiples nódulos</strong>.</li>
+      </ul>
+      <p>La <strong>sinusitis fúngica</strong> en estadios tempranos se presenta con <strong>fiebre que persiste al 5.º – 7.º día</strong> de antibiótico o recaída de fiebre intratratamiento, <strong>congestión nasal, cefalea y úlcera necrótica en el tabique nasal</strong>. Progresa con destrucción ósea y necrosis.</p>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-tratamiento" id="tratamiento">
+      <span class="seccion__pestana"><b>06</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Tratamiento de la Neutropenia Febril</h2>
+
+      <h3>Bajo riesgo — requisitos para el manejo ambulatorio</h3>
+      <p>El manejo ambulatorio de pacientes <strong>cuidadosamente seleccionados</strong> y adecuadamente controlados exige cumplir todos estos requisitos:</p>
+      <ul>
+        <li>Contar con un <strong>centro con infraestructura y personal capacitado</strong> para el manejo de estos pacientes.</li>
+        <li><strong>Observación del paciente en el hospital</strong> las primeras <span class="dato">4 a 48 horas</span>.</li>
+        <li><strong>Aceptación</strong> por parte del paciente y del grupo familiar.</li>
+        <li>Consideración de las <strong>condiciones socioeconómicas</strong>: ayuda familiar las 24 horas, teléfono y movilidad vehicular.</li>
+        <li><strong>Domicilio a menos de <span class="dato">90 minutos</span></strong> del centro asistencial.</li>
+      </ul>
+
+      <p class="cita">Nota sobre el material: la diapositiva de requisitos indica observación de «4 a 48 horas» y la del esquema antibiótico dice «8 a 48 hs». Se conserva el rango más amplio; conviene confirmar el dato con la cátedra.</p>
+
+      <h3>Bajo riesgo — esquema antibiótico</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Escenario</th><th>Esquema</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1.ª línea</strong></td>
+              <td><strong>Ciprofloxacina</strong> <span class="dato">500 mg c/8 – 12 h</span> <strong>+ amoxicilina-ácido clavulánico</strong> <span class="dato">1 g c/8 h</span></td>
+            </tr>
+            <tr>
+              <td><strong>Alergia a betalactámicos</strong></td>
+              <td>Ciprofloxacina + <strong>clindamicina</strong> <span class="dato">600 mg c/8 h</span>, o <strong>azitromicina</strong> <span class="dato">500 mg/día</span></td>
+            </tr>
+            <tr>
+              <td>Alternativa en monoterapia</td>
+              <td><strong>Moxifloxacina</strong> <span class="dato">400 mg/día</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Toda la estrategia oral ambulatoria está <strong>contraindicada si el paciente ha recibido profilaxis o tratamiento reciente con quinolonas</strong>. Además, ese antecedente por sí solo lo reclasifica como <strong>alto riesgo</strong>.</p>
+      </div>
+
+      <h3>Bajo riesgo — duración</h3>
+      <ul>
+        <li><strong>Sin documentación clínica ni microbiológica:</strong> <span class="dato">5 a 7 días</span>, con recuperación de neutrófilos y <span class="dato">48 h</span> de apirexia.</li>
+        <li><strong>Con foco y/o documentación microbiológica:</strong> suspender antibióticos luego de la recuperación de neutrófilos y la desaparición de todos los signos y síntomas de infección; en general, <span class="dato">7 a 10 días</span>.</li>
+      </ul>
+
+      <h3>Alto riesgo — elección del tratamiento empírico inicial</h3>
+      <p>El TEI debe adecuarse a las características de cada paciente, teniendo en cuenta:</p>
+      <ul>
+        <li><strong>Sitio de adquisición</strong> de la infección: internado o ambulatorio.</li>
+        <li><strong>Sitio corporal</strong> probable o documentado de infección.</li>
+        <li><strong>Prevalencia local</strong> de patógenos, incluyendo su perfil de resistencia.</li>
+        <li><strong>Tratamiento antibiótico previo</strong>, incluida la profilaxis.</li>
+        <li><strong>Riesgo de infección por bacterias resistentes</strong>: colonización, infección previa, patrones de resistencia locales.</li>
+        <li><strong>Disfunciones orgánicas</strong> preexistentes — renal y hepática.</li>
+        <li>Antecedentes de <strong>alergia</strong> a los antibióticos.</li>
+      </ul>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Cuándo</th><th>Esquema sobre Gram negativos</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Paciente <strong>clínicamente estable</strong>, <strong>sin factores de riesgo</strong> para bacterias resistentes, en instituciones donde las infecciones por resistentes <strong>raramente</strong> se documentan al inicio del episodio, y en el <strong>primer episodio</strong> de neutropenia</td>
+              <td><strong>Monoterapia</strong> con antibiótico bactericida, antipseudomónico y de <strong>menor presión de selección</strong>:<br><strong>Piperacilina-tazobactam</strong> <span class="dato">4,5 g c/6 h</span> en infusión prolongada, con dosis de carga de <span class="dato">4,5 g</span> por única vez<br>o <strong>cefepime</strong> <span class="dato">2 g c/8 h</span></td>
+            </tr>
+            <tr>
+              <td>Infección <strong>severa, sepsis o shock séptico</strong>; colonizados por enterobacterias productoras de <strong>BLEE</strong> u otras BGN resistentes; centros con <strong>alta prevalencia</strong> de BLEE al inicio; <strong>uso previo</strong> de PTZ o cefepime</td>
+              <td><strong>Meropenem</strong> <span class="dato">1 – 2 g</span> de dosis de carga, seguido de <span class="dato">2 g c/8 h</span> en <strong>infusión prolongada de 3 horas</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Vancomicina en el tratamiento empírico inicial</h3>
+      <p>No entra de rutina. Sus <strong>indicaciones</strong> son:</p>
+      <ul>
+        <li><strong>Infección asociada al catéter venoso central clínicamente aparente</strong>: catéter malfuncionante, infección del trayecto subcutáneo, escalofríos luego del uso del CVC.</li>
+        <li><strong>Infección de piel y partes blandas.</strong></li>
+        <li><strong>Hipotensión o shock séptico.</strong></li>
+        <li><strong>Neumonía grave</strong> con hipoxemia e infiltrados pulmonares extensos.</li>
+        <li><strong>Colonización previa por SAMR.</strong></li>
+      </ul>
+      <p>Dosis: carga de <span class="dato">20 a 25 mg/kg</span> (máximo <span class="dato">3 g</span>) a pasar en <span class="dato">4 horas</span>, y luego <span class="dato">15 – 20 mg/kg c/12 h</span> (máximo <span class="dato">4,5 g/día</span>).</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 380" role="img" aria-label="Árbol de decisión del tratamiento empírico inicial en neutropenia febril. La primera pregunta es si el paciente es de alto riesgo. Si no lo es, corresponde manejo ambulatorio por vía oral con ciprofloxacina más amoxicilina clavulánico. Si lo es, la segunda pregunta es si está estable y sin riesgo de multirresistentes: si es así, monoterapia con piperacilina tazobactam o cefepime; si no, meropenem con dosis de carga. La vancomicina se suma sólo ante catéter, infección de piel y partes blandas, shock, neumonía grave o colonización previa por estafilococo aureus meticilino resistente.">
+          <defs>
+            <marker id="pta-tt" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="14" y="110" width="152" height="56" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--ct)" stroke-width="2.5"></rect>
+          <text x="30" y="132" font-size="12.5" font-weight="700" fill="currentColor">¿Alto riesgo?</text>
+          <text x="30" y="152" font-size="11" fill="currentColor" opacity="0.75">MASCC &lt; 21 · CISNE III</text>
+
+          <polyline points="166,138 196,138 196,44 224,44" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-tt)"></polyline>
+          <polyline points="166,138 196,138 196,220 224,220" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-tt)"></polyline>
+          <text x="200" y="90" font-size="11" font-weight="700" fill="currentColor">no</text>
+          <text x="200" y="190" font-size="11" font-weight="700" fill="currentColor">sí</text>
+
+          <rect x="228" y="18" width="458" height="52" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="244" y="40" font-size="12.5" font-weight="700" fill="currentColor">Bajo riesgo · ambulatorio, vía oral</text>
+          <text x="244" y="60" font-size="11.5" fill="currentColor" opacity="0.75">Ciprofloxacina 500 mg c/8–12 h + amoxicilina-clavulánico 1 g c/8 h</text>
+
+          <rect x="228" y="194" width="176" height="52" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--ct)" stroke-width="1.5"></rect>
+          <text x="244" y="216" font-size="12.5" font-weight="700" fill="currentColor">¿Estable y sin</text>
+          <text x="244" y="236" font-size="12.5" font-weight="700" fill="currentColor">riesgo de MR?</text>
+
+          <polyline points="404,220 430,220 430,140 456,140" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-tt)"></polyline>
+          <polyline points="404,220 430,220 430,282 456,282" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-tt)"></polyline>
+          <text x="434" y="175" font-size="11" font-weight="700" fill="currentColor">sí</text>
+          <text x="434" y="258" font-size="11" font-weight="700" fill="currentColor">no</text>
+
+          <rect x="460" y="114" width="226" height="52" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="476" y="136" font-size="12" font-weight="700" fill="currentColor">PTZ 4,5 g c/6 h</text>
+          <text x="476" y="156" font-size="11.5" fill="currentColor" opacity="0.75">o cefepime 2 g c/8 h</text>
+
+          <rect x="460" y="256" width="226" height="52" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-opacity="0.5" stroke-width="1.5"></rect>
+          <text x="476" y="278" font-size="12" font-weight="700" fill="currentColor">Meropenem</text>
+          <text x="476" y="298" font-size="11.5" fill="currentColor" opacity="0.75">carga 1–2 g + 2 g c/8 h</text>
+
+          <rect x="14" y="326" width="672" height="44" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.25" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="30" y="346" font-size="11.5" font-weight="700" fill="currentColor">Sumar vancomicina sólo si</text>
+          <text x="30" y="364" font-size="11.5" fill="currentColor" opacity="0.75">Catéter · piel y partes blandas · shock · neumonía grave · colonización previa por SAMR</text>
+        </svg>
+        <figcaption>Dos preguntas ordenadas resuelven el esquema inicial: primero dónde se trata el paciente, después cuánto espectro necesita sobre Gram negativos. La vancomicina nunca entra por defecto, sólo por indicación.</figcaption>
+      </figure>
+
+      <h3>Riesgo de enterobacterias resistentes a carbapenems — score ROCAS-ERC</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Variable</th><th>OR ajustado (IC 95 %)</th><th>Puntaje</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Uso previo de antibióticos por <strong>&gt; 7 días</strong></td><td>4,65 (2,3 – 9,5)</td><td><span class="dato">2</span></td></tr>
+            <tr><td>Hospitalización previa por <strong>≥ 10 días</strong></td><td>4,03 (1,8 – 8,6)</td><td><span class="dato">2</span></td></tr>
+            <tr><td><strong>Colonización reciente por ERC-KPC</strong></td><td>33,08 (11,7 – 93,2)</td><td><span class="dato">5</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th colspan="4">Rendimiento predictivo con punto de corte de <strong>7 puntos</strong></th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Sensibilidad <strong><span class="dato">35,59 %</span></strong></td>
+              <td>Especificidad <strong><span class="dato">98,43 %</span></strong></td>
+              <td>VPP <strong><span class="dato">77,7 %</span></strong></td>
+              <td>VPN <strong><span class="dato">90,9 %</span></strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>AUROC de <span class="dato">0,85</span> tanto en el set de derivación (IC 95 % 0,79 – 0,90) como en el de validación (0,80 – 0,91).</p>
+      <p>Vale la pena mirar la aritmética: con un corte de <strong>7 puntos</strong>, <strong>ninguna combinación sin colonización reciente lo alcanza</strong> — los otros dos factores suman 4. La colonización reciente por ERC-KPC aporta 5 y necesita al menos un factor más. Eso explica la <strong>especificidad altísima y la sensibilidad baja</strong>: el score está diseñado para <strong>no escalar de más</strong>, no para detectar todos los casos.</p>
+
+      <p class="cita">Fuente: Herrera F. et al. Antibiotics 2023; 12(2): 226. doi: 10.3390/antibiotics12020226 — citado en el material de cátedra.</p>
+
+      <h3>Seguimiento del tratamiento empírico</h3>
+      <p>Los pacientes con NF presentan un tiempo de <strong>defervescencia</strong> de la curva térmica de <strong><span class="dato">5 días</span> en promedio</strong>, con un rango de <span class="dato">2 a 7 días</span>.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>La <strong>fiebre persistente sin foco</strong> en un paciente <strong>estable, en buen estado general, con neutrófilos en ascenso y sin rescate microbiológico</strong> <strong>no requiere cambios en el tratamiento empírico</strong>. Cambiar el esquema por impaciencia es la vía más rápida a la multirresistencia.</p>
+      </div>
+
+      <p>Sí corresponde <strong>modificar el TEI</strong> ante:</p>
+      <ul>
+        <li><strong>Documentación microbiológica</strong> y/o aparición de foco clínico → ajustar el esquema a los rescates en los cultivos.</li>
+        <li><strong>Rápido deterioro clínico-hemodinámico</strong> sin otra causa que lo justifique.</li>
+        <li><strong>Suspensión de la cobertura contra Gram positivos a las <span class="dato">48 h</span></strong> de haberla iniciado, cuando no existe evidencia clínica o microbiológica que la justifique.</li>
+      </ul>
+
+      <h3>Escalamiento a las 48 – 72 h con hemocultivos negativos</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Escenario</th><th>Conducta</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Estable</strong>, sin factores de riesgo para BGN-MR y sin colonización intestinal por EPC, con foco inicial sin mejoría, con empeoramiento o con un nuevo foco</td>
+              <td>Nueva toma de hemocultivos y cultivos del foco, y <strong>escalar cobertura para BGN</strong>. Si recibió PTZ o cefepime, <strong>imipenem o meropenem</strong> puede ser apropiado. Si <strong>no</strong> hay foco compatible con <em>S. aureus</em> —catéter, IPPB o neumonía severa—, <strong>la vancomicina no es necesaria</strong>. Considerar imágenes.</td>
+            </tr>
+            <tr>
+              <td><strong>Inestable</strong>, sin factores de riesgo para BGN-MR y sin colonización por EPC</td>
+              <td>Nueva toma de cultivos y escalar. El nuevo esquema se define según la <strong>epidemiología actual</strong>, el foco y el TEI usado. Si recibió PTZ o cefepime: <strong>imipenem o meropenem ± amikacina o colistina</strong> —según epidemiología local— <strong>+ vancomicina</strong>. Ante <strong>shock séptico</strong>, sumar <strong>caspofungina o anidulafungina</strong> empírica para cubrir una potencial candidemia.</td>
+            </tr>
+            <tr>
+              <td><strong>Con factores de riesgo para BGN-MR y colonización intestinal por EPC</strong></td>
+              <td>Escalar <strong>según el tipo de EPC</strong>:<br><strong>Meropenem</strong> carga de <span class="dato">1 g</span> seguido de <span class="dato">2 g c/8 h</span> en infusión prolongada <strong>+ colistina</strong> carga de <span class="dato">300 mg</span> seguida de <span class="dato">4,5 – 5 mg/kg/día</span> divididos c/12 h — siempre que la <strong>CIM a meropenem</strong> de la institución sea <strong>menor a 16</strong>.<br><strong>Ceftazidima/avibactam</strong> o <strong>imipenem-relebactam</strong> para <strong>KPC</strong>.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Un matiz que la cátedra marca explícitamente: los estudios disponibles son <strong>previos al aumento y casi reemplazo de KPC por MBL</strong> (metalobetalactamasas), cuyo tratamiento de elección es <strong>aztreonam/avibactam</strong>. Es decir, la evidencia publicada quedó atrás respecto de la epidemiología actual.</p>
+
+      <h3>Antifúngicos empíricos</h3>
+      <p>El tratamiento antifúngico empírico y la búsqueda de IFI deben considerarse en:</p>
+      <ul>
+        <li>Pacientes que <strong>persisten febriles al 4.º – 7.º día</strong> del TEI, en los que se espera una <strong>neutropenia prolongada</strong> y <strong>no presentan aumento del recuento</strong> de neutrófilos.</li>
+        <li>Pacientes que luego del 4.º – 7.º día persisten neutropénicos y <strong>reinician con fiebre</strong> o intercurren con <strong>descompensación hemodinámica</strong>.</li>
+      </ul>
+      <p>La IFI más frecuente es la <strong>candidemia</strong>, seguida de <em>Aspergillus</em>.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Situación</th><th>Fármaco</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Tratamiento empírico inicial</strong></td><td><strong>Equinocandina</strong>: caspofungina, carga de <span class="dato">70 mg</span> seguida de <span class="dato">50 mg/día</span></td></tr>
+            <tr><td>Dirigido a <strong><em>Aspergillus</em></strong></td><td><strong>Voriconazol</strong>, aunque en el último tiempo está siendo desplazado por <strong>isavuconazol</strong>, con mejor perfil PK/PD</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 330" role="img" aria-label="Línea de tiempo del seguimiento del tratamiento empírico en neutropenia febril. En el día cero se toman hemocultivos periféricos y retrocultivo del catéter y se administra la primera dosis parenteral dentro de los sesenta minutos. Entre las cuarenta y ocho y las setenta y dos horas se hace la primera reevaluación: si el paciente está estable, con neutrófilos en ascenso y sin rescate microbiológico, no se cambia el esquema; si hay fiebre con foco o deterioro, se recultiva y se escala la cobertura para Gram negativos. Entre el cuarto y el séptimo día, si persiste febril con neutropenia prolongada y sin ascenso del recuento, se inicia antifúngico empírico con caspofungina. Al final, sin foco ni rescate se suspende tras setenta y dos horas afebril y estable sin importar el recuento; con rescate, la bacteriemia por Gram negativos dura siete días, la de estafilococo aureus meticilino resistente catorce y la candidemia catorce.">
+          <defs>
+            <marker id="pta-sg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <line x1="110" y1="20" x2="110" y2="308" stroke="currentColor" stroke-width="1.5" stroke-opacity="0.4" marker-end="url(#pta-sg)"></line>
+          <text x="110" y="320" font-size="10.5" fill="currentColor" opacity="0.6" text-anchor="middle">tiempo</text>
+
+          <circle cx="110" cy="52" r="5" fill="var(--c)" stroke="currentColor" stroke-width="1"></circle>
+          <text x="96" y="56" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="end">Día 0</text>
+          <rect x="132" y="21" width="554" height="62" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="148" y="43" font-size="12.5" font-weight="700" fill="currentColor">Inicio del tratamiento empírico</text>
+          <text x="148" y="62" font-size="11.5" fill="currentColor" opacity="0.75">Hemocultivos periféricos y retrocultivo del catéter</text>
+          <text x="148" y="78" font-size="11.5" fill="currentColor" opacity="0.75">Primera dosis parenteral dentro de los 60 minutos</text>
+
+          <circle cx="110" cy="132" r="5" fill="var(--c)" stroke="currentColor" stroke-width="1"></circle>
+          <text x="96" y="136" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="end">48 – 72 h</text>
+          <rect x="132" y="101" width="554" height="62" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="148" y="123" font-size="12.5" font-weight="700" fill="currentColor">Primera reevaluación</text>
+          <text x="148" y="142" font-size="11.5" fill="currentColor" opacity="0.75">Estable, PMN en ascenso y sin rescate: no cambiar el esquema</text>
+          <text x="148" y="158" font-size="11.5" fill="currentColor" opacity="0.75">Fiebre con foco o deterioro: recultivar y escalar sobre BGN</text>
+
+          <circle cx="110" cy="212" r="5" fill="var(--c)" stroke="currentColor" stroke-width="1"></circle>
+          <text x="96" y="216" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="end">4.º – 7.º día</text>
+          <rect x="132" y="181" width="554" height="62" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="148" y="203" font-size="12.5" font-weight="700" fill="currentColor">Antifúngico empírico</text>
+          <text x="148" y="222" font-size="11.5" fill="currentColor" opacity="0.75">Persiste febril, neutropenia prolongada y sin ascenso de PMN</text>
+          <text x="148" y="238" font-size="11.5" fill="currentColor" opacity="0.75">Caspofungina: carga de 70 mg, luego 50 mg/día</text>
+
+          <circle cx="110" cy="292" r="5" fill="var(--c)" stroke="currentColor" stroke-width="1"></circle>
+          <text x="96" y="296" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="end">Fin</text>
+          <rect x="132" y="261" width="554" height="62" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="currentColor" stroke-opacity="0.5" stroke-width="1.5"></rect>
+          <text x="148" y="283" font-size="12.5" font-weight="700" fill="currentColor">Suspensión</text>
+          <text x="148" y="302" font-size="11.5" fill="currentColor" opacity="0.75">Sin foco ni rescate: 72 h afebril y estable, sin importar el recuento</text>
+          <text x="148" y="318" font-size="11.5" fill="currentColor" opacity="0.75">Con rescate: BGN 7 días · SAMR 14 días · candidemia 14 días</text>
+        </svg>
+        <figcaption>Los tres momentos de decisión están fijados de antemano: 48–72 h para escalar sobre bacterias, 4.º–7.º día para sumar antifúngico, y 72 h de apirexia para suspender.</figcaption>
+      </figure>
+
+      <h3>Duración del tratamiento en el alto riesgo</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Situación</th><th>Duración</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>NF sin foco ni rescate microbiológico</strong></td>
+              <td>El TEI puede suspenderse luego de <strong><span class="dato">72 horas</span> afebril y estable</strong>. <strong>Esto es independiente del recuento de neutrófilos.</strong></td>
+            </tr>
+            <tr>
+              <td><strong>NF con foco o rescate bacteriológico</strong></td>
+              <td>Suspender luego de al menos <span class="dato">72 h</span> afebril y con resolución de la clínica de infección</td>
+            </tr>
+            <tr><td>Bacteriemia por <strong>BGN</strong></td><td><span class="dato">7 días</span></td></tr>
+            <tr><td>Bacteriemia por <strong>SAMR</strong></td><td><span class="dato">14 días</span> si es no complicada</td></tr>
+            <tr><td><strong>Candidemia</strong></td><td><span class="dato">14 días</span> luego del <strong>primer hemocultivo negativo</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Fuente: material de cátedra, alineado con el Consenso sobre el manejo del paciente con neutropenia febril de la Sociedad Argentina de Infectología y con Freifeld AG et al., Clinical Practice Guideline for the Use of Antimicrobial Agents in Neutropenic Patients with Cancer, IDSA, Clin Infect Dis 2011. Manejo ambulatorio del bajo riesgo según Taplitz RA et al., ASCO/IDSA, J Clin Oncol 2018.</p>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-importantes" id="importantes">
+      <span class="seccion__pestana"><b>07</b> Alerta</span>
+      <h2 class="seccion__titulo">Aspectos Importantes &amp; Profilaxis</h2>
+
+      <h3>Profilaxis antibiótica</h3>
+      <p>La profilaxis con <strong>quinolonas</strong> siempre ha sido controvertida, pero en los últimos años ha salido <strong>cada vez más evidencia en contra de su uso</strong>:</p>
+      <ul>
+        <li>Se asocia con un <strong>aumento del riesgo de colonización e infecciones por gérmenes multirresistentes</strong>.</li>
+        <li>También se ha asociado con <strong>bacteriemia por <em>P. aeruginosa</em> resistente a carbapenems</strong>.</li>
+        <li>Su uso <strong>no está exento de los efectos secundarios propios de la droga</strong>.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>La profilaxis con quinolonas se cobra el precio dos veces: <strong>genera multirresistencia</strong> y además <strong>reclasifica al paciente como alto riesgo</strong> y le <strong>cierra la opción del tratamiento oral ambulatorio</strong> si más adelante hace una neutropenia febril.</p>
+      </div>
+
+      <h3>Profilaxis antifúngica</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Contra</th><th>Indicada en</th><th>Drogas</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong><em>Candida</em></strong></td>
+              <td><strong>Trasplante alogénico</strong> de células madre hematopoyéticas y <strong>quimioterapia de inducción o salvataje en LMA</strong></td>
+              <td>Fluconazol, itraconazol, voriconazol y equinocandinas</td>
+            </tr>
+            <tr>
+              <td><strong><em>Aspergillus</em></strong></td>
+              <td><strong>Inducción de LMA</strong> y <strong>síndrome mielodisplásico</strong></td>
+              <td>La droga más utilizada es el <strong>posaconazol</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Conviene tener presente el efecto colateral epidemiológico ya mencionado: es justamente esta profilaxis con los nuevos azólicos la que <strong>seleccionó a <em>Fusarium</em> y a los zigomicetos</strong> como hongos emergentes después de la segunda semana de neutropenia.</p>
+
+      <h3>Las cuatro urgencias de este cuadernillo</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Situación</th><th>Conducta inmediata</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Neutropenia febril</strong></td>
+              <td>Cultivos y <strong>primera dosis parenteral en &lt; 60 min</strong>. El retraso aumenta la mortalidad</td>
+            </tr>
+            <tr>
+              <td><strong>Fiebre en el asplénico</strong></td>
+              <td><strong>Internación</strong> y tratamiento frente a capsulados — <strong>ceftriaxona</strong> empírica</td>
+            </tr>
+            <tr>
+              <td><strong>Neutropénico sin fiebre pero con foco</strong></td>
+              <td>Dificultad respiratoria, dolor abdominal, dolor en el catéter o molestia perianal → <strong>antibiótico empírico sin demora</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Mucormicosis rinocerebral</strong></td>
+              <td>Diabético con descontrol glucémico y cetoacidosis → antifúngico y <strong>evaluación quirúrgica urgente</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>No tomar temperatura rectal</strong> en el paciente neutropénico: puede <strong>precipitar bacteriemia</strong> en quienes tienen mucositis, fisuras anales o hemorroides. La fiebre se define por <strong>un único registro ≥ 38 °C axilar</strong>.</p>
+      </div>
+    </section>
+
+    <!-- ============ Repaso activo ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>¿Cuáles son los tres niveles de defensa del huésped?</summary>
+          <div class="fc__r"><strong>Barreras físicas</strong> (piel, acidez gástrica, eliminación mucociliar, peristaltismo), <strong>inmunidad innata</strong> (fagocitos, células NK, complemento, péptidos antimicrobianos) e <strong>inmunidad adaptativa</strong> (linfocitos B y T).</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Qué dosis y duración de corticoides definen alto nivel de inmunosupresión?</summary>
+          <div class="fc__r">Prednisona o equivalente <strong>≥ 20 mg/día</strong> —o 2 mg/kg/día en menores de 10 kg— durante <strong>≥ 14 días</strong>. Por debajo de esos umbrales, o en días alternos, es bajo nivel.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>Un paciente con quimioterapia y mucositis hace bacteriemia. ¿De dónde viene el germen?</summary>
+          <div class="fc__r">De su <strong>propia microbiota endógena</strong>, que <strong>transloca la barrera mucocutánea</strong> rota por la mucositis, facilitado por el catéter venoso central. Por eso los agentes más frecuentes son <strong>BGN entéricos</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Las dos infecciones que definen al diabético en el examen.</summary>
+          <div class="fc__r"><strong>Otitis externa maligna</strong> por <em>P. aeruginosa</em> y <strong>mucormicosis rinocerebral</strong> en contexto de descontrol glucémico y cetoacidosis.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué germen domina en el asplénico y cuál es el tratamiento empírico ante fiebre?</summary>
+          <div class="fc__r"><strong><em>S. pneumoniae</em></strong>, implicado en el <strong>50 – 80 %</strong> de los casos. La fiebre es una <strong>urgencia</strong>: internación e inicio de <strong>ceftriaxona</strong> empírica.</div>
+        </details>
+
+        <details class="fc s-diferenciales">
+          <summary>Definí fiebre y neutropenia en el contexto de NF.</summary>
+          <div class="fc__r"><strong>Fiebre</strong>: un único registro <strong>≥ 38 °C axilar</strong> (nunca rectal). <strong>Neutropenia</strong>: PMN <strong>≤ 500/mm³</strong>, o <strong>≤ 1000/mm³</strong> si se predice caída a &lt; 500 en las próximas 48 h. Profunda: ≤ 100. Prolongada: &gt; 7 días.</div>
+        </details>
+
+        <details class="fc s-diferenciales">
+          <summary>¿Cuáles son los dos gérmenes más frecuentes en la bacteriemia por NF?</summary>
+          <div class="fc__r"><strong><em>Klebsiella</em> spp. (24,9 %)</strong> y <strong><em>E. coli</em> (22,5 %)</strong> — juntos casi la mitad de los aislamientos del registro ROCAS 2019. Predominan los <strong>BGN</strong>: 485 de 699 aislamientos.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Qué puntaje de MASCC y de CISNE definen bajo riesgo?</summary>
+          <div class="fc__r"><strong>MASCC ≥ 21</strong> y <strong>CISNE = 0</strong> (estrato I). El CISNE es más exigente: 1 – 2 puntos ya es riesgo intermedio y ≥ 3 es alto riesgo.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Rx de tórax normal en un neutropénico febril con disnea: ¿descarta neumonía?</summary>
+          <div class="fc__r"><strong>No.</strong> Su sensibilidad para la detección temprana de neumonía en el neutropénico es de apenas <strong>46 %</strong> — sin neutrófilos no se forma el infiltrado. Corresponde <strong>tomografía</strong>.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Cuándo se usa monoterapia con PTZ o cefepime y cuándo meropenem de entrada?</summary>
+          <div class="fc__r"><strong>PTZ 4,5 g c/6 h o cefepime 2 g c/8 h</strong>: paciente estable, sin factores de riesgo para resistentes, primer episodio, institución con baja prevalencia. <strong>Meropenem</strong>: infección severa, sepsis o shock, colonización por BLEE, alta prevalencia local, o uso previo de PTZ o cefepime.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Fiebre persistente al 4.º día, paciente estable, neutrófilos en ascenso, cultivos negativos. ¿Cambiás el esquema?</summary>
+          <div class="fc__r"><strong>No.</strong> La defervescencia demora <strong>5 días en promedio</strong> (rango 2 – 7). La fiebre persistente sin foco en un paciente estable con PMN en ascenso y sin rescate <strong>no requiere cambios</strong>.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Por qué está en desuso la profilaxis con quinolonas?</summary>
+          <div class="fc__r">Aumenta el riesgo de <strong>colonización e infección por gérmenes multirresistentes</strong> y se asocia con <strong>bacteriemia por <em>P. aeruginosa</em> resistente a carbapenems</strong>. Además, el antecedente <strong>reclasifica al paciente como alto riesgo</strong> y le cierra la vía oral ambulatoria.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Definición clave</dt>
+        <dd><strong>Neutropenia febril</strong> = un único registro <strong>≥ 38 °C axilar</strong> + <strong>PMN ≤ 500/mm³</strong> (o ≤ 1000 con caída esperada en 48 h). Es una <strong>urgencia infectológica</strong>: la fiebre suele ser el único signo.</dd>
+
+        <dt class="r-gold">Evaluación de elección</dt>
+        <dd><strong>Hemocultivos periféricos + retrocultivo</strong> del catéter, y estratificación con <strong>MASCC ≥ 21</strong> o <strong>CISNE 0</strong> para bajo riesgo. La Rx de tórax tiene sólo <strong>46 %</strong> de sensibilidad: ante sospecha, tomografía.</dd>
+
+        <dt class="r-tto">Tratamiento de 1ª línea</dt>
+        <dd><strong>Bajo riesgo</strong>: ciprofloxacina 500 mg c/8–12 h + amoxicilina-clavulánico 1 g c/8 h, vía oral. <strong>Alto riesgo</strong>: <strong>PTZ 4,5 g c/6 h</strong> o <strong>cefepime 2 g c/8 h</strong>; <strong>meropenem</strong> si sepsis, BLEE o uso previo de aquellos. Vancomicina <strong>sólo por indicación</strong>.</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd><strong>Primera dosis parenteral en &lt; 60 minutos</strong>, después de los cultivos. <strong>Fiebre en el asplénico</strong> → internación + ceftriaxona. <strong>Ausencia de fiebre no descarta infección</strong> en el neutropénico con foco clínico.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir del material de cátedra de la Dra. Claudia Cabello (Cátedra de Enfermedades Infecciosas, Universidad de Mendoza, Sede San Rafael), complementado con el Consenso de Neutropenia Febril de la Sociedad Argentina de Infectología, las guías IDSA y ASCO/IDSA, y el registro ROCAS. Material de estudio: no reemplaza el criterio clínico ni la guía institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link'));
+
+  function porMeta(hash){
+    for (var i = 0; i < enlaces.length; i++){
+      if (enlaces[i].getAttribute('href') === '#' + hash) return enlaces[i];
+    }
+    return null;
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var enlace = porMeta(e.target.id);
+        if (!enlace) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          enlace.setAttribute('aria-current', 'true');
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>
+<script>
+(function(){
+  "use strict";
+  var clave = document.body.dataset.clave || "";
+  var enApp = typeof window.WordmedApp !== "undefined";
+  var MEM = "wordmed:progreso";
+
+  function leer(){ try{ return JSON.parse(localStorage.getItem(MEM)) || {}; }catch(e){ return {}; } }
+  function guardar(m){ try{ localStorage.setItem(MEM, JSON.stringify(m)); }catch(e){} }
+
+  function alto(){
+    return Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+  }
+
+  /* retomar donde quedó */
+  if (clave) {
+    var m = leer()[clave];
+    if (m && m.y > 0) {
+      window.addEventListener("load", function(){
+        window.scrollTo(0, Math.min(m.y, alto()));
+      });
+    }
+  }
+
+  /* anotar el avance, sin ahogar el scroll */
+  var pendiente = false;
+  window.addEventListener("scroll", function(){
+    if (pendiente || !clave) return;
+    pendiente = true;
+    requestAnimationFrame(function(){
+      pendiente = false;
+      var y = window.scrollY;
+      var pct = Math.round((y / alto()) * 100);
+      pct = Math.max(0, Math.min(100, pct));
+      var m = leer();
+      m[clave] = { y: y, pct: pct, ts: Date.now() };
+      guardar(m);
+      if (enApp && window.WordmedApp.progreso) window.WordmedApp.progreso(clave, pct, y);
+    });
+  }, { passive: true });
+
+  /* volver: solo cuando vinimos de la cáscara web */
+  if (!enApp && document.referrer && document.referrer.indexOf(location.origin) === 0) {
+    var b = document.createElement("button");
+    b.className = "volver";
+    b.type = "button";
+    b.setAttribute("aria-label", "Volver");
+    b.innerHTML = '<svg class="volver__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg>';
+    b.addEventListener("click", function(){ history.back(); });
+    document.body.appendChild(b);
+  }
+})();
+</script>
+</body>
+</html>

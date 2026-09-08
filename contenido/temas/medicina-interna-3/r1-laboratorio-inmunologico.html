@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laboratorio Inmunológico</title>
+<link rel="stylesheet" href="../../fuentes/fuentes.css">
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+}
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índice lateral ---------- */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Ficha de sección ---------- */
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.35rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-row:1/3; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+.importante__titulo{
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso{ display:none !important; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+<style>
+/* Fuentes de la capa de contenido. Va después del estilo del
+   cuadernillo para pisar las de Windows, que no se pueden
+   redistribuir y no existen en Android. */
+:root{
+  --f-titulo:'Spectral',Georgia,'Times New Roman',serif;
+  --f-texto:'Open Sans',system-ui,-apple-system,sans-serif;
+  --f-dato:'Cascadia Mono','Cascadia Code',ui-monospace,Consolas,monospace;
+}
+/* Botón de volver, espejo del de tema que ya trae el cuadernillo. */
+.volver{
+  position:fixed; top:.7rem; left:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.volver:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.volver__icono{ width:1.15rem; height:1.15rem; display:block; }
+</style>
+</head>
+<body data-clave="medicina-interna-3/r1-laboratorio-inmunologico">
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-generalidades"  href="#reactantes">Reactantes de Fase Aguda</a></li>
+      <li><a class="indice__link i-clinica"        href="#vsg-pcr">VSG &amp; PCR</a></li>
+      <li><a class="indice__link i-diferenciales"  href="#fr-ccp">FR &amp; antiCCP</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#fan">El FAN: Método y Reglas</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#patrones">Los Patrones del FAN</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#por-enfermedad">Autoanticuerpos por Enfermedad</a></li>
+      <li><a class="indice__link i-importantes"    href="#saf-anca">Antifosfolípidos &amp; ANCA</a></li>
+      <li><a class="indice__link i-diferenciales"  href="#glosario">Glosario de Siglas</a></li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Medicina Interna III · Reumatología · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Laboratorio Inmunológico</h1>
+      <p class="portada__bajada">De los reactantes que sólo dicen «hay inflamación» a los autoanticuerpos que nombran la enfermedad. Con el FAN en el medio: sensible, inespecífico, y el estudio que más se malinterpreta.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">8 secciones</span>
+        <span class="etiqueta s-diagnostico">FAN</span>
+        <span class="etiqueta s-fisiopatologia">6 patrones</span>
+        <span class="etiqueta s-importantes">SAF &amp; ANCA</span>
+      </div>
+    </header>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="reactantes">
+      <span class="seccion__pestana"><b>01</b> Reactantes</span>
+      <h2 class="seccion__titulo">Introducción &amp; Reactantes de Fase Aguda</h2>
+
+      <p>Los exámenes utilizados en el estudio de las enfermedades reumáticas se piden para <strong>tres cosas</strong>, y conviene tener clara cuál de las tres se busca antes de solicitarlos:</p>
+      <ul>
+        <li><strong>Confirmar o descartar un diagnóstico.</strong></li>
+        <li><strong>Seguimiento</strong> de pacientes.</li>
+        <li><strong>Marcar el pronóstico</strong> de una enfermedad.</li>
+      </ul>
+
+      <h3>Definición</h3>
+      <p>Los <strong>reactantes de fase aguda</strong> son aquellas proteínas cuya <strong>concentración plasmática se incrementa un 25 %</strong> en la inflamación. Se dividen según la dirección del cambio:</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>REACTANTES POSITIVOS</th><th>REACTANTES NEGATIVOS</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>PCR</strong><br><strong>Eritrosedimentación (VSG)</strong><br><strong>Ferritina</strong><br>Algunos componentes del <strong>complemento</strong><br><strong>Fibrinógeno</strong><br><strong>Amiloide sérico A</strong><br>Alfa-1-antitripsina<br>Ceruloplasmina<br>Haptoglobina</td>
+              <td><strong>Albúmina</strong><br><br><strong>Transferrina</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Funciones</h3>
+      <ul>
+        <li><strong>Reconocimiento y eliminación de patógenos.</strong></li>
+        <li><strong>Limitan el daño</strong> de los tejidos del huésped por las <strong>enzimas proteolíticas</strong> y los <strong>metabolitos del oxígeno</strong> producidos en la inflamación.</li>
+        <li><strong>Reducen la reacción inflamatoria.</strong></li>
+      </ul>
+
+      <p class="cita">Un detalle que conviene retener de la lista: la <strong>ferritina</strong> es un reactante de fase aguda <strong>positivo</strong>. Por eso una ferritina elevada <strong>no permite descartar una ferropenia</strong> en un paciente con inflamación activa, y por eso una ferritina normal en ese contexto puede estar enmascarando un déficit real de hierro.</p>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-clinica" id="vsg-pcr">
+      <span class="seccion__pestana"><b>02</b> VSG &amp; PCR</span>
+      <h2 class="seccion__titulo">VSG &amp; PCR</h2>
+
+      <h3>Eritrosedimentación (VSG)</h3>
+      <p>Es la <strong>velocidad, expresada en milímetros, con la que los eritrocitos precipitan en una hora</strong> en una muestra de sangre no coagulada. Es una <strong>medida INDIRECTA</strong> de la concentración de proteínas de fase aguda, y se realiza por el <strong>método de Westergren</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Dato</th><th>VSG</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Valor normal</strong></td><td>Hombres <span class="dato">0 – 15 mm</span><br>Mujeres <span class="dato">0 – 20 mm</span></td></tr>
+            <tr><td><strong>Cuándo sube</strong></td><td><strong>48 horas</strong> después del proceso inflamatorio</td></tr>
+            <tr><td><strong>Cuándo baja</strong></td><td>Se normaliza <strong>10 días después</strong> de haber terminado</td></tr>
+            <tr><td><strong>Se modifica por</strong></td><td><strong>Viscosidad plasmática</strong><br><strong>Tamaño, forma y número de eritrocitos</strong><br><strong>Fuerzas de repulsión</strong> entre los eritrocitos</td></tr>
+            <tr><td><strong>Utilidad</strong></td><td>Diferenciar procesos <strong>inflamatorios de no inflamatorios</strong><br>Evaluar <strong>extensión y gravedad</strong> de la inflamación<br><strong>Seguimiento</strong> de la enfermedad<br><strong>Pronóstico</strong> de los pacientes con AR</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Lo que altera la VSG sin que haya inflamación</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Mecanismo</th><th>Ejemplos</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Cambios morfológicos del glóbulo rojo</strong></td><td><strong>Anemia de células falciformes</strong><br><strong>Esferocitosis hereditaria</strong><br><strong>Hemoglobinopatías</strong></td></tr>
+            <tr><td><strong>Alteración de las proteínas plasmáticas</strong></td><td><strong>Hipofibrinogenemia</strong><br><strong>Aumento de la viscosidad plasmática</strong></td></tr>
+            <tr><td><strong>Otros contextos que la elevan</strong></td><td>Procesos reumáticos en actividad · <strong>Obesidad</strong> · Infección · <strong>Neoplasias</strong> · Vasculitis · <strong>Enfermedad renal</strong> · <strong>Ancianos</strong> · <strong>Embarazo</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>El 5 % de los pacientes con artritis reumatoidea tiene la VSG normal.</strong></p>
+
+      <h3>Proteína C reactiva (PCR)</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Dato</th><th>PCR</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Funciones</strong></td><td><strong>Modula la respuesta inflamatoria</strong><br><strong>Une patógenos microbianos con células apoptóticas</strong> e inicia su eliminación reclutando el <strong>complemento</strong> y las <strong>células fagocíticas</strong><br><strong>Regula la intensidad y la extensión</strong> de la respuesta inflamatoria aguda</td></tr>
+            <tr><td><strong>Valor normal</strong></td><td>Hasta <span class="dato">0,6 mg/dL</span></td></tr>
+            <tr><td><strong>Cuándo sube</strong></td><td><strong>24 – 72 horas</strong> después del proceso inflamatorio</td></tr>
+            <tr><td><strong>Cuándo baja</strong></td><td><strong>Disminuye rápidamente</strong> cuando cede el proceso.<br>En procesos <strong>crónicos permanece elevada</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 290" role="img" aria-label="Curvas de cinética de la proteína C reactiva y de la eritrosedimentación tras un proceso inflamatorio que dura tres días. La proteína C reactiva comienza a subir entre las veinticuatro y las setenta y dos horas, alcanza su pico alrededor del tercer día y cae rápidamente hasta volver al valor normal cerca del quinto o sexto día. La eritrosedimentación empieza a subir recién a las cuarenta y ocho horas, alcanza su pico alrededor del quinto día y desciende lentamente, sin normalizarse hasta unos diez días después de que el proceso inflamatorio ha terminado.">
+          <text x="204" y="32" font-size="10.5" font-weight="700" fill="currentColor">cede el proceso inflamatorio</text>
+
+          <path d="M 70,230 L 112,230 C 140,226 168,100 196,72 C 218,80 240,170 262,212 C 275,226 288,230 300,230 L 660,230 L 660,230 L 70,230 Z" fill="var(--c)" fill-opacity="0.20" stroke="none"></path>
+          <path d="M 70,230 L 112,230 C 140,226 168,100 196,72 C 218,80 240,170 262,212 C 275,226 288,230 300,230 L 660,230" fill="none" stroke="currentColor" stroke-width="2.5"></path>
+          <text x="206" y="62" font-size="12" font-weight="700" fill="currentColor">PCR</text>
+
+          <path d="M 70,230 L 154,230 C 190,224 250,130 280,112 C 330,105 380,130 440,158 C 500,186 560,216 617,229 L 660,230" fill="none" stroke="currentColor" stroke-width="2.5" stroke-dasharray="7 4"></path>
+          <text x="290" y="104" font-size="12" font-weight="700" fill="currentColor">VSG</text>
+
+          <polyline points="196,40 196,230" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3" opacity="0.5"></polyline>
+          <polyline points="70,230 660,230" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="4 3" opacity="0.3"></polyline>
+          <text x="664" y="222" font-size="10.5" fill="currentColor" text-anchor="end" opacity="0.75">valor normal</text>
+
+          <rect x="428" y="44" width="262" height="62" rx="3" fill="var(--c)" fill-opacity="0.08" stroke="var(--c)" stroke-width="1.4"></rect>
+          <polyline points="438,64 462,64" fill="none" stroke="currentColor" stroke-width="2.5"></polyline>
+          <text x="470" y="68" font-size="10.5" fill="currentColor">PCR — sube 24 – 72 h, cae rápido</text>
+          <polyline points="438,90 462,90" fill="none" stroke="currentColor" stroke-width="2.5" stroke-dasharray="7 4"></polyline>
+          <text x="470" y="94" font-size="10.5" fill="currentColor">VSG — sube 48 h, 10 días en caer</text>
+
+          <polyline points="70,238 660,238" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+          <polyline points="70,238 70,244"   fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+          <polyline points="154,238 154,244" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+          <polyline points="238,238 238,244" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+          <polyline points="322,238 322,244" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+          <polyline points="407,238 407,244" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+          <polyline points="491,238 491,244" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+          <polyline points="575,238 575,244" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+          <polyline points="660,238 660,244" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+          <text x="70"  y="258" font-size="10.5" fill="currentColor" text-anchor="middle">0</text>
+          <text x="154" y="258" font-size="10.5" fill="currentColor" text-anchor="middle">2</text>
+          <text x="238" y="258" font-size="10.5" fill="currentColor" text-anchor="middle">4</text>
+          <text x="322" y="258" font-size="10.5" fill="currentColor" text-anchor="middle">6</text>
+          <text x="407" y="258" font-size="10.5" fill="currentColor" text-anchor="middle">8</text>
+          <text x="491" y="258" font-size="10.5" fill="currentColor" text-anchor="middle">10</text>
+          <text x="575" y="258" font-size="10.5" fill="currentColor" text-anchor="middle">12</text>
+          <text x="660" y="258" font-size="10.5" fill="currentColor" text-anchor="middle">14</text>
+          <text x="365" y="278" font-size="10.5" fill="currentColor" text-anchor="middle" opacity="0.75">días desde el inicio de la inflamación</text>
+        </svg>
+        <figcaption>Las dos curvas explican por qué <strong>no son intercambiables</strong>. La <strong>PCR sigue al proceso</strong>: sube con él y cae con él, y por eso sirve para <strong>evaluar la respuesta al tratamiento</strong>. La <strong>VSG va con retraso en los dos sentidos</strong> — tarda 48 horas en moverse y <strong>diez días en normalizarse después de que la inflamación terminó</strong>—, así que una VSG todavía alta <strong>no prueba que el proceso siga activo</strong>.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-diferenciales" id="fr-ccp">
+      <span class="seccion__pestana"><b>03</b> FR &amp; antiCCP</span>
+      <h2 class="seccion__titulo">Factor Reumatoideo &amp; antiCCP</h2>
+
+      <h3>Factor reumatoideo</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Dato</th><th>Factor reumatoideo</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Qué es</strong></td><td>Un <strong>autoanticuerpo contra la fracción terminal de la región CONSTANTE de la cadena pesada de la IgG</strong></td></tr>
+            <tr><td><strong>En la AR</strong></td><td>Son <strong>específicos contra la IgG humana</strong>, de <strong>alta afinidad</strong>, y pertenecen a <strong>todos los isotipos</strong>: IgM, IgA, IgG e IgE</td></tr>
+            <tr><td><strong>Rendimiento</strong></td><td>El <strong>isotipo IgM es positivo en el <span class="dato">70 – 80 %</span></strong> de los pacientes con AR</td></tr>
+            <tr><td><strong>Valores muy altos</strong></td><td>AR con <strong>manifestaciones sistémicas</strong>, <strong>erosiones articulares</strong> y <strong>nódulos subcutáneos</strong><br><strong>Síndrome de Sjögren</strong><br><strong>Crioglobulinemia mixta</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>Su positividad no significa siempre que el paciente tenga artritis reumatoidea.</strong> Es la frase textual del material, y ordena todo el resto: el FR <strong>no es un test diagnóstico</strong> sino un dato que sólo cobra valor <strong>dentro de una sospecha clínica previa</strong>.</p>
+      </div>
+
+      <h3>Anticuerpos antipéptido citrulinado cíclico (antiCCP)</h3>
+      <p>Son autoanticuerpos dirigidos contra una proteína que contiene <strong>citrulina</strong>, un aminoácido formado por la <strong>deaminación de residuos de arginina</strong> por acción de la enzima <strong>peptidil-arginina-deaminasa</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Parámetro</th><th>antiCCP</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Sensibilidad</strong></td><td><span class="dato">70 – 80 %</span></td></tr>
+            <tr><td><strong>Especificidad</strong></td><td><strong><span class="dato">96 %</span></strong></td></tr>
+            <tr><td><strong>Combinado con el FR</strong></td><td><strong><span class="dato">99,5 %</span></strong> — <em>ver nota</em></td></tr>
+            <tr><td><strong>En la AR inicial</strong></td><td>Presente en el <span class="dato">50 – 70 %</span> de los casos</td></tr>
+            <tr><td><strong>Utilidad</strong></td><td>Permite el <strong>diagnóstico temprano</strong> y <strong>predice erosiones</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Corrección sobre el material: la diapositiva indica que, combinado con el FR, <strong>«la sensibilidad aumenta a 99,5 %»</strong>. Debe decir <strong>especificidad</strong>. Exigir que <strong>dos</strong> anticuerpos sean positivos <strong>nunca puede aumentar la sensibilidad</strong>: necesariamente la disminuye, porque se pierden los casos en que sólo uno es positivo. Lo que sube es la <strong>especificidad</strong>, y el 99,5 % es la cifra correcta para ese parámetro.</p>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-diagnostico" id="fan">
+      <span class="seccion__pestana"><b>04</b> El FAN</span>
+      <h2 class="seccion__titulo">El FAN: Método &amp; Reglas de Lectura</h2>
+
+      <p>Los <strong>anticuerpos antinucleares (FAN o ANA)</strong> son anticuerpos dirigidos contra <strong>componentes del núcleo celular</strong>. Se detectan por dos métodos que hacen cosas distintas y no se reemplazan entre sí.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Método</th><th>Qué hace</th><th>Qué informa</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1. IFI</strong><br><em>inmunofluorescencia indirecta</em></td>
+              <td><strong>Muy sensible pero INESPECÍFICO.</strong> Es el <strong>método de screening inicial</strong>.<br>Se utilizan <strong>células Hep-2</strong> — epiteliales humanas derivadas de <strong>carcinoma laríngeo</strong></td>
+              <td><strong>Positivo o negativo.</strong><br>Si es positivo: <strong>TÍTULO y PATRÓN</strong><br>Los patrones se localizan en <strong>núcleo</strong>, <strong>citoplasma</strong> o <strong>aparato mitótico</strong></td>
+            </tr>
+            <tr>
+              <td><strong>2. ELISA</strong></td>
+              <td>Se aplica <strong>después</strong> del screening</td>
+              <td>Determina la <strong>ESPECIFICIDAD del anticuerpo</strong> — es decir, contra qué antígeno concreto va dirigido</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 410" role="img" aria-label="Algoritmo de solicitud e interpretación del FAN. Ante la sospecha clínica de una enfermedad del tejido conectivo se solicita un FAN por inmunofluorescencia indirecta sobre células Hep-2, que es el método de screening. Si el resultado es negativo, no descarta una enfermedad del tejido conectivo. Si es positivo, se informan el título y el patrón. El título se considera positivo desde uno en ochenta, y un título mayor de uno en seiscientos cuarenta sumado a la clínica es muy sugestivo de lupus. El patrón orienta hacia el anticuerpo responsable. Ambos datos conducen al ELISA, que determina la especificidad del anticuerpo.">
+          <defs>
+            <marker id="pta-fan" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="190" y="10" width="320" height="32" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="350" y="31" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">Sospecha de enfermedad del tejido conectivo</text>
+
+          <polyline points="350,42 350,64" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-fan)"></polyline>
+
+          <rect x="225" y="68" width="250" height="48" rx="3" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="350" y="90" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">FAN por IFI — células Hep-2</text>
+          <text x="350" y="108" font-size="10.5" fill="currentColor" text-anchor="middle">método de screening</text>
+
+          <polyline points="350,116 350,138" fill="none" stroke="currentColor" stroke-width="1.6"></polyline>
+          <polyline points="150,138 500,138" fill="none" stroke="currentColor" stroke-width="1.6"></polyline>
+          <polyline points="150,138 150,152" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-fan)"></polyline>
+          <polyline points="500,138 500,152" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-fan)"></polyline>
+          <text x="150" y="132" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">NEGATIVO</text>
+          <text x="500" y="132" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">POSITIVO</text>
+
+          <rect x="30" y="156" width="240" height="92" rx="3" fill="var(--c)" fill-opacity="0.20" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="150" y="180" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">FAN NEGATIVO</text>
+          <text x="150" y="202" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">NO descarta una</text>
+          <text x="150" y="220" font-size="10.5" fill="currentColor" text-anchor="middle">enfermedad del tejido</text>
+          <text x="150" y="238" font-size="10.5" fill="currentColor" text-anchor="middle">conectivo</text>
+
+          <rect x="330" y="156" width="340" height="40" rx="3" fill="var(--c)" fill-opacity="0.20" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="500" y="173" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">FAN POSITIVO</text>
+          <text x="500" y="190" font-size="10.5" fill="currentColor" text-anchor="middle">informar TÍTULO y PATRÓN</text>
+
+          <polyline points="500,196 500,212" fill="none" stroke="currentColor" stroke-width="1.6"></polyline>
+          <polyline points="410,212 590,212" fill="none" stroke="currentColor" stroke-width="1.6"></polyline>
+          <polyline points="410,212 410,226" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-fan)"></polyline>
+          <polyline points="590,212 590,226" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-fan)"></polyline>
+
+          <rect x="330" y="230" width="160" height="106" rx="3" fill="var(--c)" fill-opacity="0.26" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="410" y="252" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">TÍTULO</text>
+          <text x="410" y="276" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">≥ 1:80</text>
+          <text x="410" y="294" font-size="10.5" fill="currentColor" text-anchor="middle">es positivo</text>
+          <text x="410" y="316" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">&gt; 1:640 + clínica</text>
+          <text x="410" y="332" font-size="10.5" fill="currentColor" text-anchor="middle">muy sugestivo de LES</text>
+
+          <rect x="510" y="230" width="160" height="106" rx="3" fill="var(--c)" fill-opacity="0.26" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="590" y="252" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">PATRÓN</text>
+          <text x="590" y="278" font-size="10.5" fill="currentColor" text-anchor="middle">orienta hacia el</text>
+          <text x="590" y="296" font-size="10.5" fill="currentColor" text-anchor="middle">anticuerpo responsable</text>
+          <text x="590" y="322" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">ver sección 05</text>
+
+          <polyline points="410,336 410,350" fill="none" stroke="currentColor" stroke-width="1.6"></polyline>
+          <polyline points="590,336 590,350" fill="none" stroke="currentColor" stroke-width="1.6"></polyline>
+          <polyline points="410,350 590,350" fill="none" stroke="currentColor" stroke-width="1.6"></polyline>
+          <polyline points="500,350 500,362" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-fan)"></polyline>
+
+          <rect x="330" y="366" width="340" height="42" rx="3" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="500" y="384" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">ELISA</text>
+          <text x="500" y="401" font-size="10.5" fill="currentColor" text-anchor="middle">determina la especificidad del anticuerpo</text>
+        </svg>
+        <figcaption>El orden importa: la <strong>IFI es sensible y barata</strong>, así que va primero y <strong>filtra</strong>; el <strong>ELISA es específico</strong> y sólo tiene sentido pedirlo <strong>después</strong>, cuando ya se sabe que hay algo. Y las dos ramas del positivo no compiten — el <strong>título gradúa</strong> y el <strong>patrón orienta</strong>, y hacen falta las dos para saber qué anticuerpo buscar.</figcaption>
+      </figure>
+
+      <h3>Las cinco reglas de lectura</h3>
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>1.</strong> Se requiere un título de <strong>1:80 o más</strong> para considerarlo positivo.<br>
+        <strong>2.</strong> Un título <strong>mayor de 1:640 sumado a la clínica</strong> es <strong>muy sugestivo de LES</strong>.<br>
+        <strong>3.</strong> <strong>El título NO indica actividad de la enfermedad.</strong><br>
+        <strong>4.</strong> <strong>Un FAN negativo NO descarta una enfermedad del tejido conectivo.</strong><br>
+        <strong>5.</strong> <strong>El 3 % de las personas sanas puede tener FAN positivo.</strong></p>
+      </div>
+
+      <p><strong>Su sola presencia no es diagnóstica</strong> y sólo significa que <strong>existe una respuesta inmunológica</strong>. Su determinación es útil para el <strong>diagnóstico, el seguimiento y el pronóstico</strong> de las enfermedades autoinmunes.</p>
+
+      <h3>Dónde el FAN sirve y dónde no</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>ÚTIL para el diagnóstico de</th><th>NO útil para el diagnóstico de</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>LES <span class="dato">95 – 100 %</span></strong><br><strong>Esclerosis sistémica <span class="dato">60 – 80 %</span></strong><br><strong>Síndrome de Sjögren <span class="dato">40 – 70 %</span></strong><br><strong>Dermato/polimiositis <span class="dato">30 – 80 %</span></strong></td>
+              <td><strong>Artritis reumatoidea <span class="dato">20 – 50 %</span></strong><br><br>En la AR el rendimiento diagnóstico lo dan el <strong>FR</strong> y el <strong>antiCCP</strong>, no el FAN</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Discrepancia interna del material: esta diapositiva sitúa el FAN en el LES en <strong>95 – 100 %</strong>, mientras que la diapositiva de «Anticuerpos en LES» dice <strong>98 – 100 %</strong>. Se conservan ambas cifras porque las dos están en el mismo documento.</p>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-fisiopatologia" id="patrones">
+      <span class="seccion__pestana"><b>05</b> Patrones</span>
+      <h2 class="seccion__titulo">Los Patrones del FAN</h2>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 420" role="img" aria-label="Los seis patrones de inmunofluorescencia del FAN dibujados. El patrón homogéneo o difuso tiñe todo el núcleo con más intensidad en la periferia y se asocia a anticuerpos anti-ADN y anti-histonas, presentes en lupus, artritis idiopática juvenil, lupus inducido por fármacos y hepatitis autoinmune. El patrón periférico o en anillo tiñe sólo la periferia del núcleo, se debe a anticuerpos contra el ADN nativo de doble cadena y en títulos altos es casi exclusivo del lupus. El patrón moteado tiñe el núcleo de forma reticular, es el menos específico y se asocia a anticuerpos Sm, RNP, Ro, La y Scl-70, presentes en lupus, enfermedad mixta del tejido conectivo, esclerosis sistémica, artritis reumatoidea y Sjögren. El patrón nucleolar tiñe únicamente los nucléolos por anticuerpos contra el ARN nucleolar y en títulos altos es común en la esclerosis sistémica. El patrón centromérico muestra puntos de fluorescencia uniformes, grandes y contables, entre cuarenta y sesenta por núcleo, y es característico del síndrome CREST o esclerosis sistémica limitada. El patrón citoplasmático tiñe el citoplasma dejando el núcleo libre y aparece en enfermedades inflamatorias del músculo, entidades hepáticas y lupus.">
+          <circle cx="118" cy="68" r="42" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="7" stroke-opacity="0.55"></circle>
+          <circle cx="118" cy="68" r="42" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
+          <text x="118" y="128" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">HOMOGÉNEO</text>
+          <text x="118" y="150" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">Anti-ADN · anti-histonas</text>
+          <text x="118" y="170" font-size="10.5" fill="currentColor" text-anchor="middle">LES · AIJ · LIF · HAI</text>
+          <text x="118" y="188" font-size="10.5" fill="currentColor" text-anchor="middle">&gt; 1:640 sugiere LES</text>
+
+          <circle cx="350" cy="68" r="36" fill="none" stroke="var(--c)" stroke-width="12" stroke-opacity="0.65"></circle>
+          <circle cx="350" cy="68" r="42" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
+          <text x="350" y="128" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">PERIFÉRICO</text>
+          <text x="350" y="150" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">Anti-ADN nativo</text>
+          <text x="350" y="170" font-size="10.5" fill="currentColor" text-anchor="middle">casi exclusivo de LES</text>
+          <text x="350" y="188" font-size="10.5" fill="currentColor" text-anchor="middle">en títulos altos</text>
+
+          <circle cx="582" cy="68" r="42" fill="var(--c)" fill-opacity="0.08" stroke="currentColor" stroke-width="1.5"></circle>
+          <circle cx="556" cy="44" r="3.2" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="574" cy="38" r="2.4" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="594" cy="42" r="3.6" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="610" cy="54" r="2.6" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="550" cy="62" r="2.8" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="568" cy="56" r="3.8" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="586" cy="60" r="2.4" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="604" cy="66" r="3.2" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="616" cy="74" r="2.4" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="554" cy="78" r="3.4" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="572" cy="74" r="2.6" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="588" cy="82" r="3.6" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="602" cy="88" r="2.8" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="560" cy="92" r="3.0" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="580" cy="96" r="2.4" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="596" cy="100" r="3.2" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="608" cy="44" r="2.4" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="550" cy="52" r="2.2" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="582" cy="48" r="2.8" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="564" cy="66" r="2.2" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="592" cy="70" r="2.6" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="606" cy="94" r="2.4" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="576" cy="86" r="2.8" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="618" cy="62" r="2.2" fill="var(--c)" fill-opacity="0.8"></circle>
+          <text x="582" y="128" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">MOTEADO</text>
+          <text x="582" y="150" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">Sm · RNP · Ro · La · Scl-70</text>
+          <text x="582" y="170" font-size="10.5" fill="currentColor" text-anchor="middle">LES · EMTC · ES · AR · SS</text>
+          <text x="582" y="188" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">el MENOS específico</text>
+
+          <circle cx="118" cy="274" r="42" fill="var(--c)" fill-opacity="0.08" stroke="currentColor" stroke-width="1.5"></circle>
+          <circle cx="106" cy="266" r="10" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="132" cy="278" r="8" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="116" cy="294" r="7" fill="var(--c)" fill-opacity="0.8"></circle>
+          <text x="118" y="334" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">NUCLEOLAR</text>
+          <text x="118" y="356" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">Ac anti-ARN nucleolar</text>
+          <text x="118" y="376" font-size="10.5" fill="currentColor" text-anchor="middle">esclerosis sistémica</text>
+          <text x="118" y="394" font-size="10.5" fill="currentColor" text-anchor="middle">en títulos altos</text>
+
+          <circle cx="350" cy="274" r="42" fill="var(--c)" fill-opacity="0.08" stroke="currentColor" stroke-width="1.5"></circle>
+          <circle cx="334" cy="244" r="3.4" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="350" cy="244" r="3.4" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="366" cy="244" r="3.4" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="324" cy="256" r="3.4" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="337" cy="256" r="3.4" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="350" cy="256" r="3.4" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="363" cy="256" r="3.4" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="376" cy="256" r="3.4" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="320" cy="268" r="3.4" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="335" cy="268" r="3.4" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="350" cy="268" r="3.4" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="365" cy="268" r="3.4" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="380" cy="268" r="3.4" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="320" cy="280" r="3.4" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="335" cy="280" r="3.4" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="350" cy="280" r="3.4" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="365" cy="280" r="3.4" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="380" cy="280" r="3.4" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="324" cy="292" r="3.4" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="337" cy="292" r="3.4" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="350" cy="292" r="3.4" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="363" cy="292" r="3.4" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="376" cy="292" r="3.4" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="334" cy="304" r="3.4" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="350" cy="304" r="3.4" fill="var(--c)" fill-opacity="0.8"></circle>
+          <circle cx="366" cy="304" r="3.4" fill="var(--c)" fill-opacity="0.8"></circle>
+          <text x="350" y="334" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">CENTROMÉRICO</text>
+          <text x="350" y="356" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">Anti-centrómero</text>
+          <text x="350" y="376" font-size="10.5" fill="currentColor" text-anchor="middle">CREST · ES limitada</text>
+          <text x="350" y="394" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">40 – 60 puntos, contables</text>
+
+          <path d="M 536,274 A 46,38 0 1 0 628,274 A 46,38 0 1 0 536,274 Z M 558,272 A 20,20 0 1 0 598,272 A 20,20 0 1 0 558,272 Z" fill="var(--c)" fill-opacity="0.34" fill-rule="evenodd" stroke="none"></path>
+          <path d="M 536,274 A 46,38 0 1 0 628,274 A 46,38 0 1 0 536,274 Z" fill="none" stroke="currentColor" stroke-width="1.5"></path>
+          <path d="M 558,272 A 20,20 0 1 0 598,272 A 20,20 0 1 0 558,272 Z" fill="none" stroke="currentColor" stroke-width="1.5"></path>
+          <text x="582" y="334" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">CITOPLASMÁTICO</text>
+          <text x="582" y="356" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">Ac anticitoplasmáticos</text>
+          <text x="582" y="376" font-size="10.5" fill="currentColor" text-anchor="middle">miopatías inflamatorias</text>
+          <text x="582" y="394" font-size="10.5" fill="currentColor" text-anchor="middle">hepatopatías · LES</text>
+        </svg>
+        <figcaption>El patrón <strong>no es el diagnóstico</strong>: es una <strong>pista sobre qué antígeno buscar</strong> con el ELISA. Los dos extremos son el <strong>periférico</strong> —el más específico, casi exclusivo de LES en títulos altos— y el <strong>moteado</strong> —el <strong>menos específico</strong>, porque agrupa anticuerpos contra una gran variedad de antígenos nucleares y citoplasmáticos—. El <strong>centromérico</strong> se distingue del moteado por la <strong>uniformidad y el tamaño</strong> de los puntos, que se pueden contar.</figcaption>
+      </figure>
+
+      <h3>Descripción de cada patrón</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Patrón</th><th>Qué se ve</th><th>Contra qué reaccionan</th><th>Dónde aparece</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>HOMOGÉNEO</strong><br><em>o difuso</em></td>
+              <td><strong>Todo el núcleo se colorea</strong>, con <strong>más intensidad en la periferia</strong>. <strong>Las figuras mitóticas también se colorean</strong></td>
+              <td>Complejo <strong>ADN-histona</strong>, <strong>ADN de doble cadena</strong> y de <strong>cadena sencilla</strong></td>
+              <td>Un título <strong>&gt; 1:640</strong> es sugestivo de <strong>LES</strong> o de <strong>lupus inducido por medicamentos</strong></td>
+            </tr>
+            <tr>
+              <td><strong>PERIFÉRICO</strong><br><em>o en anillo</em></td>
+              <td>El núcleo se colorea <strong>principalmente en la periferia</strong></td>
+              <td><strong>ADN nativo o de doble cadena</strong></td>
+              <td>En <strong>títulos altos es CASI EXCLUSIVO de LES</strong></td>
+            </tr>
+            <tr>
+              <td><strong>MOTEADO</strong></td>
+              <td>La coloración del núcleo es <strong>reticular o moteada</strong></td>
+              <td><strong>Proteínas NO histonas</strong>: Sm, U1-RNP, La, Ro, Scl-70, ARN polimerasas I y II</td>
+              <td><strong>Es el MENOS específico</strong> de los patrones.<br>LES · EMTC · esclerosis sistémica · AR · SS</td>
+            </tr>
+            <tr>
+              <td><strong>NUCLEOLAR</strong></td>
+              <td><strong>Únicamente se colorean los nucléolos</strong></td>
+              <td><strong>ARN nucleolar</strong></td>
+              <td>En <strong>títulos altos es común en la esclerosis sistémica</strong></td>
+            </tr>
+            <tr>
+              <td><strong>CENTROMÉRICO</strong></td>
+              <td>Similar al moteado, pero los puntos de fluorescencia son <strong>uniformes, más grandes y fáciles de contar</strong> — <strong>40 a 60 por núcleo</strong></td>
+              <td><strong>Anti-centrómero</strong></td>
+              <td><strong>Alta frecuencia en el síndrome de CREST</strong> (esclerosis sistémica limitada).<br>Con menor frecuencia: esclerodermia difusa, CBP, LES y AR</td>
+            </tr>
+            <tr>
+              <td><strong>CITOPLASMÁTICO</strong></td>
+              <td>Se colorea el <strong>citoplasma</strong></td>
+              <td><strong>Componentes del citoplasma</strong></td>
+              <td><strong>Enfermedades inflamatorias del músculo</strong>, <strong>entidades hepáticas</strong> y <strong>LES</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Patrón → anticuerpo → enfermedad</h3>
+      <p><strong>Localización NUCLEAR</strong></p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Patrón</th><th>Anticuerpo asociado</th><th>Enfermedad</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Homogéneo</strong></td><td><strong>Anti-ADN</strong>, <strong>anti-histonas</strong></td><td><strong>LES</strong> · AIJ · <strong>LIF</strong> · HAI</td></tr>
+            <tr><td><strong>Granular fino</strong></td><td><strong>Ro</strong>, <strong>La</strong>, Mi2, Ku, TIF1-γ</td><td><strong>SSJ</strong> · LES · MI</td></tr>
+            <tr><td><strong>Granular grueso</strong></td><td><strong>Sm</strong>, <strong>RNP</strong></td><td><strong>LES</strong> · <strong>EMTC</strong></td></tr>
+            <tr><td><strong>Centromérico</strong></td><td><strong>Anti-centrómero</strong></td><td><strong>ES limitada</strong> · CBP · Raynaud</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>Localización NUCLEOLAR</strong></p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Patrón</th><th>Anticuerpo asociado</th><th>Enfermedad</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Moteado tipo Scl-70</strong></td><td><strong>Anti-topoisomerasa I (Scl-70)</strong></td><td><strong>ES difusa</strong></td></tr>
+            <tr><td><strong>Moteado tipo Mi2</strong></td><td>Ac contra <strong>enzimas de los nucleosomas</strong></td><td><strong>DM <span class="dato">15 – 35 %</span></strong> · <strong>PM <span class="dato">5 – 10 %</span></strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>Localización CITOPLASMÁTICA</strong></p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Patrón</th><th>Anticuerpo asociado</th><th>Enfermedad</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Granular fino</strong></td><td><strong>Anti-Jo1</strong></td><td><strong>Síndrome antisintetasa</strong> · PM/DM · ES limitada</td></tr>
+            <tr><td><strong>Granular fino denso</strong></td><td><strong>Anti-P ribosomal</strong></td><td><strong>LES</strong> · LES juvenil · <strong>LES neuropsiquiátrico</strong></td></tr>
+            <tr><td><strong>Moteado reticular</strong></td><td><strong>AMA (M2)</strong></td><td><strong>CBP</strong> · SS</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>Localización en el APARATO MITÓTICO</strong></p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Patrón</th><th>Anticuerpo asociado</th><th>Enfermedad</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Tipo NUMA</strong></td><td><strong>NUMA1</strong></td><td><strong>LES</strong> · SS</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Notas sobre la transcripción de estas cuatro tablas: en el material original la separación entre el bloque <strong>citoplasmático</strong> y el <strong>mitótico</strong> no está explicitada — los encabezados aparecen desplazados respecto de las filas. Se asignaron las tres primeras filas al citoplasmático y la de NUMA al mitótico, que es la agrupación coherente con el resto del deck. La sigla <strong>«TIF 1&amp;»</strong> se interpreta como <strong>TIF1-γ</strong>. Conviene confirmar ambas cosas con la docente.</p>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-tratamiento" id="por-enfermedad">
+      <span class="seccion__pestana"><b>06</b> Por enfermedad</span>
+      <h2 class="seccion__titulo">Autoanticuerpos por Enfermedad</h2>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 380" role="img" aria-label="Mapa de los autoanticuerpos agrupados por enfermedad. En el lupus eritematoso sistémico son específicos el anti-Sm, con especificidad del noventa y nueve por ciento, y el anti-ribosoma P, asociado a psicosis; son sugestivos el anti-ADN, que marca actividad y nefritis, el anti-histona del lupus inducido por fármacos, los anti-Ro y anti-La del lupus neonatal y cutáneo subagudo, y el anti-RNP. En la esclerosis sistémica el anti-centrómero corresponde a la forma limitada y el anti-Scl-70 a la difusa, y rara vez se encuentra más de un anticuerpo en el mismo paciente. En el síndrome de Sjögren aparecen el anti-Ro y el anti-La, y es muy raro encontrar anti-La sin anti-Ro. En la miositis el anti-Jo1 corresponde al síndrome antisintetasa, el anti-SRP a la polimiositis y el anti-Mi2 a la dermatomiositis, con positividad en el ochenta por ciento de los casos.">
+          <rect x="10"  y="14" width="152" height="36" rx="3" fill="var(--c)" fill-opacity="0.36" stroke="var(--c)" stroke-width="2"></rect>
+          <rect x="186" y="14" width="152" height="36" rx="3" fill="var(--c)" fill-opacity="0.36" stroke="var(--c)" stroke-width="2"></rect>
+          <rect x="362" y="14" width="152" height="36" rx="3" fill="var(--c)" fill-opacity="0.36" stroke="var(--c)" stroke-width="2"></rect>
+          <rect x="538" y="14" width="152" height="36" rx="3" fill="var(--c)" fill-opacity="0.36" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="86"  y="38" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">LES</text>
+          <text x="262" y="38" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">ESCLEROSIS SIST.</text>
+          <text x="438" y="38" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">SJÖGREN</text>
+          <text x="614" y="38" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">MIOSITIS</text>
+
+          <rect x="10" y="56" width="152" height="44" rx="3" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="86" y="74" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">Anti-Sm</text>
+          <text x="86" y="92" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">ESPECÍFICO · E 99 %</text>
+          <rect x="10" y="106" width="152" height="44" rx="3" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="86" y="124" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">Anti-ribosoma P</text>
+          <text x="86" y="142" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">ESPECÍFICO · psicosis</text>
+          <rect x="10" y="156" width="152" height="44" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="86" y="174" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">Anti-ADN</text>
+          <text x="86" y="192" font-size="10.5" fill="currentColor" text-anchor="middle">actividad · nefritis</text>
+          <rect x="10" y="206" width="152" height="44" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="86" y="224" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">Anti-histona</text>
+          <text x="86" y="242" font-size="10.5" fill="currentColor" text-anchor="middle">inducido por fármacos</text>
+          <rect x="10" y="256" width="152" height="44" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="86" y="274" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">Anti-Ro / La</text>
+          <text x="86" y="292" font-size="10.5" fill="currentColor" text-anchor="middle">neonatal · cutáneo</text>
+          <rect x="10" y="306" width="152" height="44" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="86" y="324" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">Anti-RNP</text>
+          <text x="86" y="342" font-size="10.5" fill="currentColor" text-anchor="middle">30 – 40 %</text>
+
+          <rect x="186" y="56" width="152" height="44" rx="3" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="262" y="74" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">Anti-centrómero</text>
+          <text x="262" y="92" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">LIMITADA 57 – 82 %</text>
+          <rect x="186" y="106" width="152" height="44" rx="3" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="262" y="124" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">Anti-Scl-70</text>
+          <text x="262" y="142" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">DIFUSA 90 %</text>
+          <rect x="186" y="156" width="152" height="44" rx="3" fill="var(--c)" fill-opacity="0.06" stroke="var(--c)" stroke-width="1.5" stroke-dasharray="5 3"></rect>
+          <text x="262" y="174" font-size="10.5" fill="currentColor" text-anchor="middle">rara vez hay más de</text>
+          <text x="262" y="192" font-size="10.5" fill="currentColor" text-anchor="middle">un Ac por paciente</text>
+
+          <rect x="362" y="56" width="152" height="44" rx="3" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="438" y="74" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">Anti-Ro / SSA</text>
+          <text x="438" y="92" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">60 – 95 %</text>
+          <rect x="362" y="106" width="152" height="44" rx="3" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="438" y="124" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">Anti-La / SSB</text>
+          <text x="438" y="142" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">40 – 85 %</text>
+          <rect x="362" y="156" width="152" height="44" rx="3" fill="var(--c)" fill-opacity="0.06" stroke="var(--c)" stroke-width="1.5" stroke-dasharray="5 3"></rect>
+          <text x="438" y="174" font-size="10.5" fill="currentColor" text-anchor="middle">es muy raro anti-La</text>
+          <text x="438" y="192" font-size="10.5" fill="currentColor" text-anchor="middle">sin anti-Ro</text>
+
+          <rect x="538" y="56" width="152" height="44" rx="3" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="614" y="74" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">Anti-Jo1</text>
+          <text x="614" y="92" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">antisintetasa</text>
+          <rect x="538" y="106" width="152" height="44" rx="3" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="614" y="124" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">Anti-SRP</text>
+          <text x="614" y="142" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">polimiositis</text>
+          <rect x="538" y="156" width="152" height="44" rx="3" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="614" y="174" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">Anti-Mi2</text>
+          <text x="614" y="192" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">dermatomiositis</text>
+          <rect x="538" y="206" width="152" height="44" rx="3" fill="var(--c)" fill-opacity="0.06" stroke="var(--c)" stroke-width="1.5" stroke-dasharray="5 3"></rect>
+          <text x="614" y="224" font-size="10.5" fill="currentColor" text-anchor="middle">positivos en el 80 %</text>
+          <text x="614" y="242" font-size="10.5" fill="currentColor" text-anchor="middle">de los casos</text>
+
+          <text x="350" y="370" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle" opacity="0.85">relleno intenso = anticuerpo específico o marcador de la enfermedad</text>
+        </svg>
+        <figcaption>La lógica del mapa: en el <strong>LES</strong> hay muchos anticuerpos pero <strong>sólo dos son específicos</strong> —anti-Sm y anti-ribosoma P—, y el resto <strong>marca subtipos o actividad</strong>. En la <strong>esclerosis sistémica</strong> pasa lo contrario: los dos anticuerpos son <strong>marcadores diagnósticos</strong> y además <strong>separan las dos formas</strong>, la limitada de la difusa. En la <strong>miositis</strong> cada anticuerpo define un <strong>fenotipo clínico</strong> distinto.</figcaption>
+      </figure>
+
+      <h3>Anticuerpos en el LES</h3>
+      <p>El LES se caracteriza por la producción de <strong>anticuerpos antinucleares</strong> que se unen a macromoléculas —<strong>ADN, ARN y proteínas</strong>, y complejos de proteínas y ácidos nucleicos—. Se encuentran en el <strong>98 – 100 %</strong> de los pacientes y <strong>pueden preceder por años a las manifestaciones clínicas</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Anticuerpo</th><th>Frecuencia</th><th>Asociaciones clínicas</th><th>Comportamiento</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Anti-ADN</strong></td>
+              <td><strong><span class="dato">40 – 70 %</span></strong> de los <strong>LES activos</strong></td>
+              <td>Principalmente cuando hay <strong>compromiso renal</strong>, asociado a <strong>hipocomplementemia</strong></td>
+              <td><strong>Desaparece con la terapia.</strong><br>Se sospecha cuando el patrón de IFI es <strong>homogéneo o periférico</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Anti-Sm</strong></td>
+              <td><span class="dato">25 – 30 %</span> <em>o</em> <span class="dato">15 – 30 %</span><br><em>ver nota</em><br>Especificidad <strong><span class="dato">99 %</span></strong></td>
+              <td><strong>Convulsiones, psicosis, nefropatía, vasculitis, fiebre, linfopenia</strong></td>
+              <td><strong>ESPECÍFICO de LES.</strong><br>El título <strong>fluctúa con la actividad inflamatoria</strong>.<br><strong>No desaparece</strong> en los períodos de inactividad</td>
+            </tr>
+            <tr>
+              <td><strong>Anti-RNP</strong></td>
+              <td><strong><span class="dato">30 – 40 %</span></strong> en LES<br><strong><span class="dato">100 %</span> en EMTC</strong><br><span class="dato">10 %</span> en ES</td>
+              <td><strong>Hipertensión pulmonar</strong>, Raynaud, <strong>miositis</strong>, alopecia cicatrizal, <strong>fibrosis pulmonar</strong>.<br>También: hipofunción esofágica y artralgias</td>
+              <td>Aparece en <strong>títulos altos en la EMTC</strong>.<br><strong>No desaparece</strong> en la inactividad</td>
+            </tr>
+            <tr>
+              <td><strong>Anti-Ro / SSA</strong></td>
+              <td><span class="dato">25 – 60 %</span> en LES<br><strong>&gt; <span class="dato">90 %</span> en LES neonatal</strong><br><strong><span class="dato">70 – 90 %</span> en LES cutáneo subagudo</strong></td>
+              <td><strong>Fotosensibilidad</strong>, síndrome SICA, <strong>intersticiopatía pulmonar</strong>, leucopenia y linfopenia</td>
+              <td>La <strong>mitad de los LES tiene anti-Ro</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Anti-La / SSB</strong></td>
+              <td><span class="dato">10 – 35 %</span> <em>o</em> <span class="dato">10 – 15 %</span><br><em>ver nota</em></td>
+              <td>Ver anti-Ro</td>
+              <td>Es <strong>muy raro encontrar anti-La sin anti-Ro</strong>.<br>También en CBP y hepatitis autoinmune</td>
+            </tr>
+            <tr>
+              <td><strong>Anti-histona</strong></td>
+              <td><strong><span class="dato">50 – 70 %</span></strong></td>
+              <td><strong>Relacionado con ACTIVIDAD</strong></td>
+              <td><strong>Principalmente en el LES inducido por medicamentos</strong>: <strong>procainamida, hidralazina, clorpromazina o quinidina</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Anti-ribosoma P</strong></td>
+              <td><span class="dato">10 – 20 %</span></td>
+              <td><strong>Psicosis y depresión</strong></td>
+              <td><strong>ESPECÍFICO de LES</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>La determinación de anti-Ro y anti-La está indicada en toda mujer con LES que esté embarazada o busque embarazo.</strong> El motivo está en la misma tabla: el <strong>anti-Ro está presente en más del 90 % de los LES neonatales</strong> y se asocia a <strong>alteraciones congénitas</strong>. Es el único ítem de esta sección que cambia una conducta obstétrica.</p>
+      </div>
+
+      <p class="cita">Discrepancias internas del material, conservadas sin elegir entre ellas. El PDF contiene <strong>dos tandas de diapositivas sobre los mismos anticuerpos</strong> con cifras que no coinciden: <strong>anti-Sm en LES</strong> 25 – 30 % (diapositiva 31) contra 15 – 30 % (diapositiva 36); <strong>anti-La en LES</strong> 10 – 35 % (diapositiva 32) contra 10 – 15 % (diapositiva 37); <strong>anti-Ro en Sjögren</strong> 60 – 95 % contra 60 – 80 %; <strong>anti-La en Sjögren</strong> 40 – 85 % contra «la mitad de los pacientes». Conviene preguntar cuál se toma.</p>
+
+      <h3>Anticuerpos en la esclerodermia (esclerosis sistémica)</h3>
+      <p>Son <strong>positivos en el 60 – 90 %</strong> de los casos, están dirigidos <strong>contra antígenos nucleolares</strong>, son <strong>marcadores diagnósticos</strong> de la enfermedad, y <strong>rara vez se encuentra más de un anticuerpo en el mismo paciente</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Anticuerpo</th><th>Forma limitada</th><th>Forma difusa</th><th>Significado</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Anti-centrómero</strong></td>
+              <td><strong><span class="dato">57 – 82 %</span></strong></td>
+              <td><span class="dato">3 – 12 %</span></td>
+              <td><strong>Específico del CREST</strong> (ES limitada) y de <strong>MEJOR PRONÓSTICO</strong>.<br>También en LES, Raynaud, AR y CBP</td>
+            </tr>
+            <tr>
+              <td><strong>Anti-topoisomerasa I</strong><br><em>Scl-70</em></td>
+              <td><span class="dato">10 – 20 %</span></td>
+              <td><strong><span class="dato">90 %</span></strong></td>
+              <td>Generalmente asociado a <strong>fibrosis pulmonar</strong>, <strong>compromiso cardíaco y renal</strong>.<br>También en la actividad del LES</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Anticuerpos en la enfermedad muscular inflamatoria</h3>
+      <p>Están dirigidos <strong>contra antígenos citoplasmáticos</strong> y son <strong>positivos en el 80 %</strong> de los casos. Se agrupan en <strong>tres categorías</strong>:</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Categoría</th><th>Anticuerpos</th><th>Fenotipo</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1. ESPECÍFICOS de miositis</strong></td>
+              <td><strong>Anti-Jo1</strong> (antisintetasa)<br><strong>Anti-SRP</strong><br><strong>Anti-Mi2</strong></td>
+              <td><strong>Manos de mecánico</strong>, <strong>compromiso pulmonar intersticial</strong>, miopatía inflamatoria, <strong>fenómeno de Raynaud</strong><br><strong>Polimiositis</strong><br><strong>Dermatomiositis</strong></td>
+            </tr>
+            <tr>
+              <td><strong>2. ASOCIADOS con miositis</strong></td>
+              <td><strong>Anti-U1RNP</strong><br><strong>Anti-snRNP</strong><br><strong>Anti-PM-Scl</strong></td>
+              <td>—<br>Aparece en <strong>EMTC</strong> y en <strong>LES asociado a miositis</strong><br><strong>10 %</strong> de las <strong>polimiositis asociadas a esclerodermia</strong></td>
+            </tr>
+            <tr>
+              <td><strong>3. Contra antígenos musculares o endoteliales</strong></td>
+              <td>—</td>
+              <td>—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-importantes" id="saf-anca">
+      <span class="seccion__pestana"><b>07</b> SAF &amp; ANCA</span>
+      <h2 class="seccion__titulo">Antifosfolípidos &amp; ANCA</h2>
+
+      <h3>Anticuerpos antifosfolípidos</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Anticuerpo</th><th>Isotipos</th><th>Significado</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Anticardiolipina (ACL)</strong></td><td><strong>IgG</strong> · <strong>IgM</strong></td><td rowspan="2">Son los <strong>MÁS ESPECÍFICOS</strong> para el diagnóstico de <strong>SAF</strong>.<br>El isotipo <strong>IgG se asocia a TROMBOSIS</strong></td></tr>
+            <tr><td><strong>Anti-β2-glicoproteína I</strong></td><td><strong>IgG</strong> · <strong>IgM</strong></td></tr>
+            <tr><td><strong>Inhibidor lúpico (IL)</strong></td><td>—</td><td>Su presencia es un <strong>factor de riesgo para trombosis arterial y venosa</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>El requisito que define la determinación: <strong>títulos moderados o altos en al menos DOS ocasiones separadas por 12 semanas</strong>. Una sola determinación positiva <strong>no alcanza</strong> — los antifosfolípidos pueden positivizarse de forma <strong>transitoria</strong> tras infecciones o fármacos, y ésa es exactamente la situación que el intervalo de 12 semanas está diseñado para descartar.</p>
+      </div>
+
+      <h3>ANCA</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Tipo</th><th>Patrón</th><th>Antígeno</th><th>Vasculitis asociadas</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>ANCA-P</strong></td>
+              <td><strong>Perinuclear</strong></td>
+              <td><strong>MPO</strong><br><em>mieloperoxidasa</em></td>
+              <td><strong>EGPA</strong> — granulomatosis eosinofílica con poliangeítis (vasculitis de Churg-Strauss)<br><strong>Poliangeítis microscópica</strong></td>
+            </tr>
+            <tr>
+              <td><strong>ANCA-C</strong></td>
+              <td><strong>Citoplasmático</strong></td>
+              <td><strong>PR3</strong><br><em>proteinasa 3</em></td>
+              <td><strong>GPA</strong> — granulomatosis con poliangeítis (vasculitis de Wegener)<br><strong>Poliangeítis microscópica</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Dos notas sobre esta tabla. Primera: la <strong>poliangeítis microscópica figura en ambas filas</strong> del material, y es correcto — puede asociarse a cualquiera de los dos ANCA, aunque predomina el <strong>p-ANCA/MPO</strong>. Segunda: los <strong>epónimos «Wegener» y «Churg-Strauss»</strong> fueron reemplazados formalmente por <strong>GPA</strong> y <strong>EGPA</strong> en la nomenclatura de Chapel Hill de 2012. El material usa ambas denominaciones; se conservan las dos porque siguen circulando en la práctica y en el examen.</p>
+    </section>
+
+    <!-- ============ 8 ============ -->
+    <section class="seccion s-diferenciales" id="glosario">
+      <span class="seccion__pestana"><b>08</b> Glosario</span>
+      <h2 class="seccion__titulo">Glosario de Siglas</h2>
+
+      <p>Las tablas de esta materia están cargadas de siglas que el material no define. Éstas son las que aparecen en el cuadernillo.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Sigla</th><th>Significa</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>AIJ</strong></td><td>Artritis idiopática juvenil</td></tr>
+            <tr><td><strong>AMA</strong></td><td>Anticuerpos antimitocondriales</td></tr>
+            <tr><td><strong>ANA / FAN</strong></td><td>Anticuerpos antinucleares</td></tr>
+            <tr><td><strong>ANCA</strong></td><td>Anticuerpos anticitoplasma de neutrófilo</td></tr>
+            <tr><td><strong>AR</strong></td><td>Artritis reumatoidea</td></tr>
+            <tr><td><strong>CBP</strong></td><td><strong>Cirrosis biliar primaria</strong> — hoy denominada <strong>colangitis biliar primaria</strong></td></tr>
+            <tr><td><strong>CREST</strong></td><td>Calcinosis, Raynaud, dismotilidad Esofágica, eSclerodactilia, Telangiectasias. Corresponde a la <strong>ES limitada</strong></td></tr>
+            <tr><td><strong>DM</strong></td><td>Dermatomiositis</td></tr>
+            <tr><td><strong>EGPA</strong></td><td>Granulomatosis <strong>eosinofílica</strong> con poliangeítis — antes <strong>Churg-Strauss</strong></td></tr>
+            <tr><td><strong>ELISA</strong></td><td>Ensayo por inmunoabsorción ligado a enzimas</td></tr>
+            <tr><td><strong>EMTC</strong></td><td>Enfermedad mixta del tejido conectivo</td></tr>
+            <tr><td><strong>ENA</strong></td><td>Antígenos nucleares extraíbles</td></tr>
+            <tr><td><strong>ES</strong></td><td>Esclerosis sistémica</td></tr>
+            <tr><td><strong>ETC</strong></td><td>Enfermedad del tejido conectivo</td></tr>
+            <tr><td><strong>GPA</strong></td><td>Granulomatosis con poliangeítis — antes <strong>Wegener</strong></td></tr>
+            <tr><td><strong>HAI</strong></td><td>Hepatitis autoinmune</td></tr>
+            <tr><td><strong>HTP</strong></td><td>Hipertensión pulmonar</td></tr>
+            <tr><td><strong>IFI</strong></td><td>Inmunofluorescencia indirecta</td></tr>
+            <tr><td><strong>IL</strong></td><td><strong>Inhibidor lúpico</strong>, también llamado anticoagulante lúpico</td></tr>
+            <tr><td><strong>LES</strong></td><td>Lupus eritematoso sistémico</td></tr>
+            <tr><td><strong>LIF</strong></td><td>Lupus inducido por fármacos</td></tr>
+            <tr><td><strong>MI</strong></td><td>Miopatía inflamatoria</td></tr>
+            <tr><td><strong>MPO</strong></td><td>Mieloperoxidasa — el antígeno del <strong>p-ANCA</strong></td></tr>
+            <tr><td><strong>NUMA</strong></td><td><em>Nuclear mitotic apparatus protein</em> — proteína del aparato mitótico nuclear</td></tr>
+            <tr><td><strong>PM</strong></td><td>Polimiositis</td></tr>
+            <tr><td><strong>PR3</strong></td><td>Proteinasa 3 — el antígeno del <strong>c-ANCA</strong></td></tr>
+            <tr><td><strong>RNP</strong></td><td>Ribonucleoproteína</td></tr>
+            <tr><td><strong>SAF</strong></td><td>Síndrome antifosfolipídico</td></tr>
+            <tr><td><strong>Scl-70</strong></td><td>Anti-topoisomerasa I</td></tr>
+            <tr><td><strong>SICA</strong></td><td><strong>Síndrome seco</strong>: xeroftalmía más xerostomía</td></tr>
+            <tr><td><strong>SRP</strong></td><td><em>Signal recognition particle</em> — partícula de reconocimiento de señal</td></tr>
+            <tr><td><strong>SS / SSJ</strong></td><td>Síndrome de Sjögren</td></tr>
+            <tr><td><strong>SSA / SSB</strong></td><td>Antígenos <strong>Ro</strong> y <strong>La</strong> del síndrome de Sjögren</td></tr>
+            <tr><td><strong>VSG / ERS</strong></td><td>Velocidad de eritrosedimentación</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ Repaso ============ -->
+    <section class="seccion s-clinica" id="repaso">
+      <span class="seccion__pestana"><b>09</b> Repaso</span>
+      <h2 class="seccion__titulo">Repaso Activo</h2>
+      <p>Respondé antes de abrir cada tarjeta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary class="fc__p">¿Qué define a un reactante de fase aguda, y cuáles son los negativos?</summary>
+          <div class="fc__r">Una proteína cuya <strong>concentración plasmática se incrementa un 25 %</strong> en la inflamación. Los <strong>negativos</strong> —los que bajan— son la <strong>albúmina</strong> y la <strong>transferrina</strong>. Entre los positivos, ojo con la <strong>ferritina</strong>: por eso una ferritina normal en un paciente inflamado puede estar tapando una ferropenia.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary class="fc__p">Cinética de la VSG contra la PCR</summary>
+          <div class="fc__r"><strong>PCR</strong>: sube a las <strong>24 – 72 h</strong> y <strong>cae rápido</strong> al ceder el proceso; en los crónicos permanece elevada. <strong>VSG</strong>: sube a las <strong>48 h</strong> y <strong>no se normaliza hasta 10 días después</strong> de terminado. Para seguir un proceso agudo sirve la <strong>PCR</strong>.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary class="fc__p">¿Qué eleva la VSG sin que haya inflamación?</summary>
+          <div class="fc__r"><strong>Cambios morfológicos del glóbulo rojo</strong> —falciforme, esferocitosis, hemoglobinopatías—, <strong>alteración de las proteínas plasmáticas</strong> —hipofibrinogenemia, aumento de la viscosidad—, y contextos como <strong>obesidad, embarazo, ancianos, enfermedad renal y neoplasias</strong>. Valores normales: <strong>H 0 – 15, M 0 – 20 mm</strong>.</div>
+        </details>
+        <details class="fc s-diferenciales">
+          <summary class="fc__p">¿Contra qué va dirigido el factor reumatoideo?</summary>
+          <div class="fc__r">Contra la <strong>fracción terminal de la región CONSTANTE de la cadena pesada de la IgG</strong>. En la AR es de <strong>alta afinidad</strong> y de todos los isotipos; el <strong>IgM es positivo en el 70 – 80 %</strong>. Valores <strong>muy altos</strong>: AR con manifestaciones sistémicas, erosiones y nódulos; <strong>Sjögren</strong>; <strong>crioglobulinemia mixta</strong>.</div>
+        </details>
+        <details class="fc s-diferenciales">
+          <summary class="fc__p">Rendimiento del antiCCP</summary>
+          <div class="fc__r"><strong>Sensibilidad 70 – 80 %, especificidad 96 %.</strong> En la <strong>AR inicial</strong> está en el <strong>50 – 70 %</strong>. Permite el <strong>diagnóstico temprano</strong> y <strong>predice erosiones</strong>. Combinado con el FR, la <strong>especificidad</strong> —no la sensibilidad— llega al <strong>99,5 %</strong>.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary class="fc__p">IFI contra ELISA: ¿qué hace cada uno?</summary>
+          <div class="fc__r"><strong>IFI</strong> sobre <strong>células Hep-2</strong>: muy <strong>sensible pero inespecífica</strong>, es el <strong>screening</strong>, e informa <strong>título y patrón</strong>. <strong>ELISA</strong>: va <strong>después</strong> y determina la <strong>especificidad del anticuerpo</strong>.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary class="fc__p">Las cinco reglas de lectura del FAN</summary>
+          <div class="fc__r"><strong>1.</strong> Positivo desde <strong>1:80</strong>. <strong>2.</strong> <strong>&gt; 1:640 con clínica</strong> es muy sugestivo de <strong>LES</strong>. <strong>3.</strong> El <strong>título NO indica actividad</strong>. <strong>4.</strong> Un <strong>FAN negativo NO descarta</strong> una ETC. <strong>5.</strong> El <strong>3 % de las personas sanas</strong> puede tenerlo positivo.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary class="fc__p">¿Para qué enfermedad NO sirve el FAN?</summary>
+          <div class="fc__r">Para la <strong>artritis reumatoidea</strong> — sólo <strong>20 – 50 %</strong>, y ahí el rendimiento lo dan el <strong>FR y el antiCCP</strong>. Sí es útil en <strong>LES (95 – 100 %)</strong>, <strong>esclerosis sistémica (60 – 80 %)</strong>, <strong>Sjögren (40 – 70 %)</strong> y <strong>dermato/polimiositis (30 – 80 %)</strong>.</div>
+        </details>
+        <details class="fc s-fisiopatologia">
+          <summary class="fc__p">¿Cuál es el patrón MENOS específico y por qué?</summary>
+          <div class="fc__r">El <strong>MOTEADO</strong>, porque denota anticuerpos contra <strong>una gran variedad de antígenos nucleares y citoplasmáticos</strong> — proteínas no histonas: <strong>Sm, U1-RNP, La, Ro, Scl-70, ARN polimerasas I y II</strong>. Aparece en LES, EMTC, ES, AR y SS.</div>
+        </details>
+        <details class="fc s-fisiopatologia">
+          <summary class="fc__p">¿Cuál es el patrón más específico de LES?</summary>
+          <div class="fc__r">El <strong>PERIFÉRICO o en anillo</strong>: en <strong>títulos altos es CASI EXCLUSIVO de LES</strong>. Se produce por anticuerpos contra el <strong>ADN nativo o de doble cadena</strong>.</div>
+        </details>
+        <details class="fc s-fisiopatologia">
+          <summary class="fc__p">¿Cómo se distingue el patrón centromérico del moteado?</summary>
+          <div class="fc__r">Los puntos del <strong>centromérico son uniformes, más grandes y fáciles de CONTAR</strong> — <strong>40 a 60 por núcleo</strong>. Se ve con alta frecuencia en el <strong>síndrome de CREST</strong> (ES limitada), y con menor frecuencia en esclerodermia difusa, CBP, LES y AR.</div>
+        </details>
+        <details class="fc s-fisiopatologia">
+          <summary class="fc__p">Patrón homogéneo: qué antígenos y qué enfermedades</summary>
+          <div class="fc__r">Se colorea <strong>todo el núcleo, más intenso en la periferia</strong>, y las <strong>figuras mitóticas también</strong>. Antígenos: <strong>complejo ADN-histona</strong> y ADN de doble y simple cadena. <strong>LES · AIJ · lupus inducido por fármacos · hepatitis autoinmune.</strong> Un título <strong>&gt; 1:640</strong> sugiere LES o lupus medicamentoso.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary class="fc__p">Los dos anticuerpos ESPECÍFICOS de LES</summary>
+          <div class="fc__r"><strong>Anti-Sm</strong> —especificidad <strong>99 %</strong>, asociado a convulsiones, psicosis, nefropatía, vasculitis, fiebre y linfopenia— y <strong>anti-ribosoma P</strong> —10 – 20 %, asociado a <strong>psicosis y depresión</strong>—.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary class="fc__p">¿Qué anticuerpo del LES marca actividad y compromiso renal?</summary>
+          <div class="fc__r">El <strong>anti-ADN</strong>: está en el <strong>40 – 70 % de los LES activos</strong>, principalmente con <strong>compromiso renal</strong> y asociado a <strong>hipocomplementemia</strong>. <strong>Desaparece con la terapia</strong>, a diferencia del anti-Sm y el anti-RNP, que no desaparecen en la inactividad. Se sospecha con patrón <strong>homogéneo o periférico</strong>.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary class="fc__p">¿Qué fármacos producen lupus inducido y qué anticuerpo lo marca?</summary>
+          <div class="fc__r"><strong>Procainamida, hidralazina, clorpromazina y quinidina.</strong> El anticuerpo es el <strong>anti-histona</strong>, presente en el <strong>50 – 70 %</strong> de los LES y <strong>relacionado con actividad</strong>.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary class="fc__p">¿Por qué se piden anti-Ro y anti-La en una mujer con LES que busca embarazo?</summary>
+          <div class="fc__r">Porque el <strong>anti-Ro está presente en más del 90 % de los LES neonatales</strong> y se asocia a <strong>alteraciones congénitas</strong>. Es la indicación explícita del material.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary class="fc__p">Los dos anticuerpos de la esclerosis sistémica y qué forma marca cada uno</summary>
+          <div class="fc__r"><strong>Anti-centrómero</strong> → <strong>ES LIMITADA / CREST</strong> (57 – 82 %), de <strong>MEJOR pronóstico</strong>. <strong>Anti-Scl-70</strong> (anti-topoisomerasa I) → <strong>ES DIFUSA</strong> (90 %), asociado a <strong>fibrosis pulmonar y compromiso cardíaco y renal</strong>. <strong>Rara vez hay más de un anticuerpo en el mismo paciente.</strong></div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary class="fc__p">Los tres anticuerpos específicos de miositis y su fenotipo</summary>
+          <div class="fc__r"><strong>Anti-Jo1</strong> (antisintetasa): <strong>manos de mecánico</strong>, <strong>compromiso pulmonar intersticial</strong>, miopatía inflamatoria, Raynaud. <strong>Anti-SRP</strong>: <strong>polimiositis</strong>. <strong>Anti-Mi2</strong>: <strong>dermatomiositis</strong>. Son positivos en el <strong>80 %</strong> de los casos y van dirigidos contra <strong>antígenos citoplasmáticos</strong>.</div>
+        </details>
+        <details class="fc s-importantes">
+          <summary class="fc__p">¿Qué requisito temporal define la determinación de antifosfolípidos?</summary>
+          <div class="fc__r"><strong>Títulos moderados o altos en al menos DOS ocasiones separadas por 12 semanas.</strong> Una sola determinación no alcanza, porque pueden positivizarse de forma <strong>transitoria</strong>. Los <strong>más específicos de SAF</strong> son la <strong>anticardiolipina</strong> y la <strong>anti-β2-glicoproteína I</strong>; el isotipo <strong>IgG se asocia a trombosis</strong>.</div>
+        </details>
+        <details class="fc s-importantes">
+          <summary class="fc__p">Los dos ANCA: patrón, antígeno y vasculitis</summary>
+          <div class="fc__r"><strong>ANCA-P</strong> — <strong>perinuclear</strong>, antígeno <strong>MPO</strong> (mieloperoxidasa) → <strong>EGPA</strong> (Churg-Strauss) y poliangeítis microscópica. <strong>ANCA-C</strong> — <strong>citoplasmático</strong>, antígeno <strong>PR3</strong> (proteinasa 3) → <strong>GPA</strong> (Wegener) y poliangeítis microscópica.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Concepto clave</dt>
+        <dd>El laboratorio inmunológico va de <strong>lo inespecífico a lo específico</strong>. <strong>VSG y PCR</strong> sólo dicen que hay inflamación, y con <strong>cinéticas distintas</strong>: la PCR sube a las 24 – 72 h y cae rápido; la VSG tarda 48 h y <strong>diez días en normalizarse</strong>. El <strong>FAN</strong> dice que hay autoinmunidad. Sólo el <strong>anticuerpo específico</strong> nombra la enfermedad.</dd>
+
+        <dt class="r-gold">Cómo se lee el FAN</dt>
+        <dd><strong>IFI sobre Hep-2</strong> como screening → si es positivo, <strong>título y patrón</strong> → <strong>ELISA</strong> para la especificidad. Positivo desde <strong>1:80</strong>; <strong>&gt; 1:640 con clínica</strong> sugiere LES. <strong>El título no mide actividad</strong>, un <strong>negativo no descarta</strong> una ETC, y el <strong>3 % de los sanos es positivo</strong>. Patrón más específico: <strong>periférico</strong>. Menos específico: <strong>moteado</strong>.</dd>
+
+        <dt class="r-tto">Anticuerpo → enfermedad</dt>
+        <dd><strong>LES</strong>: específicos <strong>anti-Sm</strong> (E 99 %) y <strong>anti-ribosoma P</strong>; el <strong>anti-ADN</strong> marca actividad y nefritis y <strong>desaparece con la terapia</strong>; el <strong>anti-histona</strong>, el inducido por fármacos. <strong>ES limitada / CREST</strong>: <strong>anti-centrómero</strong>. <strong>ES difusa</strong>: <strong>anti-Scl-70</strong>. <strong>Sjögren</strong>: <strong>anti-Ro y anti-La</strong>. <strong>Miositis</strong>: <strong>Jo1</strong> antisintetasa, <strong>SRP</strong> polimiositis, <strong>Mi2</strong> dermatomiositis.</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd><strong>Anti-Ro y anti-La en toda mujer con LES embarazada o que busque embarazo</strong> — más del 90 % de los LES neonatales tiene anti-Ro. <strong>Antifosfolípidos: dos determinaciones separadas por 12 semanas</strong>, nunca una sola. Y la regla que atraviesa todo: <strong>ningún anticuerpo se pide ni se interpreta fuera de una sospecha clínica previa</strong>.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir del material de cátedra «Laboratorio inmunológico» de la Dra. Luciana Grassi, Medicina Interna III, 2025. Complementa los cuadernillos de Monoartritis y Poliartritis y de Reumatismo de Partes Blandas y Columna. Material de estudio: no reemplaza el criterio clínico ni la guía institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link'));
+
+  function porMeta(hash){
+    for (var i = 0; i < enlaces.length; i++){
+      if (enlaces[i].getAttribute('href') === '#' + hash) return enlaces[i];
+    }
+    return null;
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var enlace = porMeta(e.target.id);
+        if (!enlace) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          enlace.setAttribute('aria-current', 'true');
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>
+<script>
+(function(){
+  "use strict";
+  var clave = document.body.dataset.clave || "";
+  var enApp = typeof window.WordmedApp !== "undefined";
+  var MEM = "wordmed:progreso";
+
+  function leer(){ try{ return JSON.parse(localStorage.getItem(MEM)) || {}; }catch(e){ return {}; } }
+  function guardar(m){ try{ localStorage.setItem(MEM, JSON.stringify(m)); }catch(e){} }
+
+  function alto(){
+    return Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+  }
+
+  /* retomar donde quedó */
+  if (clave) {
+    var m = leer()[clave];
+    if (m && m.y > 0) {
+      window.addEventListener("load", function(){
+        window.scrollTo(0, Math.min(m.y, alto()));
+      });
+    }
+  }
+
+  /* anotar el avance, sin ahogar el scroll */
+  var pendiente = false;
+  window.addEventListener("scroll", function(){
+    if (pendiente || !clave) return;
+    pendiente = true;
+    requestAnimationFrame(function(){
+      pendiente = false;
+      var y = window.scrollY;
+      var pct = Math.round((y / alto()) * 100);
+      pct = Math.max(0, Math.min(100, pct));
+      var m = leer();
+      m[clave] = { y: y, pct: pct, ts: Date.now() };
+      guardar(m);
+      if (enApp && window.WordmedApp.progreso) window.WordmedApp.progreso(clave, pct, y);
+    });
+  }, { passive: true });
+
+  /* volver: solo cuando vinimos de la cáscara web */
+  if (!enApp && document.referrer && document.referrer.indexOf(location.origin) === 0) {
+    var b = document.createElement("button");
+    b.className = "volver";
+    b.type = "button";
+    b.setAttribute("aria-label", "Volver");
+    b.innerHTML = '<svg class="volver__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg>';
+    b.addEventListener("click", function(){ history.back(); });
+    document.body.appendChild(b);
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1646 @@
+<title>Infecciones Respiratorias Bajas</title>
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+}
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índice lateral ---------- */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Ficha de sección ---------- */
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.35rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-row:1/3; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+.importante__titulo{
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso{ display:none !important; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-generalidades"  href="#generalidades">Generalidades &amp; Clasificación</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#fisiopatologia">Fisiopatología</a></li>
+      <li><a class="indice__link i-clinica"        href="#clinica">Cuadro Clínico</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#diagnostico">Diagnóstico &amp; Complementarios</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#tratamiento">Tratamiento &amp; Prevención</a></li>
+      <li><a class="indice__link i-importantes"    href="#importantes">Aspectos Importantes</a></li>
+      <li><a class="indice__link i-diferenciales"  href="#diferenciales">Diagnósticos Diferenciales</a></li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Infectología · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Infecciones Respiratorias Bajas</h1>
+      <p class="portada__bajada">Neumonía, absceso pulmonar y empiema. Del parénquima infectado a sus dos complicaciones, con los esquemas antibióticos del consenso argentino y las escalas que deciden dónde se trata cada paciente.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">4 tipos de neumonía</span>
+        <span class="etiqueta s-diagnostico">CURB-65 · patrones Rx</span>
+        <span class="etiqueta s-tratamiento">Consenso argentino</span>
+        <span class="etiqueta s-importantes">Absceso · empiema</span>
+      </div>
+    </header>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="generalidades">
+      <span class="seccion__pestana"><b>01</b> Base</span>
+      <h2 class="seccion__titulo">Generalidades &amp; Clasificación</h2>
+
+      <p><strong>Neumonía</strong> es la <strong>infección del parénquima pulmonar</strong>. Los gérmenes llegan al pulmón desde la <strong>vía aérea superior</strong> (aerosoles) o por <strong>vía hematógena</strong>, y lo consiguen cuando ocurre alguna de tres cosas: <strong>las defensas del huésped han fallado</strong>, el <strong>microorganismo es muy virulento</strong>, o la <strong>inoculación es muy intensa</strong>.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>No hay un tratamiento que cubra todas las causas posibles</strong>, y casi siempre hay que iniciar terapia <strong>empírica</strong> hasta contar con los cultivos. Para elegir ese esquema hacen falta tres datos: la <strong>forma de presentación</strong> del cuadro, la <strong>epidemiología</strong> y el <strong>tipo de huésped</strong> que estamos tratando. Todo el capítulo se ordena alrededor de esas tres preguntas.</p>
+      </div>
+
+      <h3>Clasificación según dónde y en qué contexto se adquirió</h3>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 456" role="img" aria-label="Mapa de clasificación de las neumonías según el contexto de adquisición. La neumonía adquirida en la comunidad se produce fuera del ámbito sanitario, con Streptococcus pneumoniae en el cuarenta a ochenta por ciento de los casos y mortalidad global del trece por ciento. La NAC grave es el diez por ciento de las NAC que requiere terapia intensiva por shock o insuficiencia respiratoria, con mortalidad del treinta y seis por ciento. La neumonía asociada al sistema sanitario aparece en pacientes con internación de dos o más días en los últimos noventa, hemodiálisis, tratamiento intravenoso domiciliario o residencia en centros de crónicos, con mortalidad entre diez y veinte por ciento. La neumonía intrahospitalaria y la asociada a ventilador se manifiestan durante la internación y son la primera causa de muerte por infección en pacientes internados. Típica y atípica es un eje distinto: describe la forma de presentación, no el lugar de adquisición.">
+          <rect x="140" y="8" width="420" height="44" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="350" y="36" font-size="13" font-weight="700" fill="currentColor" text-anchor="middle">¿Dónde y en qué contexto se adquirió?</text>
+
+          <rect x="10" y="72" width="334" height="152" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="26" y="96" font-size="12.5" font-weight="700" fill="currentColor">NAC — adquirida en la comunidad</text>
+          <text x="26" y="118" font-size="10.5" fill="currentColor" opacity="0.75">Criterio: se adquiere fuera del ámbito sanitario</text>
+          <text x="26" y="138" font-size="10.5" fill="currentColor" opacity="0.85">S. pneumoniae 40 – 80 %  ·  H. influenzae 5 – 7 %</text>
+          <text x="26" y="156" font-size="10.5" fill="currentColor" opacity="0.85">S. aureus 1 – 2 %  ·  bacilos gramnegativos 2 – 10 %</text>
+          <text x="26" y="178" font-size="10.5" fill="currentColor" opacity="0.75">Mayor incidencia en invierno</text>
+          <text x="26" y="196" font-size="10.5" fill="currentColor" opacity="0.75">La mayoría tiene una o más enfermedades de base</text>
+          <text x="26" y="214" font-size="11" font-weight="700" fill="currentColor">Mortalidad global 13 %</text>
+
+          <rect x="356" y="72" width="334" height="152" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="372" y="96" font-size="12.5" font-weight="700" fill="currentColor">NAC grave — subgrupo de la anterior</text>
+          <text x="372" y="118" font-size="10.5" fill="currentColor" opacity="0.75">Criterio: shock o insuficiencia respiratoria → UTI</text>
+          <text x="372" y="138" font-size="10.5" fill="currentColor" opacity="0.85">Es el 10 % de todas las NAC</text>
+          <text x="372" y="158" font-size="10.5" fill="currentColor" opacity="0.85">Mayor incidencia de S. aureus, L. pneumophila,</text>
+          <text x="372" y="176" font-size="10.5" fill="currentColor" opacity="0.85">Klebsiella y H. influenzae</text>
+          <text x="372" y="198" font-size="10.5" fill="currentColor" opacity="0.75">Estimar la gravedad define el esquema y el sitio</text>
+          <text x="372" y="216" font-size="11" font-weight="700" fill="currentColor">Mortalidad 36 %</text>
+
+          <rect x="10" y="236" width="334" height="152" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="26" y="260" font-size="12.5" font-weight="700" fill="currentColor">Asociada al sistema sanitario</text>
+          <text x="26" y="282" font-size="10.5" fill="currentColor" opacity="0.75">Criterio — alguno de estos antecedentes:</text>
+          <text x="26" y="300" font-size="10.5" fill="currentColor" opacity="0.85">· internado ≥ 2 días en los últimos 90 días</text>
+          <text x="26" y="318" font-size="10.5" fill="currentColor" opacity="0.85">· hemodiálisis · tratamiento EV domiciliario</text>
+          <text x="26" y="336" font-size="10.5" fill="currentColor" opacity="0.85">· curaciones de heridas · centro de crónicos</text>
+          <text x="26" y="358" font-size="10.5" fill="currentColor" opacity="0.75">BGN aerobios, P. aeruginosa, SAMR, mixtos</text>
+          <text x="26" y="378" font-size="11" font-weight="700" fill="currentColor">Mortalidad 10,3 – 19,8 %</text>
+
+          <rect x="356" y="236" width="334" height="152" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="372" y="260" font-size="12.5" font-weight="700" fill="currentColor">Intrahospitalaria (NIH) y NAV</text>
+          <text x="372" y="282" font-size="10.5" fill="currentColor" opacity="0.75">Criterio: se manifiesta durante la internación</text>
+          <text x="372" y="302" font-size="11" font-weight="700" fill="currentColor">1.ª causa de muerte por infección</text>
+          <text x="372" y="318" font-size="11" font-weight="700" fill="currentColor">en pacientes internados</text>
+          <text x="372" y="340" font-size="10.5" fill="currentColor" opacity="0.75">Contribuyen: higiene de manos y equipos,</text>
+          <text x="372" y="358" font-size="10.5" fill="currentColor" opacity="0.75">sedantes, corticoides, antiácidos y ATB previos</text>
+          <text x="372" y="378" font-size="10.5" fill="currentColor" opacity="0.85">El riesgo de NAV sube 3 % por día intubado</text>
+
+          <rect x="10" y="400" width="680" height="46" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.28" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="26" y="422" font-size="11" font-weight="700" fill="currentColor">«Típica» y «atípica» pertenecen a otro eje</text>
+          <text x="26" y="440" font-size="11" fill="currentColor" opacity="0.75">Describen la forma de presentación clínica y radiológica, no el lugar donde se adquirió la infección.</text>
+        </svg>
+        <figcaption>El contexto de adquisición no es un dato administrativo: determina qué gérmenes hay que cubrir empíricamente y, con ello, todo el esquema antibiótico.</figcaption>
+      </figure>
+
+      <h3>Etiología de la NAC</h3>
+      <p>Incluso con una evaluación rigurosa, sólo se alcanza el <strong>diagnóstico microbiológico en el <span class="dato">40 – 75 %</span></strong> de los casos. Ésa es la razón de fondo por la que el tratamiento es empírico.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Agente</th><th>Frecuencia</th><th>Perfil clínico característico</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong><em>Streptococcus pneumoniae</em></strong></td><td>40 – 80 %</td><td>El más frecuente. <strong>En disminución</strong> por el uso de la vacuna antineumocócica</td></tr>
+            <tr><td><em>Haemophilus influenzae</em></td><td>5 – 7 %</td><td>Más frecuente en EPOC y comorbilidades respiratorias</td></tr>
+            <tr><td><strong><em>Staphylococcus aureus</em></strong></td><td>1 – 2 %</td><td><strong>Jóvenes.</strong> Puede llegar por <strong>vía hematógena</strong> y dar <strong>múltiples lesiones redondeadas bilaterales</strong> (aspecto de metástasis). Puede evolucionar rápido a <strong>SDRA</strong></td></tr>
+            <tr><td>Bacilos gramnegativos<br><em>K. pneumoniae</em>, <em>P. aeruginosa</em>, <em>Enterobacter</em></td><td>2 – 10 %</td><td><strong>Ancianos</strong> con enfermedades crónicas, <strong>postrados</strong> o <strong>institucionalizados</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Ante una neumonía por <strong><em>S. aureus</em> con múltiples lesiones redondeadas bilaterales en un paciente joven</strong>, el pulmón es el destino, no el origen. <strong>Obliga a buscar la puerta de entrada</strong>: lesiones en piel, catéteres, <strong>drogas endovenosas</strong> y <strong>endocarditis</strong>. Puede evolucionar rápidamente a SDRA con <strong>mortalidad del 50 %</strong>.</p>
+      </div>
+
+      <h3>Factores que condicionan la inmunidad del huésped</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Factor</th><th>Mecanismo por el que predispone</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Alteración de conciencia y edad avanzada</strong></td><td>Disminuye el <strong>cierre epiglótico</strong>, la <strong>aclaración mucociliar</strong> y la <strong>capacidad de toser</strong>; se altera la deglución y <strong>se favorece la aspiración</strong></td></tr>
+            <tr><td><strong>Tabaco</strong></td><td>Disminuye la <strong>actividad mucociliar</strong> y la <strong>actividad linfocítica</strong></td></tr>
+            <tr><td><strong>Alteraciones estructurales del pulmón</strong></td><td><strong>Bronquiectasias</strong> y <strong>EPOC</strong>: el pulmón pierde su arquitectura de drenaje</td></tr>
+            <tr><td><strong>Inmunodepresión</strong></td><td>HIV, desnutrición, neoplasias, fármacos inmunosupresores, inmunodeficiencia común variable, <strong>diabetes</strong></td></tr>
+            <tr><td><strong>Ventilación mecánica con intubación orotraqueal</strong></td><td><strong>Se evade buena parte de los mecanismos de defensa de la vía aérea superior</strong> — el tubo puentea la glotis</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Fuente: clase «Infecciones respiratorias 2» de la cátedra. Datos epidemiológicos y etiológicos concordantes con Neumonía Adquirida en la Comunidad — Guía práctica elaborada por un Comité Intersociedades, Grupo Argentino de Estudio de la NAC. MEDICINA (Buenos Aires) 2003;63:319-343.</p>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-fisiopatologia" id="fisiopatologia">
+      <span class="seccion__pestana"><b>02</b> Mecanismo</span>
+      <h2 class="seccion__titulo">Fisiopatología</h2>
+
+      <p>La secuencia importa porque explica <strong>las dos complicaciones del capítulo</strong>: el absceso y el empiema no son enfermedades separadas, son la misma neumonía que siguió dos caminos distintos — hacia adentro del parénquima o hacia el espacio pleural.</p>
+
+      <h3>De la defensa fallida a la neumonía</h3>
+      <ol>
+        <li><strong>Fallo de las defensas del huésped:</strong> cierre epiglótico, aclaramiento mucociliar, reflejo tusígeno o inmunidad celular. Alternativamente, un <strong>germen muy virulento</strong> o un <strong>inóculo muy intenso</strong> superan defensas normales.</li>
+        <li><strong>Llegada del germen al parénquima:</strong> por <strong>aerosoles desde la vía aérea superior</strong> —incluida la <strong>microaspiración</strong> de contenido orofaríngeo— o por <strong>vía hematógena</strong>, desde un foco a distancia.</li>
+        <li><strong>Infección del parénquima:</strong> respuesta inflamatoria alveolar con exudado. Es la neumonía.</li>
+      </ol>
+
+      <h3>Los dos caminos de la complicación</h3>
+      <ul>
+        <li><strong>Hacia el parénquima → absceso.</strong> La infección genera <strong>necrosis del parénquima</strong> y produce <strong>una o más cavidades</strong>. La mayoría aparece como complicación de una <strong>neumonía por aspiración</strong> y son infecciones <strong>polimicrobianas</strong> secundarias a <strong>bacterias anaerobias de la boca</strong>. Las cavidades <strong>se comunican con las vías respiratorias</strong>, lo que desencadena <strong>tos con esputo purulento</strong>.</li>
+        <li><strong>Hacia la pleura → derrame y empiema.</strong> La inflamación vecina produce <strong>mediadores inflamatorios</strong> que generan líquido en el espacio pleural. <strong>Si la neumonía se trata adecuadamente, la producción de mediadores cesa</strong> y el derrame no complicado <strong>resuelve sin fibrosis residual clínicamente significativa</strong>. Si no, el líquido se infecta y aparece el <strong>empiema</strong>.</li>
+      </ul>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 424" role="img" aria-label="Historia natural de la infección del parénquima pulmonar. Primero fallan las defensas del huésped o el germen es muy virulento o el inóculo muy intenso. Luego el germen llega al parénquima por aerosoles y microaspiración desde la vía aérea superior o por vía hematógena. Se produce la neumonía. Desde ahí hay dos caminos: hacia el parénquima, con necrosis que genera cavidades y da el absceso pulmonar polimicrobiano por anaerobios de la boca, o hacia la pleura, donde los mediadores inflamatorios producen un derrame paraneumónico que si no se trata evoluciona a empiema. El absceso predomina en el lóbulo inferior derecho porque el bronquio principal derecho es más ancho, más corto y más vertical, y porque por gravedad las bacterias van a las zonas declives.">
+          <defs>
+            <marker id="pta-hist" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="14" y="8" width="326" height="56" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="31" font-size="12.5" font-weight="700" fill="currentColor">1 · Fallan las defensas</text>
+          <text x="30" y="50" font-size="10.5" fill="currentColor" opacity="0.75">…o el germen es muy virulento, o el inóculo muy intenso</text>
+
+          <rect x="14" y="88" width="326" height="56" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="111" font-size="12.5" font-weight="700" fill="currentColor">2 · El germen llega al parénquima</text>
+          <text x="30" y="130" font-size="10.5" fill="currentColor" opacity="0.75">Aerosoles y microaspiración desde VAS · vía hematógena</text>
+
+          <rect x="14" y="168" width="326" height="52" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="30" y="199" font-size="13" font-weight="700" fill="currentColor">3 · NEUMONÍA</text>
+
+          <line x1="177" y1="64" x2="177" y2="82" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-hist)"></line>
+          <line x1="177" y1="144" x2="177" y2="162" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-hist)"></line>
+          <text x="187" y="78" font-size="10.5" fill="currentColor" opacity="0.65">se abre la puerta</text>
+          <text x="187" y="158" font-size="10.5" fill="currentColor" opacity="0.65">exudado alveolar</text>
+
+          <rect x="376" y="8" width="310" height="212" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.28" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="392" y="32" font-size="12.5" font-weight="700" fill="currentColor">Por qué el absceso cae en el LID</text>
+          <text x="392" y="58" font-size="10.5" fill="currentColor" opacity="0.8">El bronquio principal derecho es</text>
+          <text x="392" y="76" font-size="10.5" font-weight="700" fill="currentColor">más ancho, más corto y más vertical</text>
+          <text x="392" y="94" font-size="10.5" fill="currentColor" opacity="0.8">que el izquierdo: lo aspirado cae ahí.</text>
+          <text x="392" y="124" font-size="10.5" fill="currentColor" opacity="0.8">Además, por gravedad las bacterias</text>
+          <text x="392" y="142" font-size="10.5" fill="currentColor" opacity="0.8">se dirigen a las zonas declives.</text>
+          <text x="392" y="172" font-size="11.5" font-weight="700" fill="currentColor">→ Lóbulo inferior derecho</text>
+          <text x="392" y="196" font-size="10.5" fill="currentColor" opacity="0.7">Los anaerobios vienen de la boca:</text>
+          <text x="392" y="212" font-size="10.5" fill="currentColor" opacity="0.7">por eso el esputo es maloliente.</text>
+
+          <line x1="177" y1="220" x2="177" y2="246" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="100" y1="246" x2="514" y2="246" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="100" y1="246" x2="100" y2="272" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-hist)"></line>
+          <line x1="514" y1="246" x2="514" y2="272" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-hist)"></line>
+          <text x="110" y="264" font-size="10.5" font-weight="700" fill="currentColor">hacia el parénquima</text>
+          <text x="524" y="264" font-size="10.5" font-weight="700" fill="currentColor">hacia la pleura</text>
+
+          <rect x="14" y="278" width="326" height="138" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="30" y="302" font-size="12.5" font-weight="700" fill="currentColor">ABSCESO / neumonía necrotizante</text>
+          <text x="30" y="326" font-size="10.5" fill="currentColor" opacity="0.8">Necrosis del parénquima → una o más cavidades</text>
+          <text x="30" y="346" font-size="10.5" fill="currentColor" opacity="0.8">Complicación de una neumonía por aspiración</text>
+          <text x="30" y="366" font-size="10.5" fill="currentColor" opacity="0.8">Polimicrobiano: anaerobios de la boca</text>
+          <text x="30" y="390" font-size="10.5" font-weight="700" fill="currentColor">La cavidad comunica con la vía aérea</text>
+          <text x="30" y="408" font-size="10.5" fill="currentColor" opacity="0.8">→ tos con esputo purulento y maloliente</text>
+
+          <rect x="360" y="278" width="326" height="138" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="376" y="302" font-size="12.5" font-weight="700" fill="currentColor">DERRAME PARANEUMÓNICO</text>
+          <text x="376" y="326" font-size="10.5" fill="currentColor" opacity="0.8">Mediadores inflamatorios → líquido pleural</text>
+          <text x="376" y="350" font-size="10.5" font-weight="700" fill="currentColor">Si la neumonía se trata bien:</text>
+          <text x="376" y="368" font-size="10.5" fill="currentColor" opacity="0.8">los mediadores cesan y resuelve sin fibrosis</text>
+          <text x="376" y="392" font-size="10.5" font-weight="700" fill="currentColor">Si no se trata bien:</text>
+          <text x="376" y="410" font-size="10.5" fill="currentColor" opacity="0.8">derrame complicado → EMPIEMA (pus)</text>
+        </svg>
+        <figcaption>Absceso y empiema no son diagnósticos independientes: son el destino de una neumonía que no se controló. Por eso la conducta de ambos empieza por tratar bien la neumonía de base.</figcaption>
+      </figure>
+
+      <h3>Origen de la infección pleural</h3>
+      <ul>
+        <li><strong>Secundaria a neumonía:</strong> explica el <span class="dato">40 – 60 %</span> de todos los empiemas.</li>
+        <li>Transmisión <strong>por continuidad</strong> desde infecciones <strong>mediastinales</strong>.</li>
+        <li><strong>Traumatismos</strong> o <strong>cirugías del tórax</strong>.</li>
+      </ul>
+
+      <p class="cita">Fuente: clase «Infecciones respiratorias 2» de la cátedra. Anatomía del árbol bronquial y patogenia del absceso concordantes con Mandell, Douglas y Bennett. Enfermedades infecciosas: principios y práctica, cap. «Absceso pulmonar».</p>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-clinica" id="clinica">
+      <span class="seccion__pestana"><b>03</b> Clínica</span>
+      <h2 class="seccion__titulo">Cuadro Clínico</h2>
+
+      <h3>No toda tos es neumonía</h3>
+      <p>La neumonía representa apenas el <span class="dato">5 %</span> de los cuadros que cursan con tos. Lo que estratifica no es la tos: es el <strong>acompañamiento</strong>.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Escenario clínico</th><th>Probabilidad de neumonía</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Tos como síntoma aislado</td><td><span class="dato">5 %</span></td></tr>
+            <tr><td>Tos + <strong>fiebre</strong> + <strong>deterioro del estado general</strong> + <strong>aumento de la frecuencia cardíaca</strong> + <strong>rales</strong></td><td><strong><span class="dato">50 %</span></strong></td></tr>
+            <tr><td><strong>Frecuencia respiratoria, frecuencia cardíaca y temperatura normales</strong></td><td><strong><span class="dato">&lt; 1 %</span></strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Tres signos vitales normales —<strong>frecuencia respiratoria, frecuencia cardíaca y temperatura</strong>— bajan la probabilidad de neumonía a <strong>menos del 1 %</strong>. Es el modo más barato y rápido de no pedir una radiografía que no va a cambiar nada.</p>
+      </div>
+
+      <h3>NAC «típica» y NAC «atípica»</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Rasgo</th><th>NAC «típica»</th><th>NAC «atípica»</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Agentes</strong></td><td><em>S. pneumoniae</em>, <em>H. influenzae</em>, <em>S. aureus</em>, bacilos gramnegativos</td><td><strong><em>M. pneumoniae</em> 10 – 30 %</strong>, <strong><em>Chlamydia</em> 6 – 20 %</strong>, virus (gripe A y B, adenovirus, metaneumovirus, VSR, parainfluenza)</td></tr>
+            <tr><td><strong>Edad y estación</strong></td><td>Cualquier edad; mayor incidencia en <strong>invierno</strong></td><td><strong>Menores de 40 años</strong>; <strong>verano – otoño</strong></td></tr>
+            <tr><td><strong>Inicio</strong></td><td>Agudo, con foco respiratorio bajo desde el comienzo</td><td>Comienza <strong>como cuadro alto</strong>: dolor de garganta, disfonía, rinitis/coriza, cefalea y <strong>tos no productiva</strong></td></tr>
+            <tr><td><strong>Duración</strong></td><td>Resuelve con el tratamiento</td><td>Los síntomas <strong>pueden persistir varias semanas</strong></td></tr>
+            <tr><td><strong>Auscultación</strong></td><td>Síndrome de condensación</td><td><strong>Estertores húmedos o crepitantes</strong></td></tr>
+            <tr><td><strong>Laboratorio</strong></td><td>Leucocitosis habitual</td><td><strong>La leucocitosis puede estar ausente</strong></td></tr>
+            <tr><td><strong>Radiografía</strong></td><td>Consolidación lobar con broncograma aéreo</td><td><strong>Infiltrados peribronquiales irregulares</strong> de uno o más segmentos</td></tr>
+            <tr><td><strong>Evolución</strong></td><td>Variable según gravedad y huésped</td><td><strong>Mayormente benigna</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Absceso pulmonar</h3>
+      <ul>
+        <li><strong>Tos con esputo purulento</strong>, porque la cavidad necrótica <strong>se comunica con las vías respiratorias</strong> y drena hacia ellas.</li>
+        <li>Esputo <strong>maloliente</strong>: es la firma de los <strong>anaerobios por aspiración</strong>.</li>
+        <li>Antecedente frecuente de <strong>aspiración</strong> —alteración de conciencia, trastorno deglutorio, mala higiene bucal— y localización preferente en <strong>lóbulo inferior derecho</strong>.</li>
+      </ul>
+
+      <h3>Derrame pleural y empiema</h3>
+      <ul>
+        <li>Aparece como <strong>complicación de una neumonía</strong> en el 40 – 60 % de los casos de empiema.</li>
+        <li><strong>Empiema</strong> es, por definición, <strong>pus en el espacio pleural</strong>.</li>
+        <li>Sospecharlo ante <strong>fiebre persistente</strong> o <strong>falta de mejoría</strong> pese a antibiótico adecuado en un paciente con neumonía y derrame.</li>
+      </ul>
+
+      <p class="cita">Fuente: clase «Infecciones respiratorias 2» de la cátedra.</p>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-diagnostico" id="diagnostico">
+      <span class="seccion__pestana"><b>04</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">Diagnóstico &amp; Exámenes Complementarios</h2>
+
+      <p>El diagnóstico de neumonía <strong>requiere confirmación imagenológica</strong> —radiografía o tomografía—. Los estudios microbiológicos no se piden para confirmar la neumonía, sino <strong>sólo cuando su resultado va a modificar el tratamiento</strong>.</p>
+
+      <h3>Imágenes: el patrón sugiere el germen</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Patrón radiológico</th><th>Denominación</th><th>Germen sugerido</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Consolidación lobar con broncograma aéreo</strong></td><td>«Típica»</td><td><strong>Neumococo</strong> — sobre todo si además está <strong>cavitado</strong> o tiene <strong>derrame pleural</strong></td></tr>
+            <tr><td><strong>Infiltrado intersticio-alveolar parcheado peribronquial</strong></td><td>No tan «típica»</td><td><strong>Estafilococo</strong> — los infiltrados parcheados <strong>se pueden cavitar</strong></td></tr>
+            <tr><td><strong>Infiltrados difusos bilaterales</strong> / vidrio esmerilado</td><td>Difusa</td><td><strong><em>Legionella</em>, virus, <em>Pneumocystis</em></strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul>
+        <li>La <strong>tomografía computada</strong> tiene indicación <strong>ante la falta de respuesta al tratamiento</strong>, no como estudio inicial.</li>
+        <li>Los tres patrones tomográficos que conviene reconocer de memoria son <strong>lobar</strong>, <strong>parcheado</strong> y <strong>difuso en vidrio esmerilado</strong>.</li>
+      </ul>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 406" role="img" aria-label="Algoritmo diagnóstico de la neumonía. La clínica estratifica antes de la imagen: la tos aislada tiene cinco por ciento de probabilidad, la tos con fiebre, deterioro del estado general, taquicardia y rales llega al cincuenta por ciento, y con frecuencia respiratoria, frecuencia cardíaca y temperatura normales la probabilidad es menor al uno por ciento. Confirmada la sospecha se pide radiografía de tórax, que es obligatoria. Según el patrón, la consolidación lobar con broncograma sugiere neumococo, el infiltrado parcheado que puede cavitar sugiere estafilococo, y los infiltrados difusos bilaterales sugieren Legionella, virus o Pneumocystis. Los cultivos sólo se piden si su resultado va a modificar el tratamiento.">
+          <defs>
+            <marker id="pta-dxb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="60" y="8" width="580" height="88" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--ct)" stroke-width="1.5"></rect>
+          <text x="76" y="31" font-size="12.5" font-weight="700" fill="currentColor">La clínica estratifica antes que la imagen</text>
+          <text x="76" y="54" font-size="11" fill="currentColor" opacity="0.8">Tos aislada → 5 %</text>
+          <text x="76" y="72" font-size="11" fill="currentColor" opacity="0.8">Tos + fiebre + deterioro + ↑ FC + rales → 50 %</text>
+          <text x="76" y="90" font-size="11" font-weight="700" fill="currentColor">FR, FC y T° normales → &lt; 1 %  ·  no pedir imagen</text>
+
+          <line x1="350" y1="96" x2="350" y2="116" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-dxb)"></line>
+
+          <rect x="215" y="118" width="270" height="46" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--ct)" stroke-width="2.5"></rect>
+          <text x="350" y="147" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">Radiografía de tórax — obligatoria</text>
+
+          <line x1="350" y1="164" x2="350" y2="190" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="119" y1="190" x2="581" y2="190" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="119" y1="190" x2="119" y2="214" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-dxb)"></line>
+          <line x1="350" y1="190" x2="350" y2="214" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-dxb)"></line>
+          <line x1="581" y1="190" x2="581" y2="214" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-dxb)"></line>
+
+          <rect x="10" y="216" width="218" height="112" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="26" y="240" font-size="11.5" font-weight="700" fill="currentColor">Consolidación lobar</text>
+          <text x="26" y="257" font-size="11.5" font-weight="700" fill="currentColor">con broncograma</text>
+          <text x="26" y="278" font-size="10.5" fill="currentColor" opacity="0.75">Más aún si cavita o</text>
+          <text x="26" y="294" font-size="10.5" fill="currentColor" opacity="0.75">tiene derrame pleural</text>
+          <text x="26" y="316" font-size="11.5" font-weight="700" fill="currentColor">→ Neumococo</text>
+
+          <rect x="241" y="216" width="218" height="112" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="257" y="240" font-size="11.5" font-weight="700" fill="currentColor">Infiltrado parcheado</text>
+          <text x="257" y="257" font-size="11.5" font-weight="700" fill="currentColor">peribronquial</text>
+          <text x="257" y="278" font-size="10.5" fill="currentColor" opacity="0.75">Se puede cavitar</text>
+          <text x="257" y="294" font-size="10.5" fill="currentColor" opacity="0.75">Patrón «no tan típico»</text>
+          <text x="257" y="316" font-size="11.5" font-weight="700" fill="currentColor">→ Estafilococo</text>
+
+          <rect x="472" y="216" width="218" height="112" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="488" y="240" font-size="11.5" font-weight="700" fill="currentColor">Infiltrados difusos</text>
+          <text x="488" y="257" font-size="11.5" font-weight="700" fill="currentColor">bilaterales</text>
+          <text x="488" y="278" font-size="10.5" fill="currentColor" opacity="0.75">Vidrio esmerilado</text>
+          <text x="488" y="294" font-size="10.5" fill="currentColor" opacity="0.75">en la tomografía</text>
+          <text x="488" y="316" font-size="11.5" font-weight="700" fill="currentColor">→ Legionella · virus</text>
+
+          <rect x="10" y="348" width="680" height="50" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.28" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="26" y="370" font-size="11" font-weight="700" fill="currentColor">¿Y los cultivos? Sólo si el resultado va a modificar el tratamiento</text>
+          <text x="26" y="390" font-size="11" fill="currentColor" opacity="0.75">Innecesarios en el cuadro extrahospitalario leve o moderado. Útiles en el internado grave, para estrechar el espectro.</text>
+        </svg>
+        <figcaption>La imagen confirma que hay neumonía y orienta el germen; la decisión de cultivar es independiente y depende de si el resultado puede cambiar la conducta.</figcaption>
+      </figure>
+
+      <h3>Cultivo: cuándo tiene sentido pedirlo</h3>
+      <ul>
+        <li><strong>No suele ser necesario</strong> en cuadros extrahospitalarios <strong>leves o moderados</strong>: la mayoría responde a la terapia empírica.</li>
+        <li>Según <strong>IDSA/ATS</strong> debe realizarse <strong>si su resultado modificará el tratamiento</strong>. Esto cobra sentido en dos escenarios:
+          <ul>
+            <li>Pacientes <strong>internados con cuadros graves</strong>, donde se puede <strong>estrechar el espectro</strong> inicial — reduciendo efectos secundarios, costos e <strong>inducción de resistencias</strong>.</li>
+            <li>Pacientes en quienes puede identificarse un <strong>microorganismo no sospechado</strong>.</li>
+          </ul>
+        </li>
+      </ul>
+
+      <h3>Esputo</h3>
+      <p>Es un método <strong>incruento</strong>, y por eso vale la pena intentarlo — pero hay que entender su rendimiento real.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Aspecto macroscópico</th><th>Sugiere</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Purulento</strong></td><td>Etiología <strong>bacteriana</strong></td></tr>
+            <tr><td><strong>Acuoso</strong></td><td><strong><em>Mycoplasma</em></strong> o <strong>adenovirus</strong></td></tr>
+            <tr><td><strong>Maloliente</strong></td><td><strong>Anaerobios por aspiración</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul>
+        <li><strong>No es una muestra de saliva:</strong> el paciente <strong>debe expectorar tras la tos</strong>.</li>
+        <li>Sólo el <span class="dato">50 %</span> de los pacientes logra expectorar. De ellos, sólo el <span class="dato">50 %</span> consigue una <strong>muestra apta</strong>.</li>
+        <li><strong>Criterio de muestra apta:</strong> <span class="dato">&gt; 25 PMN</span> en 100 campos y <span class="dato">&lt; 10 células epiteliales</span>.</li>
+        <li>Las muestras se pierden por <strong>demoras en el traslado</strong> —crece la flora orofaríngea— y porque <strong>muchos pacientes ya recibieron antibiótico</strong>.</li>
+        <li>Cuando la muestra <strong>es apta</strong>: la <strong>tinción de Gram identifica <em>S. pneumoniae</em> en el <span class="dato">80 %</span></strong> de los casos y el <strong>cultivo es positivo en el <span class="dato">30 – 90 %</span></strong>.</li>
+      </ul>
+
+      <h3>Lavado broncoalveolar (BAL)</h3>
+      <ul>
+        <li><strong>Útil cuando no se consigue muestra de esputo.</strong></li>
+        <li>Rendimiento del <span class="dato">50 %</span> <strong>si se hace precozmente</strong>: después de <span class="dato">72 h</span> de antibiótico <strong>pierde sentido</strong>.</li>
+        <li>En pacientes con <strong>HIV</strong> tiene una <strong>sensibilidad del <span class="dato">98 %</span> para <em>Pneumocystis jirovecii</em></strong>.</li>
+      </ul>
+
+      <h3>PCR y hemocultivos</h3>
+      <ul>
+        <li><strong>PCR:</strong> aprobada en muestras respiratorias para <strong>tuberculosis y virus</strong>, con <strong>sensibilidad del <span class="dato">90 – 99 %</span></strong>.</li>
+        <li><strong>Hemocultivos:</strong> resultan positivos en el <span class="dato">4 – 17 %</span> de las NAC. Tienen indicación en <strong>pacientes internados con dos o más</strong> de los siguientes:
+          <ul>
+            <li>Hepatopatía crónica · dolor pleurítico · taquicardia · taquipnea · hipotensión sistólica</li>
+            <li>Inmunosupresión · neumonía intrahospitalaria</li>
+            <li><strong>Sin antibióticos previos</strong> — en estos casos el <strong>rédito sube al <span class="dato">63 %</span></strong>.</li>
+          </ul>
+        </li>
+        <li><strong>Antígenos urinarios</strong> para <em>S. pneumoniae</em> y <strong><em>Legionella pneumophila</em></strong>: mantienen su rendimiento aunque el paciente ya haya recibido antibiótico, lo que los vuelve especialmente útiles en el internado grave.</li>
+      </ul>
+
+      <h3>Biomarcadores y laboratorio general</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Marcador</th><th>Valor</th><th>Interpretación</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Procalcitonina sérica</strong></td><td><span class="dato">&gt; 0,5 ng/mL</span></td><td>Indica que <strong>se requieren antibióticos</strong>. Cuando <strong>desciende</strong>, indica que <strong>se pueden retirar</strong></td></tr>
+            <tr><td><strong>Proteína C reactiva</strong></td><td><span class="dato">&lt; 10 mg/L</span></td><td><strong>Poco probable</strong> que exista NAC</td></tr>
+            <tr><td><strong>Proteína C reactiva</strong></td><td><span class="dato">&gt; 100 mg/L</span></td><td>NAC <strong>probable</strong> e indica <strong>alta mortalidad</strong></td></tr>
+            <tr><td><strong>Leucocitos</strong></td><td>15.000 – 35.000/mm³</td><td>Leucocitosis con <strong>aumento de formas jóvenes</strong></td></tr>
+            <tr><td><strong>Leucopenia</strong></td><td>—</td><td><strong>Es de mal pronóstico</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La procalcitonina se libera <strong>precozmente durante la infección bacteriana</strong>, y su cinética —sube temprano y baja al controlarse el foco— es lo que la vuelve útil para <strong>decidir el retiro</strong> del antibiótico, más que para iniciarlo.</p>
+
+      <h3>Absceso pulmonar: por qué el esputo no alcanza</h3>
+      <p>Como el <strong>esputo expectorado está contaminado por la microflora oral</strong> —y los anaerobios de la boca son justamente los que causan el absceso—, un cultivo de esputo <strong>no puede confirmar el papel de los anaerobios</strong>. Se requieren técnicas especiales:</p>
+      <ul>
+        <li><strong>Fibrobroncoscopia con lavado broncoalveolar</strong> y <strong>cultivo cuantitativo</strong>.</li>
+        <li><strong>Cultivo del líquido obtenido mediante toracocentesis</strong>.</li>
+        <li>Los <strong>hemocultivos casi nunca son positivos</strong> en el absceso.</li>
+      </ul>
+
+      <h3>Derrame pleural: analizar el líquido</h3>
+      <p>El <strong>empiema es pus en el espacio pleural</strong>. En el <span class="dato">40 %</span> de los casos de infección pleural <strong>no se aísla el germen</strong>. Cuando sí se aísla:</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Origen</th><th>Gérmenes aislados</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Ambulatorios</strong></td><td><strong>50 % <em>Streptococcus</em></strong> · 16 % anaerobios · 11 % <strong>SAMS</strong></td></tr>
+            <tr><td><strong>Intrahospitalarios</strong></td><td><strong>46 % <em>S. aureus</em></strong> (muchas veces <strong>SAMR</strong>) · el resto, gramnegativos</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Características del exudado pleural</h4>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Característica</th><th>Valor en el exudado</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Aspecto</td><td>Turbio</td></tr>
+            <tr><td>Recuento de leucocitos</td><td>&gt; 50.000/mm³</td></tr>
+            <tr><td><strong>pH</strong></td><td><strong><span class="dato">&lt; 7,2</span></strong></td></tr>
+            <tr><td>Proteínas</td><td>&gt; 3,0 g/dL</td></tr>
+            <tr><td>Proporción de proteínas líquido pleural / suero</td><td>&gt; 0,5</td></tr>
+            <tr><td><strong>Lactato deshidrogenasa (LDH)</strong></td><td><strong><span class="dato">&gt; 1000</span></strong></td></tr>
+            <tr><td>Proporción de LDH líquido pleural / suero</td><td>&gt; 0,6</td></tr>
+            <tr><td><strong>Glucosa</strong></td><td><strong><span class="dato">&lt; 40 mg/dL</span></strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Las proporciones de <strong>proteínas &gt; 0,5</strong> y de <strong>LDH &gt; 0,6</strong> respecto del suero son los <strong>criterios de Light</strong>, que separan exudado de trasudado: basta con que se cumpla <strong>uno solo</strong> para clasificar el líquido como exudado.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 372" role="img" aria-label="Clasificación del derrame paraneumónico según el análisis del líquido obtenido por toracocentesis. El derrame no complicado tiene pH mayor a siete coma dos, glucosa mayor a cuarenta miligramos por decilitro, LDH menor a mil y Gram y cultivo negativos, y se trata sólo con antibiótico durante el mismo tiempo que la neumonía. El derrame complicado tiene pH menor a siete coma dos, glucosa menor a cuarenta, LDH mayor a mil o Gram o cultivo positivos, y requiere drenaje más antibiótico prolongado de tres semanas o más. El empiema es pus franco con más de cincuenta mil leucocitos por milímetro cúbico y requiere drenaje siempre. Se drena el espacio pleural cuando los cultivos o la tinción de Gram del líquido pleural son positivos.">
+          <defs>
+            <marker id="pta-pleu" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="200" y="8" width="300" height="42" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--ct)" stroke-width="1.5"></rect>
+          <text x="350" y="34" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">Neumonía con derrame pleural</text>
+
+          <line x1="350" y1="50" x2="350" y2="68" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-pleu)"></line>
+
+          <rect x="215" y="70" width="270" height="42" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--ct)" stroke-width="2.5"></rect>
+          <text x="350" y="96" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">Toracocentesis — analizar el líquido</text>
+
+          <line x1="350" y1="112" x2="350" y2="138" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="119" y1="138" x2="581" y2="138" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="119" y1="138" x2="119" y2="162" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-pleu)"></line>
+          <line x1="350" y1="138" x2="350" y2="162" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-pleu)"></line>
+          <line x1="581" y1="138" x2="581" y2="162" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-pleu)"></line>
+
+          <rect x="10" y="164" width="218" height="140" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="26" y="188" font-size="11.5" font-weight="700" fill="currentColor">NO COMPLICADO</text>
+          <text x="26" y="210" font-size="10.5" fill="currentColor" opacity="0.8">pH &gt; 7,2</text>
+          <text x="26" y="227" font-size="10.5" fill="currentColor" opacity="0.8">Glucosa &gt; 40 mg/dL</text>
+          <text x="26" y="244" font-size="10.5" fill="currentColor" opacity="0.8">LDH &lt; 1000</text>
+          <text x="26" y="261" font-size="10.5" fill="currentColor" opacity="0.8">Gram y cultivo (−)</text>
+          <text x="26" y="283" font-size="11" font-weight="700" fill="currentColor">Sólo antibiótico</text>
+          <text x="26" y="298" font-size="10.5" fill="currentColor" opacity="0.75">Igual duración que la neumonía</text>
+
+          <rect x="241" y="164" width="218" height="140" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="currentColor" stroke-opacity="0.45" stroke-width="1.5"></rect>
+          <text x="257" y="188" font-size="11.5" font-weight="700" fill="currentColor">COMPLICADO</text>
+          <text x="257" y="210" font-size="10.5" fill="currentColor" opacity="0.8">pH &lt; 7,2</text>
+          <text x="257" y="227" font-size="10.5" fill="currentColor" opacity="0.8">Glucosa &lt; 40 mg/dL</text>
+          <text x="257" y="244" font-size="10.5" fill="currentColor" opacity="0.8">LDH &gt; 1000</text>
+          <text x="257" y="261" font-size="10.5" font-weight="700" fill="currentColor">Gram o cultivo (+)</text>
+          <text x="257" y="283" font-size="11" font-weight="700" fill="currentColor">Drenaje + antibiótico</text>
+          <text x="257" y="298" font-size="10.5" fill="currentColor" opacity="0.75">Puede requerir ≥ 3 semanas</text>
+
+          <rect x="472" y="164" width="218" height="140" rx="3" fill="var(--c)" fill-opacity="0.20" stroke="var(--ct)" stroke-width="2"></rect>
+          <text x="488" y="188" font-size="11.5" font-weight="700" fill="currentColor">EMPIEMA</text>
+          <text x="488" y="210" font-size="10.5" font-weight="700" fill="currentColor">Pus franco en la pleura</text>
+          <text x="488" y="232" font-size="10.5" fill="currentColor" opacity="0.8">Leucocitos &gt; 50.000/mm³</text>
+          <text x="488" y="249" font-size="10.5" fill="currentColor" opacity="0.8">Aspecto turbio</text>
+          <text x="488" y="266" font-size="10.5" fill="currentColor" opacity="0.8">40 % sin germen aislado</text>
+          <text x="488" y="290" font-size="11" font-weight="700" fill="currentColor">Drenaje SIEMPRE</text>
+
+          <rect x="10" y="320" width="680" height="44" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.28" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="26" y="340" font-size="11" font-weight="700" fill="currentColor">Regla operativa del drenaje</text>
+          <text x="26" y="358" font-size="11" fill="currentColor" opacity="0.75">Se drena el espacio pleural cuando el cultivo o la tinción de Gram del líquido pleural son positivos.</text>
+        </svg>
+        <figcaption>Un solo hallazgo microbiológico positivo en el líquido cambia la conducta de «sólo antibiótico» a «drenaje». Por eso la toracocentesis diagnóstica no es opcional ante un derrame significativo.</figcaption>
+      </figure>
+
+      <p class="cita">Fuente: clase «Infecciones respiratorias 2» de la cátedra. Criterios de Light y clasificación del derrame paraneumónico según BTS Pleural Disease Guideline, Thorax 2010, y Light RW. Pleural Effusions. Med Clin North Am. Los antígenos urinarios y la clasificación en simple / complicado / empiema no figuran explícitamente en la presentación y se agregan por su valor operativo.</p>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-tratamiento" id="tratamiento">
+      <span class="seccion__pestana"><b>05</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Tratamiento &amp; Prevención</h2>
+
+      <p>El tratamiento se resuelve respondiendo cuatro preguntas en orden: <strong>¿dónde?</strong>, <strong>¿con qué?</strong>, <strong>¿cuándo?</strong> y <strong>¿cuánto?</strong> La primera decisión —y la que más pesa en el pronóstico— es <strong>determinar la necesidad de internación</strong>.</p>
+
+      <h3>¿Dónde? — Escala CURB-65</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Letra</th><th>Criterio</th><th>Puntos</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>C</strong></td><td><strong>Confusión</strong></td><td>+ 1</td></tr>
+            <tr><td><strong>U</strong></td><td><strong>Urea</strong> — BUN &gt; 19 mg/dL</td><td>+ 1</td></tr>
+            <tr><td><strong>R</strong></td><td><strong>Respiración</strong> &gt; 30 rpm</td><td>+ 1</td></tr>
+            <tr><td><strong>B</strong></td><td><strong>Presión arterial</strong> — PAS &lt; 90 o PAD &lt; 60 mmHg</td><td>+ 1</td></tr>
+            <tr><td><strong>65</strong></td><td><strong>Edad</strong> &gt; 65 años</td><td>+ 1</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Puntaje</th><th>Mortalidad</th><th>Conducta</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>0 – 1</strong></td><td>0,2 – 2,7 %</td><td>Considerar <strong>manejo ambulatorio</strong></td></tr>
+            <tr><td><strong>2</strong></td><td>6,8 – 27 %</td><td>Considerar <strong>hospitalización</strong></td></tr>
+            <tr><td><strong>3 – 5</strong></td><td><strong>57 %</strong></td><td>Considerar <strong>ingreso a UCI</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Existen otras escalas con la misma finalidad: el <strong>CRB-65</strong> —que prescinde de la urea y sirve en el consultorio sin laboratorio— y el <strong>Pneumonia Severity Index (PSI)</strong>.</p>
+
+      <h3>Si no requiere hospitalización: valorar riesgo de resistencia</h3>
+      <ul>
+        <li><strong>Uso previo de antibióticos</strong> en los <span class="dato">3 – 6 meses</span> previos.</li>
+        <li><strong>Residencia en instituciones de pacientes crónicos.</strong></li>
+      </ul>
+      <p>Si <strong>no hay ninguno de estos</strong> factores, las opciones son <strong>betalactámicos orales</strong> (amoxicilina ± clavulánico), <strong>macrólidos</strong> (claritromicina, azitromicina) y <strong>quinolonas respiratorias</strong> (levofloxacina, moxifloxacina).</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 412" role="img" aria-label="Árbol de decisión del tratamiento de la neumonía adquirida en la comunidad según el puntaje CURB-65. Con cero o un punto la mortalidad es de cero coma dos a dos coma siete por ciento y corresponde manejo ambulatorio: en menores de sesenta y cinco años sin comorbilidades, amoxicilina un gramo cada ocho a doce horas por vía oral; en mayores de sesenta y cinco o con comorbilidades, amoxicilina clavulánico ochocientos setenta y cinco sobre ciento veinticinco miligramos cada ocho a doce horas por vía oral. Con dos puntos la mortalidad es de seis coma ocho a veintisiete por ciento y corresponde hospitalización en sala común: con fuerte sospecha neumocóccica, ampicilina un gramo cada seis horas intravenosa; con comorbilidades, ampicilina sulbactam un coma cinco gramos cada ocho horas intravenosa más claritromicina. Con tres a cinco puntos la mortalidad es del cincuenta y siete por ciento y corresponde ingreso a terapia intensiva: sin riesgo de Pseudomonas, ampicilina sulbactam más claritromicina o levofloxacina setecientos cincuenta miligramos; con riesgo de Pseudomonas, cefepima o piperacilina tazobactam más ciprofloxacina. La primera dosis debe darse tan pronto como el diagnóstico se considere probable, con menor mortalidad si se inicia en las primeras cuatro a ocho horas.">
+          <defs>
+            <marker id="pta-tto2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="240" y="8" width="220" height="42" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--ct)" stroke-width="2.5"></rect>
+          <text x="350" y="34" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">Calcular CURB-65</text>
+
+          <line x1="350" y1="50" x2="350" y2="76" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="118" y1="76" x2="582" y2="76" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="118" y1="76" x2="118" y2="100" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-tto2)"></line>
+          <line x1="350" y1="76" x2="350" y2="100" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-tto2)"></line>
+          <line x1="582" y1="76" x2="582" y2="100" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-tto2)"></line>
+
+          <rect x="10" y="102" width="216" height="222" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="26" y="126" font-size="12" font-weight="700" fill="currentColor">0 – 1 punto</text>
+          <text x="26" y="146" font-size="10.5" fill="currentColor" opacity="0.75">Mortalidad 0,2 – 2,7 %</text>
+          <text x="26" y="166" font-size="11.5" font-weight="700" fill="currentColor">AMBULATORIO</text>
+          <line x1="26" y1="180" x2="210" y2="180" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="26" y="199" font-size="10.5" fill="currentColor" opacity="0.75">&lt; 65 sin comorbilidades:</text>
+          <text x="26" y="216" font-size="10.5" font-weight="700" fill="currentColor">Amoxicilina 1 g</text>
+          <text x="26" y="232" font-size="10.5" font-weight="700" fill="currentColor">c/8 – 12 h VO</text>
+          <line x1="26" y1="246" x2="210" y2="246" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="26" y="265" font-size="10.5" fill="currentColor" opacity="0.75">≥ 65 o comorbilidades:</text>
+          <text x="26" y="282" font-size="10.5" font-weight="700" fill="currentColor">Amoxi/clavulánico</text>
+          <text x="26" y="298" font-size="10.5" font-weight="700" fill="currentColor">875/125 mg c/8 – 12 h VO</text>
+          <text x="26" y="316" font-size="10.5" fill="currentColor" opacity="0.7">Alérgicos: levo o moxifloxacina</text>
+
+          <rect x="242" y="102" width="216" height="222" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="currentColor" stroke-opacity="0.45" stroke-width="1.5"></rect>
+          <text x="258" y="126" font-size="12" font-weight="700" fill="currentColor">2 puntos</text>
+          <text x="258" y="146" font-size="10.5" fill="currentColor" opacity="0.75">Mortalidad 6,8 – 27 %</text>
+          <text x="258" y="166" font-size="11.5" font-weight="700" fill="currentColor">SALA COMÚN</text>
+          <line x1="258" y1="180" x2="442" y2="180" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="258" y="199" font-size="10.5" fill="currentColor" opacity="0.75">Sospecha neumocóccica:</text>
+          <text x="258" y="216" font-size="10.5" font-weight="700" fill="currentColor">Ampicilina 1 g c/6 h IV</text>
+          <line x1="258" y1="246" x2="442" y2="246" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="258" y="265" font-size="10.5" fill="currentColor" opacity="0.75">≥ 65 o comorbilidades:</text>
+          <text x="258" y="282" font-size="10.5" font-weight="700" fill="currentColor">Ampi/sulbactam</text>
+          <text x="258" y="298" font-size="10.5" font-weight="700" fill="currentColor">1,5 g c/8 h IV</text>
+          <text x="258" y="316" font-size="10.5" font-weight="700" fill="currentColor">± claritromicina o cipro</text>
+
+          <rect x="474" y="102" width="216" height="222" rx="3" fill="var(--c)" fill-opacity="0.20" stroke="var(--ct)" stroke-width="2"></rect>
+          <text x="490" y="126" font-size="12" font-weight="700" fill="currentColor">3 – 5 puntos</text>
+          <text x="490" y="146" font-size="10.5" font-weight="700" fill="currentColor">Mortalidad 57 %</text>
+          <text x="490" y="166" font-size="11.5" font-weight="700" fill="currentColor">INGRESO A UTI</text>
+          <line x1="490" y1="180" x2="674" y2="180" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="490" y="199" font-size="10.5" fill="currentColor" opacity="0.75">Sin riesgo de Pseudomonas:</text>
+          <text x="490" y="216" font-size="10.5" font-weight="700" fill="currentColor">Ampi/sulbactam +</text>
+          <text x="490" y="232" font-size="10.5" font-weight="700" fill="currentColor">claritromicina o levo 750</text>
+          <line x1="490" y1="246" x2="674" y2="246" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="490" y="265" font-size="10.5" fill="currentColor" opacity="0.75">Con riesgo de Pseudomonas:</text>
+          <text x="490" y="282" font-size="10.5" font-weight="700" fill="currentColor">Cefepima o pip/tazo</text>
+          <text x="490" y="298" font-size="10.5" font-weight="700" fill="currentColor">+ ciprofloxacina</text>
+          <text x="490" y="316" font-size="10.5" fill="currentColor" opacity="0.7">Siempre 2 drogas anti-Pseudomonas</text>
+
+          <rect x="10" y="344" width="680" height="60" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.28" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="26" y="366" font-size="11" font-weight="700" fill="currentColor">Cuándo y cuánto</text>
+          <text x="26" y="384" font-size="11" fill="currentColor" opacity="0.75">Primera dosis tan pronto como el diagnóstico se considere probable: menos mortalidad si se inicia en las primeras 4 – 8 h.</text>
+          <text x="26" y="400" font-size="11" fill="currentColor" opacity="0.75">Duración: al menos 5 días, afebril 48 – 72 h y con estabilidad clínica alcanzada. Ahí se rota a vía oral.</text>
+        </svg>
+        <figcaption>El puntaje no elige el antibiótico por sí solo: define el sitio de atención, y dentro de cada sitio la segunda pregunta —comorbilidades, o riesgo de <em>Pseudomonas</em>— termina de definir el esquema.</figcaption>
+      </figure>
+
+      <h3>Grupo 1 — Pacientes ambulatorios</h3>
+      <h4>a. Menores de 65 años sin comorbilidades</h4>
+      <p>Patógenos blanco: <em>S. pneumoniae</em>, <em>M. pneumoniae</em>, <em>C. pneumoniae</em>.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Categoría</th><th>Antibiótico</th><th>Dosis y vía</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Sugerido</strong></td><td><strong>Amoxicilina</strong></td><td>1 g c/8 – 12 h — <strong>oral</strong></td></tr>
+            <tr><td>Alternativas y alérgicos</td><td>Claritromicina</td><td>500 mg c/12 h — oral</td></tr>
+            <tr><td>Alternativas y alérgicos</td><td>Azitromicina</td><td>500 mg el 1.º día, luego 250 mg/día × 4 días — oral</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>El orden entre los macrólidos es aleatorio: la elección depende de la <strong>tolerancia, la disponibilidad y el costo</strong>.</p>
+
+      <h4>b. Con comorbilidades y/o mayores de 65 años</h4>
+      <p>Patógenos blanco: <em>S. pneumoniae</em>, <em>H. influenzae</em>, <em>S. aureus</em> y <strong>bacilos gramnegativos aerobios (BGNA)</strong>.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Categoría</th><th>Antibiótico</th><th>Dosis y vía</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Sugerido</strong></td><td><strong>Amoxicilina/clavulanato</strong></td><td>875/125 mg c/8 – 12 h — <strong>oral</strong></td></tr>
+            <tr><td><strong>Sugerido</strong></td><td><strong>Amoxicilina/sulbactam</strong></td><td>875/125 mg c/8 – 12 h — <strong>oral</strong></td></tr>
+            <tr><td>Alternativas y alérgicos</td><td>Levofloxacina</td><td>500 mg c/24 h — oral</td></tr>
+            <tr><td>Alternativas y alérgicos</td><td>Moxifloxacina</td><td>400 mg c/24 h — oral</td></tr>
+            <tr><td>Alternativa</td><td>Ceftriaxona</td><td>1 g c/24 h — IM. <strong>NO en alérgicos</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Grupo 2 — Pacientes internados en sala común</h3>
+      <h4>a. Menores de 65 años, sin comorbilidades y con fuerte sospecha de etiología neumocóccica</h4>
+      <p>Patógeno blanco: <em>S. pneumoniae</em>.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Categoría</th><th>Antibiótico</th><th>Dosis y vía</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Sugerido</strong></td><td><strong>Ampicilina</strong></td><td>1 g c/6 h — <strong>IV</strong></td></tr>
+            <tr><td>Alternativas y alérgicos</td><td>Claritromicina</td><td>500 mg c/12 h — IV</td></tr>
+            <tr><td>Alternativas y alérgicos</td><td>Clindamicina</td><td>600 mg c/8 h — IV</td></tr>
+            <tr><td>Alternativas y alérgicos</td><td>Levofloxacina</td><td>500 mg c/24 h — IV</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>b. Con comorbilidades y/o mayores de 65 años</h4>
+      <p>Patógenos blanco: <em>S. pneumoniae</em>, <em>H. influenzae</em>, <em>M. pneumoniae</em>, <em>C. pneumoniae</em>, <em>S. aureus</em>, BGNA y <em>L. pneumophila</em>.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Categoría</th><th>Esquema</th><th>Dosis y vía</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Sugerido</strong></td><td><strong>Ampicilina/sulbactam</strong> o <strong>amoxicilina/clavulanato</strong></td><td>1,5 g c/8 h — IV</td></tr>
+            <tr><td><strong>Sugerido</strong></td><td>± <strong>Claritromicina</strong></td><td>500 mg c/12 h — IV</td></tr>
+            <tr><td><strong>Sugerido</strong></td><td>± <strong>Ciprofloxacina</strong></td><td>400 mg c/12 h — IV</td></tr>
+            <tr><td>Alternativa</td><td>Ceftriaxona ± claritromicina o ciprofloxacina</td><td>Ceftriaxona 2 g c/24 h — IV</td></tr>
+            <tr><td>Alérgicos</td><td>Levofloxacina + clindamicina</td><td>Levo 500 mg c/24 h + clinda 600 mg c/8 h — IV</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>La combinación de <strong>betalactámicos con inhibidores de betalactamasas</strong> tiene <strong>menor potencial de inducir resistencia</strong> durante la internación que las <strong>cefalosporinas de 3.ª generación</strong>. Es la razón por la que ampicilina/sulbactam figura como sugerido y ceftriaxona queda como alternativa, y no al revés.</p>
+      </div>
+
+      <h3>Grupo 3 — Pacientes internados en UTI</h3>
+      <h4>a. Sin factores de riesgo para <em>P. aeruginosa</em></h4>
+      <p>Patógenos blanco: <em>S. pneumoniae</em>, <em>H. influenzae</em>, <em>M. pneumoniae</em>, <em>C. pneumoniae</em>, <em>S. aureus</em>, BGNA y <em>L. pneumophila</em>.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Categoría</th><th>Esquema</th><th>Dosis y vía</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Sugerido</strong></td><td><strong>Ampicilina/sulbactam</strong> + <strong>claritromicina</strong></td><td>Ampi/sulb 1,5 g c/8 h + claritro 500 mg c/12 h — IV</td></tr>
+            <tr><td><strong>Sugerido</strong></td><td>Ampicilina/sulbactam + <strong>levofloxacina</strong></td><td>Levofloxacina 750 mg c/24 h — IV</td></tr>
+            <tr><td>Alternativa</td><td>Ceftriaxona + claritromicina</td><td>Ceftriaxona 1 – 2 g c/24 h — IV</td></tr>
+            <tr><td>Alérgicos</td><td>Levofloxacina + clindamicina</td><td>Levo 750 mg c/24 h + clinda 600 mg c/8 h — IV</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>b. Con factores de riesgo para <em>P. aeruginosa</em></h4>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Categoría</th><th>Esquema</th><th>Dosis y vía</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Sugerido</strong></td><td><strong>Cefepima</strong> o <strong>piperacilina/tazobactam</strong> + <strong>ciprofloxacina</strong></td><td>Cefepima 2 g c/12 h · pip/tazo 4,5 g c/8 h · cipro 400 mg c/8 h — IV</td></tr>
+            <tr><td>Alternativa</td><td>Cefepima o piperacilina/tazobactam + <strong>amikacina</strong></td><td>Amikacina 15 mg/kg/día en una sola dosis</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Se recomienda utilizar <strong>dos antibióticos con actividad frente a <em>P. aeruginosa</em></strong>, asegurando además cobertura frente a <em>S. pneumoniae</em> y los otros patógenos blanco.</p>
+
+      <h3>¿Cuándo y cuánto?</h3>
+      <ul>
+        <li><strong>Inicio:</strong> según IDSA/ATS, <strong>«tan pronto como se considere probable el diagnóstico»</strong>. Hay <strong>menos mortalidad si se inicia en las primeras <span class="dato">4 – 8 h</span></strong>.</li>
+        <li><strong>Duración:</strong> un período <strong>menor a 7 días es tan eficaz</strong> como los tratamientos de mayor duración en la NAC leve o moderada; las graves pueden requerir más.</li>
+        <li>La recomendación actual son <strong>al menos <span class="dato">5 días</span></strong>, manteniéndose el paciente <strong>afebril entre 48 y 72 h</strong> y con <strong>signos de estabilidad clínica</strong>.</li>
+      </ul>
+
+      <h4>Pruebas de estabilidad clínica — habilitan la rotación a vía oral</h4>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Parámetro</th><th>Objetivo</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Frecuencia cardíaca, frecuencia respiratoria, tensión arterial y temperatura</td><td><strong>Normales</strong></td></tr>
+            <tr><td>Saturación de oxígeno al aire ambiente</td><td><strong>&gt; 90 %</strong></td></tr>
+            <tr><td>Vía digestiva</td><td><strong>Capacidad de mantener la ingesta oral</strong></td></tr>
+            <tr><td>Estado mental</td><td><strong>Normal</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Tratamiento del absceso pulmonar</h3>
+      <p>Se recomienda <strong>iniciar por vía parenteral durante 2 semanas</strong>, siguiendo por <strong>vía oral cuando conste mejoría clínica</strong>.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Antibiótico</th><th>Dosis</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Amoxicilina/clavulánico</strong></td><td>2 g cada 8 h</td></tr>
+            <tr><td><strong>Clindamicina</strong></td><td>300 – 600 mg cada 6 – 8 h</td></tr>
+            <tr><td><strong>Metronidazol + amoxicilina</strong></td><td>Metronidazol 500 mg c/8 h</td></tr>
+            <tr><td><strong>Moxifloxacina</strong></td><td>400 mg/día</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul>
+        <li>El <strong>tratamiento completo se extiende <span class="dato">6 – 8 semanas</span></strong>.</li>
+        <li><strong>Control con radiografía cada 2 semanas.</strong> Si la evolución es favorable, se puede discontinuar el antibiótico.</li>
+        <li>Todos los esquemas apuntan a <strong>anaerobios de la boca</strong>: es la clave para recordarlos.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>El <strong>10 – 15 %</strong> de los abscesos <strong>no mejora pese al tratamiento médico apropiado</strong>. Los cuatro escenarios que lo explican son: <strong>cavidades grandes (&gt; 8 cm)</strong>, <strong>microorganismos resistentes</strong> como <em>P. aeruginosa</em>, <strong>neoplasias obstructivas</strong> y <strong>hemorragia masiva</strong> (poco frecuente). En ellos hay que <strong>considerar lobectomía o neumonectomía</strong>.</p>
+      </div>
+
+      <h3>Tratamiento del derrame pleural y el empiema</h3>
+      <ul>
+        <li><strong>Derrames paraneumónicos no complicados:</strong> pueden tratarse <strong>durante el mismo tiempo que se indica para la neumonía</strong>.</li>
+        <li><strong>Derrames paraneumónicos complicados</strong> (cociente de glucosa pleural/plasmática <span class="dato">&lt; 0,6</span>) <strong>y empiema:</strong> la duración del tratamiento <strong>depende de la respuesta clínica al drenaje</strong>.</li>
+        <li><strong>Se recomienda drenar el espacio pleural cuando los cultivos o la tinción de Gram del líquido pleural son positivos.</strong></li>
+        <li>Puede ser necesario un <strong>tratamiento prolongado: <span class="dato">3 semanas o más</span></strong>.</li>
+      </ul>
+
+      <h3>Prevención</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Paso</th><th>Vacuna</th><th>Intervalo hasta la siguiente</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td><strong>VNC13</strong> — antineumocócica conjugada 13-valente</td><td><span class="dato">12 meses</span></td></tr>
+            <tr><td>2</td><td><strong>VNP23</strong> — antineumocócica polisacárida 23-valente</td><td><span class="dato">5 años</span></td></tr>
+            <tr><td>3</td><td><strong>VNP23</strong> — refuerzo</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul>
+        <li><strong>Población objetivo de la antineumocócica:</strong> bebés de 2, 4 y 12 meses; niños y adultos con <strong>enfermedades inmunológicas o crónicas</strong> —respiratorias, cardíacas, renales, diabetes, inmunosupresión o tabaquismo—; y <strong>personas de 65 años o más</strong>.</li>
+        <li><strong>Vacuna antigripal anual</strong>: embarazadas, puérperas antes del alta de la maternidad, personas con enfermedad crónica, mayores de 65 años, personal de salud y niños de 6 a 24 meses.</li>
+        <li><strong>Cesación tabáquica</strong>: el tabaco disminuye la actividad mucociliar y linfocítica, y su abandono revierte parte de ese déficit.</li>
+      </ul>
+
+      <p class="cita">Fuente: Neumonía Adquirida en la Comunidad — Guía práctica elaborada por un Comité Intersociedades, Grupo Argentino de Estudio de la NAC. MEDICINA (Buenos Aires) 2003;63:319-343. Neumonía adquirida de la comunidad en adultos: recomendaciones sobre su atención. Sociedad Argentina de Infectología. MEDICINA (Buenos Aires) 2015;75:245-257. Escala CURB-65 de la British Thoracic Society. Esquema de vacunación antineumocócica según Calendario Nacional de Vacunación, Ministerio de Salud de la Nación.</p>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-importantes" id="importantes">
+      <span class="seccion__pestana"><b>06</b> Alerta</span>
+      <h2 class="seccion__titulo">Aspectos Importantes &amp; Signos de Alarma</h2>
+
+      <h3>Los cuadros que cambian la conducta de urgencia</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Escenario</th><th>Por qué es una alarma</th><th>Qué hacer</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>NAC con CURB-65 ≥ 3</strong></td>
+              <td>Mortalidad del <strong>57 %</strong></td>
+              <td>Considerar <strong>ingreso a UCI</strong>; primera dosis de antibiótico en la guardia</td>
+            </tr>
+            <tr>
+              <td><strong>Neumonía por <em>S. aureus</em> en paciente joven</strong>, con múltiples lesiones redondeadas bilaterales</td>
+              <td>Vía <strong>hematógena</strong>; puede evolucionar a <strong>SDRA con mortalidad del 50 %</strong></td>
+              <td>Buscar la puerta de entrada: <strong>piel, catéteres, drogas EV y endocarditis</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Leucopenia</strong> en el contexto de una neumonía</td>
+              <td>Es un marcador de <strong>mal pronóstico</strong>, no de infección leve</td>
+              <td>Reevaluar la gravedad y el sitio de atención</td>
+            </tr>
+            <tr>
+              <td><strong>PCR &gt; 100 mg/L</strong></td>
+              <td>NAC probable e <strong>indicador de alta mortalidad</strong></td>
+              <td>Integrar al puntaje de gravedad</td>
+            </tr>
+            <tr>
+              <td><strong>Absceso que no mejora</strong> (10 – 15 %)</td>
+              <td>Cavidad &gt; 8 cm, germen resistente, <strong>neoplasia obstructiva</strong> o hemorragia masiva</td>
+              <td>Considerar <strong>lobectomía o neumonectomía</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Derrame con Gram o cultivo positivo</strong></td>
+              <td>Define derrame <strong>complicado o empiema</strong></td>
+              <td><strong>Drenar el espacio pleural</strong>; el antibiótico solo no alcanza</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>La <strong>neumonía intrahospitalaria es la principal causa de muerte por infección en pacientes internados</strong>. El <strong>riesgo de neumonía asociada a ventilador aumenta un <span class="dato">3 %</span> por cada día de intubación</strong>: la medida preventiva más eficaz es <strong>extubar lo antes posible</strong>, seguida de la <strong>higiene de manos y de los equipos ventilatorios</strong>.</p>
+      </div>
+
+      <h3>Factores modificables que favorecen la neumonía intrahospitalaria</h3>
+      <ul>
+        <li><strong>Mala higiene de manos y de los equipos ventilatorios.</strong></li>
+        <li><strong>Sedantes y opiáceos</strong> — deprimen el reflejo tusígeno y favorecen la aspiración.</li>
+        <li><strong>Corticoides y citotóxicos</strong> — comprometen la inmunidad.</li>
+        <li><strong>Uso prolongado de antiácidos</strong> — permiten la <strong>colonización gástrica</strong>, que después asciende.</li>
+        <li><strong>Uso prolongado de antibióticos</strong> — selecciona <strong>resistencias</strong>.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>La <strong>demora en la primera dosis</strong> es un factor de mortalidad modificable: hay <strong>menos mortalidad cuando el antibiótico se inicia en las primeras 4 – 8 h</strong>. No se espera el resultado de ningún cultivo para administrarla.</p>
+      </div>
+
+      <h3>Los números que conviene tener memorizados</h3>
+      <ul>
+        <li>Mortalidad global de la NAC: <span class="dato">13 %</span>. NAC grave: <span class="dato">36 %</span>. CURB-65 de 3 – 5: <span class="dato">57 %</span>.</li>
+        <li>Sólo el <span class="dato">10 %</span> de las NAC requiere UTI.</li>
+        <li>Diagnóstico microbiológico alcanzado, aun con evaluación rigurosa: <span class="dato">40 – 75 %</span>.</li>
+        <li>Hemocultivos positivos en la NAC: <span class="dato">4 – 17 %</span> — sube a <span class="dato">63 %</span> con la indicación correcta y sin antibiótico previo.</li>
+        <li>En el <span class="dato">40 %</span> de las infecciones pleurales no se aísla germen.</li>
+      </ul>
+
+      <p class="cita">Fuente: clase «Infecciones respiratorias 2» de la cátedra; guías del Comité Intersociedades (MEDICINA 2003) y de la Sociedad Argentina de Infectología (MEDICINA 2015).</p>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-diferenciales" id="diferenciales">
+      <span class="seccion__pestana"><b>07</b> Diferenciales</span>
+      <h2 class="seccion__titulo">Diagnósticos Diferenciales</h2>
+
+      <p>Dentro del capítulo, la imagen resuelve casi todo: separa lo que no es neumonía, y dentro de la neumonía separa las dos complicaciones.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 400" role="img" aria-label="Árbol discriminante de las infecciones respiratorias bajas. Antes de la imagen la clínica ya estratifica: tos aislada cinco por ciento, tos con fiebre, deterioro, taquicardia y rales cincuenta por ciento, y signos vitales normales menos del uno por ciento. Luego la radiografía separa cuatro escenarios. Sin infiltrado no es neumonía y corresponde pensar en bronquitis aguda o cuadro de vía aérea superior. Con infiltrado sin cavidad ni derrame es neumonía, lobar si es típica y parcheada o difusa si es atípica. Con infiltrado y cavidades es absceso pulmonar o neumonía necrotizante, por anaerobios de aspiración y predominio en lóbulo inferior derecho. Con infiltrado y líquido pleural es derrame paraneumónico, y la toracocentesis define si es empiema.">
+          <defs>
+            <marker id="pta-ddx2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="10" y="8" width="680" height="62" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2"></rect>
+          <text x="26" y="30" font-size="11.5" font-weight="700" fill="currentColor">Antes de la imagen, la clínica ya estratifica</text>
+          <text x="26" y="50" font-size="10.5" fill="currentColor" opacity="0.8">Tos aislada → 5 %   ·   Tos + fiebre + deterioro + ↑ FC + rales → 50 %</text>
+          <text x="26" y="65" font-size="10.5" font-weight="700" fill="currentColor">FR, FC y T° normales → &lt; 1 % : no hace falta la imagen</text>
+
+          <rect x="225" y="88" width="250" height="42" rx="3" fill="var(--c)" fill-opacity="0.18" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="350" y="114" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">¿Qué muestra la radiografía?</text>
+
+          <line x1="350" y1="130" x2="350" y2="154" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="91" y1="154" x2="613" y2="154" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="91" y1="154" x2="91" y2="178" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ddx2)"></line>
+          <line x1="265" y1="154" x2="265" y2="178" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ddx2)"></line>
+          <line x1="439" y1="154" x2="439" y2="178" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ddx2)"></line>
+          <line x1="613" y1="154" x2="613" y2="178" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ddx2)"></line>
+
+          <rect x="10" y="180" width="162" height="148" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="24" y="202" font-size="11" font-weight="700" fill="currentColor">Sin infiltrado</text>
+          <text x="24" y="228" font-size="10.5" fill="currentColor" opacity="0.75">Signos vitales</text>
+          <text x="24" y="243" font-size="10.5" fill="currentColor" opacity="0.75">habitualmente normales</text>
+          <text x="24" y="266" font-size="11" font-weight="700" fill="currentColor">→ No es neumonía</text>
+          <line x1="24" y1="280" x2="158" y2="280" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="24" y="300" font-size="10.5" fill="currentColor" opacity="0.75">Bronquitis aguda o</text>
+          <text x="24" y="315" font-size="10.5" fill="currentColor" opacity="0.75">cuadro de vía aérea alta</text>
+
+          <rect x="184" y="180" width="162" height="148" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="currentColor" stroke-opacity="0.45" stroke-width="1.5"></rect>
+          <text x="198" y="202" font-size="11" font-weight="700" fill="currentColor">Infiltrado, sin</text>
+          <text x="198" y="217" font-size="11" font-weight="700" fill="currentColor">cavidad ni derrame</text>
+          <text x="198" y="243" font-size="11.5" font-weight="700" fill="currentColor">→ Neumonía</text>
+          <line x1="198" y1="257" x2="332" y2="257" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="198" y="277" font-size="10.5" fill="currentColor" opacity="0.75">Lobar con broncograma</text>
+          <text x="198" y="292" font-size="10.5" fill="currentColor" opacity="0.75">= «típica»</text>
+          <text x="198" y="310" font-size="10.5" fill="currentColor" opacity="0.75">Parcheada o difusa</text>
+          <text x="198" y="325" font-size="10.5" fill="currentColor" opacity="0.75">= «atípica»</text>
+
+          <rect x="358" y="180" width="162" height="148" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="currentColor" stroke-opacity="0.45" stroke-width="1.5"></rect>
+          <text x="372" y="202" font-size="11" font-weight="700" fill="currentColor">Infiltrado con una</text>
+          <text x="372" y="217" font-size="11" font-weight="700" fill="currentColor">o más cavidades</text>
+          <text x="372" y="243" font-size="11.5" font-weight="700" fill="currentColor">→ Absceso</text>
+          <line x1="372" y1="257" x2="506" y2="257" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="372" y="277" font-size="10.5" fill="currentColor" opacity="0.75">Anaerobios de la boca</text>
+          <text x="372" y="292" font-size="10.5" fill="currentColor" opacity="0.75">por aspiración</text>
+          <text x="372" y="310" font-size="10.5" fill="currentColor" opacity="0.75">Predomina en LID</text>
+          <text x="372" y="325" font-size="10.5" fill="currentColor" opacity="0.75">Esputo maloliente</text>
+
+          <rect x="532" y="180" width="162" height="148" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="currentColor" stroke-opacity="0.45" stroke-width="1.5"></rect>
+          <text x="546" y="202" font-size="11" font-weight="700" fill="currentColor">Infiltrado con</text>
+          <text x="546" y="217" font-size="11" font-weight="700" fill="currentColor">líquido pleural</text>
+          <text x="546" y="243" font-size="11.5" font-weight="700" fill="currentColor">→ Derrame</text>
+          <line x1="546" y1="257" x2="680" y2="257" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="546" y="277" font-size="10.5" fill="currentColor" opacity="0.75">La toracocentesis</text>
+          <text x="546" y="292" font-size="10.5" fill="currentColor" opacity="0.75">define si es empiema</text>
+          <text x="546" y="310" font-size="10.5" font-weight="700" fill="currentColor">Gram o cultivo (+)</text>
+          <text x="546" y="325" font-size="10.5" font-weight="700" fill="currentColor">→ drenar</text>
+
+          <rect x="10" y="346" width="680" height="46" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.28" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="26" y="366" font-size="11" font-weight="700" fill="currentColor">Las dos complicaciones no son diagnósticos nuevos</text>
+          <text x="26" y="384" font-size="11" fill="currentColor" opacity="0.75">Absceso y empiema son la misma neumonía que avanzó: hacia el parénquima o hacia el espacio pleural.</text>
+        </svg>
+        <figcaption>Una sola imagen separa cuatro conductas distintas. El paso siguiente sólo cambia en la rama del derrame, donde hace falta analizar el líquido para decidir si se drena.</figcaption>
+      </figure>
+
+      <h3>Tabla discriminante</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Entidad</th><th>Hallazgo que la define</th><th>Conducta que la distingue</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>No es neumonía</strong></td><td>Sin infiltrado; FR, FC y T° normales (probabilidad &lt; 1 %)</td><td>Sintomático — bronquitis aguda o cuadro de vía aérea alta</td></tr>
+            <tr><td><strong>NAC «típica»</strong></td><td><strong>Consolidación lobar con broncograma aéreo</strong></td><td>Betalactámico; el CURB-65 define el sitio</td></tr>
+            <tr><td><strong>NAC «atípica»</strong></td><td><strong>Infiltrados peribronquiales irregulares</strong>; &lt; 40 años, verano-otoño, leucocitosis ausente</td><td>Cubrir <em>Mycoplasma</em> y <em>Chlamydia</em>: macrólido o quinolona respiratoria</td></tr>
+            <tr><td><strong>Neumonía asociada al sistema sanitario</strong></td><td>Contacto reciente con el sistema de salud (internación ≥ 2 días en 90 días, diálisis, centro de crónicos)</td><td>Ampliar cobertura a BGN, <em>P. aeruginosa</em> y SAMR</td></tr>
+            <tr><td><strong>NAC grave</strong></td><td><strong>Shock o insuficiencia respiratoria</strong>; CURB-65 ≥ 3</td><td>UTI; dos drogas, con anti-<em>Pseudomonas</em> si hay factores de riesgo</td></tr>
+            <tr><td><strong>Absceso pulmonar</strong></td><td><strong>Cavidad</strong> en la imagen; esputo <strong>maloliente</strong>; antecedente de aspiración; <strong>LID</strong></td><td>Cobertura anaerobia 6 – 8 semanas; cirugía si no mejora</td></tr>
+            <tr><td><strong>Derrame paraneumónico no complicado</strong></td><td>pH &gt; 7,2, glucosa &gt; 40, LDH &lt; 1000, Gram y cultivo negativos</td><td><strong>Sólo antibiótico</strong>, misma duración que la neumonía</td></tr>
+            <tr><td><strong>Empiema</strong></td><td><strong>Pus en el espacio pleural</strong>; Gram o cultivo positivos</td><td><strong>Drenaje</strong> + antibiótico prolongado (≥ 3 semanas)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Fuera del capítulo, pero en el mismo diferencial</h3>
+      <ul>
+        <li><strong>Tuberculosis pulmonar:</strong> curso <strong>subagudo</strong>, infiltrado en <strong>vértices</strong>, cavitación. La <strong>PCR en muestra respiratoria</strong> está aprobada para TBC con sensibilidad del 90 – 99 %.</li>
+        <li><strong>Neoplasia con obstrucción bronquial:</strong> neumonía <strong>recurrente en el mismo lóbulo</strong>, o absceso que <strong>no responde</strong> al tratamiento médico apropiado.</li>
+        <li><strong><em>Pneumocystis jirovecii</em>:</strong> infiltrados <strong>difusos bilaterales</strong> en paciente con <strong>HIV</strong>; el BAL tiene sensibilidad del <strong>98 %</strong>.</li>
+      </ul>
+
+      <p class="cita">Fuente: clase «Infecciones respiratorias 2» de la cátedra. Los diferenciales fuera del capítulo se apoyan en datos que sí figuran en la presentación (PCR para TBC, BAL para <em>P. jirovecii</em>, neoplasia obstructiva como causa de absceso refractario).</p>
+    </section>
+
+    <!-- ============ Repaso activo ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>¿Bajo qué tres condiciones un germen consigue infectar el parénquima pulmonar?</summary>
+          <div class="fc__r">Cuando <strong>han fallado las defensas del huésped</strong>, cuando el <strong>microorganismo es muy virulento</strong>, o cuando la <strong>inoculación es muy intensa</strong>. Llega desde la vía aérea superior por aerosoles, o por <strong>vía hematógena</strong>.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Definí «neumonía asociada al sistema sanitario». ¿Qué gérmenes obliga a cubrir?</summary>
+          <div class="fc__r">Paciente que estuvo <strong>internado ≥ 2 días en los últimos 90 días</strong>, asiste a <strong>hemodiálisis</strong>, recibe <strong>tratamientos EV domiciliarios o curaciones de heridas</strong>, o <strong>reside en centros de crónicos o ancianos</strong>. Obliga a cubrir <strong>BGN aerobios (<em>P. aeruginosa</em>), <em>S. pneumoniae</em>, <em>S. aureus</em> incluido SAMR</strong> y patógenos mixtos aerobios/anaerobios por aspiración. Mortalidad 10,3 – 19,8 %.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Joven con neumonía por <em>S. aureus</em> y múltiples lesiones redondeadas bilaterales: ¿qué hay que buscar?</summary>
+          <div class="fc__r">Llegó por <strong>vía hematógena</strong>, así que hay que buscar la <strong>puerta de entrada</strong>: lesiones en <strong>piel, catéteres, drogas endovenosas</strong> y <strong>endocarditis</strong>. Puede evolucionar rápidamente a <strong>SDRA con mortalidad del 50 %</strong>.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Por qué los abscesos pulmonares predominan en el lóbulo inferior derecho?</summary>
+          <div class="fc__r">Por dos razones que se suman: el <strong>bronquio principal derecho es más ancho, más corto y más vertical</strong> que el izquierdo, y <strong>por gravedad las bacterias se dirigen a las zonas declives</strong>. Como vienen de la boca —anaerobios—, el esputo resulta <strong>maloliente</strong>.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué determina que un derrame paraneumónico resuelva sin secuelas o termine en empiema?</summary>
+          <div class="fc__r"><strong>Que la neumonía de base se trate adecuadamente.</strong> Si se trata, <strong>cesa la producción de mediadores inflamatorios</strong> y el derrame no complicado <strong>resuelve sin fibrosis residual clínicamente significativa</strong>. Si no, el líquido se infecta y aparece el empiema.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué probabilidad de neumonía tiene un paciente con tos, y cómo la modifican los signos vitales?</summary>
+          <div class="fc__r">La neumonía es sólo el <strong>5 %</strong> de los cuadros que cursan con tos. Con <strong>fiebre + deterioro del estado general + ↑ FC + rales</strong> sube al <strong>50 %</strong>. Con <strong>FR, FC y temperatura normales</strong> baja a <strong>menos del 1 %</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Perfil completo de la NAC «atípica».</summary>
+          <div class="fc__r"><strong>Menores de 40 años</strong>, en <strong>verano-otoño</strong>. <em>M. pneumoniae</em> 10 – 30 %, <em>Chlamydia</em> 6 – 20 % y virus. Empieza <strong>como cuadro alto</strong> (dolor de garganta, disfonía, coriza, cefalea) con <strong>tos no productiva</strong> que puede persistir <strong>varias semanas</strong>. <strong>Estertores húmedos o crepitantes</strong>, <strong>leucocitosis puede estar ausente</strong>, Rx con <strong>infiltrados peribronquiales irregulares</strong>. Evolución mayormente benigna.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Relacioná cada patrón radiológico con el germen que sugiere.</summary>
+          <div class="fc__r"><strong>Consolidación lobar con broncograma</strong> —más aún si cavita o tiene derrame— → <strong>neumococo</strong>. <strong>Infiltrados parcheados que se pueden cavitar</strong> → <strong>estafilococo</strong>. <strong>Infiltrados difusos bilaterales</strong> → <strong><em>Legionella</em>, virus, <em>Pneumocystis</em></strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Cuándo una muestra de esputo es apta, y qué rendimiento tiene entonces?</summary>
+          <div class="fc__r">Apta = <strong>&gt; 25 PMN en 100 campos y &lt; 10 células epiteliales</strong>. Sólo el <strong>50 % de los pacientes expectora</strong> y de esos sólo el <strong>50 % da muestra apta</strong>. Cuando lo es, el <strong>Gram identifica <em>S. pneumoniae</em> en el 80 %</strong> y el <strong>cultivo es positivo en el 30 – 90 %</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Para qué sirve la procalcitonina y cuál es el punto de corte?</summary>
+          <div class="fc__r">Se libera <strong>precozmente durante la infección bacteriana</strong>. <strong>&gt; 0,5 ng/mL</strong> indica que <strong>se requieren antibióticos</strong>; cuando <strong>desciende</strong>, indica que <strong>se pueden retirar</strong>. Su valor real está más en <strong>decidir el retiro</strong> que en iniciar.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Por qué el cultivo de esputo no sirve para confirmar un absceso, y qué se usa en su lugar?</summary>
+          <div class="fc__r">Porque el <strong>esputo expectorado está contaminado por la microflora oral</strong>, que es justamente la que causa el absceso. Se usan <strong>fibrobroncoscopia con BAL y cultivo cuantitativo</strong>, o <strong>cultivo del líquido de toracocentesis</strong>. Los <strong>hemocultivos casi nunca son positivos</strong>.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Enumerá el CURB-65 con sus umbrales y la mortalidad de cada rango.</summary>
+          <div class="fc__r"><strong>C</strong>onfusión · <strong>U</strong>rea con BUN &gt; 19 mg/dL · <strong>R</strong>espiración &gt; 30 rpm · <strong>B</strong> PAS &lt; 90 o PAD &lt; 60 · edad &gt; <strong>65</strong>. Un punto cada uno.<br><strong>0 – 1:</strong> mortalidad 0,2 – 2,7 % → ambulatorio. <strong>2:</strong> 6,8 – 27 % → hospitalización. <strong>3 – 5:</strong> <strong>57 %</strong> → UCI.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Esquema sugerido en ambulatorio, según haya o no comorbilidades.</summary>
+          <div class="fc__r"><strong>&lt; 65 sin comorbilidades:</strong> amoxicilina <strong>1 g c/8 – 12 h VO</strong> (alternativa: claritromicina 500 c/12 h o azitromicina 500 el 1.º día y 250/día × 4 días).<br><strong>≥ 65 o con comorbilidades:</strong> <strong>amoxicilina/clavulanato o amoxicilina/sulbactam 875/125 mg c/8 – 12 h VO</strong> (alternativas: levofloxacina 500 o moxifloxacina 400 c/24 h; ceftriaxona 1 g IM, <strong>no en alérgicos</strong>).</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Por qué el consenso prefiere ampicilina/sulbactam sobre ceftriaxona en el internado?</summary>
+          <div class="fc__r">Porque la combinación de <strong>betalactámico con inhibidor de betalactamasa</strong> tiene <strong>menor potencial de inducir resistencia durante la internación</strong> que las <strong>cefalosporinas de 3.ª generación</strong>.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Cuáles son las cuatro pruebas de estabilidad clínica que habilitan la rotación a vía oral?</summary>
+          <div class="fc__r"><strong>FC, FR, tensión arterial y temperatura normales</strong>; <strong>SatO₂ al aire ambiente &gt; 90 %</strong>; <strong>capacidad de mantener la ingesta oral</strong>; <strong>estado mental normal</strong>. Se suman a estar <strong>afebril 48 – 72 h</strong> y a un mínimo de <strong>5 días</strong> de tratamiento.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Tratamiento del absceso pulmonar: vía, opciones y duración total.</summary>
+          <div class="fc__r"><strong>Parenteral 2 semanas</strong>, luego oral al constatar mejoría. Opciones: <strong>amoxicilina/clavulánico 2 g c/8 h</strong>, <strong>clindamicina 300 – 600 mg c/6 – 8 h</strong>, <strong>metronidazol 500 mg c/8 h + amoxicilina</strong> o <strong>moxifloxacina 400 mg/día</strong>. Total <strong>6 – 8 semanas</strong>, con <strong>Rx de control cada 2 semanas</strong>.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿En qué proporción aumenta el riesgo de NAV por cada día de intubación?</summary>
+          <div class="fc__r"><strong>3 % por cada día intubado.</strong> La neumonía intrahospitalaria es la <strong>principal causa de muerte por infección en pacientes internados</strong>.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Cuándo hay que considerar cirugía en un absceso pulmonar?</summary>
+          <div class="fc__r">Cuando no mejora pese al tratamiento médico apropiado (<strong>10 – 15 %</strong> de los casos): <strong>cavidades &gt; 8 cm</strong>, <strong>gérmenes resistentes</strong> como <em>P. aeruginosa</em>, <strong>neoplasias obstructivas</strong> y <strong>hemorragia masiva</strong>. Se considera <strong>lobectomía o neumonectomía</strong>.</div>
+        </details>
+
+        <details class="fc s-diferenciales">
+          <summary>¿Qué hallazgo del líquido pleural obliga a drenar?</summary>
+          <div class="fc__r">Que el <strong>cultivo o la tinción de Gram del líquido pleural sean positivos</strong>. También definen derrame complicado el <strong>pH &lt; 7,2</strong>, la <strong>glucosa &lt; 40 mg/dL</strong> y la <strong>LDH &gt; 1000</strong>. El <strong>empiema —pus franco— se drena siempre</strong>.</div>
+        </details>
+
+        <details class="fc s-diferenciales">
+          <summary>¿Qué gérmenes se aíslan en el empiema según sea ambulatorio o intrahospitalario?</summary>
+          <div class="fc__r">En el <strong>40 %</strong> de las infecciones pleurales <strong>no se aísla germen</strong>. Cuando sí: <strong>ambulatorios</strong> 50 % <em>Streptococcus</em>, 16 % anaerobios, 11 % SAMS. <strong>Intrahospitalarios</strong> 46 % <em>S. aureus</em> (muchas veces <strong>SAMR</strong>), el resto gramnegativos.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Lo que define cada cuadro</dt>
+        <dd><strong>Neumonía:</strong> clínica compatible + <strong>infiltrado en la imagen</strong> (obligatorio). <strong>Absceso:</strong> <strong>cavidad</strong> + esputo <strong>maloliente</strong> + antecedente de aspiración, en <strong>LID</strong>. <strong>Empiema:</strong> <strong>pus en el espacio pleural</strong>. Y antes de todo: con <strong>FR, FC y T° normales</strong> la probabilidad de neumonía es <strong>&lt; 1 %</strong>.</dd>
+
+        <dt class="r-gold">Estudio de elección</dt>
+        <dd><strong>Radiografía de tórax</strong> — la confirmación imagenológica es obligatoria; la <strong>TC</strong> queda para la <strong>falta de respuesta</strong>. Patrones: lobar con broncograma → <strong>neumococo</strong>; parcheado que cavita → <strong>estafilococo</strong>; difuso bilateral → <strong><em>Legionella</em>, virus, <em>Pneumocystis</em></strong>. Ante derrame, <strong>toracocentesis</strong>: Gram o cultivo (+) → drenar.</dd>
+
+        <dt class="r-tto">Tratamiento de 1ª línea</dt>
+        <dd><strong>Ambulatorio sano:</strong> amoxicilina <strong>1 g c/8 – 12 h VO</strong>. <strong>Ambulatorio con comorbilidades:</strong> amoxi/clavulánico <strong>875/125 c/8 – 12 h VO</strong>. <strong>Sala:</strong> ampi/sulbactam <strong>1,5 g c/8 h IV</strong> ± claritromicina. <strong>UTI:</strong> ampi/sulbactam + claritromicina o levofloxacina 750; con riesgo de <em>Pseudomonas</em>, <strong>dos drogas anti-<em>Pseudomonas</em></strong>. <strong>Absceso:</strong> cobertura anaerobia <strong>6 – 8 semanas</strong>. Duración de la NAC: <strong>≥ 5 días</strong>, afebril 48 – 72 h.</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd><strong>CURB-65 ≥ 3 → mortalidad 57 %</strong>, ingreso a UCI. Primera dosis en las primeras <strong>4 – 8 h</strong>. <strong>Leucopenia</strong> y <strong>PCR &gt; 100 mg/L</strong> son de mal pronóstico. <em>S. aureus</em> bilateral en joven → buscar <strong>endocarditis y drogas EV</strong>. Absceso que no mejora → descartar <strong>neoplasia obstructiva</strong> y considerar cirugía.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir de la clase «Infecciones respiratorias 2 — Neumonía, absceso, empiema» de la cátedra de Infectología, complementada con la Guía práctica del Comité Intersociedades, Grupo Argentino de Estudio de la NAC (MEDICINA, Buenos Aires, 2003;63:319-343), las recomendaciones de la Sociedad Argentina de Infectología (MEDICINA, Buenos Aires, 2015;75:245-257), la escala CURB-65 de la British Thoracic Society y la BTS Pleural Disease Guideline (Thorax 2010). Material de estudio: no reemplaza el criterio clínico ni la guía institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link'));
+
+  function porMeta(hash){
+    for (var i = 0; i < enlaces.length; i++){
+      if (enlaces[i].getAttribute('href') === '#' + hash) return enlaces[i];
+    }
+    return null;
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var enlace = porMeta(e.target.id);
+        if (!enlace) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          enlace.setAttribute('aria-current', 'true');
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>

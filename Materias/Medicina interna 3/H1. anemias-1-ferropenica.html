@@ -1,0 +1,1123 @@
+<title>Anemia Ferropénica y de Enfermedad Crónica</title>
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+}
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índice lateral ---------- */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Ficha de sección ---------- */
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.35rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-row:1/3; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+.importante__titulo{
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso{ display:none !important; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-generalidades"  href="#hematologia">Hematología y Hemograma</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#anemia">Anemia: Definición y Enfoque</a></li>
+      <li><a class="indice__link i-clinica"        href="#hierro">Metabolismo del Hierro</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#ferropenica">Ferropénica: Causas y Clínica</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#tratamiento">Ferropénica: Dx y Tratamiento</a></li>
+      <li><a class="indice__link i-diferenciales"  href="#cronica">Enfermedad Crónica y Sideroblástica</a></li>
+      <li><a class="indice__link i-importantes"    href="#diferencial">Diferencial de la Microcítica</a></li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Medicina Interna III · Hematología · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Anemia Ferropénica y de Enfermedad Crónica</h1>
+      <p class="portada__bajada">Primera parte del tema Anemia. Del hemograma y el metabolismo del hierro al diferencial de la anemia microcítica.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">7 secciones</span>
+        <span class="etiqueta s-clinica">Metabolismo del hierro</span>
+        <span class="etiqueta s-diferenciales">Ferropénica vs. crónica</span>
+        <span class="etiqueta s-tratamiento">Sulfato ferroso</span>
+      </div>
+    </header>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="hematologia">
+      <span class="seccion__pestana"><b>01</b> Base</span>
+      <h2 class="seccion__titulo">Hematología y Hemograma</h2>
+
+      <p>La <strong>hematología</strong> es la rama de la medicina que trata de la sangre, los órganos formadores de sangre y sus enfermedades.</p>
+
+      <h3>Hematopoyesis</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Etapa</th><th>Órgano</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Prenatal</strong></td>
+              <td><strong>Saco vitelino</strong> → <strong>hígado y bazo</strong> a partir del 1.º y 3.º mes → <strong>médula ósea</strong> a partir del 4.º mes</td>
+            </tr>
+            <tr>
+              <td><strong>Postnatal</strong></td>
+              <td><strong>Médula ósea</strong>: vértebras, huesos largos, esternón, costillas y cresta ilíaca</td>
+            </tr>
+            <tr>
+              <td><strong>Extramedular</strong></td>
+              <td>Hígado, bazo, ganglios linfáticos y timo. Se ve en <strong>anemias hemolíticas congénitas</strong> y <strong>síndromes mieloproliferativos</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Médula ósea</h3>
+      <ul>
+        <li>La <strong>célula stem pluripotente</strong> tiene capacidad de <strong>autorrenovación, proliferación y diferenciación</strong> en células progenitoras comprometidas con líneas celulares específicas.</li>
+        <li>Cada célula progenitora tiene su <strong>microambiente específico</strong> para diferenciarse.</li>
+        <li>La <strong>matriz extracelular</strong> —el soporte físico— fija las células progenitoras mediante <strong>moléculas de adhesión</strong>, para que sobre ellas actúen las <strong>citocinas</strong> producidas por las células del estroma y las accesorias.</li>
+      </ul>
+
+      <h3>Timo</h3>
+      <ul>
+        <li>Glándula <strong>impar</strong>, ubicada en el <strong>mediastino anterior</strong>. Su nombre deriva del griego <em>thymos</em>, «energía vital».</li>
+        <li>Libera la hormona <strong>timosina</strong>.</li>
+        <li>Estimula el crecimiento de los <strong>linfocitos T</strong>, encargados de detectar y eliminar moléculas de patógenos o propias modificadas (cancerígenas).</li>
+        <li><strong>Se atrofia en la adolescencia</strong>, convirtiéndose en tejido graso. Se pensaba que en el adulto desaparecía.</li>
+        <li>Se ve afectado negativamente por la <strong>quimioterapia y la radioterapia</strong>.</li>
+      </ul>
+      <p>El material de cátedra le atribuye además una función reguladora de las emociones: estar directamente conectado a los sentidos, la conciencia y el lenguaje; aumentar con la alegría y disminuir con el estrés o la enfermedad; y ser estimulado por el suplemento de zinc.</p>
+
+      <p class="cita">Nota: las funciones inmunológicas y anatómicas del timo listadas arriba son las establecidas. Las afirmaciones del último párrafo —regulación emocional, variación con el estado de ánimo, estimulación por zinc— <strong>no cuentan con respaldo en la fisiología clásica</strong> y se conservan porque figuran en el material de cátedra. Conviene saber que no son datos de examen estándar.</p>
+
+      <h3>Hemograma — valores de referencia</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Serie roja</th><th>Hombre</th><th>Mujer</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Glóbulos rojos</td><td><span class="dato">4 – 5,5</span> millones/mL</td><td><span class="dato">3,9 – 4,9</span> millones/mL</td></tr>
+            <tr><td><strong>Hemoglobina</strong></td><td><strong><span class="dato">13 – 17</span> g/dL</strong></td><td><strong><span class="dato">12 – 15</span> g/dL</strong></td></tr>
+            <tr><td>Hematocrito</td><td><span class="dato">40 – 52 %</span></td><td><span class="dato">36 – 45 %</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Otras series</th><th>Índices hematimétricos</th><th>Fórmula leucocitaria</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Leucocitos <span class="dato">5.000 – 10.000</span>/mL<br>Plaquetas <span class="dato">150.000 – 450.000</span>/mL</td>
+              <td><strong>VCM <span class="dato">80 – 99 fL</span></strong><br>HCM <span class="dato">27 – 32 pg</span><br>CHCM <span class="dato">32 – 36 g/dL</span></td>
+              <td>Neutrófilos segmentados <span class="dato">45 – 70 %</span><br>Neutrófilos cayados <span class="dato">0 – 1 %</span><br>Basófilos <span class="dato">0 – 1 %</span><br>Eosinófilos <span class="dato">0 – 4 %</span><br>Monocitos <span class="dato">0 – 9 %</span><br>Linfocitos <span class="dato">20 – 35 %</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Abordaje del paciente hematológico</h3>
+      <ul>
+        <li><strong>Anamnesis</strong>: síntomas y signos de los principales cuadros hematológicos.</li>
+        <li><strong>Examen físico</strong>: palidez, equimosis, enantemas, hematomas, telangiectasias, ictericia; <strong>adenomegalias, hepatomegalia y esplenomegalia</strong>.</li>
+        <li><strong>Laboratorio</strong> clínico y hematológico, <strong>métodos complementarios</strong>, <strong>diagnósticos diferenciales</strong>, conclusión diagnóstica y tratamiento.</li>
+      </ul>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-fisiopatologia" id="anemia">
+      <span class="seccion__pestana"><b>02</b> Enfoque</span>
+      <h2 class="seccion__titulo">Anemia: Definición y Enfoque</h2>
+
+      <p><strong>Concentración baja de hemoglobina en la sangre.</strong> Valores de hemoglobina <strong>menores de <span class="dato">13 g/dL</span> en el hombre</strong> y de <strong><span class="dato">12 g/dL</span> en la mujer</strong> indican anemia.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Que un paciente cumpla criterio de anemia <strong>no implica la necesidad de transfundir</strong>. La decisión de transfusión es <strong>clínica</strong>, no se toma por un número aislado de hemoglobina.</p>
+      </div>
+
+      <h3>Manifestaciones comunes</h3>
+      <p>Son las del <strong>síndrome anémico</strong>, comunes a cualquier causa, y derivan de la hipoxia tisular y de los mecanismos compensadores:</p>
+      <ul>
+        <li><strong>Generales</strong>: astenia, mareos, cefaleas, acúfenos.</li>
+        <li><strong>Cardiorrespiratorias</strong>: disnea, palpitaciones, taquicardia, <strong>soplo</strong>, angina, claudicación intermitente e <strong>insuficiencia cardíaca congestiva</strong>.</li>
+        <li><strong>Cutáneas y digestivas</strong>: palidez, anorexia y trastornos intestinales.</li>
+      </ul>
+
+      <h3>Cómo se clasifica</h3>
+      <p>Dos ejes independientes que se usan a la vez: el <strong>tamaño del glóbulo rojo</strong> orienta la causa, y los <strong>reticulocitos</strong> dicen si la médula está respondiendo o no.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 360" role="img" aria-label="Doble clasificación de la anemia. Por el volumen corpuscular medio: microcítica con VCM menor a 80 femtolitros, que corresponde a ferropénica, de enfermedad crónica, sideroblástica y talasemia; normocítica con VCM entre 80 y 99, que corresponde a enfermedad crónica, anemia renal, hemorragia aguda y aplásica; y macrocítica con VCM mayor a 99, que corresponde a las megaloblásticas por déficit de vitamina B12 y folato, a la hepatopatía y a la mielodisplasia. Por la respuesta medular medida con reticulocitos: regenerativa cuando los reticulocitos están altos y el índice reticulocitario supera 2 a 3, propia de la hemólisis y la hemorragia aguda; y arregenerativa cuando los reticulocitos están bajos o normales, lo que indica defecto de producción, propia de la ferropénica, las megaloblásticas, la de enfermedad crónica y la aplásica.">
+          <text x="14" y="36" font-size="11.5" font-weight="700" fill="currentColor" opacity="0.75">Por el tamaño — VCM</text>
+          <text x="364" y="36" font-size="11.5" font-weight="700" fill="currentColor" opacity="0.75">Por la respuesta medular — reticulocitos</text>
+
+          <rect x="14" y="56" width="330" height="88" rx="3" fill="var(--c)" fill-opacity="0.20" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="30" y="80" font-size="12.5" font-weight="700" fill="currentColor">Microcítica · VCM &lt; 80 fL</text>
+          <text x="30" y="102" font-size="11" fill="currentColor" opacity="0.8">Ferropénica · enfermedad crónica</text>
+          <text x="30" y="120" font-size="11" fill="currentColor" opacity="0.8">Sideroblástica · talasemia</text>
+
+          <rect x="14" y="152" width="330" height="88" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="176" font-size="12.5" font-weight="700" fill="currentColor">Normocítica · VCM 80 – 99 fL</text>
+          <text x="30" y="198" font-size="11" fill="currentColor" opacity="0.8">Enfermedad crónica · anemia renal</text>
+          <text x="30" y="216" font-size="11" fill="currentColor" opacity="0.8">Hemorragia aguda · aplásica</text>
+
+          <rect x="14" y="248" width="330" height="88" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="272" font-size="12.5" font-weight="700" fill="currentColor">Macrocítica · VCM &gt; 99 fL</text>
+          <text x="30" y="294" font-size="11" fill="currentColor" opacity="0.8">Megaloblásticas: B12 y folato</text>
+          <text x="30" y="312" font-size="11" fill="currentColor" opacity="0.8">Hepatopatía · mielodisplasia</text>
+
+          <rect x="364" y="56" width="322" height="136" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="380" y="80" font-size="12.5" font-weight="700" fill="currentColor">REGENERATIVA</text>
+          <text x="380" y="102" font-size="11" fill="currentColor" opacity="0.8">Reticulocitos altos · IPR &gt; 2 – 3</text>
+          <text x="380" y="120" font-size="11" fill="currentColor" opacity="0.8">La médula responde bien</text>
+          <text x="380" y="146" font-size="11" font-weight="700" fill="currentColor">Hemólisis</text>
+          <text x="380" y="166" font-size="11" font-weight="700" fill="currentColor">Hemorragia aguda</text>
+
+          <rect x="364" y="200" width="322" height="136" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="380" y="224" font-size="12.5" font-weight="700" fill="currentColor">ARREGENERATIVA</text>
+          <text x="380" y="246" font-size="11" fill="currentColor" opacity="0.8">Reticulocitos bajos o normales</text>
+          <text x="380" y="264" font-size="11" fill="currentColor" opacity="0.8">Defecto de producción</text>
+          <text x="380" y="290" font-size="11" font-weight="700" fill="currentColor">Ferropénica · megaloblásticas</text>
+          <text x="380" y="310" font-size="11" font-weight="700" fill="currentColor">Enfermedad crónica · aplásica</text>
+        </svg>
+        <figcaption>Los dos ejes se leen juntos: una macrocitosis con reticulocitos <strong>altos</strong> es hemólisis, no déficit de B12 — los reticulocitos son células grandes y elevan el VCM por sí solos.</figcaption>
+      </figure>
+
+      <p class="cita">Profundización: el <strong>índice reticulocitario</strong> corrige el porcentaje de reticulocitos por el grado de anemia. Reticulocitos corregidos = % × (hematocrito del paciente / hematocrito normal); el IPR divide ese valor por el factor de maduración. Un <strong>IPR &gt; 2 – 3</strong> indica respuesta medular adecuada (anemia regenerativa) y un <strong>IPR &lt; 2</strong>, defecto de producción. Fuente: Harrison, Principios de Medicina Interna, capítulo de anemias.</p>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-clinica" id="hierro">
+      <span class="seccion__pestana"><b>03</b> Hierro</span>
+      <h2 class="seccion__titulo">Metabolismo del Hierro</h2>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 392" role="img" aria-label="Metabolismo del hierro. Se ingieren 10 a 20 miligramos por día en carne y verduras. En el estómago las secreciones gástricas convierten el hierro férrico en ferroso. La absorción ocurre en la porción superior del intestino delgado y sólo se absorbe alrededor del 10 por ciento. Del transporte, cerca de 1 miligramo por día pasa a la sangre unido a la transferrina. El destino final es la eritropoyesis, los depósitos como ferritina y la excreción de aproximadamente 1 miligramo diario. Los compartimientos del hierro son: funcionante 60 a 70 por ciento con 2,5 gramos de los cuales 2 están en la hemoglobina; depósito 25 a 30 por ciento con 1 gramo en el varón y 0,5 en la mujer fértil; circulante menos del 1 por ciento con 3 a 4 miligramos unidos a transferrina; e intracelular menos del 1 por ciento en enzimas tisulares. Las necesidades diarias son de 1 miligramo en el adulto, con 1,5 a 2 miligramos adicionales en la mujer fértil, y aumentan en la adolescencia y el embarazo.">
+          <defs>
+            <marker id="pta-fe" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="14" y="36" width="380" height="54" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="58" font-size="12.5" font-weight="700" fill="currentColor">Ingesta 10 – 20 mg/día</text>
+          <text x="30" y="76" font-size="11.5" fill="currentColor" opacity="0.8">Carne y verduras</text>
+
+          <line x1="204" y1="90" x2="204" y2="106" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-fe)"></line>
+          <text x="212" y="103" font-size="10.5" fill="currentColor" opacity="0.65">ingresa</text>
+
+          <rect x="14" y="108" width="380" height="54" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="130" font-size="12.5" font-weight="700" fill="currentColor">Estómago</text>
+          <text x="30" y="148" font-size="11.5" fill="currentColor" opacity="0.8">Las secreciones gástricas convierten Fe³⁺ → Fe²⁺</text>
+
+          <line x1="204" y1="162" x2="204" y2="178" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-fe)"></line>
+          <text x="212" y="175" font-size="10.5" fill="currentColor" opacity="0.65">se reduce</text>
+
+          <rect x="14" y="180" width="380" height="54" rx="3" fill="var(--c)" fill-opacity="0.20" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="30" y="202" font-size="12.5" font-weight="700" fill="currentColor">Absorción</text>
+          <text x="30" y="220" font-size="11.5" fill="currentColor" opacity="0.8">Porción superior del intestino delgado · sólo ~10 %</text>
+
+          <line x1="204" y1="234" x2="204" y2="250" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-fe)"></line>
+          <text x="212" y="247" font-size="10.5" fill="currentColor" opacity="0.65">atraviesa</text>
+
+          <rect x="14" y="252" width="380" height="54" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="274" font-size="12.5" font-weight="700" fill="currentColor">Transporte</text>
+          <text x="30" y="292" font-size="11.5" fill="currentColor" opacity="0.8">~1 mg/día pasa a sangre, unido a transferrina</text>
+
+          <line x1="204" y1="306" x2="204" y2="322" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-fe)"></line>
+          <text x="212" y="319" font-size="10.5" fill="currentColor" opacity="0.65">se distribuye</text>
+
+          <rect x="14" y="324" width="380" height="54" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="346" font-size="12.5" font-weight="700" fill="currentColor">Destino</text>
+          <text x="30" y="364" font-size="11.5" fill="currentColor" opacity="0.8">Eritropoyesis · ferritina · excreción ~1 mg/día</text>
+
+          <rect x="414" y="36" width="272" height="200" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="430" y="60" font-size="11.5" font-weight="700" fill="currentColor">Compartimientos del hierro</text>
+          <text x="430" y="84" font-size="11" font-weight="700" fill="currentColor">Funcionante · 60 – 70 %</text>
+          <text x="430" y="100" font-size="11" fill="currentColor" opacity="0.75">2,5 g · 2 g en la hemoglobina</text>
+          <text x="430" y="124" font-size="11" font-weight="700" fill="currentColor">Depósito · 25 – 30 %</text>
+          <text x="430" y="140" font-size="11" fill="currentColor" opacity="0.75">1 g varón · 0,5 g mujer fértil</text>
+          <text x="430" y="164" font-size="11" font-weight="700" fill="currentColor">Circulante · &lt; 1 %</text>
+          <text x="430" y="180" font-size="11" fill="currentColor" opacity="0.75">3 – 4 mg en la transferrina</text>
+          <text x="430" y="204" font-size="11" font-weight="700" fill="currentColor">Intracelular · &lt; 1 %</text>
+          <text x="430" y="220" font-size="11" fill="currentColor" opacity="0.75">Enzimas tisulares</text>
+
+          <rect x="414" y="252" width="272" height="126" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="430" y="276" font-size="11.5" font-weight="700" fill="currentColor">Necesidades diarias</text>
+          <text x="430" y="300" font-size="11" fill="currentColor" opacity="0.8">Adulto: 1 mg/día</text>
+          <text x="430" y="320" font-size="11" fill="currentColor" opacity="0.8">Mujer fértil: + 1,5 – 2 mg/día</text>
+          <text x="430" y="344" font-size="11" fill="currentColor" opacity="0.8">Adolescencia y embarazo</text>
+          <text x="430" y="362" font-size="11" fill="currentColor" opacity="0.8">aumentan los requerimientos</text>
+        </svg>
+        <figcaption>De 10 – 20 mg ingeridos se absorbe <strong>1 mg</strong> y se excreta <strong>1 mg</strong>. El balance es tan ajustado que cualquier pérdida crónica pequeña, sostenida en el tiempo, termina en ferropenia.</figcaption>
+      </figure>
+
+      <h3>Depósitos</h3>
+      <ul>
+        <li><strong>Ferritina</strong>: forma de depósito fisiológica, en <strong>hígado, bazo y músculo esquelético</strong>.</li>
+        <li><strong>Hemosiderina</strong>: depósito <strong>excesivo y patológico</strong> de hierro — es lo que se acumula en la <strong>hemocromatosis</strong>.</li>
+      </ul>
+
+      <h3>Situaciones particulares</h3>
+      <ul>
+        <li><strong>Recién nacido a término</strong>: dispone de hierro durante los primeros <span class="dato">4 meses</span> de vida gracias a la <strong>hemólisis fisiológica</strong>, y la <strong>leche materna</strong> lo aporta hasta los <span class="dato">6 meses</span>.</li>
+        <li>En una dieta habitual se ingieren <span class="dato">10 – 15 mg/día</span> y se absorbe alrededor del <span class="dato">10 %</span>, pudiendo llegar al <span class="dato">30 %</span> cuando la demanda aumenta.</li>
+      </ul>
+
+      <h3>Fuentes de hierro</h3>
+      <p>El material de cátedra destaca: <strong>carne</strong>, <strong>hígado</strong>, <strong>yemas de huevo</strong>, <strong>atún</strong>, <strong>almendras</strong>, <strong>espinaca</strong>, <strong>avena</strong> y <strong>frutos secos y pasas de uva</strong>.</p>
+
+      <p class="cita">Profundización útil para el tratamiento: el hierro <strong>hemo</strong> —carnes, vísceras, pescado— se absorbe mucho mejor que el <strong>no hemo</strong> de origen vegetal. La <strong>vitamina C</strong> favorece la absorción del no hemo, razón por la cual el sulfato ferroso se indica con jugo de naranja; los <strong>fitatos, polifenoles del té y el café, el calcio y los alcalinos</strong> la inhiben. Fuente: Harrison, capítulo de trastornos por deficiencia de hierro.</p>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-diagnostico" id="ferropenica">
+      <span class="seccion__pestana"><b>04</b> Ferropénica</span>
+      <h2 class="seccion__titulo">Anemia Ferropénica: Causas y Clínica</h2>
+
+      <p>Las causas se ordenan en <strong>cuatro mecanismos</strong>. Vale la pena memorizarlos así, porque cada uno se investiga de manera distinta.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Mecanismo</th><th>Causas</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Disminución de la ingesta</strong><br><em>La más frecuente</em></td>
+              <td>Dietas muy desequilibradas —por ejemplo, <strong>anorexia nerviosa</strong>— · regímenes severos de adelgazamiento · personas marginadas · niños con alimentación a base de «comidas rápidas»</td>
+            </tr>
+            <tr>
+              <td><strong>Disminución de la absorción</strong></td>
+              <td><strong>Gastrectomizados</strong> · síndrome de malabsorción, por ejemplo <strong>enfermedad celíaca</strong> · <strong>parasitosis</strong> · inhibidores: alcalinos, fosfatos, <strong>fitatos</strong> (salvado de cereales) y <strong>polifenoles</strong> (té, café)</td>
+            </tr>
+            <tr>
+              <td><strong>Aumento de las necesidades</strong></td>
+              <td><strong>Embarazo</strong> · <strong>lactancia</strong> · <strong>adolescencia</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Aumento de las pérdidas</strong></td>
+              <td><strong>Pérdida crónica de sangre</strong>: hemorroides, esofagitis por reflujo, várices esofágicas, úlcera péptica, uso de <strong>AINE</strong>, <strong>neoplasias</strong><br><strong>Genitourinaria</strong>: hematuria microscópica, <strong>menstruaciones excesivas</strong><br><strong>Hemodonación excesiva</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>IRIDA — ferropénica refractaria al hierro</h3>
+      <ul>
+        <li>Trastorno <strong>autosómico recesivo</strong>.</li>
+        <li><strong>No responde al hierro por vía oral</strong>, y sólo <strong>parcialmente</strong> a la administración intravenosa.</li>
+        <li>Se debe a mutaciones en el gen <strong>TMPRSS6</strong>, que <strong>elevan la hepcidina</strong> e inhiben la absorción del hierro.</li>
+      </ul>
+      <p>Conviene retenerla porque explica el mecanismo que después reaparece —adquirido— en la anemia de las enfermedades crónicas: <strong>hepcidina alta bloquea la absorción y el reciclado del hierro</strong>.</p>
+
+      <h3>Manifestaciones clínicas específicas</h3>
+      <p>Sobre el síndrome anémico común se agregan hallazgos propios de la ferropenia, que aparecen por el <strong>déficit de hierro en los epitelios</strong>:</p>
+      <ul>
+        <li><strong>Glositis</strong>: lengua lisa, roja y ulcerada.</li>
+        <li><strong>Coiloniquia</strong>: uñas en cucharilla.</li>
+        <li><strong>Estomatitis angular</strong>: úlceras y grietas en los ángulos de la boca.</li>
+        <li><strong>Alopecia.</strong></li>
+        <li><strong>Pica</strong>: apetito inusual, por ejemplo por barro o hielo.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>En el <strong>varón adulto</strong> y en la <strong>mujer posmenopáusica</strong>, una anemia ferropénica es <strong>sangrado digestivo hasta que se demuestre lo contrario</strong>. No alcanza con reponer hierro: hay que <strong>estudiar el tubo digestivo</strong> y descartar neoplasia.</p>
+      </div>
+
+      <p class="cita">La recomendación de estudio endoscópico en varones y posmenopáusicas con ferropenia sin causa evidente proviene de las guías de gastroenterología (British Society of Gastroenterology, <em>Guidelines for the management of iron deficiency anaemia</em>) y no figura como tal en el material de cátedra.</p>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-tratamiento" id="tratamiento">
+      <span class="seccion__pestana"><b>05</b> Dx y Tto</span>
+      <h2 class="seccion__titulo">Ferropénica: Diagnóstico y Tratamiento</h2>
+
+      <h3>Patrón de laboratorio</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Hemograma</th><th>Parámetros del hierro</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Hematocrito bajo</strong><br><strong>Hemoglobina baja</strong><br><strong>VCM bajo</strong> — anemia hipocrómica microcítica</td>
+              <td><strong>Ferremia baja</strong><br><strong>Ferritina baja</strong><br><strong>Saturación de transferrina baja</strong><br><strong>Transferrina alta o normal</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La <strong>transferrina va en sentido contrario</strong> al resto: al faltar hierro, el organismo fabrica más transportador. Es el dato que separa la ferropenia de la anemia de enfermedad crónica.</p>
+
+      <h3>Métodos complementarios</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Laboratorio clínico</th><th>Laboratorio hematológico y otros</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Sangre oculta en materia fecal</strong><br><strong>Parasitológico seriado</strong> en materia fecal<br>Hormonas tiroideas · hepatograma · LDH<br>Eritrosedimentación · proteinograma electroforético<br>Orina completa</td>
+              <td>Hemograma y coagulación<br><strong>Estudios gastrointestinales</strong><br>Radiografía de tórax</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Tratamiento</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Vía</th><th>Fármaco y dosis</th><th>Indicaciones</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Oral</strong></td>
+              <td><strong>Sulfato ferroso</strong> — la más económica, efectiva y usada. Si hay intolerancia digestiva: fumarato, glutamato o succinato.<br><strong>Dosis: 2 comprimidos por día, lejos de las comidas, con jugo de naranja.</strong><br><strong>Duración: <span class="dato">3 a 6 meses</span>.</strong></td>
+              <td>Tratamiento de elección en la mayoría de los casos</td>
+            </tr>
+            <tr>
+              <td><strong>Intramuscular</strong></td>
+              <td><strong>Hierro dextrano de bajo peso molecular</strong><br>1 ampolla profunda por día, <span class="dato">5 a 10 días</span></td>
+              <td>Alternativa cuando falla o no se tolera la vía oral</td>
+            </tr>
+            <tr>
+              <td><strong>Endovenosa</strong></td>
+              <td><strong>Carboximaltosa</strong>, <strong>hierro sacarosa</strong> o hierro dextrano de bajo peso molecular<br>Dosis según el nivel de hemoglobina necesario y el peso del paciente.<br><strong>No más de 2 ampollas diluidas en 100 mL de solución fisiológica a pasar en 1 hora, 1 a 3 veces por semana.</strong></td>
+              <td><strong>Anemia ferropénica grave</strong> · intolerancia a la vía oral e intramuscular · <strong>enfermedad celíaca</strong> · <strong>cirugía bariátrica</strong> · <strong>insuficiencia cardíaca</strong> · <strong>insuficiencia renal crónica</strong> junto con eritropoyetina · <strong>embarazo</strong> en 2.º y 3.º trimestre</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>No usar alcalinos ni cereales</strong> junto con el hierro oral para mejorar la tolerancia: <strong>bloquean su absorción</strong>. Si el paciente no tolera el sulfato ferroso, se cambia la sal —fumarato, glutamato, succinato—, no se lo acompaña de antiácidos.</p>
+      </div>
+
+      <p class="cita">Profundización sobre el control de la respuesta: los <strong>reticulocitos</strong> suben en pico entre el <strong>7.º y 10.º día</strong> de iniciado el hierro, y la <strong>hemoglobina debe aumentar al menos 1 g/dL en 2 – 4 semanas</strong>. El tratamiento se mantiene <strong>3 a 6 meses después de normalizar la hemoglobina</strong> para reponer los depósitos. Sobre los umbrales: una <strong>ferritina &lt; 30 ng/mL</strong> confirma ferropenia, pero en contexto inflamatorio la ferritina se eleva y el umbral sube a <strong>&lt; 100 ng/mL</strong>; una <strong>saturación de transferrina &lt; 16 %</strong> apoya el diagnóstico. Fuente: Harrison y guías de la British Society of Gastroenterology.</p>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-diferenciales" id="cronica">
+      <span class="seccion__pestana"><b>06</b> Crónica</span>
+      <h2 class="seccion__titulo">Enfermedad Crónica y Sideroblástica</h2>
+
+      <h3>Anemia de las enfermedades crónicas</h3>
+      <p>Asociada a trastornos crónicos: <strong>infecciones, diabetes, obesidad, neoplasias, insuficiencia renal</strong> y trastornos del sistema inmunitario.</p>
+      <ul>
+        <li>Hay <strong>activación de la inmunidad celular</strong> y producción de <strong>citocinas proinflamatorias</strong>.</li>
+        <li>Los <strong>macrófagos activados son eritrofagocíticos</strong> y secretan citocinas —entre ellas el <strong>factor de necrosis tumoral (TNF)</strong>— que <strong>reducen la eritropoyesis y acortan la vida del eritrocito</strong>.</li>
+        <li>Es una anemia <strong>normocítica y normocrómica</strong>.</li>
+        <li><strong>Responde mal al tratamiento con hierro.</strong></li>
+        <li>Se corrige con el <strong>tratamiento de la causa</strong>. Puede recurrirse a la <strong>eritropoyetina</strong>.</li>
+      </ul>
+
+      <p class="cita">Profundización sobre el mecanismo: el mediador central es la <strong>hepcidina</strong>, cuya síntesis hepática se eleva por la <strong>IL-6</strong>. La hepcidina degrada la <strong>ferroportina</strong> y con ello <strong>bloquea a la vez la absorción intestinal de hierro y su salida desde los macrófagos</strong>. El hierro queda secuestrado en los depósitos: hay hierro, pero no disponible. Es el mismo mecanismo de la IRIDA, pero adquirido y reversible. Fuente: Weiss G, Ganz T, Goodnough LT. Anemia of inflammation. Blood 2019.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>En la enfermedad crónica <strong>no hay carencia de hierro</strong>, sino un <strong>defecto en la capacidad de utilizar los depósitos</strong>. Por eso dar hierro no corrige la anemia y sólo agrega el riesgo de sobrecargarlo.</p>
+      </div>
+
+      <h3>Diagnóstico diferencial con la ferropénica</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Parámetro</th><th>Anemia ferropénica</th><th>Anemia de enfermedad crónica</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Hierro sérico</strong></td><td>Bajo</td><td>Bajo</td></tr>
+            <tr><td><strong>Ferritina</strong></td><td><strong>Baja</strong></td><td><strong>Aumentada o normal</strong></td></tr>
+            <tr><td><strong>Transferrina sérica</strong></td><td><strong>Aumentada o normal</strong></td><td><strong>Reducida o normal</strong></td></tr>
+            <tr><td><strong>Receptores solubles de transferrina</strong></td><td><strong>Aumentados</strong></td><td>Reducidos o normales</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>El <strong>hierro sérico bajo es común a las dos</strong> y por eso no sirve para distinguirlas. Lo que las separa es la <strong>ferritina</strong> —y, cuando hay dudas, los <strong>receptores solubles de transferrina</strong>, que sólo suben cuando el hierro realmente falta—.</p>
+
+      <h3>Anemia sideroblástica</h3>
+      <ul>
+        <li>Es <strong>microcítica</strong>.</li>
+        <li>Puede ser <strong>hereditaria o adquirida</strong>.</li>
+        <li>Es <strong>refractaria al tratamiento con hierro</strong>.</li>
+        <li>Hay <strong>aumento de hierro en la médula ósea</strong>.</li>
+        <li>Se caracteriza por la presencia de <strong>sideroblastos en anillo</strong>.</li>
+        <li><strong>Responde al tratamiento con vitamina B6</strong> (piridoxina).</li>
+      </ul>
+      <p>Es la tercera microcítica del diferencial y la única que <strong>mejora con una vitamina</strong>. El nombre describe el hallazgo: el hierro se acumula en las mitocondrias perinucleares del eritroblasto y forma un <strong>anillo alrededor del núcleo</strong>.</p>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-importantes" id="diferencial">
+      <span class="seccion__pestana"><b>07</b> Diferencial</span>
+      <h2 class="seccion__titulo">Diferencial de la Anemia Microcítica</h2>
+
+      <p>Cuatro entidades comparten el VCM bajo. La <strong>ferritina</strong> es la primera bifurcación, y el <strong>hierro sérico</strong> la segunda.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 336" role="img" aria-label="Árbol diagnóstico de la anemia microcítica. Ante un volumen corpuscular medio menor a 80 femtolitros se pregunta si la ferritina está baja. Si lo está, se trata de una anemia ferropénica, con transferrina alta, saturación baja y receptores solubles de transferrina altos. Si la ferritina no está baja, se pregunta si el hierro sérico está bajo: si lo está, corresponde a anemia de enfermedad crónica, con transferrina baja o normal; si no lo está, corresponde a anemia sideroblástica, que muestra sideroblastos en anillo y responde a la vitamina B6, o a talasemia, que se confirma con electroforesis de hemoglobina.">
+          <defs>
+            <marker id="pta-mic" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="14" y="104" width="170" height="56" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--ct)" stroke-width="2.5"></rect>
+          <text x="30" y="126" font-size="12.5" font-weight="700" fill="currentColor">¿Ferritina baja?</text>
+          <text x="30" y="146" font-size="11" fill="currentColor" opacity="0.75">VCM &lt; 80 fL</text>
+
+          <polyline points="184,132 214,132 214,48 244,48" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-mic)"></polyline>
+          <polyline points="184,132 214,132 214,208 244,208" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-mic)"></polyline>
+          <text x="218" y="86" font-size="11" font-weight="700" fill="currentColor">sí</text>
+          <text x="218" y="178" font-size="11" font-weight="700" fill="currentColor">no</text>
+
+          <rect x="248" y="18" width="438" height="60" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="264" y="42" font-size="12.5" font-weight="700" fill="currentColor">FERROPÉNICA</text>
+          <text x="264" y="64" font-size="11" fill="currentColor" opacity="0.8">Transferrina alta · saturación baja · receptores solubles altos</text>
+
+          <rect x="248" y="180" width="180" height="56" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--ct)" stroke-width="1.5"></rect>
+          <text x="264" y="204" font-size="12.5" font-weight="700" fill="currentColor">¿Hierro sérico</text>
+          <text x="264" y="224" font-size="12.5" font-weight="700" fill="currentColor">bajo?</text>
+
+          <polyline points="428,208 452,208 452,150 476,150" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-mic)"></polyline>
+          <polyline points="428,208 452,208 452,282 476,282" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-mic)"></polyline>
+          <text x="456" y="186" font-size="11" font-weight="700" fill="currentColor">sí</text>
+          <text x="456" y="256" font-size="11" font-weight="700" fill="currentColor">no</text>
+
+          <rect x="480" y="120" width="206" height="60" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.2"></rect>
+          <text x="496" y="144" font-size="12" font-weight="700" fill="currentColor">ENFERMEDAD CRÓNICA</text>
+          <text x="496" y="166" font-size="10.5" fill="currentColor" opacity="0.8">Transferrina baja o normal</text>
+
+          <rect x="480" y="244" width="206" height="76" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.2"></rect>
+          <text x="496" y="268" font-size="12" font-weight="700" fill="currentColor">SIDEROBLÁSTICA o TALASEMIA</text>
+          <text x="496" y="290" font-size="10.5" fill="currentColor" opacity="0.8">Sideroblastos en anillo → B6</text>
+          <text x="496" y="308" font-size="10.5" fill="currentColor" opacity="0.8">Electroforesis de Hb → talasemia</text>
+        </svg>
+        <figcaption>La <strong>ferritina</strong> resuelve el 90 % de los casos. Sólo cuando está normal o alta y el hierro sérico también, hay que pensar en sideroblástica o talasemia — las dos con hierro <strong>sobrando</strong>, no faltando.</figcaption>
+      </figure>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th></th><th>Ferropénica</th><th>Enfermedad crónica</th><th>Sideroblástica</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Hierro sérico</strong></td><td>Bajo</td><td>Bajo</td><td>Normal o alto</td></tr>
+            <tr><td><strong>Ferritina</strong></td><td><strong>Baja</strong></td><td>Alta o normal</td><td><strong>Alta</strong></td></tr>
+            <tr><td><strong>Transferrina</strong></td><td>Alta o normal</td><td>Baja o normal</td><td>Normal</td></tr>
+            <tr><td><strong>Hierro medular</strong></td><td>Ausente</td><td>Aumentado en macrófagos</td><td><strong>Aumentado · sideroblastos en anillo</strong></td></tr>
+            <tr><td><strong>Responde a hierro</strong></td><td><strong>Sí</strong></td><td>No</td><td>No — responde a <strong>vitamina B6</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">La <strong>talasemia</strong> completa el cuarteto de la microcítica: cursa con hierro y ferritina normales o altos, un VCM desproporcionadamente bajo para el grado de anemia y un recuento de glóbulos rojos conservado o alto. Se desarrolla en el cuadernillo de anemias hemolíticas, dentro de las hemoglobinopatías.</p>
+
+      <h3>Las alertas de este cuadernillo</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Situación</th><th>Qué recordar</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Hemoglobina baja</strong></td><td>Cumplir criterio de anemia <strong>no es indicación de transfusión</strong></td></tr>
+            <tr><td><strong>Ferropenia en varón o posmenopáusica</strong></td><td><strong>Sangrado digestivo</strong> hasta que se demuestre lo contrario → estudiar el tubo digestivo</td></tr>
+            <tr><td><strong>Ferritina normal con sospecha de ferropenia</strong></td><td>En <strong>inflamación</strong> la ferritina se eleva falsamente: el umbral sube a &lt; 100 ng/mL</td></tr>
+            <tr><td><strong>Hierro oral</strong></td><td><strong>Nunca con alcalinos ni cereales.</strong> Lejos de las comidas, con jugo de naranja</td></tr>
+            <tr><td><strong>Anemia que no responde al hierro</strong></td><td>Repensar el diagnóstico: <strong>enfermedad crónica, sideroblástica, talasemia o IRIDA</strong></td></tr>
+            <tr><td><strong>Sideroblastos en anillo</strong></td><td>Sideroblástica → probar <strong>vitamina B6</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ Repaso activo ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>¿Dónde ocurre la hematopoyesis en cada etapa de la vida?</summary>
+          <div class="fc__r"><strong>Prenatal</strong>: saco vitelino → hígado y bazo desde el 1.º y 3.º mes → médula ósea desde el 4.º mes. <strong>Postnatal</strong>: médula ósea de vértebras, huesos largos, esternón, costillas y cresta ilíaca. <strong>Extramedular</strong>: hígado, bazo, ganglios y timo — se ve en hemolíticas congénitas y mieloproliferativos.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Valores normales de VCM, HCM y CHCM.</summary>
+          <div class="fc__r"><strong>VCM 80 – 99 fL</strong> · <strong>HCM 27 – 32 pg</strong> · <strong>CHCM 32 – 36 g/dL</strong>. Hemoglobina normal: 13 – 17 g/dL en el hombre, 12 – 15 g/dL en la mujer.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>Macrocitosis con reticulocitos altos: ¿es déficit de B12?</summary>
+          <div class="fc__r"><strong>No.</strong> Los reticulocitos son células grandes y elevan el VCM por sí solos. Reticulocitos altos indican anemia <strong>regenerativa</strong>: <strong>hemólisis o hemorragia aguda</strong>. Las megaloblásticas son arregenerativas.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>De 10 – 20 mg de hierro ingeridos por día, ¿cuánto se absorbe y cuánto se pierde?</summary>
+          <div class="fc__r">Se absorbe <strong>alrededor del 10 %</strong> —hasta 30 % si la demanda aumenta—, lo que equivale a <strong>~1 mg/día</strong>, y se excreta <strong>~1 mg/día</strong>. El balance es muy ajustado.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Cuáles son los cuatro compartimientos del hierro?</summary>
+          <div class="fc__r"><strong>Funcionante 60 – 70 %</strong> (2,5 g, de los cuales 2 g en la Hb) · <strong>depósito 25 – 30 %</strong> (1 g varón, 0,5 g mujer fértil, como ferritina) · <strong>circulante &lt; 1 %</strong> (3 – 4 mg en transferrina) · <strong>intracelular &lt; 1 %</strong> (enzimas tisulares).</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Los cuatro mecanismos de la anemia ferropénica, y cuál es el más frecuente.</summary>
+          <div class="fc__r"><strong>Disminución de la ingesta</strong> — <strong>el más frecuente</strong> —, <strong>disminución de la absorción</strong>, <strong>aumento de las necesidades</strong> y <strong>aumento de las pérdidas</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Qué es IRIDA y por qué no responde al hierro?</summary>
+          <div class="fc__r">Anemia ferropénica <strong>refractaria al hierro</strong>, autosómica recesiva, por mutaciones en <strong>TMPRSS6</strong> que <strong>elevan la hepcidina</strong> e inhiben la absorción. No responde a la vía oral y sólo parcialmente a la endovenosa.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Nombrá las manifestaciones específicas de la ferropenia.</summary>
+          <div class="fc__r"><strong>Glositis</strong> (lengua lisa, roja y ulcerada), <strong>coiloniquia</strong> (uñas en cucharilla), <strong>estomatitis angular</strong>, <strong>alopecia</strong> y <strong>pica</strong> (apetito por barro o hielo).</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Esquema oral de la ferropénica: fármaco, forma de tomarlo y duración.</summary>
+          <div class="fc__r"><strong>Sulfato ferroso</strong>, 2 comprimidos por día, <strong>lejos de las comidas y con jugo de naranja</strong>, durante <strong>3 a 6 meses</strong>. Nunca con alcalinos ni cereales.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Cuándo se indica hierro endovenoso?</summary>
+          <div class="fc__r">Anemia <strong>grave</strong>, intolerancia a vía oral e IM, <strong>enfermedad celíaca</strong>, <strong>cirugía bariátrica</strong>, <strong>insuficiencia cardíaca</strong>, <strong>insuficiencia renal crónica</strong> con eritropoyetina, y <strong>embarazo en 2.º y 3.º trimestre</strong>.</div>
+        </details>
+
+        <details class="fc s-diferenciales">
+          <summary>Hierro sérico bajo en las dos: ¿qué distingue la ferropénica de la de enfermedad crónica?</summary>
+          <div class="fc__r">La <strong>ferritina</strong>: <strong>baja</strong> en ferropénica, <strong>alta o normal</strong> en enfermedad crónica. Y la <strong>transferrina</strong>, que va al revés: alta en ferropénica, baja o normal en crónica. Los <strong>receptores solubles de transferrina</strong> están altos sólo en la ferropénica.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>Anemia microcítica refractaria al hierro con hierro medular aumentado: ¿qué es y cómo se trata?</summary>
+          <div class="fc__r"><strong>Anemia sideroblástica</strong>, con <strong>sideroblastos en anillo</strong>. Responde a la <strong>vitamina B6</strong>, no al hierro.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Definición y clínica</dt>
+        <dd><strong>Anemia</strong> = Hb &lt; 13 g/dL en el hombre y &lt; 12 g/dL en la mujer. Síndrome anémico común: astenia, disnea, palpitaciones, palidez, soplo. Específico de la ferropenia: <strong>glositis, coiloniquia, estomatitis angular y pica</strong>.</dd>
+
+        <dt class="r-gold">Laboratorio de elección</dt>
+        <dd><strong>Ferritina</strong> es el mejor marcador de los depósitos y la primera bifurcación del diferencial. Ferropénica: ferritina <strong>baja</strong>, transferrina <strong>alta</strong>, receptores solubles <strong>altos</strong>. Enfermedad crónica: ferritina <strong>alta o normal</strong>.</dd>
+
+        <dt class="r-tto">Tratamiento de 1ª línea</dt>
+        <dd><strong>Sulfato ferroso</strong> 2 comprimidos/día, lejos de las comidas y con jugo de naranja, <strong>3 a 6 meses</strong>. Endovenoso en anemia grave, celiaquía, bariátrica, insuficiencia cardíaca o renal y embarazo avanzado.</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd><strong>Ferropenia en varón adulto o mujer posmenopáusica → estudiar el tubo digestivo.</strong> Anemia que no responde al hierro → repensar: enfermedad crónica, sideroblástica, talasemia o IRIDA. Hb baja no es sinónimo de transfundir.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir del material de cátedra «Anemia 1» de la Dra. Susana Tortosa (Medicina Interna III, Hematología), complementado con Harrison, Principios de Medicina Interna. Material de estudio: no reemplaza el criterio clínico ni la guía institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link'));
+
+  function porMeta(hash){
+    for (var i = 0; i < enlaces.length; i++){
+      if (enlaces[i].getAttribute('href') === '#' + hash) return enlaces[i];
+    }
+    return null;
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var enlace = porMeta(e.target.id);
+        if (!enlace) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          enlace.setAttribute('aria-current', 'true');
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>

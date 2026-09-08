@@ -1,0 +1,1405 @@
+<title>Infecciones Respiratorias Altas</title>
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+}
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índice lateral ---------- */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Ficha de sección ---------- */
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.35rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-row:1/3; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+.importante__titulo{
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso{ display:none !important; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-generalidades"  href="#generalidades">Generalidades &amp; Epidemiología</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#fisiopatologia">Fisiopatología</a></li>
+      <li><a class="indice__link i-clinica"        href="#clinica">Cuadro Clínico</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#diagnostico">Diagnóstico &amp; Complementarios</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#tratamiento">Tratamiento</a></li>
+      <li><a class="indice__link i-importantes"    href="#importantes">Aspectos Importantes</a></li>
+      <li><a class="indice__link i-diferenciales"  href="#diferenciales">Diagnósticos Diferenciales</a></li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Infectología · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Infecciones Respiratorias Altas</h1>
+      <p class="portada__bajada">Catarro común, faringitis, laringitis, rinosinusitis y bronquitis aguda. Cinco cuadros que se parecen entre sí y se tratan distinto: el hilo conductor del tema es decidir a quién <strong>no</strong> darle antibiótico.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">5 cuadros clínicos</span>
+        <span class="etiqueta s-diagnostico">Centor modificado</span>
+        <span class="etiqueta s-tratamiento">¿ATB sí o no?</span>
+        <span class="etiqueta s-importantes">Sinusitis fúngica</span>
+      </div>
+    </header>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="generalidades">
+      <span class="seccion__pestana"><b>01</b> Base</span>
+      <h2 class="seccion__titulo">Generalidades &amp; Epidemiología</h2>
+
+      <p>Las infecciones respiratorias se dividen por el nivel anatómico comprometido. Las de <strong>vía aérea superior (VAS)</strong> son casi siempre <strong>virales, leves y autolimitadas</strong>; la <strong>bronquitis aguda</strong> pertenece a la vía aérea inferior pero se estudia junto a ellas porque comparte el mismo diferencial: la tos aguda del paciente por lo demás sano.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 366" role="img" aria-label="Mapa de clasificación de las infecciones respiratorias según el nivel anatómico. La vía aérea superior agrupa catarro común en la mucosa nasofaríngea, faringitis en faringe y amígdalas, laringitis en las cuerdas vocales y rinosinusitis en los senos paranasales. La vía aérea inferior agrupa bronquitis aguda en bronquios grandes y medianos, neumonía en el alvéolo, absceso pulmonar y derrame pleural o empiema. La bronquitis aguda se estudia junto a la vía aérea superior porque comparte el diferencial de la tos aguda.">
+          <rect x="10" y="8" width="330" height="34" rx="3" fill="var(--c)" fill-opacity="0.9"></rect>
+          <text x="26" y="30" font-size="12.5" font-weight="700" fill="#FFFFFF">VÍA AÉREA SUPERIOR — este cuadernillo</text>
+
+          <rect x="10" y="52" width="330" height="46" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="26" y="72" font-size="12.5" font-weight="700" fill="currentColor">Catarro común</text>
+          <text x="26" y="89" font-size="11" fill="currentColor" opacity="0.75">Mucosa nasal y nasofaríngea</text>
+
+          <rect x="10" y="104" width="330" height="46" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="26" y="124" font-size="12.5" font-weight="700" fill="currentColor">Faringitis</text>
+          <text x="26" y="141" font-size="11" fill="currentColor" opacity="0.75">Faringe y amígdalas</text>
+
+          <rect x="10" y="156" width="330" height="46" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="26" y="176" font-size="12.5" font-weight="700" fill="currentColor">Laringitis</text>
+          <text x="26" y="193" font-size="11" fill="currentColor" opacity="0.75">Laringe y cuerdas vocales</text>
+
+          <rect x="10" y="208" width="330" height="46" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="26" y="228" font-size="12.5" font-weight="700" fill="currentColor">Rinosinusitis</text>
+          <text x="26" y="245" font-size="11" fill="currentColor" opacity="0.75">Senos paranasales</text>
+
+          <rect x="10" y="268" width="330" height="88" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="26" y="290" font-size="12.5" font-weight="700" fill="currentColor">Bronquitis aguda</text>
+          <text x="26" y="307" font-size="11" fill="currentColor" opacity="0.75">Bronquios grandes y medianos</text>
+          <text x="26" y="329" font-size="11" fill="currentColor" opacity="0.85">Es vía aérea inferior, pero entra acá:</text>
+          <text x="26" y="345" font-size="11" fill="currentColor" opacity="0.85">comparte el diferencial de la tos aguda.</text>
+
+          <rect x="360" y="8" width="330" height="34" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.45" stroke-width="1.2"></rect>
+          <text x="376" y="30" font-size="12.5" font-weight="700" fill="currentColor" opacity="0.8">VÍA AÉREA INFERIOR — otro cuadernillo</text>
+
+          <rect x="360" y="52" width="330" height="46" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2"></rect>
+          <text x="376" y="72" font-size="12.5" font-weight="700" fill="currentColor" opacity="0.8">Neumonía aguda</text>
+          <text x="376" y="89" font-size="11" fill="currentColor" opacity="0.6">Alvéolo y parénquima pulmonar</text>
+
+          <rect x="360" y="104" width="330" height="46" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2"></rect>
+          <text x="376" y="124" font-size="12.5" font-weight="700" fill="currentColor" opacity="0.8">Absceso pulmonar bacteriano</text>
+          <text x="376" y="141" font-size="11" fill="currentColor" opacity="0.6">Cavidad con necrosis</text>
+
+          <rect x="360" y="156" width="330" height="46" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2"></rect>
+          <text x="376" y="176" font-size="12.5" font-weight="700" fill="currentColor" opacity="0.8">Derrame pleural / empiema</text>
+          <text x="376" y="193" font-size="11" fill="currentColor" opacity="0.6">Espacio pleural</text>
+
+          <rect x="360" y="208" width="330" height="148" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.25" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="376" y="230" font-size="11.5" font-weight="700" fill="currentColor">Lo que unifica la columna izquierda</text>
+          <text x="376" y="252" font-size="11" fill="currentColor" opacity="0.75">Los cinco cuadros son de causa viral</text>
+          <text x="376" y="268" font-size="11" fill="currentColor" opacity="0.75">en la enorme mayoría de los casos.</text>
+          <text x="376" y="292" font-size="11" fill="currentColor" opacity="0.75">Sólo dos escenarios justifican antibiótico:</text>
+          <text x="376" y="310" font-size="11" fill="currentColor" opacity="0.85">· faringitis por Streptococcus pyogenes</text>
+          <text x="376" y="326" font-size="11" fill="currentColor" opacity="0.85">· sinusitis que cumple criterios clínicos</text>
+          <text x="376" y="348" font-size="11" fill="currentColor" opacity="0.75">Todo lo demás es tratamiento sintomático.</text>
+        </svg>
+        <figcaption>El criterio que separa las dos columnas es el nivel anatómico. El criterio que decide la conducta es otro: si hay o no una bacteria tratable detrás del cuadro.</figcaption>
+      </figure>
+
+      <h3>Peso epidemiológico</h3>
+      <ul>
+        <li><strong>Catarro común:</strong> <span class="dato">2 – 3 episodios</span> por año en adultos. En Estados Unidos genera <strong>40 millones de días/año</strong> de ausentismo escolar y laboral.</li>
+        <li><strong>Faringitis:</strong> afecta cada año al <span class="dato">16 %</span> de los adultos y al <span class="dato">41 %</span> de los niños.</li>
+        <li><strong>Laringitis aguda:</strong> predomina en <strong>mujeres jóvenes</strong>, alrededor de los 36 años.</li>
+        <li><strong>Bronquitis aguda:</strong> más prevalente en invierno; la tos dura menos de <span class="dato">3 semanas</span>.</li>
+        <li>Estacionalidad general: la mayoría de los casos se concentra en <strong>invierno e inicio de primavera</strong>, cuando los virus respiratorios tienen su máxima actividad.</li>
+      </ul>
+
+      <h3>Por qué estas infecciones se repiten toda la vida</h3>
+      <ul>
+        <li>Los virus responsables tienen <strong>muchísimos serotipos distintos</strong> — más de 100 sólo entre los rinovirus — de modo que la inmunidad contra uno no protege contra los demás.</li>
+        <li>Algunos, como el <strong>virus influenza</strong>, además <strong>cambian los antígenos de superficie</strong>, con lo cual escapan a la inmunidad previa aunque se trate del mismo tipo viral.</li>
+      </ul>
+
+      <h3>Virus asociados al resfriado común</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Grupo de virus</th><th>Tipos antigénicos</th><th>Porcentaje de casos</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Rinovirus</strong></td><td>&gt; 100 tipos</td><td>40 – 50 %</td></tr>
+            <tr><td><strong>Virus de la gripe (influenza)</strong></td><td>3 tipos</td><td>25 – 30 %</td></tr>
+            <tr><td>Coronavirus</td><td>5 tipos</td><td>10 – 15 %</td></tr>
+            <tr><td>Adenovirus</td><td>57 tipos</td><td>5 – 10 %</td></tr>
+            <tr><td>Virus parainfluenza</td><td>5 tipos</td><td>5 %</td></tr>
+            <tr><td>Virus respiratorio sincitial (VSR)</td><td>2 tipos</td><td>5 %</td></tr>
+            <tr><td>Metaneumovirus humano</td><td>2 tipos</td><td>5 %</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Otros virus implicados: <strong>enterovirus</strong> y <strong>bocavirus</strong>. De todos ellos, el <strong>virus de la gripe</strong> es el que produce el <strong>síndrome más florido</strong>: mismo terreno, cuadro clínicamente mucho más ruidoso.</p>
+
+      <h3>Mecanismos de transmisión</h3>
+      <ol>
+        <li><strong>Aerosoles de partícula pequeña:</strong> no sedimentan, recorren largas distancias y son capaces de <strong>alcanzar la vía aérea inferior</strong>.</li>
+        <li><strong>Aerosoles de partícula grande:</strong> gotitas de secreciones respiratorias que <strong>sedimentan rápido</strong> tras recorrer distancias cortas y se alojan en la VAS.</li>
+        <li><strong>Contacto directo</strong> con fómites y de persona a persona.</li>
+      </ol>
+
+      <p class="cita">Fuente: Mandell, Douglas y Bennett. Enfermedades infecciosas: principios y práctica, cap. 58 «Resfriado común» (Tabla 58-1). Datos de vigilancia viral local: Boletín Epidemiológico Nacional N.° 725, SE 40, año 2024.</p>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-fisiopatologia" id="fisiopatologia">
+      <span class="seccion__pestana"><b>02</b> Mecanismo</span>
+      <h2 class="seccion__titulo">Fisiopatología</h2>
+
+      <p>Dos mecanismos explican casi todo el capítulo. El del <strong>catarro</strong> muestra por qué los síntomas aparecen en un orden fijo; el de la <strong>sinusitis</strong> muestra por qué un cuadro viral puede convertirse en bacteriano.</p>
+
+      <h3>Catarro común: del virus al síntoma</h3>
+      <ol>
+        <li><strong>Infección del epitelio nasofaríngeo</strong> por el virus inhalado o depositado por contacto.</li>
+        <li><strong>Liberación de citoquinas</strong> por las células infectadas — el daño citopático directo es mínimo: <strong>los síntomas son la respuesta inflamatoria, no el virus</strong>.</li>
+        <li>Tres efectos simultáneos: <strong>aumento del flujo sanguíneo local</strong>, <strong>aumento de la permeabilidad vascular</strong> e <strong>infiltración por células inflamatorias</strong>.</li>
+        <li><strong>Edema de la mucosa</strong> → congestión nasal, rinorrea e irritación faríngea.</li>
+      </ol>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 336" role="img" aria-label="Cascada fisiopatológica del catarro común. La infección del epitelio nasofaríngeo libera citoquinas, que aumentan el flujo sanguíneo local y la permeabilidad vascular e infiltran células inflamatorias; el resultado es edema de la mucosa. Ese edema se traduce clínicamente en dos ventanas temporales: entre el día uno y el tres predominan la irritación faríngea, la congestión nasal y la rinorrea, y entre el día tres y el siete la rinorrea persiste y aparece tos seca por sensibilización de los receptores de la vía aérea superior, presente sólo en el treinta por ciento de los casos.">
+          <defs>
+            <marker id="pta-cat" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="14" y="8" width="286" height="56" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="31" font-size="12.5" font-weight="700" fill="currentColor">1 · Infección del epitelio</text>
+          <text x="30" y="50" font-size="11" fill="currentColor" opacity="0.75">Mucosa nasofaríngea</text>
+
+          <rect x="14" y="90" width="286" height="56" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="113" font-size="12.5" font-weight="700" fill="currentColor">2 · Liberación de citoquinas</text>
+          <text x="30" y="132" font-size="11" fill="currentColor" opacity="0.75">Respuesta del huésped, no daño viral</text>
+
+          <rect x="14" y="172" width="286" height="72" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="195" font-size="12.5" font-weight="700" fill="currentColor">3 · Respuesta vascular</text>
+          <text x="30" y="214" font-size="11" fill="currentColor" opacity="0.75">↑ flujo sanguíneo · ↑ permeabilidad</text>
+          <text x="30" y="231" font-size="11" fill="currentColor" opacity="0.75">Infiltración por células inflamatorias</text>
+
+          <rect x="14" y="270" width="286" height="56" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="30" y="293" font-size="12.5" font-weight="700" fill="currentColor">4 · Edema de la mucosa</text>
+          <text x="30" y="312" font-size="11" fill="currentColor" opacity="0.75">Obstrucción al flujo aéreo nasal</text>
+
+          <line x1="157" y1="64" x2="157" y2="84" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-cat)"></line>
+          <line x1="157" y1="146" x2="157" y2="166" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-cat)"></line>
+          <line x1="157" y1="244" x2="157" y2="264" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-cat)"></line>
+          <text x="167" y="80" font-size="10.5" fill="currentColor" opacity="0.65">la célula infectada avisa</text>
+          <text x="167" y="162" font-size="10.5" fill="currentColor" opacity="0.65">reclutamiento inflamatorio</text>
+          <text x="167" y="260" font-size="10.5" fill="currentColor" opacity="0.65">extravasación de plasma</text>
+
+          <line x1="300" y1="298" x2="344" y2="298" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#pta-cat)"></line>
+          <text x="304" y="290" font-size="10.5" fill="currentColor" opacity="0.6">se traduce en</text>
+
+          <rect x="350" y="92" width="336" height="94" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="366" y="116" font-size="12.5" font-weight="700" fill="currentColor">Día 1 – 3</text>
+          <text x="366" y="138" font-size="11" fill="currentColor" opacity="0.75">Dolor o irritación faríngea</text>
+          <text x="366" y="156" font-size="11" fill="currentColor" opacity="0.75">Congestión nasal</text>
+          <text x="366" y="174" font-size="11" fill="currentColor" opacity="0.75">Rinorrea</text>
+
+          <rect x="350" y="204" width="336" height="112" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="366" y="228" font-size="12.5" font-weight="700" fill="currentColor">Día 3 – 7</text>
+          <text x="366" y="250" font-size="11" fill="currentColor" opacity="0.75">Rinorrea persistente</text>
+          <text x="366" y="268" font-size="11" fill="currentColor" opacity="0.75">Tos seca — sólo en el 30 % de los casos</text>
+          <text x="366" y="290" font-size="11" fill="currentColor" opacity="0.65">Reflejo nervioso por sensibilización</text>
+          <text x="366" y="306" font-size="11" fill="currentColor" opacity="0.65">de los receptores de la VAS</text>
+        </svg>
+        <figcaption>La tos del catarro no viene del pulmón: es un reflejo nervioso originado en receptores sensibilizados de la vía aérea superior. Por eso aparece tarde, es seca y sólo la presenta un tercio de los pacientes.</figcaption>
+      </figure>
+
+      <h3>Sinusitis aguda: cómo se pasa de viral a bacteriano</h3>
+      <p>El seno paranasal sano está <strong>estéril</strong>, y lo está por un mecanismo activo: el <strong>epitelio cilíndrico pseudoestratificado ciliado</strong> renueva la capa de moco cada <span class="dato">2 – 3 h</span> y la arrastra hacia el ostium, impidiendo que se acumule.</p>
+      <ol>
+        <li>Una <strong>infección viral</strong> o una <strong>alergia</strong> altera el funcionamiento normal del epitelio.</li>
+        <li>Las <strong>secreciones se acumulan</strong> y <strong>se obstruye el ostium</strong> de drenaje.</li>
+        <li>El aire encerrado se absorbe y <strong>cae la presión</strong> dentro del seno.</li>
+        <li>Esa presión negativa <strong>aspira bacterias</strong> desde la nasofaringe hacia una cavidad ahora llena de moco estancado: <strong>sinusitis bacteriana</strong>.</li>
+      </ol>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 356" role="img" aria-label="Mecanismo de la sinusitis aguda. El seno sano se mantiene estéril porque el epitelio ciliado renueva el moco cada dos a tres horas. Una infección viral o una alergia altera ese epitelio, las secreciones se acumulan y se obstruye el ostium; el aire encerrado se absorbe y cae la presión intrasinusal, lo que aspira bacterias desde la nasofaringe y produce sinusitis bacteriana. La consecuencia diagnóstica es que la secreción nasal se contamina con flora nasal y no sirve, el método de referencia es la punción del seno, y entre el treinta y el cuarenta por ciento de los aspirados no contiene bacterias.">
+          <defs>
+            <marker id="pta-sin" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="14" y="6" width="316" height="52" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.2"></rect>
+          <text x="30" y="27" font-size="12.5" font-weight="700" fill="currentColor">Seno sano — estéril</text>
+          <text x="30" y="46" font-size="11" fill="currentColor" opacity="0.75">Epitelio ciliado renueva el moco c/2 – 3 h</text>
+
+          <rect x="14" y="82" width="316" height="52" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="103" font-size="12.5" font-weight="700" fill="currentColor">1 · Epitelio alterado</text>
+          <text x="30" y="122" font-size="11" fill="currentColor" opacity="0.75">Por infección viral o por alergia</text>
+
+          <rect x="14" y="158" width="316" height="52" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="179" font-size="12.5" font-weight="700" fill="currentColor">2 · Ostium obstruido</text>
+          <text x="30" y="198" font-size="11" fill="currentColor" opacity="0.75">Las secreciones se acumulan</text>
+
+          <rect x="14" y="234" width="316" height="52" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="255" font-size="12.5" font-weight="700" fill="currentColor">3 · ↓ presión intrasinusal</text>
+          <text x="30" y="274" font-size="11" fill="currentColor" opacity="0.75">El aire encerrado se absorbe</text>
+
+          <rect x="14" y="310" width="316" height="42" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="30" y="337" font-size="12.5" font-weight="700" fill="currentColor">4 · Sinusitis bacteriana</text>
+
+          <line x1="172" y1="58" x2="172" y2="76" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-sin)"></line>
+          <line x1="172" y1="134" x2="172" y2="152" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-sin)"></line>
+          <line x1="172" y1="210" x2="172" y2="228" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-sin)"></line>
+          <line x1="172" y1="286" x2="172" y2="304" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-sin)"></line>
+          <text x="182" y="72" font-size="10.5" fill="currentColor" opacity="0.65">se frena el aclaramiento</text>
+          <text x="182" y="148" font-size="10.5" fill="currentColor" opacity="0.65">moco estancado</text>
+          <text x="182" y="224" font-size="10.5" fill="currentColor" opacity="0.65">cavidad cerrada</text>
+          <text x="182" y="300" font-size="10.5" fill="currentColor" opacity="0.65">aspira bacterias de la nasofaringe</text>
+
+          <rect x="376" y="82" width="310" height="204" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.28" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="392" y="106" font-size="12.5" font-weight="700" fill="currentColor">Consecuencia diagnóstica</text>
+          <text x="392" y="132" font-size="11" fill="currentColor" opacity="0.8">La muestra de secreción nasal</text>
+          <text x="392" y="148" font-size="11" fill="currentColor" opacity="0.8">se contamina con flora nasal:</text>
+          <text x="392" y="164" font-size="11" font-weight="700" fill="currentColor">no sirve para orientar el ATB.</text>
+          <text x="392" y="192" font-size="11" fill="currentColor" opacity="0.8">Método de referencia:</text>
+          <text x="392" y="208" font-size="11" font-weight="700" fill="currentColor">punción del seno</text>
+          <text x="392" y="224" font-size="11" fill="currentColor" opacity="0.7">— invasivo, no se usa de rutina.</text>
+          <text x="392" y="252" font-size="11" fill="currentColor" opacity="0.8">30 – 40 % de los aspirados</text>
+          <text x="392" y="268" font-size="11" fill="currentColor" opacity="0.8">no contienen bacteria alguna.</text>
+        </svg>
+        <figcaption>La sinusitis bacteriana no empieza con la bacteria: empieza con un ostium obstruido. Por eso el criterio para indicar antibiótico es <em>temporal</em> — cuánto lleva obstruido — y no microbiológico.</figcaption>
+      </figure>
+
+      <h3>Bronquitis aguda</h3>
+      <p>Proceso <strong>inflamatorio autolimitado y breve</strong> de las vías respiratorias <strong>grandes y medianas</strong>, causado principalmente por virus, <strong>sin signos de neumonía en la radiografía de tórax</strong>. La inflamación de la mucosa bronquial sensibiliza los receptores tusígenos: de ahí que la tos sea el síntoma dominante y persista más que el resto del cuadro.</p>
+
+      <p class="cita">Fuente: Mandell, Douglas y Bennett. Enfermedades infecciosas: principios y práctica, caps. 58 y 63. Consenso Intersociedades para el Manejo de Infecciones Respiratorias Altas. MEDICINA (Buenos Aires) 2012;72(6).</p>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-clinica" id="clinica">
+      <span class="seccion__pestana"><b>03</b> Clínica</span>
+      <h2 class="seccion__titulo">Cuadro Clínico</h2>
+
+      <h3>Catarro común</h3>
+      <ul>
+        <li><strong>Día 1 – 3:</strong> dolor o irritación faríngea, <strong>congestión nasal</strong> y <strong>rinorrea</strong>.</li>
+        <li><strong>Día 3 – 7:</strong> persiste la rinorrea y aparece <strong>tos seca</strong>, presente sólo en el <span class="dato">30 %</span> de los casos.</li>
+        <li>Enfermedad <strong>leve y autolimitada</strong>: el cuadro se resuelve solo. Si a los 10 días no mejoró, hay que replantear el diagnóstico.</li>
+      </ul>
+
+      <h3>Faringitis — la distinción que define la conducta</h3>
+      <p>Inflamación faríngea con <strong>eritema y edema</strong>, con o sin <strong>exudados, vesículas o úlceras</strong>. Los virus explican hasta el <span class="dato">45 %</span> de los casos; <em>Streptococcus pyogenes</em> (estreptococo β-hemolítico del grupo A) es la causa bacteriana más importante: <span class="dato">10 – 15 %</span> en adultos y <span class="dato">15 – 30 %</span> en niños.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Rasgo</th><th>Faringitis viral</th><th>Faringitis por <em>S. pyogenes</em></th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Tos</strong></td><td><strong>Presente</strong> — junto a coriza</td><td><strong>Ausente</strong> — dato característico</td></tr>
+            <tr><td>Síntomas acompañantes</td><td>Conjuntivitis, coriza, úlceras orales, diarrea</td><td>Fiebre, sin síntomas catarrales</td></tr>
+            <tr><td>Faringe</td><td>Eritema; vesículas o úlceras según el virus</td><td>Eritema con <strong>dilatación amigdalina</strong> y <strong>exudado grisáceo-blanquecino</strong></td></tr>
+            <tr><td>Odinofagia</td><td>Molesta, rara vez impide tragar</td><td><strong>Intensa</strong>, puede dificultar la deglución</td></tr>
+            <tr><td>Ganglios</td><td>Poco relevantes</td><td><strong>Adenopatía cervical anterior</strong> dolorosa</td></tr>
+            <tr><td>Paladar blando</td><td>Sin particularidades</td><td>A veces <strong>petequias</strong></td></tr>
+            <tr><td>Piel (niños)</td><td>Sin exantema típico</td><td><strong>Eritema escarlatiniforme</strong> con «calidad de lija», que comienza en el tronco, por exotoxinas pirógenas</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Dos cuadros virales con nombre propio</h4>
+      <ul>
+        <li><strong>Herpangina:</strong> en <strong>niños pequeños</strong>. Hiperemia faríngea con <strong>vesículas de base eritematosa de 1 – 4 mm</strong>, discretas, o ulceraciones superficiales distribuidas en <strong>pilares amigdalinos, úvula, paladar blando y faringe posterior</strong>. La causan <strong>enterovirus y virus Coxsackie</strong> y resuelve espontáneamente en una semana.</li>
+        <li><strong>Faringitis por adenovirus:</strong> en <strong>niños y jóvenes</strong>. Produce <strong>exudados espesos y blanquecinos en la mitad de los casos</strong> —imita a la bacteriana— con dolor de garganta notable. Se asocia a <strong>conjuntivitis de 1 – 2 semanas</strong> que resuelve sin secuelas: ese detalle ocular es la pista que la desenmascara.</li>
+      </ul>
+      <p><em>Mycoplasma pneumoniae</em> y <em>Chlamydia pneumoniae</em> se aíslan en el <span class="dato">10 %</span> de los casos y son responsables de los cuadros de <strong>«faringitis recurrente»</strong>.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>El signo de mayor rendimiento no es lo que está, sino lo que <strong>falta</strong>: la <strong>ausencia de tos</strong> orienta a <em>S. pyogenes</em>. A la inversa, <strong>tos + coriza + conjuntivitis</strong> en el mismo paciente vuelven muy improbable la faringitis estreptocócica, por más exudado que se vea. El exudado <strong>no</strong> distingue viral de bacteriana: el adenovirus lo produce en la mitad de los casos.</p>
+      </div>
+
+      <h3>Laringitis aguda</h3>
+      <ul>
+        <li><strong>Aparición súbita de voz grave o disfonía</strong>, con <strong>disminución de la proyección de la voz</strong>.</li>
+        <li>Se asocia a <strong>tos seca</strong> y ocurre <strong>en el contexto de un cuadro de vía aérea superior</strong>.</li>
+        <li>Duración <span class="dato">3 – 5 días</span>. Predomina en <strong>mujeres jóvenes</strong> (alrededor de 36 años).</li>
+      </ul>
+
+      <h3>Sinusitis aguda — el curso viral típico</h3>
+      <p>Conocer la <strong>curva normal</strong> es lo que permite reconocer la desviación patológica:</p>
+      <ol>
+        <li><strong>Febrícula</strong> durante las primeras <span class="dato">48 h</span>.</li>
+        <li><strong>Empeoramiento</strong> de la rinorrea y la congestión hacia el <strong>día 3 – 5</strong>.</li>
+        <li><strong>Mejoría</strong> a partir del <strong>día 6</strong>, hasta desaparecer alrededor del <strong>día 10</strong>.</li>
+      </ol>
+      <p>Todo lo que se aparte de esta curva —que no mejore, que sea desproporcionadamente grave, o que empeore después de haber mejorado— es lo que hace sospechar sobreinfección bacteriana.</p>
+
+      <h3>Bronquitis aguda</h3>
+      <ul>
+        <li><strong>Tos como síntoma dominante</strong>, seca o productiva, de <strong>menos de 3 semanas</strong> de duración.</li>
+        <li>La <strong>gravedad y la duración dependen del estado inmunológico del huésped</strong>: desde <span class="dato">7 días</span> en un joven sano hasta <span class="dato">20 días</span> en un anciano con comorbilidades.</li>
+        <li>El VSR <strong>típicamente produce sibilancias</strong>; conviene tenerlo presente para no confundirlo con una crisis asmática.</li>
+      </ul>
+
+      <p class="cita">Fuente: Mandell, Douglas y Bennett, caps. 58, 60 y 63. Imágenes clínicas de referencia del cuadro herpangínico: Rev Clin Esp. 2012;212(6):e47.</p>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-diagnostico" id="diagnostico">
+      <span class="seccion__pestana"><b>04</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">Diagnóstico &amp; Exámenes Complementarios</h2>
+
+      <p>En este capítulo el diagnóstico es <strong>clínico</strong>. Los estudios no se piden para confirmar el cuadro, sino para responder una única pregunta: <strong>¿hay una bacteria que justifique el antibiótico?</strong></p>
+
+      <h3>Catarro común</h3>
+      <ul>
+        <li><strong>Por lo general no se requieren estudios.</strong></li>
+        <li>El trabajo diagnóstico consiste en <strong>excluir patologías alternativas</strong>: faringitis o sinusitis bacterianas.</li>
+      </ul>
+
+      <h3>Faringitis — escala de Centor modificada (McIsaac)</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Criterio</th><th>Puntos</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Temperatura &gt; 38 °C</td><td>+ 1</td></tr>
+            <tr><td><strong>Ausencia de tos</strong></td><td>+ 1</td></tr>
+            <tr><td>Ganglios cervicales anteriores dolorosos e inflamados</td><td>+ 1</td></tr>
+            <tr><td>Inflamación o exudados de las amígdalas</td><td>+ 1</td></tr>
+            <tr><td>Edad 3 – 14 años</td><td>+ 1</td></tr>
+            <tr><td>Edad 15 – 44 años</td><td>0</td></tr>
+            <tr><td>Edad 45 años o más</td><td>− 1</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Puntuación</th><th>Riesgo de infección estreptocócica</th><th>Tratamiento indicado</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>≤ 0</td><td>1 – 2,5 %</td><td>No realizar más pruebas ni administrar antibióticos</td></tr>
+            <tr><td>1</td><td>5 – 10 %</td><td>No realizar más pruebas ni administrar antibióticos</td></tr>
+            <tr><td>2</td><td>11 – 17 %</td><td>Cultivo a todos: antibióticos <strong>sólo si el cultivo es positivo</strong></td></tr>
+            <tr><td>3</td><td>28 – 35 %</td><td>Cultivo a todos: antibióticos <strong>sólo si el cultivo es positivo</strong></td></tr>
+            <tr><td><strong>≥ 4</strong></td><td><strong>51 – 53 %</strong></td><td>Tratar <strong>empíricamente</strong> con antibióticos y/o realizar un cultivo</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Cultivo de fauces o PCR</h4>
+      <ul>
+        <li>Se hisopan <strong>pilares y faringe posterior</strong>. Si la toma no es correcta, el rédito cae al <span class="dato">20 %</span>.</li>
+        <li>El cultivo <strong>demora 48 h</strong>: por eso en el paciente de alto puntaje la conducta es empírica y el cultivo, a lo sumo, confirma.</li>
+      </ul>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 350" role="img" aria-label="Algoritmo diagnóstico de la faringitis aguda mediante la escala de Centor modificada. Ante una faringitis aguda se calcula el puntaje. Con cero o un punto el riesgo de estreptococo es de uno a diez por ciento y no se piden estudios ni se indican antibióticos. Con dos o tres puntos el riesgo es de once a treinta y cinco por ciento y corresponde cultivo o PCR a todos, indicando antibiótico sólo si el resultado es positivo. Con cuatro o más puntos el riesgo es de cincuenta y uno a cincuenta y tres por ciento y se trata empíricamente. El cultivo mal tomado rinde veinte por ciento y demora cuarenta y ocho horas.">
+          <defs>
+            <marker id="pta-cen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="175" y="8" width="350" height="48" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--ct)" stroke-width="1.5"></rect>
+          <text x="350" y="29" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">Faringitis aguda</text>
+          <text x="350" y="47" font-size="11" fill="currentColor" opacity="0.75" text-anchor="middle">Odinofagia + eritema y edema faríngeo</text>
+
+          <line x1="350" y1="56" x2="350" y2="74" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-cen)"></line>
+
+          <rect x="240" y="76" width="220" height="42" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--ct)" stroke-width="2.5"></rect>
+          <text x="350" y="102" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">Calcular Centor modificado</text>
+
+          <line x1="350" y1="118" x2="350" y2="146" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="115" y1="146" x2="585" y2="146" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="115" y1="146" x2="115" y2="172" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-cen)"></line>
+          <line x1="350" y1="146" x2="350" y2="172" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-cen)"></line>
+          <line x1="585" y1="146" x2="585" y2="172" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-cen)"></line>
+
+          <text x="124" y="162" font-size="11" font-weight="700" fill="currentColor">≤ 1</text>
+          <text x="359" y="162" font-size="11" font-weight="700" fill="currentColor">2 – 3</text>
+          <text x="594" y="162" font-size="11" font-weight="700" fill="currentColor">≥ 4</text>
+
+          <rect x="15" y="174" width="200" height="106" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="31" y="197" font-size="12" font-weight="700" fill="currentColor">Riesgo 1 – 10 %</text>
+          <text x="31" y="220" font-size="11" fill="currentColor" opacity="0.75">Sin estudios</text>
+          <text x="31" y="238" font-size="11" fill="currentColor" opacity="0.75">Sin antibiótico</text>
+          <text x="31" y="262" font-size="11" font-weight="700" fill="currentColor">Sintomático</text>
+
+          <rect x="250" y="174" width="200" height="106" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="266" y="197" font-size="12" font-weight="700" fill="currentColor">Riesgo 11 – 35 %</text>
+          <text x="266" y="220" font-size="11" fill="currentColor" opacity="0.75">Cultivo o PCR a todos</text>
+          <text x="266" y="238" font-size="11" fill="currentColor" opacity="0.75">Esperar el resultado</text>
+          <text x="266" y="262" font-size="11" font-weight="700" fill="currentColor">ATB sólo si es positivo</text>
+
+          <rect x="485" y="174" width="200" height="106" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-opacity="0.5" stroke-width="1.5"></rect>
+          <text x="501" y="197" font-size="12" font-weight="700" fill="currentColor">Riesgo 51 – 53 %</text>
+          <text x="501" y="220" font-size="11" fill="currentColor" opacity="0.75">No esperar el cultivo</text>
+          <text x="501" y="238" font-size="11" fill="currentColor" opacity="0.75">Cultivo opcional</text>
+          <text x="501" y="262" font-size="11" font-weight="700" fill="currentColor">Tratamiento empírico</text>
+
+          <rect x="15" y="296" width="670" height="46" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.25" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="31" y="316" font-size="11" font-weight="700" fill="currentColor">Cómo se toma la muestra condiciona todo el algoritmo</text>
+          <text x="31" y="334" font-size="11" fill="currentColor" opacity="0.75">Hisopar pilares y faringe posterior. Mal tomada, el rédito baja al 20 %. El resultado demora 48 h.</text>
+        </svg>
+        <figcaption>La escala no diagnostica: estratifica. Entre 2 y 3 puntos la probabilidad no alcanza para tratar ni para descartar, y por eso ése es el único rango donde el cultivo cambia la conducta.</figcaption>
+      </figure>
+
+      <p class="cita">Fuente: McIsaac WJ, Kellner JD, Aufricht P y cols. Empirical validation of guidelines for the management of pharyngitis in children and adults. JAMA. 2004;291:1587-1595.</p>
+
+      <h3>Sinusitis aguda — microbiología</h3>
+      <p>Conocer la prevalencia de los gérmenes es lo que permite elegir el tratamiento empírico, porque en la práctica <strong>no se obtiene muestra útil</strong>.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Microorganismo</th><th>Aislados (n = 339, adultos)</th><th>% de aislados</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong><em>Streptococcus pneumoniae</em></strong></td><td>92</td><td>41 %</td></tr>
+            <tr><td><strong><em>Haemophilus influenzae</em></strong></td><td>79</td><td>35 %</td></tr>
+            <tr><td>Anaerobios</td><td>16</td><td>7 %</td></tr>
+            <tr><td>Especies de estreptococos</td><td>16</td><td>7 %</td></tr>
+            <tr><td><em>Moraxella catarrhalis</em></td><td>8</td><td>4 %</td></tr>
+            <tr><td><em>Staphylococcus aureus</em></td><td>7</td><td>3 %</td></tr>
+            <tr><td>Otros</td><td>8</td><td>4 %</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul>
+        <li><strong>Producción de betalactamasas:</strong> hasta un <span class="dato">80 %</span> de los aislamientos de <em>H. influenzae</em> y <em>M. catarrhalis</em> las produce — es el argumento para pasar a <strong>amoxicilina/clavulánico</strong>. El <strong>neumococo no produce betalactamasa</strong>: su resistencia es por <strong>alteración de las PBP</strong>, y por eso se sortea <strong>subiendo la dosis</strong> de amoxicilina, no agregando inhibidor.</li>
+        <li><strong>30 – 40 % de los aspirados de senos no contienen bacterias:</strong> el cuadro es viral (<strong>adenovirus, parainfluenza y rinovirus</strong>).</li>
+        <li>La <strong>muestra de secreción nasal no sirve</strong> por contaminación con flora nasal. El <strong>método de referencia es la punción del seno</strong>, invasivo y reservado a casos seleccionados.</li>
+      </ul>
+
+      <h3>Sinusitis aguda — cuándo pasa a ser bacteriana</h3>
+      <p>El criterio es <strong>temporal y evolutivo</strong>, no microbiológico. Se indica antibiótico si se cumple <strong>alguno</strong> de estos tres:</p>
+      <ol>
+        <li><strong>Síntomas sin mejoría tras 10 días.</strong></li>
+        <li><strong>Síntomas graves:</strong> fiebre <span class="dato">&gt; 39 °C</span> <strong>y</strong> rinorrea purulenta durante <span class="dato">&gt; 3 días</span> consecutivos.</li>
+        <li><strong>Empeoramiento luego de una mejoría inicial</strong> del cuadro viral — el clásico <strong>«segundo enfermar»</strong>.</li>
+      </ol>
+      <p>Hay estudios que muestran que <strong>si la rinorrea persiste sin mejorar tras 10 días, la carga bacteriana en los senos es alta</strong>: ése es el sustento del primer criterio.</p>
+
+      <h3>Bronquitis aguda</h3>
+      <ul>
+        <li><strong>Anamnesis y epidemiología:</strong> tos aguda + fiebre en un joven sano, en invierno, tiene un <strong>valor predictivo positivo del <span class="dato">79 %</span></strong> para bronquitis.</li>
+        <li><strong>Radiografía de tórax:</strong> <strong>si el examen físico es normal, se puede omitir.</strong> Se pide para descartar neumonía cuando hay foco auscultatorio, hipoxemia o mala evolución.</li>
+        <li><strong>Panel viral por RT-PCR</strong> para identificar el agente cuando cambia la conducta (influenza tratable con oseltamivir, aislamiento, brotes).</li>
+        <li><strong>Procalcitonina <span class="dato">&lt; 0,1 ng/mL</span></strong> indica que <strong>no se requiere antibioticoterapia</strong>.</li>
+      </ul>
+
+      <p class="cita">Fuente: Mandell, Douglas y Bennett, cap. 63 «Sinusitis» (Tabla 63-3). Consenso Intersociedades para el Manejo de Infecciones Respiratorias Altas. MEDICINA (Buenos Aires) 2012;72(6).</p>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-tratamiento" id="tratamiento">
+      <span class="seccion__pestana"><b>05</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Tratamiento</h2>
+
+      <p>La decisión central del tema cabe en una pregunta: <strong>¿este paciente necesita antibiótico?</strong> Para tres de los cinco cuadros la respuesta es <strong>no</strong>, siempre. Para los otros dos hay un criterio explícito que hay que verificar antes de prescribir.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 424" role="img" aria-label="Árbol maestro de decisión antibiótica en las infecciones respiratorias altas. El catarro común y la laringitis aguda nunca requieren antibiótico y se tratan de forma sintomática. La faringitis requiere antibiótico sólo si el puntaje de Centor es mayor o igual a cuatro o si el cultivo es positivo. La sinusitis aguda requiere antibiótico sólo si los síntomas persisten diez días sin mejoría, si son graves con fiebre mayor a treinta y nueve grados y rinorrea purulenta más de tres días, o si hay empeoramiento tras una mejoría inicial. La bronquitis aguda no requiere antibiótico salvo que se demuestre neumonía.">
+          <rect x="14" y="8" width="186" height="30" rx="3" fill="var(--c)" fill-opacity="0.9"></rect>
+          <text x="30" y="28" font-size="11.5" font-weight="700" fill="#FFFFFF">CUADRO</text>
+          <rect x="208" y="8" width="222" height="30" rx="3" fill="var(--c)" fill-opacity="0.9"></rect>
+          <text x="224" y="28" font-size="11.5" font-weight="700" fill="#FFFFFF">PREGUNTA QUE DECIDE</text>
+          <rect x="438" y="8" width="248" height="30" rx="3" fill="var(--c)" fill-opacity="0.9"></rect>
+          <text x="454" y="28" font-size="11.5" font-weight="700" fill="#FFFFFF">CONDUCTA</text>
+
+          <rect x="14" y="46" width="672" height="60" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2"></rect>
+          <line x1="208" y1="46" x2="208" y2="106" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></line>
+          <line x1="438" y1="46" x2="438" y2="106" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></line>
+          <text x="30" y="72" font-size="12.5" font-weight="700" fill="currentColor">Catarro común</text>
+          <text x="30" y="92" font-size="11" fill="currentColor" opacity="0.7">Siempre viral</text>
+          <text x="224" y="80" font-size="11" fill="currentColor" opacity="0.7">No hay pregunta que hacer</text>
+          <text x="454" y="72" font-size="12" font-weight="700" fill="currentColor">SIN ANTIBIÓTICO</text>
+          <text x="454" y="92" font-size="11" fill="currentColor" opacity="0.75">Sintomático · higiene de manos</text>
+
+          <rect x="14" y="112" width="672" height="60" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2"></rect>
+          <line x1="208" y1="112" x2="208" y2="172" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></line>
+          <line x1="438" y1="112" x2="438" y2="172" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></line>
+          <text x="30" y="138" font-size="12.5" font-weight="700" fill="currentColor">Laringitis aguda</text>
+          <text x="30" y="158" font-size="11" fill="currentColor" opacity="0.7">Autolimitada, 3 – 5 días</text>
+          <text x="224" y="138" font-size="11" fill="currentColor" opacity="0.7">No hay pregunta: el ATB</text>
+          <text x="224" y="156" font-size="11" fill="currentColor" opacity="0.7">no supera al placebo</text>
+          <text x="454" y="138" font-size="12" font-weight="700" fill="currentColor">SIN ANTIBIÓTICO</text>
+          <text x="454" y="158" font-size="11" fill="currentColor" opacity="0.75">Reposo de voz · humidificación</text>
+
+          <rect x="14" y="178" width="672" height="72" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="2"></rect>
+          <line x1="208" y1="178" x2="208" y2="250" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <line x1="438" y1="178" x2="438" y2="250" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="30" y="204" font-size="12.5" font-weight="700" fill="currentColor">Faringitis</text>
+          <text x="30" y="224" font-size="11" fill="currentColor" opacity="0.75">10 – 15 % es bacteriana</text>
+          <text x="30" y="242" font-size="11" fill="currentColor" opacity="0.75">en el adulto</text>
+          <text x="224" y="212" font-size="11.5" font-weight="700" fill="currentColor">¿Centor ≥ 4?</text>
+          <text x="224" y="232" font-size="11" fill="currentColor" opacity="0.75">¿o cultivo / PCR positivo?</text>
+          <text x="454" y="204" font-size="11.5" font-weight="700" fill="currentColor">Sí → Penicilina V, 10 días</text>
+          <text x="454" y="224" font-size="11" fill="currentColor" opacity="0.75">No → sintomático</text>
+          <text x="454" y="242" font-size="11" fill="currentColor" opacity="0.75">Centor 2 – 3: decide el cultivo</text>
+
+          <rect x="14" y="256" width="672" height="96" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="2"></rect>
+          <line x1="208" y1="256" x2="208" y2="352" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <line x1="438" y1="256" x2="438" y2="352" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="30" y="282" font-size="12.5" font-weight="700" fill="currentColor">Sinusitis aguda</text>
+          <text x="30" y="302" font-size="11" fill="currentColor" opacity="0.75">30 – 40 % de los aspirados</text>
+          <text x="30" y="320" font-size="11" fill="currentColor" opacity="0.75">no tiene bacterias</text>
+          <text x="224" y="280" font-size="11.5" font-weight="700" fill="currentColor">¿Cumple algún criterio?</text>
+          <text x="224" y="300" font-size="11" fill="currentColor" opacity="0.75">· &gt; 10 días sin mejoría</text>
+          <text x="224" y="318" font-size="11" fill="currentColor" opacity="0.75">· fiebre &gt; 39 °C + rinorrea</text>
+          <text x="224" y="334" font-size="11" fill="currentColor" opacity="0.75">  purulenta &gt; 3 días</text>
+          <text x="224" y="348" font-size="11" fill="currentColor" opacity="0.75">· «segundo enfermar»</text>
+          <text x="454" y="286" font-size="11.5" font-weight="700" fill="currentColor">Sí → Amoxicilina</text>
+          <text x="454" y="306" font-size="11" fill="currentColor" opacity="0.75">500 – 1000 mg c/8 – 12 h</text>
+          <text x="454" y="326" font-size="11" fill="currentColor" opacity="0.75">No → sintomático y</text>
+          <text x="454" y="342" font-size="11" fill="currentColor" opacity="0.75">reevaluar la evolución</text>
+
+          <rect x="14" y="358" width="672" height="60" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2"></rect>
+          <line x1="208" y1="358" x2="208" y2="418" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></line>
+          <line x1="438" y1="358" x2="438" y2="418" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></line>
+          <text x="30" y="384" font-size="12.5" font-weight="700" fill="currentColor">Bronquitis aguda</text>
+          <text x="30" y="404" font-size="11" fill="currentColor" opacity="0.7">Tos &lt; 3 semanas</text>
+          <text x="224" y="384" font-size="11" fill="currentColor" opacity="0.7">¿Hay foco en el examen</text>
+          <text x="224" y="402" font-size="11" fill="currentColor" opacity="0.7">o infiltrado en la Rx?</text>
+          <text x="454" y="384" font-size="12" font-weight="700" fill="currentColor">SIN ANTIBIÓTICO</text>
+          <text x="454" y="404" font-size="11" fill="currentColor" opacity="0.75">Si hay infiltrado, es neumonía</text>
+        </svg>
+        <figcaption>Las dos filas resaltadas son las únicas donde existe una pregunta que puede terminar en antibiótico. En las otras tres la respuesta ya está decidida antes de ver al paciente.</figcaption>
+      </figure>
+
+      <h3>Catarro común</h3>
+      <ul>
+        <li><strong>Tratamiento sintomático</strong> exclusivamente.</li>
+        <li><strong>Prevención:</strong> <strong>higiene de manos</strong> y ejercicio.</li>
+        <li>Se han propuesto <strong>zinc, vitamina C, vitamina E y ginseng</strong> como profilaxis, pero <strong>ninguno ha demostrado eficacia</strong>.</li>
+      </ul>
+
+      <h3>Faringitis bacteriana</h3>
+      <p><em>S. pyogenes</em> <strong>aún no ha demostrado resistencia a la penicilina</strong>: no hace falta subir el espectro.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Fármaco</th><th>Vía y dosis</th><th>Duración</th><th>Observación</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Penicilina V</strong></td><td>VO 250 mg c/8 h</td><td>10 días</td><td>Primera elección</td></tr>
+            <tr><td><strong>Amoxicilina</strong></td><td>VO 500 mg c/8 h</td><td>10 días</td><td>Igual eficacia, mejor tolerancia</td></tr>
+            <tr><td><strong>Penicilina G benzatínica</strong></td><td>IM 1.200.000 UI</td><td>Dosis única</td><td>Asegura la adherencia</td></tr>
+            <tr><td><strong>Azitromicina</strong></td><td>VO 500 mg/día</td><td>3 días</td><td>Sólo en alérgicos a penicilina</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Laringitis aguda</h3>
+      <ul>
+        <li><strong>Tratamiento sintomático:</strong> <strong>reposo de la voz</strong>, analgesia e <strong>humidificación</strong>.</li>
+        <li>El tratamiento con <strong>penicilina o eritromicina no alivia el cuadro</strong> en comparación con placebo, lo que vuelve dudoso el valor de los aislamientos microbiológicos.</li>
+        <li><strong>Cochrane concluyó que no deben prescribirse antibióticos en la laringitis típica.</strong></li>
+      </ul>
+
+      <h3>Sinusitis aguda — qué antibiótico</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Categoría</th><th>Antibiótico y dosis</th><th>Nivel</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>De elección</strong></td><td><strong>Amoxicilina</strong> 500 – 1000 mg c/8 – 12 h</td><td>A I</td></tr>
+            <tr><td><strong>Alternativo</strong></td><td><strong>Amoxicilina/clavulánico</strong> 500 mg c/8 h u 875 mg c/12 h (de amoxicilina)</td><td>A I</td></tr>
+            <tr><td>Alternativo</td><td>Azitromicina 500 mg/día — <em>sólo alérgicos a penicilina</em></td><td>B I</td></tr>
+            <tr><td>Alternativo</td><td>Claritromicina 500 mg c/12 h — <em>sólo alérgicos a penicilina</em></td><td>B I</td></tr>
+            <tr><td>Alternativo</td><td>Doxiciclina 200 mg/día — sólo en niños &gt; 8 años y adultos</td><td>C II</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Los <strong>macrólidos (azitromicina y claritromicina) quedan reservados a los alérgicos a penicilina</strong>: la <strong>resistencia del neumococo a macrólidos está en ascenso</strong>. No son una alternativa de comodidad.</p>
+      </div>
+
+      <h3>Sinusitis aguda — cuánto tiempo</h3>
+      <ul>
+        <li>Puede esperarse que el paciente tratado con antimicrobiano <strong>mejore en <span class="dato">48 – 72 h</span></strong>. Si no mejora, hay que reevaluar el diagnóstico o el esquema.</li>
+        <li>El tiempo sugerido <strong>clásicamente</strong> era de <strong>7 días después de la mejoría de los síntomas</strong> (aproximadamente <span class="dato">10 días</span> en total).</li>
+        <li>Un <strong>metaanálisis de ensayos aleatorizados</strong> mostró que <strong>5 días es igual de efectivo que 7 – 10 días</strong>, sin diferencias en éxito clínico, respuesta microbiológica, recaídas ni abandonos. En el análisis de sensibilidad de 5 <em>versus</em> 10 días, la respuesta fue similar pero los <strong>efectos adversos fueron menores con el tratamiento corto</strong> (<span class="dato">OR 0,79</span>; IC 95 % 0,63 – 0,98).</li>
+      </ul>
+
+      <h3>Sinusitis crónica (&gt; 12 semanas)</h3>
+      <p>No se ha establecido que las bacterias tengan un papel claro. Se debe más probablemente a <strong>alteraciones anatómicas, inflamatorias y del aclaramiento mucociliar local</strong>, por lo que el tratamiento antibiótico <strong>no suele tener respuesta satisfactoria y no debe utilizarse de forma rutinaria</strong>.</p>
+
+      <h3>Bronquitis aguda</h3>
+      <ul>
+        <li><strong>Tratamiento sintomático.</strong> Actualmente <strong><span class="dato">60 – 80 %</span> de los pacientes reciben antibiótico</strong>, casi siempre sin indicación.</li>
+        <li>La <strong>procalcitonina &lt; 0,1 ng/mL</strong> es la herramienta objetiva para sostener la decisión de no tratar.</li>
+      </ul>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Agente etiológico</th><th>Comportamiento</th><th>Diagnóstico y tratamiento</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Virus influenza</strong> (gripe)</td><td>Invierno. Brotes epidémicos</td><td>RT-PCR. Tratamiento con <strong>inhibidores de la neuraminidasa (oseltamivir)</strong></td></tr>
+            <tr><td><strong>Rinovirus</strong></td><td>Otoño – invierno</td><td>Causa más frecuente del resfriado común</td></tr>
+            <tr><td><strong>Adenovirus</strong></td><td>Todo el año</td><td>Poblaciones cerradas: cuarteles, residencias</td></tr>
+            <tr><td><strong>Virus sincitial respiratorio</strong></td><td>Fin de otoño – invierno</td><td>Alta incidencia en niños; sólo 3 – 5 % en adultos. Típicamente produce <strong>sibilancias</strong>. RT-PCR</td></tr>
+            <tr><td><em>Mycoplasma pneumoniae</em> y <em>Chlamydia pneumoniae</em></td><td>Todo el año. Menos del 10 % de las causas</td><td>Tos persistente no productiva. <strong>Macrólidos, quinolonas o tetraciclinas</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>El <strong>metaneumovirus humano (hMPV)</strong> y el <strong>parainfluenza</strong> se comportan y se diagnostican de forma similar al VSR.</p>
+
+      <p class="cita">Fuente: Consenso Intersociedades para el Manejo de Infecciones Respiratorias Altas. MEDICINA (Buenos Aires) 2012;72(6), Tabla 5. Eficacia antibiótica en sinusitis: Lindbaek M, Hjortdahl P, Johnsen UL. Randomised, double blind, placebo controlled trial of penicillin V and amoxicillin in treatment of acute sinus infections in adults. BMJ. 1996;313:325-329. Laringitis: Reveiz L, Cardona AF. Antibiotics for acute laryngitis in adults. Cochrane Database of Systematic Reviews.</p>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-importantes" id="importantes">
+      <span class="seccion__pestana"><b>06</b> Alerta</span>
+      <h2 class="seccion__titulo">Aspectos Importantes &amp; Signos de Alarma</h2>
+
+      <h3>Fiebre reumática — la razón de tratar la faringitis estreptocócica</h3>
+      <p>Es <strong>importante identificar a <em>S. pyogenes</em> en niños</strong> por el <strong>riesgo de desarrollar fiebre reumática si no es tratado</strong>. El antibiótico en la faringitis no se indica para acortar el cuadro —que es autolimitado— sino para <strong>prevenir esa complicación no supurativa</strong>. Ése es el motivo por el cual el esquema dura 10 días completos aunque el paciente esté asintomático al tercer día.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>La <strong>sinusitis fúngica</strong> (<em>Aspergillus</em>, <strong><em>Mucor</em></strong>, <em>Rhizopus</em>) puede ser una <strong>enfermedad fulminante</strong> en pacientes <strong>diabéticos, oncológicos e inmunosuprimidos</strong>. Ante un paciente de ese perfil con dolor facial, necrosis del cornete o costra negra en la mucosa nasal, la conducta es <strong>evaluación urgente por otorrinolaringología</strong> — no un curso de amoxicilina.</p>
+      </div>
+
+      <h3>Por qué el antibiótico se elige así</h3>
+      <ul>
+        <li><strong><em>H. influenzae</em> y <em>M. catarrhalis</em>:</strong> hasta el <span class="dato">80 %</span> produce <strong>betalactamasas</strong> → si hay que cubrirlos, se agrega <strong>inhibidor de betalactamasa</strong> (amoxicilina/clavulánico).</li>
+        <li><strong>Neumococo:</strong> resiste por <strong>alteración de las PBP</strong>, no por betalactamasa → se sortea <strong>aumentando la dosis</strong> de amoxicilina, no agregando clavulánico.</li>
+        <li><strong>Macrólidos:</strong> resistencia neumocócica <strong>en ascenso</strong> → sólo para alérgicos a penicilina.</li>
+        <li><strong><em>S. pyogenes</em>:</strong> <strong>sin resistencia demostrada a penicilina</strong> → nunca hace falta escalar el espectro.</li>
+      </ul>
+
+      <h3>El problema real del tema: el antibiótico que no correspondía</h3>
+      <ul>
+        <li>Se prescriben antibióticos en alrededor del <span class="dato">60 %</span> de las faringitis de niños y adultos, cuando sólo el 10 – 30 % es bacteriana.</li>
+        <li>El <span class="dato">60 – 80 %</span> de los pacientes con bronquitis aguda recibe antibiótico, siendo un cuadro de causa viral.</li>
+        <li>En la laringitis típica <strong>Cochrane concluyó que directamente no deben prescribirse</strong>.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Frente al pedido de «algo para cortar los síntomas antes de que se me vaya la infección para abajo», la respuesta correcta es explicar el <strong>curso natural esperable</strong> y pactar una <strong>reevaluación</strong>. La infección no «baja» por no haber recibido antibiótico: los cuadros de vía aérea inferior tienen otra puerta de entrada y otros agentes.</p>
+      </div>
+
+      <h3>Cuándo reevaluar</h3>
+      <ul>
+        <li><strong>Catarro:</strong> si a los <span class="dato">10 días</span> no mejoró — replantear sinusitis o faringitis bacteriana.</li>
+        <li><strong>Sinusitis tratada:</strong> si no mejora en <span class="dato">48 – 72 h</span> de antibiótico.</li>
+        <li><strong>Bronquitis:</strong> si aparece <strong>foco auscultatorio</strong>, hipoxemia o la tos supera las <span class="dato">3 semanas</span> — pedir radiografía.</li>
+        <li><strong>Sinusitis en inmunocomprometido o diabético:</strong> derivación urgente, sin período de observación.</li>
+      </ul>
+
+      <p class="cita">Fuente: Consenso Intersociedades para el Manejo de Infecciones Respiratorias Altas. MEDICINA (Buenos Aires) 2012;72(6). Mandell, Douglas y Bennett, caps. 58, 60 y 63.</p>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-diferenciales" id="diferenciales">
+      <span class="seccion__pestana"><b>07</b> Diferenciales</span>
+      <h2 class="seccion__titulo">Diagnósticos Diferenciales</h2>
+
+      <p>Los cinco cuadros se diferencian por <strong>cuál es el síntoma dominante</strong> y por <strong>cuánto tiempo lleva</strong>. No hace falta ningún estudio para separarlos.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 354" role="img" aria-label="Árbol discriminante de las infecciones respiratorias altas según el síntoma dominante. Si predomina rinorrea con congestión y el curso es menor a diez días con mejoría desde el día seis, se trata de catarro común; si supera los diez días sin mejorar o hay un segundo enfermar, es sinusitis aguda. Si predomina la odinofagia con tos, coriza y conjuntivitis, es faringitis viral; sin tos, con exudado y adenopatía, es faringitis por estreptococo del grupo A. Si predomina la disfonía de inicio súbito con tos seca de tres a cinco días, es laringitis aguda. Si predomina la tos de menos de tres semanas sin foco en el examen físico, es bronquitis aguda; con foco auscultatorio corresponde pedir radiografía para descartar neumonía.">
+          <defs>
+            <marker id="pta-ddx" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="190" y="6" width="320" height="42" rx="3" fill="var(--c)" fill-opacity="0.18" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="350" y="32" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">¿Cuál es el síntoma dominante?</text>
+
+          <line x1="350" y1="48" x2="350" y2="70" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="91" y1="70" x2="613" y2="70" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="91" y1="70" x2="91" y2="96" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ddx)"></line>
+          <line x1="265" y1="70" x2="265" y2="96" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ddx)"></line>
+          <line x1="439" y1="70" x2="439" y2="96" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ddx)"></line>
+          <line x1="613" y1="70" x2="613" y2="96" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ddx)"></line>
+
+          <rect x="10" y="98" width="162" height="172" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="24" y="120" font-size="11.5" font-weight="700" fill="currentColor">Rinorrea</text>
+          <text x="24" y="136" font-size="11.5" font-weight="700" fill="currentColor">y congestión</text>
+          <text x="24" y="160" font-size="10.5" fill="currentColor" opacity="0.75">&lt; 10 días, mejora</text>
+          <text x="24" y="175" font-size="10.5" fill="currentColor" opacity="0.75">desde el día 6</text>
+          <text x="24" y="194" font-size="11" font-weight="700" fill="currentColor">→ Catarro común</text>
+          <line x1="24" y1="208" x2="158" y2="208" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="24" y="228" font-size="10.5" fill="currentColor" opacity="0.75">&gt; 10 días sin mejorar</text>
+          <text x="24" y="243" font-size="10.5" fill="currentColor" opacity="0.75">o «segundo enfermar»</text>
+          <text x="24" y="262" font-size="11" font-weight="700" fill="currentColor">→ Sinusitis aguda</text>
+
+          <rect x="184" y="98" width="162" height="172" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="198" y="120" font-size="11.5" font-weight="700" fill="currentColor">Odinofagia</text>
+          <text x="198" y="148" font-size="10.5" fill="currentColor" opacity="0.75">Tos, coriza,</text>
+          <text x="198" y="163" font-size="10.5" fill="currentColor" opacity="0.75">conjuntivitis</text>
+          <text x="198" y="182" font-size="11" font-weight="700" fill="currentColor">→ Faringitis viral</text>
+          <line x1="198" y1="196" x2="332" y2="196" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="198" y="216" font-size="10.5" fill="currentColor" opacity="0.75">Sin tos, exudado,</text>
+          <text x="198" y="231" font-size="10.5" fill="currentColor" opacity="0.75">adenopatía, fiebre</text>
+          <text x="198" y="250" font-size="11" font-weight="700" fill="currentColor">→ Faringitis por</text>
+          <text x="198" y="264" font-size="11" font-weight="700" fill="currentColor">    S. pyogenes</text>
+
+          <rect x="358" y="98" width="162" height="172" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="372" y="120" font-size="11.5" font-weight="700" fill="currentColor">Disfonía</text>
+          <text x="372" y="148" font-size="10.5" fill="currentColor" opacity="0.75">Voz grave súbita,</text>
+          <text x="372" y="163" font-size="10.5" fill="currentColor" opacity="0.75">baja proyección</text>
+          <text x="372" y="178" font-size="10.5" fill="currentColor" opacity="0.75">+ tos seca, 3 – 5 días</text>
+          <text x="372" y="197" font-size="11" font-weight="700" fill="currentColor">→ Laringitis aguda</text>
+          <line x1="372" y1="211" x2="506" y2="211" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="372" y="231" font-size="10.5" fill="currentColor" opacity="0.75">Siempre en contexto</text>
+          <text x="372" y="246" font-size="10.5" fill="currentColor" opacity="0.75">de un cuadro de VAS.</text>
+          <text x="372" y="261" font-size="10.5" fill="currentColor" opacity="0.75">Autolimitada.</text>
+
+          <rect x="532" y="98" width="162" height="172" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="546" y="120" font-size="11.5" font-weight="700" fill="currentColor">Tos</text>
+          <text x="546" y="148" font-size="10.5" fill="currentColor" opacity="0.75">&lt; 3 semanas, sin</text>
+          <text x="546" y="163" font-size="10.5" fill="currentColor" opacity="0.75">foco en el examen</text>
+          <text x="546" y="182" font-size="11" font-weight="700" fill="currentColor">→ Bronquitis aguda</text>
+          <line x1="546" y1="196" x2="680" y2="196" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="546" y="216" font-size="10.5" fill="currentColor" opacity="0.75">Con foco, matidez</text>
+          <text x="546" y="231" font-size="10.5" fill="currentColor" opacity="0.75">o hipoxemia</text>
+          <text x="546" y="250" font-size="11" font-weight="700" fill="currentColor">→ Pedir Rx:</text>
+          <text x="546" y="264" font-size="11" font-weight="700" fill="currentColor">    neumonía</text>
+
+          <rect x="10" y="290" width="684" height="56" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.25" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="26" y="312" font-size="11" font-weight="700" fill="currentColor">De las siete salidas del árbol, sólo dos terminan en antibiótico</text>
+          <text x="26" y="332" font-size="11" fill="currentColor" opacity="0.75">La faringitis por S. pyogenes y la sinusitis que cumple criterios. Todo el resto es tratamiento sintomático.</text>
+        </svg>
+        <figcaption>El árbol se recorre con dos datos que se obtienen en el interrogatorio: qué síntoma molesta más y hace cuántos días empezó.</figcaption>
+      </figure>
+
+      <h3>Tabla discriminante</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Entidad</th><th>Síntoma dominante</th><th>Clave que la distingue</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Catarro común</strong></td><td>Rinorrea y congestión</td><td>Curso &lt; 10 días con <strong>mejoría espontánea desde el día 6</strong></td></tr>
+            <tr><td><strong>Sinusitis aguda</strong></td><td>Rinorrea purulenta y dolor facial</td><td><strong>&gt; 10 días sin mejorar</strong>, o grave &gt; 3 días, o <strong>«segundo enfermar»</strong></td></tr>
+            <tr><td><strong>Faringitis viral</strong></td><td>Odinofagia</td><td>Acompañada de <strong>tos, coriza, conjuntivitis</strong>, úlceras orales o diarrea</td></tr>
+            <tr><td><strong>Faringitis por <em>S. pyogenes</em></strong></td><td>Odinofagia intensa</td><td><strong>Ausencia de tos</strong> + exudado + adenopatía cervical anterior + fiebre</td></tr>
+            <tr><td><strong>Laringitis aguda</strong></td><td>Disfonía</td><td><strong>Voz grave de inicio súbito</strong> con baja proyección; dura 3 – 5 días</td></tr>
+            <tr><td><strong>Bronquitis aguda</strong></td><td>Tos</td><td>Tos &lt; 3 semanas <strong>con examen físico y radiografía normales</strong></td></tr>
+            <tr><td><strong>Neumonía</strong></td><td>Tos y fiebre con repercusión</td><td><strong>Foco auscultatorio</strong> e <strong>infiltrado radiológico</strong> — sale del capítulo</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Entidades que no hay que pasar por alto ante una odinofagia</h3>
+      <ul>
+        <li><strong>Mononucleosis infecciosa:</strong> faringoamigdalitis exudativa con <strong>adenopatías generalizadas</strong>, <strong>esplenomegalia</strong> y astenia marcada en adolescentes. Si se la trata como estreptocócica con <strong>aminopenicilinas</strong>, aparece un <strong>exantema maculopapular</strong> característico.</li>
+        <li><strong>Absceso periamigdalino:</strong> odinofagia <strong>unilateral</strong> con <strong>trismus</strong>, voz «de papa caliente» y <strong>desviación de la úvula</strong>. Requiere drenaje, no sólo antibiótico.</li>
+        <li><strong>Epiglotitis:</strong> odinofagia desproporcionada al examen faríngeo, con <strong>estridor, babeo</strong> y posición en trípode. Es una <strong>urgencia de vía aérea</strong>.</li>
+      </ul>
+      <p class="cita">Fuente: Mandell, Douglas y Bennett. Enfermedades infecciosas: principios y práctica, caps. 59 «Faringitis» y 62 «Infecciones del espacio profundo del cuello». Estas tres entidades no figuran en la presentación de cátedra y se incluyen por su relevancia clínica como diferenciales de alarma.</p>
+    </section>
+
+    <!-- ============ Repaso activo ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>¿Por qué estas infecciones se repiten varias veces por año durante toda la vida?</summary>
+          <div class="fc__r">Porque los virus responsables tienen <strong>muchísimos serotipos distintos</strong> —más de 100 sólo entre los rinovirus— y algunos, como el <strong>influenza</strong>, además <strong>cambian sus antígenos de superficie</strong>. La inmunidad contra un serotipo no protege contra los demás.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Cuál es el virus más frecuente del catarro y cuál produce el síndrome más florido?</summary>
+          <div class="fc__r">El más frecuente es el <strong>rinovirus</strong> (40 – 50 % de los casos, &gt; 100 tipos antigénicos). El que produce el <strong>síndrome más florido</strong> es el <strong>virus de la gripe (influenza)</strong>.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Por qué un seno paranasal sano está estéril y qué lo rompe?</summary>
+          <div class="fc__r">Porque el <strong>epitelio cilíndrico pseudoestratificado ciliado renueva la capa de moco cada 2 – 3 h</strong> y la arrastra hacia el ostium. Una <strong>infección viral o una alergia</strong> altera ese epitelio: se acumulan secreciones, <strong>se obstruye el ostium</strong>, cae la presión al absorberse el aire y esa presión negativa <strong>aspira bacterias</strong> desde la nasofaringe.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>La tos del catarro: ¿de dónde viene, cuándo aparece y en qué proporción de pacientes?</summary>
+          <div class="fc__r">Es un <strong>reflejo nervioso por sensibilización de los receptores de la vía aérea superior</strong> —no viene del pulmón—. Aparece entre el <strong>día 3 y el 7</strong> y sólo la presenta el <strong>30 %</strong> de los pacientes.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué hallazgo orienta más a faringitis estreptocócica, y por qué el exudado no sirve?</summary>
+          <div class="fc__r">La <strong>ausencia de tos</strong>. El exudado no discrimina porque el <strong>adenovirus produce exudados espesos blanquecinos en la mitad de los casos</strong>; en ese cuadro la pista es la <strong>conjuntivitis de 1 – 2 semanas</strong> acompañante.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Describí el curso típico de una sinusitis viral día por día.</summary>
+          <div class="fc__r"><strong>Febrícula las primeras 48 h</strong> → <strong>empeoramiento</strong> de rinorrea y congestión al <strong>día 3 – 5</strong> → <strong>mejoría desde el día 6</strong> → desaparición alrededor del <strong>día 10</strong>. Desviarse de esta curva es lo que hace sospechar sobreinfección bacteriana.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Enumerá los criterios del Centor modificado y qué se hace con cada rango de puntaje.</summary>
+          <div class="fc__r">Temperatura &gt; 38 °C, <strong>ausencia de tos</strong>, ganglios cervicales anteriores dolorosos, inflamación o exudados amigdalinos (+1 cada uno) y la edad: 3 – 14 años +1, 15 – 44 años 0, ≥ 45 años −1.<br>Conducta: <strong>≤ 1</strong> → sin estudios ni antibióticos. <strong>2 – 3</strong> → cultivo a todos y antibiótico <strong>sólo si es positivo</strong>. <strong>≥ 4</strong> → <strong>tratamiento empírico</strong> (riesgo 51 – 53 %).</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Cuáles son los tres criterios para indicar antibiótico en una sinusitis aguda?</summary>
+          <div class="fc__r">1) <strong>Síntomas sin mejoría tras 10 días</strong>. 2) <strong>Síntomas graves</strong>: fiebre &gt; 39 °C <strong>y</strong> rinorrea purulenta &gt; 3 días consecutivos. 3) <strong>Empeoramiento tras una mejoría inicial</strong> del cuadro viral («segundo enfermar»).</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Por qué no sirve cultivar la secreción nasal en una sinusitis?</summary>
+          <div class="fc__r">Porque se <strong>contamina con flora nasal</strong>. El <strong>método de referencia es la punción del seno</strong>, que es invasiva; por eso el tratamiento se elige <strong>empíricamente</strong> a partir de la prevalencia conocida de gérmenes.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Esquemas de primera línea para faringitis estreptocócica y para sinusitis aguda.</summary>
+          <div class="fc__r"><strong>Faringitis:</strong> penicilina V VO 250 mg c/8 h × 10 días, o amoxicilina 500 mg c/8 h × 10 días, o penicilina G IM 1.200.000 UI dosis única; alérgicos → azitromicina 500 mg/día × 3 días.<br><strong>Sinusitis:</strong> <strong>amoxicilina 500 – 1000 mg c/8 – 12 h</strong>; alternativa amoxicilina/clavulánico.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Cuánto debe durar el antibiótico en la sinusitis aguda?</summary>
+          <div class="fc__r">Clásicamente <strong>7 días después de la mejoría</strong> (≈ 10 días). Un metaanálisis mostró que <strong>5 días es igual de efectivo que 7 – 10</strong>, con <strong>menos efectos adversos</strong> (OR 0,79; IC 95 % 0,63 – 0,98). La mejoría debe verse a las <strong>48 – 72 h</strong>.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Por qué se trata la faringitis estreptocócica si es autolimitada?</summary>
+          <div class="fc__r">Para <strong>prevenir la fiebre reumática</strong>, sobre todo en niños. No se trata para acortar el cuadro. Por eso el esquema se completa a <strong>10 días</strong> aunque el paciente esté asintomático antes.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>Paciente diabético con sinusitis y dolor facial intenso: ¿qué hay que descartar?</summary>
+          <div class="fc__r"><strong>Sinusitis fúngica</strong> (<em>Aspergillus</em>, <strong><em>Mucor</em></strong>, <em>Rhizopus</em>): puede ser <strong>fulminante</strong> en diabéticos, oncológicos e inmunosuprimidos. Requiere <strong>evaluación urgente por ORL</strong>, no un curso de amoxicilina.</div>
+        </details>
+
+        <details class="fc s-diferenciales">
+          <summary>¿Por qué al neumococo se le sube la dosis y al <em>H. influenzae</em> se le agrega clavulánico?</summary>
+          <div class="fc__r">Porque los mecanismos de resistencia son distintos: el <strong>neumococo altera las PBP</strong> —se sortea <strong>aumentando la dosis</strong> de amoxicilina— mientras que hasta el <strong>80 % de <em>H. influenzae</em> y <em>M. catarrhalis</em> produce betalactamasas</strong>, que se neutralizan con el <strong>inhibidor</strong>.</div>
+        </details>
+
+        <details class="fc s-diferenciales">
+          <summary>Adolescente con faringitis exudativa, adenopatías generalizadas y esplenomegalia: ¿diagnóstico y qué error evitar?</summary>
+          <div class="fc__r"><strong>Mononucleosis infecciosa</strong>. El error a evitar es tratarla como estreptocócica con <strong>aminopenicilinas</strong>: producen un <strong>exantema maculopapular</strong> característico.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Lo que define cada cuadro</dt>
+        <dd><strong>Catarro:</strong> rinorrea que mejora sola desde el día 6. <strong>Faringitis por EBHGA:</strong> odinofagia + fiebre + exudado + adenopatía y <strong>ausencia de tos</strong>. <strong>Laringitis:</strong> disfonía súbita, 3 – 5 días. <strong>Sinusitis:</strong> &gt; 10 días sin mejorar o «segundo enfermar». <strong>Bronquitis:</strong> tos &lt; 3 semanas con examen normal.</dd>
+
+        <dt class="r-gold">Estudio de elección</dt>
+        <dd><strong>Faringitis: escala de Centor modificada</strong>; el cultivo o PCR de fauces sólo cambia la conducta entre 2 y 3 puntos. <strong>Sinusitis:</strong> el diagnóstico es <strong>clínico y temporal</strong> — la punción del seno es el método de referencia pero no se usa. <strong>Bronquitis:</strong> Rx sólo si el examen físico es anormal; procalcitonina &lt; 0,1 ng/mL descarta necesidad de antibiótico.</dd>
+
+        <dt class="r-tto">Tratamiento de 1ª línea</dt>
+        <dd><strong>Faringitis:</strong> penicilina V 250 mg c/8 h × 10 días (o amoxicilina 500 mg c/8 h × 10 días; alérgicos: azitromicina 500 mg/día × 3 días). <strong>Sinusitis:</strong> amoxicilina 500 – 1000 mg c/8 – 12 h, 5 – 10 días. <strong>Catarro, laringitis y bronquitis: sintomático, sin antibiótico.</strong></dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd><strong>Sinusitis fúngica</strong> (<em>Mucor</em>, <em>Aspergillus</em>) en diabético, oncológico o inmunosuprimido: puede ser <strong>fulminante</strong> → derivación urgente. <strong>Faringitis estreptocócica no tratada en niños</strong> → riesgo de <strong>fiebre reumática</strong>. Sinusitis que no mejora en <strong>48 – 72 h</strong> de antibiótico → reevaluar.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir de la clase «Infecciones respiratorias 1» de la cátedra de Infectología, complementada con el Consenso Intersociedades para el Manejo de Infecciones Respiratorias Altas (MEDICINA, Buenos Aires, 2012;72(6)), la validación empírica de la escala de Centor modificada (McIsaac WJ y cols., JAMA 2004;291:1587-1595) y Mandell, Douglas y Bennett, Enfermedades infecciosas: principios y práctica. Material de estudio: no reemplaza el criterio clínico ni la guía institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link'));
+
+  function porMeta(hash){
+    for (var i = 0; i < enlaces.length; i++){
+      if (enlaces[i].getAttribute('href') === '#' + hash) return enlaces[i];
+    }
+    return null;
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var enlace = porMeta(e.target.id);
+        if (!enlace) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          enlace.setAttribute('aria-current', 'true');
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>

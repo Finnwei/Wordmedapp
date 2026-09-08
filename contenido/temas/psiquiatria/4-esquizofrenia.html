@@ -1,0 +1,2248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Esquizofrenia</title>
+<link rel="stylesheet" href="../../fuentes/fuentes.css">
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+}
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índice lateral ---------- */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Ficha de sección ---------- */
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.35rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-row:1/3; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+.importante__titulo{
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso{ display:none !important; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+<style>
+/* Fuentes de la capa de contenido. Va después del estilo del
+   cuadernillo para pisar las de Windows, que no se pueden
+   redistribuir y no existen en Android. */
+:root{
+  --f-titulo:'Spectral',Georgia,'Times New Roman',serif;
+  --f-texto:'Open Sans',system-ui,-apple-system,sans-serif;
+  --f-dato:'Cascadia Mono','Cascadia Code',ui-monospace,Consolas,monospace;
+}
+/* Botón de volver, espejo del de tema que ya trae el cuadernillo. */
+.volver{
+  position:fixed; top:.7rem; left:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.volver:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.volver__icono{ width:1.15rem; height:1.15rem; display:block; }
+</style>
+</head>
+<body data-clave="psiquiatria/4-esquizofrenia">
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-generalidades"  href="#definicion">Qué es la esquizofrenia</a></li>
+      <li><a class="indice__link i-generalidades"  href="#historia">Historia del concepto</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#teoricos">Los teóricos</a></li>
+      <li><a class="indice__link i-clinica"        href="#epidemiologia">Epidemiología</a></li>
+      <li><a class="indice__link i-importantes"    href="#mortalidad">Mortalidad y suicidio</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#social">Determinantes sociales</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#diatesis">Diátesis-estrés</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#dopamina">Hipótesis dopaminérgica</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#neurotransmisores">Otros neurotransmisores</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#neuropatologia">Neuropatología</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#complementarios">Estudios complementarios</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#genetica">Genética e inmunología</a></li>
+      <li><a class="indice__link i-diferenciales"  href="#psicosocial">Modelos psicosociales</a></li>
+      <li><a class="indice__link i-clinica"        href="#prodromo">Pródromo</a></li>
+      <li><a class="indice__link i-clinica"        href="#positivos">Síntomas positivos</a></li>
+      <li><a class="indice__link i-clinica"        href="#negativos">Síntomas negativos</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#criterios">Criterios diagnósticos</a></li>
+      <li><a class="indice__link i-importantes"    href="#subtipos">Subtipos clásicos</a></li>
+      <li><a class="indice__link i-diferenciales"  href="#diferenciales">Diagnósticos diferenciales</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#farmacologico">Tratamiento farmacológico</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#clozapina">Refractariedad y clozapina</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#psicosociales">Intervenciones psicosociales</a></li>
+      <li><a class="indice__link i-clinica"        href="#pronostico">Curso y pronóstico</a></li>
+      <li><a class="indice__link i-diferenciales"  href="#precisiones">Precisiones al material</a></li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Psiquiatría · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Esquizofrenia</h1>
+      <p class="portada__bajada">Del concepto de Kraepelin a los criterios del DSM-5. Etiología, clínica, diagnóstico diferencial y conducta terapéutica, con el tratamiento y el pronóstico desarrollados como ampliación del material de cátedra.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">24 secciones</span>
+        <span class="etiqueta s-fisiopatologia">Cuatro vías dopaminérgicas</span>
+        <span class="etiqueta s-diagnostico">DSM-IV → DSM-5</span>
+        <span class="etiqueta s-tratamiento">Tratamiento y pronóstico</span>
+      </div>
+    </header>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="definicion">
+      <span class="seccion__pestana"><b>01</b> Base</span>
+      <h2 class="seccion__titulo">Qué es la esquizofrenia</h2>
+
+      <p>Trastorno psicótico <strong>crónico</strong> en el que se distorsionan el pensamiento, la percepción y la afectividad, y en el que la persona <strong>interpreta la realidad de manera anormal</strong>. Combina alucinaciones, ideas delirantes y alteraciones graves del pensamiento y del comportamiento, con una repercusión sobre el funcionamiento diario que puede llegar a ser incapacitante.</p>
+
+      <p>Tres rasgos definen el cuadro y conviene fijarlos desde el principio, porque de ellos se desprende todo lo demás:</p>
+
+      <ul>
+        <li>No es un episodio: para el diagnóstico se exigen <span class="dato">6 meses</span> de signos continuos, de los cuales al menos <span class="dato">1 mes</span> con síntomas psicóticos francos.</li>
+        <li>No es una sola enfermedad: bajo el nombre conviven <strong>presentaciones clínicas, respuestas al tratamiento y evoluciones muy distintas</strong>. El propio material lo dice — «comprende un grupo de trastornos con causas heterogéneas pero con síntomas de comportamiento algo similares».</li>
+        <li>El tratamiento es <strong>de por vida</strong>. El tratamiento temprano permite controlar los síntomas antes de que aparezcan complicaciones más graves y mejora el pronóstico a largo plazo.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>Esquizofrenia no es «doble personalidad».</strong> Es la confusión popular más extendida y nace de la etimología. Cuando Bleuler compuso el término con <em>σχίζειν</em> (escindir) y <em>φρήν</em> (mente), no aludía a dos personalidades alternantes, sino a la <strong>escisión entre las funciones psíquicas</strong>: el pensamiento marcha por un lado y el afecto por otro, dentro de una misma persona.</p>
+      </div>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-generalidades" id="historia">
+      <span class="seccion__pestana"><b>02</b> Historia</span>
+      <h2 class="seccion__titulo">De la <em>démence précoce</em> a la esquizofrenia</h2>
+
+      <p>El concepto se construyó por acumulación a lo largo de setenta años. Vale la pena seguir la secuencia porque explica por qué el cuadro se llama como se llama y por qué durante casi un siglo se lo consideró irremediablemente deteriorante.</p>
+
+      <ul>
+        <li><strong>Bénédict Morel</strong> (1809-1873) aplica el término <em>démence précoce</em> a pacientes deteriorados cuya enfermedad comenzaba en la <strong>adolescencia</strong>. El nombre ya contiene la observación central: es una demencia que aparece antes de tiempo.</li>
+        <li><strong>Karl Ludwig Kahlbaum</strong> (1828-1899) describe los síntomas de la <strong>catatonía</strong> y <strong>Ewald Hecker</strong> (1843-1909) el comportamiento excéntrico de los pacientes con <strong>hebefrenia</strong>. Aportan las dos formas clínicas que después serán subtipos.</li>
+        <li><strong>Emil Kraepelin</strong> (1856-1926) reúne esos elementos y construye su clasificación de las <strong>psicosis endógenas</strong>, dentro de las cuales describe una entidad que denomina <em>dementia praecox</em>, tomando el nombre de Morel. Su criterio de separación no es el corte transversal sino el <strong>curso</strong>: la <em>dementia praecox</em> deteriora, la locura maníaco-depresiva no.</li>
+        <li><strong>Eugen Bleuler</strong> (1857-1939) acuña el término <strong>esquizofrenia</strong> y propone que <strong>no todos los pacientes evolucionan necesariamente con deterioro cognitivo</strong>. Es el quiebre conceptual: la enfermedad deja de definirse por su desenlace y pasa a definirse por su psicopatología.</li>
+      </ul>
+
+      <h3>Los síntomas fundamentales de Bleuler — las cuatro A</h3>
+      <p>Bleuler distinguió entre síntomas <strong>fundamentales</strong>, presentes en todos los casos, y <strong>accesorios</strong> (alucinaciones y delirios), que podían faltar. Los fundamentales se recuerdan como las cuatro A:</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Las cuatro A</th><th>En qué consiste</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Asociaciones laxas</strong></td><td>Pérdida del hilo lógico que enlaza una idea con la siguiente. Es la escisión del pensamiento.</td></tr>
+            <tr><td><strong>Afectividad aplanada</strong></td><td>Empobrecimiento de la resonancia emocional y disociación entre el afecto y el contenido del discurso.</td></tr>
+            <tr><td><strong>Ambivalencia</strong></td><td>Coexistencia simultánea de impulsos, sentimientos o deseos opuestos hacia un mismo objeto.</td></tr>
+            <tr><td><strong>Autismo</strong></td><td>Repliegue sobre el mundo interno con desconexión de la realidad compartida. Nada que ver con el trastorno del espectro autista actual.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Las cuatro A no figuran en el material de cátedra: se agregan porque son la contribución por la que Bleuler se recuerda y porque explican qué quiso decir con «escisión». Fuente: Kaplan &amp; Sadock, <em>Sinopsis de Psiquiatría</em>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 344" role="img" aria-label="Línea histórica del concepto de esquizofrenia. Morel aporta la demencia precoz en la adolescencia; Kahlbaum aporta la catatonía y Hecker la hebefrenia, que alimentan la síntesis de Kraepelin; Kraepelin construye la dementia praecox definida por el curso deteriorante; Bleuler acuña esquizofrenia y niega el deterioro obligatorio; Schneider describe los síntomas de primer orden. Debajo se contrastan las ideas que siguen en pie con las que fueron abandonadas.">
+          <defs>
+            <marker id="esq-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <!-- Alimentadores -->
+          <rect x="163" y="8" width="200" height="46" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="263" y="27" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">Kahlbaum · catatonía</text>
+          <text x="263" y="44" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">Hecker · hebefrenia</text>
+          <line x1="263" y1="56" x2="263" y2="74" stroke="currentColor" stroke-width="1.5" marker-end="url(#esq-a)"></line>
+          <text x="273" y="70" font-size="10" fill="currentColor" opacity="0.75">le dan las formas clínicas</text>
+
+          <!-- Línea principal -->
+          <rect x="6" y="78" width="160" height="118" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="20" y="100" font-size="12.5" font-weight="700" fill="currentColor">Morel</text>
+          <text x="20" y="117" font-size="10" fill="currentColor" opacity="0.7">1809-1873</text>
+          <text x="20" y="139" font-size="10.5" fill="currentColor"><tspan font-style="italic">démence précoce</tspan></text>
+          <text x="20" y="155" font-size="10.5" fill="currentColor">Deterioro que empieza</text>
+          <text x="20" y="171" font-size="10.5" fill="currentColor">en la adolescencia</text>
+
+          <rect x="183" y="78" width="160" height="118" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="197" y="100" font-size="12.5" font-weight="700" fill="currentColor">Kraepelin</text>
+          <text x="197" y="117" font-size="10" fill="currentColor" opacity="0.7">1856-1926</text>
+          <text x="197" y="139" font-size="10.5" fill="currentColor"><tspan font-style="italic">dementia praecox</tspan></text>
+          <text x="197" y="155" font-size="10.5" fill="currentColor">La define el curso:</text>
+          <text x="197" y="171" font-size="10.5" fill="currentColor">deteriora siempre</text>
+
+          <rect x="360" y="78" width="160" height="118" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="374" y="100" font-size="12.5" font-weight="700" fill="currentColor">Bleuler</text>
+          <text x="374" y="117" font-size="10" fill="currentColor" opacity="0.7">1857-1939</text>
+          <text x="374" y="139" font-size="10.5" fill="currentColor"><tspan font-weight="700">Esquizofrenia</tspan></text>
+          <text x="374" y="155" font-size="10.5" fill="currentColor">Las cuatro A. No todos</text>
+          <text x="374" y="171" font-size="10.5" fill="currentColor">deterioran</text>
+
+          <rect x="537" y="78" width="157" height="118" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="551" y="100" font-size="12.5" font-weight="700" fill="currentColor">Schneider</text>
+          <text x="551" y="117" font-size="10" fill="currentColor" opacity="0.7">1887-1967</text>
+          <text x="551" y="139" font-size="10.5" fill="currentColor">Síntomas de 1.er orden</text>
+          <text x="551" y="155" font-size="10.5" fill="currentColor">No patognomónicos,</text>
+          <text x="551" y="171" font-size="10.5" fill="currentColor">pero útiles</text>
+
+          <line x1="168" y1="137" x2="181" y2="137" stroke="currentColor" stroke-width="1.5" marker-end="url(#esq-a)"></line>
+          <line x1="345" y1="137" x2="358" y2="137" stroke="currentColor" stroke-width="1.5" marker-end="url(#esq-a)"></line>
+          <line x1="522" y1="137" x2="535" y2="137" stroke="currentColor" stroke-width="1.5" marker-end="url(#esq-a)"></line>
+
+          <!-- Balance -->
+          <rect x="6" y="222" width="340" height="112" rx="3" fill="var(--c)" fill-opacity="0.06" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="20" y="243" font-size="11.5" font-weight="700" fill="currentColor">Lo que sigue en pie</text>
+          <text x="20" y="265" font-size="10.5" fill="currentColor">· El síndrome como entidad clínica reconocible</text>
+          <text x="20" y="285" font-size="10.5" fill="currentColor">· La heterogeneidad de curso que vio Bleuler</text>
+          <text x="20" y="305" font-size="10.5" fill="currentColor">· Los síntomas de 1.er orden como guía</text>
+          <text x="20" y="323" font-size="10.5" fill="currentColor">&#160;&#160;descriptiva, no como prueba diagnóstica</text>
+
+          <rect x="360" y="222" width="334" height="112" rx="3" fill="var(--c)" fill-opacity="0.06" stroke="var(--c)" stroke-width="1.5" stroke-dasharray="5 3"></rect>
+          <text x="374" y="243" font-size="11.5" font-weight="700" fill="currentColor">Lo que se abandonó</text>
+          <text x="374" y="265" font-size="10.5" fill="currentColor">· El deterioro obligatorio de Kraepelin</text>
+          <text x="374" y="285" font-size="10.5" fill="currentColor">· El peso diagnóstico especial de los</text>
+          <text x="374" y="303" font-size="10.5" fill="currentColor">&#160;&#160;síntomas de 1.er orden (DSM-5)</text>
+          <text x="374" y="323" font-size="10.5" fill="currentColor">· El hábito asténico de Kretschmer</text>
+        </svg>
+        <figcaption>Kraepelin definió la enfermedad por su desenlace; Bleuler la definió por su psicopatología. Ese giro es el que permite hoy hablar de recuperación funcional sin contradecir el diagnóstico.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-fisiopatologia" id="teoricos">
+      <span class="seccion__pestana"><b>03</b> Marco</span>
+      <h2 class="seccion__titulo">Los teóricos: qué aportó cada uno</h2>
+
+      <p>Después de Bleuler, distintos autores intentaron explicar el cuadro desde su propio marco. Conviene saber quién dijo qué —se pregunta— y también qué resistió el paso del tiempo.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Autor</th><th>Qué sostuvo</th><th>Situación actual</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Adolf Meyer</strong></td>
+              <td>Fundador de la psicobiología. Considera el cuadro una <strong>reacción a factores vitales de estrés</strong> («reacción esquizofrénica»).</td>
+              <td>Es el antecedente directo del modelo diátesis-estrés que hoy se usa.</td>
+            </tr>
+            <tr>
+              <td><strong>Harry Stack Sullivan</strong></td>
+              <td>Fundador de la escuela psicoanalítica interpersonal. El <strong>aislamiento social</strong> es a la vez causa y síntoma de la esquizofrenia.</td>
+              <td>Como causa única no se sostiene; como factor de mantenimiento y objetivo de rehabilitación, sí.</td>
+            </tr>
+            <tr>
+              <td><strong>Ernst Kretschmer</strong></td>
+              <td>Compila datos y concluye que la esquizofrenia es más frecuente en el <strong>hábito corporal asténico</strong> (leptosómico) que en el pícnico.</td>
+              <td><strong>Abandonado.</strong> La tipología constitucional no tiene sustento.</td>
+            </tr>
+            <tr>
+              <td><strong>Gabriel Langfeldt</strong></td>
+              <td>Divide a los pacientes con síntomas psicóticos mayores en <strong>esquizofrenia verdadera</strong> (o no remitente) y <strong>psicosis tipo esquizofrenia</strong>.</td>
+              <td>La intuición sobrevive: es el antecesor del actual <strong>trastorno esquizofreniforme</strong>.</td>
+            </tr>
+            <tr>
+              <td><strong>Kurt Schneider</strong></td>
+              <td>Describe los <strong>síntomas de primer orden</strong> (voces que comentan o conversan, robo, inserción y difusión del pensamiento, vivencias de influencia corporal, percepción delirante). Aclara que <strong>no son patognomónicos</strong>, pero son útiles para el diagnóstico.</td>
+              <td>Siguen siendo excelentes descriptores. El DSM-5 les <strong>quitó</strong> el peso diagnóstico especial que tenían.</td>
+            </tr>
+            <tr>
+              <td><strong>Karl Jaspers</strong></td>
+              <td>Contribuye al psicoanálisis existencial y abre el camino para <strong>comprender el significado psicológico</strong> de los signos y síntomas esquizofrénicos.</td>
+              <td>Su distinción entre lo comprensible y lo incomprensible sigue estructurando la entrevista psicopatológica.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Fijate que ya Schneider advertía que sus propios síntomas no eran patognomónicos. El DSM-5 no lo contradijo: llevó esa advertencia hasta su consecuencia y eliminó la excepción que permitía diagnosticar con un solo síntoma cuando ese síntoma era de primer orden.</p>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-clinica" id="epidemiologia">
+      <span class="seccion__pestana"><b>04</b> Epidemiología</span>
+      <h2 class="seccion__titulo">Quién, cuándo y dónde</h2>
+
+      <p>La prevalencia de por vida se ubica en torno al <span class="dato">0,3 – 0,7 %</span> según la revisión sistemática de referencia, con notable variación entre estudios. El material de cátedra no consigna una cifra global, de modo que se agrega para dar escala al resto de los datos.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Variable</th><th>Dato del material</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Sexo</strong></td>
+              <td><strong>Igual prevalencia</strong> entre hombres y mujeres.</td>
+            </tr>
+            <tr>
+              <td><strong>Edad de comienzo</strong></td>
+              <td>Pico en <strong>hombres de 10 a 25 años</strong>; en <strong>mujeres de 25 a 35 años</strong>. La enfermedad es la misma; lo que cambia es el momento en que se declara.</td>
+            </tr>
+            <tr>
+              <td><strong>Estación de nacimiento</strong></td>
+              <td>Exceso de nacimientos en <strong>invierno o principios de primavera</strong>.</td>
+            </tr>
+            <tr>
+              <td><strong>Infecciones gestacionales</strong></td>
+              <td>Infecciones <strong>virales durante el embarazo</strong> (gripe) asociadas a mayor riesgo en la descendencia.</td>
+            </tr>
+            <tr>
+              <td><strong>Distribución geográfica</strong></td>
+              <td>Mayor frecuencia en una región de los Estados Unidos y prevalencia inusitadamente alta en <strong>Irlanda</strong>. <em>Ver la nota de la sección 24.</em></td>
+            </tr>
+            <tr>
+              <td><strong>Factores reproductivos</strong></td>
+              <td>Los hijos de personas con esquizofrenia tienen <span class="dato">10 veces</span> más probabilidad de enfermar. Lo mismo vale para cualquier familiar biológico directo.</td>
+            </tr>
+            <tr>
+              <td><strong>Enfermedad médica</strong></td>
+              <td>Mayor tasa de mortalidad por <strong>accidentes y causas naturales</strong> que la población general.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Dos observaciones de esta tabla merecen que te detengas.</p>
+
+      <p>La primera: <strong>la estación de nacimiento y las infecciones gestacionales apuntan al mismo lugar</strong>. Ambas son marcadores indirectos de una agresión sobre el sistema nervioso <em>en desarrollo</em>, meses o años antes de que aparezca el primer síntoma. Son el principal argumento a favor de entender la esquizofrenia como un <strong>trastorno del neurodesarrollo</strong> con expresión tardía, y no como una enfermedad que empieza en la adolescencia.</p>
+
+      <p>La segunda: <strong>el desfase etario entre sexos</strong>. Que la prevalencia sea igual pero el pico esté quince años corrido explica un fenómeno de guardia — el varón joven que debuta con un primer episodio florido y la mujer de treinta y pico cuyo cuadro se atribuye durante meses a un trastorno del ánimo o a un problema vital. Suele describirse además un <strong>segundo pico</strong> en mujeres alrededor de la menopausia, dato que el material no consigna.</p>
+
+      <p class="cita">Prevalencia: Saha S, Chant D, Welham J, McGrath J. <em>A systematic review of the prevalence of schizophrenia.</em> PLoS Medicine 2005. Segundo pico en mujeres: Kaplan &amp; Sadock, <em>Sinopsis de Psiquiatría</em>.</p>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-importantes" id="mortalidad">
+      <span class="seccion__pestana"><b>05</b> Riesgo</span>
+      <h2 class="seccion__titulo">Mortalidad, suicidio y consumo de sustancias</h2>
+
+      <p>Esta sección concentra lo que efectivamente mata a las personas con esquizofrenia, y por eso está separada del resto de la epidemiología.</p>
+
+      <h3>Suicidio</h3>
+      <p>El riesgo es <strong>muy superior</strong> al de la población general. El material consigna que <strong>el 15 % se suicida</strong>. Esa cifra clásica está hoy corregida a la baja: las estimaciones actuales ubican el riesgo de por vida <strong>en torno al 5 %</strong>. Sigue siendo altísimo —cinco de cada cien— pero la diferencia importa para no transmitir un fatalismo que la evidencia no respalda. El desarrollo del punto está en la sección 24.</p>
+
+      <p>Lo que sí conviene retener sin matices es <strong>cuándo</strong> ocurre: el riesgo se concentra en los <strong>primeros años de enfermedad</strong>, en pacientes jóvenes, con buen nivel intelectual previo, <strong>conciencia de enfermedad conservada</strong> y síntomas depresivos. Es decir, no es el paciente más deteriorado el que más se suicida, sino el que mide lo que la enfermedad le sacó.</p>
+
+      <h3>Consumo de sustancias</h3>
+      <ul>
+        <li><strong>Tabaco:</strong> el <span class="dato">75 %</span> fuma. Es una de las asociaciones más fuertes de toda la psiquiatría.</li>
+        <li><strong>Cannabis y cocaína:</strong> mayor incidencia de consumo. Los pacientes suelen referir que lo hacen <strong>para calmar sus síntomas</strong>.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>El material señala correctamente que <strong>el tabaquismo aumenta el metabolismo de los antipsicóticos</strong> y obliga a usar dosis más altas. Falta la contracara, que es la que produce accidentes: el responsable no es la nicotina sino los <strong>hidrocarburos aromáticos policíclicos</strong> del humo, que inducen el CYP1A2 —la vía de la <strong>olanzapina</strong> y la <strong>clozapina</strong>—. Cuando el paciente <strong>deja de fumar</strong> de golpe (una internación, una cirugía, una guardia), la inducción cede en días y <strong>los niveles plasmáticos suben</strong> con la misma dosis. Es una causa clásica de intoxicación por clozapina en un paciente que «venía estable».</p>
+      </div>
+
+      <p>Sobre la idea, también presente en el material, de que la nicotina reduce las alucinaciones: la evidencia sostiene un efecto sobre el <strong>filtrado sensorial</strong> y sobre los efectos adversos motores, no una reducción de los síntomas positivos. Ver sección 24.</p>
+
+      <h3>La brecha de mortalidad</h3>
+      <p>Detrás del dato escueto de «mayor mortalidad por causas naturales» hay una cifra que conviene tener: las personas con esquizofrenia mueren, en promedio, entre <span class="dato">10 y 20 años</span> antes que la población general. La causa principal <strong>no es el suicidio</strong> sino la <strong>enfermedad cardiovascular</strong>, alimentada por tabaquismo, sedentarismo, síndrome metabólico inducido por los antipsicóticos y acceso deficiente a la atención clínica general. Es la razón por la cual el control metabólico forma parte del tratamiento y no es un accesorio.</p>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-fisiopatologia" id="social">
+      <span class="seccion__pestana"><b>06</b> Contexto</span>
+      <h2 class="seccion__titulo">Determinantes sociales</h2>
+
+      <p>El material dedica una diapositiva entera a factores poblacionales y socioeconómicos. Son datos epidemiológicos reales, pero exigen una lectura cuidadosa porque la asociación no dice en qué dirección corre la flecha.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Hallazgo</th><th>Cómo leerlo</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Densidad poblacional</strong> — más frecuente en la ciudad que en zonas rurales</td>
+              <td>La urbanicidad es uno de los factores de riesgo ambientales más replicados. El material lo atribuye al <strong>estrés social</strong>.</td>
+            </tr>
+            <tr>
+              <td><strong>Nivel socioeconómico bajo</strong> en naciones industrializadas</td>
+              <td>Acá conviven dos explicaciones. La <strong>causación social</strong>: la privación y el estrés crónico aumentan el riesgo. La <strong>deriva social</strong>: la enfermedad, que empieza justo cuando se construye la trayectoria educativa y laboral, empuja a la persona hacia abajo en la escala. Probablemente operan las dos.</td>
+            </tr>
+            <tr>
+              <td><strong>Migración</strong> — más frecuente en inmigrantes</td>
+              <td>El material lo atribuye al <strong>cambio cultural brusco</strong>. Se suma la experiencia sostenida de exclusión y de minoría.</td>
+            </tr>
+            <tr>
+              <td><strong>Contacto cultural</strong> — en países en desarrollo la prevalencia aumenta a medida que se incrementa el contacto con culturas tecnológicamente avanzadas</td>
+              <td>Dato del material. Coherente con la línea anterior: lo que sube el riesgo no es la tecnología sino la disrupción del tejido social.</td>
+            </tr>
+            <tr>
+              <td><strong>Pronóstico más benigno</strong> en países en desarrollo</td>
+              <td>Hallazgo de los estudios internacionales de la OMS. La explicación que da el material es sólida: la <strong>reinserción en la comunidad y la familia es más completa</strong> que en las sociedades occidentales altamente desarrolladas.</td>
+            </tr>
+            <tr>
+              <td><strong>Hospitalización</strong> — ocupan el 50 % de las camas en hospitales psiquiátricos</td>
+              <td>Mide el peso asistencial del cuadro, no su frecuencia: refleja cuánto tiempo permanece internada esta población.</td>
+            </tr>
+            <tr>
+              <td><strong>Indigencia</strong> — de uno a dos tercios de las personas en situación de calle</td>
+              <td>Cifra excesiva. Ver sección 24.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>El último renglón del cuadro anterior es el que más rinde conceptualmente: el <strong>pronóstico más benigno en países en desarrollo</strong> es la mejor demostración de que el entorno no sólo influye en la aparición sino también en la <strong>evolución</strong>. La misma enfermedad, con menos institucionalización y más red comunitaria, evoluciona mejor. De ahí se desprende buena parte de lo que se hace en la sección 22.</p>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-fisiopatologia" id="diatesis">
+      <span class="seccion__pestana"><b>07</b> Etiología</span>
+      <h2 class="seccion__titulo">El modelo diátesis-estrés</h2>
+
+      <p>Es el marco que integra todo lo demás y conviene tenerlo claro antes de entrar en los neurotransmisores. Plantea que existe una <strong>vulnerabilidad específica (diátesis)</strong> sobre la cual actúan <strong>factores estresantes</strong>; sólo cuando la suma supera un umbral se desencadena la enfermedad. Su virtud es que <strong>toma en cuenta factores biológicos, psicosociales y ambientales</strong> sin pedirle a ninguno que explique el cuadro por sí solo.</p>
+
+      <p>Esto responde a la pregunta que aparece siempre: si la genética pesa tanto, ¿por qué la concordancia en gemelos idénticos no es del 100 %? Porque la genética aporta la diátesis, no el desenlace.</p>
+
+      <p>Sobre esa base, el material describe la neurobiología del cuadro. El <strong>sistema límbico</strong> aparece señalado por estudios de imágenes, anatomopatológicos <em>post mortem</em> y funcionales como posible localización del <strong>proceso patológico primario</strong>. Y para el origen de esa anormalidad cerebral se proponen dos mecanismos alternativos:</p>
+
+      <ul>
+        <li><strong>Desarrollo anormal:</strong> migración anómala de neuronas a lo largo de las células gliales radiales durante el desarrollo. Las neuronas no llegan a donde debían.</li>
+        <li><strong>Degeneración posterior al desarrollo:</strong> muerte celular programada anormalmente precoz. Las neuronas llegaron, pero se pierden antes de tiempo.</li>
+      </ul>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 342" role="img" aria-label="Modelo diátesis-estrés. Una caja de vulnerabilidad biológica con carga genética, alteración del neurodesarrollo y poda sináptica excesiva, y una caja de factores estresantes con urbanicidad, migración, adversidad y cannabis, convergen mediante flechas sobre una caja central donde se supera el umbral y aparece la psicosis. De esa caja central baja una flecha hacia una fila de cuatro estructuras alteradas: sistema límbico, ganglios basales y cerebelo, ventrículos y corteza prefrontal.">
+          <defs>
+            <marker id="esq-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="20" y="10" width="270" height="86" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="36" y="32" font-size="12.5" font-weight="700" fill="currentColor">Diátesis · vulnerabilidad</text>
+          <text x="36" y="52" font-size="10.5" fill="currentColor">Carga genética (poligénica + CNV)</text>
+          <text x="36" y="70" font-size="10.5" fill="currentColor">Alteración del neurodesarrollo</text>
+          <text x="36" y="88" font-size="10.5" fill="currentColor">Poda sináptica excesiva</text>
+
+          <rect x="410" y="10" width="270" height="86" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="426" y="32" font-size="12.5" font-weight="700" fill="currentColor">Estrés · desencadenante</text>
+          <text x="426" y="52" font-size="10.5" fill="currentColor">Urbanicidad · migración</text>
+          <text x="426" y="70" font-size="10.5" fill="currentColor">Adversidad y privación social</text>
+          <text x="426" y="88" font-size="10.5" fill="currentColor">Cannabis y otras sustancias</text>
+
+          <line x1="160" y1="100" x2="290" y2="140" stroke="currentColor" stroke-width="1.5" marker-end="url(#esq-b)"></line>
+          <text x="150" y="128" font-size="10" fill="currentColor" opacity="0.75">carga de base</text>
+
+          <line x1="540" y1="100" x2="410" y2="140" stroke="currentColor" stroke-width="1.5" marker-end="url(#esq-b)"></line>
+          <text x="470" y="128" font-size="10" fill="currentColor" opacity="0.75">carga ambiental</text>
+
+          <rect x="200" y="144" width="300" height="50" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="350" y="166" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">Se supera el umbral</text>
+          <text x="350" y="184" font-size="10.5" fill="currentColor" text-anchor="middle">Aparece el cuadro psicótico</text>
+
+          <line x1="350" y1="196" x2="350" y2="224" stroke="currentColor" stroke-width="1.5" marker-end="url(#esq-b)"></line>
+          <text x="360" y="214" font-size="10" fill="currentColor" opacity="0.75">se expresa sobre</text>
+
+          <text x="20" y="242" font-size="11.5" font-weight="700" fill="currentColor">Sustrato neurobiológico descripto</text>
+
+          <rect x="8" y="250" width="164" height="82" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="20" y="270" font-size="11" font-weight="700" fill="currentColor">Sistema límbico</text>
+          <text x="20" y="290" font-size="10" fill="currentColor">Amígdala, hipocampo y</text>
+          <text x="20" y="306" font-size="10" fill="currentColor">circunv. parahipocámpica</text>
+          <text x="20" y="323" font-size="10" fill="currentColor">Menor volumen</text>
+
+          <rect x="182" y="250" width="164" height="82" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="194" y="270" font-size="11" font-weight="700" fill="currentColor">Ganglios basales</text>
+          <text x="194" y="288" font-size="11" font-weight="700" fill="currentColor">y cerebelo</text>
+          <text x="194" y="308" font-size="10" fill="currentColor">Menor tamaño, pérdida</text>
+          <text x="194" y="324" font-size="10" fill="currentColor">celular, más receptores D2</text>
+
+          <rect x="356" y="250" width="164" height="82" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="368" y="270" font-size="11" font-weight="700" fill="currentColor">Ventrículos</text>
+          <text x="368" y="290" font-size="10" fill="currentColor">Agrandamiento de los</text>
+          <text x="368" y="306" font-size="10" fill="currentColor">laterales y del tercero</text>
+          <text x="368" y="323" font-size="10" fill="currentColor">Menor volumen cortical</text>
+
+          <rect x="530" y="250" width="164" height="82" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="542" y="270" font-size="11" font-weight="700" fill="currentColor">Corteza prefrontal</text>
+          <text x="542" y="290" font-size="10" fill="currentColor">Hipofrontalidad en los</text>
+          <text x="542" y="306" font-size="10" fill="currentColor">estudios funcionales</text>
+          <text x="542" y="323" font-size="10" fill="currentColor">(PET y SPECT)</text>
+        </svg>
+        <figcaption>Ninguna de las cuatro estructuras está alterada en todos los pacientes ni permite hacer el diagnóstico. Son diferencias de grupo, no hallazgos individuales.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ============ 8 ============ -->
+    <section class="seccion s-fisiopatologia" id="dopamina">
+      <span class="seccion__pestana"><b>08</b> Etiología</span>
+      <h2 class="seccion__titulo">La hipótesis dopaminérgica y las cuatro vías</h2>
+
+      <p>La hipótesis plantea que la esquizofrenia se produciría como consecuencia de una <strong>hiperactividad dopaminérgica</strong>. El material señala con precisión que la teoría no nació de un hallazgo directo sino de <strong>dos observaciones farmacológicas indirectas</strong>:</p>
+
+      <ol>
+        <li>La <strong>eficacia y la potencia de los antipsicóticos se correlacionan con su capacidad para bloquear el receptor D2</strong>. Cuanto mejor bloquea, mejor anda — y a dosis más bajas.</li>
+        <li>Los fármacos que <strong>aumentan la actividad dopaminérgica</strong> (por ejemplo, la anfetamina) son <strong>psicotomiméticos</strong>: producen un cuadro psicótico en personas sanas.</li>
+      </ol>
+
+      <p>Es una inferencia sólida, pero conviene saber que es indirecta: se dedujo el mecanismo de la enfermedad a partir del mecanismo del tratamiento. Eso explica por qué la hipótesis dopaminérgica funciona muy bien para los síntomas positivos y muy mal para los negativos y cognitivos.</p>
+
+      <h3>Las cuatro vías dopaminérgicas</h3>
+      <p>Este apartado no está en el material y se agrega porque sin él no se entiende <strong>por qué un mismo fármaco mejora las alucinaciones y al mismo tiempo produce temblor y galactorrea</strong>. El bloqueo D2 no es selectivo: el antipsicótico bloquea las cuatro vías, y sólo una de ellas es la que queremos tocar.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Vía</th><th>Trayecto</th><th>En la enfermedad</th><th>Al bloquearla con un antipsicótico</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Mesolímbica</strong></td>
+              <td>Área tegmental ventral → núcleo accumbens y sistema límbico</td>
+              <td><strong>Hiperactiva.</strong> Es la que genera los <strong>síntomas positivos</strong>.</td>
+              <td><strong>Es el efecto que se busca.</strong> Ceden alucinaciones y delirios.</td>
+            </tr>
+            <tr>
+              <td><strong>Mesocortical</strong></td>
+              <td>Área tegmental ventral → corteza prefrontal</td>
+              <td><strong>Hipoactiva.</strong> Se vincula con los <strong>síntomas negativos y cognitivos</strong> y con la hipofrontalidad de las imágenes funcionales.</td>
+              <td>El bloqueo puede <strong>agravar</strong> los síntomas negativos, porque profundiza un déficit que ya existía.</td>
+            </tr>
+            <tr>
+              <td><strong>Nigroestriada</strong></td>
+              <td>Sustancia negra → cuerpo estriado</td>
+              <td>Sin alteración primaria atribuida.</td>
+              <td><strong>Síntomas extrapiramidales:</strong> distonía aguda, parkinsonismo, acatisia y, a largo plazo, <strong>discinesia tardía</strong>.</td>
+            </tr>
+            <tr>
+              <td><strong>Tuberoinfundibular</strong></td>
+              <td>Hipotálamo → hipófisis anterior</td>
+              <td>Sin alteración primaria atribuida. La dopamina inhibe fisiológicamente la prolactina.</td>
+              <td><strong>Hiperprolactinemia:</strong> galactorrea, amenorrea, ginecomastia, disfunción sexual y, a largo plazo, pérdida de masa ósea.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>El efecto antipsicótico aparece con una <strong>ocupación de receptores D2 de aproximadamente 65 %</strong>; por encima de <strong>80 %</strong> ya no se gana eficacia y <strong>sí se ganan efectos extrapiramidales</strong>. La consecuencia práctica es directa: frente a un paciente que no responde, <strong>subir la dosis indefinidamente no es la conducta</strong>. Por encima de cierto punto sólo se agregan efectos adversos.</p>
+      </div>
+    </section>
+
+    <!-- ============ 9 ============ -->
+    <section class="seccion s-fisiopatologia" id="neurotransmisores">
+      <span class="seccion__pestana"><b>09</b> Etiología</span>
+      <h2 class="seccion__titulo">Los otros neurotransmisores</h2>
+
+      <p>La dopamina no alcanza para explicar el cuadro. El material recorre cinco sistemas más, y en cada caso el argumento tiene la misma forma: <strong>una sustancia que toca el sistema produce o alivia síntomas psicóticos</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Sistema</th><th>De dónde salió la hipótesis</th><th>Qué explicaría</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Serotonina</strong></td>
+              <td>Se le dio importancia al observar <strong>síntomas psicóticos con sustancias que afectan la serotonina</strong> (LSD) y al comprobar el efecto antipsicótico de <strong>fármacos bloqueantes serotonina-dopamina</strong> (clozapina, risperidona).</td>
+              <td>Es la base farmacológica de los antipsicóticos de <strong>segunda generación</strong>: el antagonismo 5-HT<sub>2A</sub> sumado al D2 reduce los efectos extrapiramidales.</td>
+            </tr>
+            <tr>
+              <td><strong>Noradrenalina</strong></td>
+              <td>El sistema noradrenérgico <strong>modularía al dopaminérgico</strong>.</td>
+              <td>Las anormalidades noradrenérgicas <strong>predisponen a recaídas frecuentes</strong>.</td>
+            </tr>
+            <tr>
+              <td><strong>GABA</strong></td>
+              <td>La <strong>pérdida de neuronas GABAérgicas inhibitorias</strong> dejaría sin freno a otros sistemas.</td>
+              <td>Induciría actividad de las neuronas <strong>dopaminérgicas y noradrenérgicas</strong>. Es un mecanismo de desinhibición: no sobra dopamina, falta quien la contenga.</td>
+            </tr>
+            <tr>
+              <td><strong>Glutamato</strong></td>
+              <td>La <strong>fenciclidina (PCP)</strong>, antagonista no competitivo del receptor <strong>NMDA</strong>, provoca un síndrome agudo similar a la esquizofrenia. La ketamina reproduce el mismo fenómeno.</td>
+              <td>Es la hipótesis que <strong>mejor da cuenta de los síntomas negativos y cognitivos</strong>, justamente los que la hipótesis dopaminérgica no explica. La PCP reproduce el cuadro completo; la anfetamina sólo los síntomas positivos.</td>
+            </tr>
+            <tr>
+              <td><strong>Neuropéptidos</strong></td>
+              <td><strong>Colecistocinina</strong> y <strong>neurotensina</strong> tienen concentraciones alteradas en estados psicóticos.</td>
+              <td>Hallazgo descriptivo, sin traducción terapéutica.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Si tenés que quedarte con una sola idea de esta sección: <strong>la anfetamina imita la psicosis; la fenciclidina imita la esquizofrenia</strong>. La diferencia entre esos dos verbos es la diferencia entre explicar los síntomas positivos y explicar la enfermedad entera.</p>
+    </section>
+
+    <!-- ============ 10 ============ -->
+    <section class="seccion s-fisiopatologia" id="neuropatologia">
+      <span class="seccion__pestana"><b>10</b> Etiología</span>
+      <h2 class="seccion__titulo">Neuropatología: la poda sináptica</h2>
+
+      <p>Éste es probablemente el mecanismo más elegante que propone el material, porque conecta un fenómeno normal del desarrollo con la aparición del cuadro en la adolescencia.</p>
+
+      <p>La <strong>densidad sináptica es máxima al año de vida</strong> y después disminuye hasta alcanzar los valores adultos en las <strong>primeras etapas de la adolescencia</strong>. Ese proceso normal se llama <strong>poda sináptica</strong>: el cerebro elimina las conexiones que no usa para volver más eficientes las que conserva. La teoría afirma que la esquizofrenia se produciría por un <strong>exceso en ese recorte</strong>.</p>
+
+      <p>Fijate lo que resuelve esta hipótesis: explica por qué una enfermedad del <em>neurodesarrollo</em> —con marcadores que se remontan a la vida intrauterina— <strong>debuta clínicamente recién en la adolescencia</strong>. No debuta antes porque el proceso que revela el defecto es el que ocurre en la adolescencia.</p>
+
+      <h3>Las zonas más frecuentemente afectadas</h3>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Región</th><th>Hallazgos</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Sistema límbico</strong></td>
+              <td>Disminución del tamaño de la región que incluye <strong>amígdala, hipocampo y circunvolución parahipocámpica</strong>. También hay <strong>desorganización neuronal</strong>, es decir, neuronas presentes pero mal ordenadas — el rastro que deja una migración anómala.</td>
+            </tr>
+            <tr>
+              <td><strong>Ganglios basales y cerebelo</strong></td>
+              <td>Disminución del tamaño, <strong>pérdida celular</strong> y <strong>aumento de los receptores D2</strong>.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>La justificación que da el material para estudiar los núcleos de la base es la parte clínicamente más útil, y conviene retenerla en dos movimientos:</p>
+
+      <ul>
+        <li>Muchos pacientes con esquizofrenia presentan <strong>movimientos anormales que no son efecto adverso de la medicación</strong>: marcha desgarbada, estereotipias, gesticulación facial. Se describen desde antes de que existieran los antipsicóticos y se encuentran también en pacientes nunca medicados.</li>
+        <li>A la inversa, <strong>los trastornos neurológicos que comprometen los núcleos de la base pueden presentar síntomas psicóticos</strong> — la enfermedad de Huntington y la enfermedad de Wilson son los ejemplos clásicos, y ambas pueden debutar por la psiquiatría antes que por la neurología.</li>
+      </ul>
+
+      <p>La consecuencia práctica de ese segundo punto es directa y vuelve en la sección 19: <strong>ante un primer episodio psicótico con signos motores, la neurología entra en el diferencial</strong>.</p>
+    </section>
+
+    <!-- ============ 11 ============ -->
+    <section class="seccion s-diagnostico" id="complementarios">
+      <span class="seccion__pestana"><b>11</b> Complementarios</span>
+      <h2 class="seccion__titulo">Hallazgos en estudios complementarios</h2>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Leé esta sección entera con una advertencia adelante: <strong>ninguno de estos hallazgos sirve para diagnosticar esquizofrenia</strong>. Son <strong>diferencias de grupo</strong>, estadísticas, con enorme superposición entre pacientes y controles. El diagnóstico de esquizofrenia es <strong>clínico</strong>. Los complementarios se piden por la razón opuesta: para <strong>descartar una causa orgánica</strong> del cuadro psicótico.</p>
+      </div>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Estudio</th><th>Hallazgos descriptos</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Tomografía computada</strong></td>
+              <td>Agrandamiento de los <strong>ventrículos laterales y del tercer ventrículo</strong> y reducción del volumen cortical. Asimetría cerebral anormal, menor volumen del cerebelo y cambios en la densidad cerebral.</td>
+            </tr>
+            <tr>
+              <td><strong>Resonancia magnética</strong></td>
+              <td>Menor volumen del <strong>complejo hipocampo-amígdala</strong> y de la <strong>circunvolución parahipocámpica</strong>.</td>
+            </tr>
+            <tr>
+              <td><strong>PET y SPECT</strong></td>
+              <td>Diferencias en la activación de la corteza sensitivomotora, menor irrigación de los lóbulos occipitales, <strong>hipoactividad de los lóbulos frontales</strong> (hipofrontalidad), hiperactividad de los ganglios basales y menor actividad metabólica en la <strong>porción anteroizquierda del tálamo</strong>.</td>
+            </tr>
+            <tr>
+              <td><strong>Electroencefalograma</strong></td>
+              <td>Actividad de espigas tras privación de sueño, <strong>menor actividad alfa</strong>, mayor actividad <strong>theta y delta</strong>, mayor actividad epileptiforme e <strong>incapacidad de filtrar sonidos irrelevantes</strong>.</td>
+            </tr>
+            <tr>
+              <td><strong>Potenciales evocados</strong></td>
+              <td>Onda <strong>P300 más pequeña y más tardía</strong>.</td>
+            </tr>
+            <tr>
+              <td><strong>Movimientos oculares</strong></td>
+              <td>Disfunción del seguimiento ocular, <strong>independiente del tratamiento farmacológico</strong>.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Dos de estos renglones dicen lo mismo desde ángulos distintos y por eso valen doble.</p>
+
+      <p>La <strong>incapacidad de filtrar sonidos irrelevantes</strong> del EEG y la <strong>P300 pequeña y tardía</strong> describen un mismo déficit: el cerebro no logra <strong>filtrar lo irrelevante ni jerarquizar lo nuevo</strong>. Es la traducción electrofisiológica de una experiencia que los pacientes relatan — el mundo entra sin filtro, todo pesa igual, cualquier detalle puede volverse significativo. De ahí a la percepción delirante hay un paso corto.</p>
+
+      <p>La <strong>disfunción de los movimientos oculares</strong> merece su propia nota: como es independiente del tratamiento y se encuentra también en familiares no afectados, se la considera un <strong>marcador de vulnerabilidad (endofenotipo)</strong> más que un rasgo de la enfermedad declarada. Es exactamente la clase de dato que apoya el modelo diátesis-estrés.</p>
+    </section>
+
+    <!-- ============ 12 ============ -->
+    <section class="seccion s-fisiopatologia" id="genetica">
+      <span class="seccion__pestana"><b>12</b> Etiología</span>
+      <h2 class="seccion__titulo">Genética e inmunología</h2>
+
+      <h3>Lo que demuestran los estudios de gemelos y de adopción</h3>
+      <p>El argumento del material es una cadena de tres eslabones y conviene seguirla en orden, porque cada uno cierra una objeción del anterior:</p>
+
+      <ol>
+        <li>Los <strong>gemelos monocigotos</strong> tienen la máxima tasa de concordancia. Pero comparten genes <em>y</em> ambiente, así que esto solo no prueba nada.</li>
+        <li>En estudios de <strong>gemelos monocigotos adoptados</strong>, los criados por padres adoptivos tienen <strong>la misma tasa de esquizofrenia</strong> que sus hermanos criados por los padres biológicos. Acá se separan las dos variables: cambió el ambiente y el riesgo no cambió. <strong>La influencia genética supera a la ambiental.</strong></li>
+        <li>El dato se corrobora por otra vía: <strong>cuanto más grave es la esquizofrenia, más probable es que los gemelos sean concordantes</strong>. Existe una relación dosis-respuesta entre carga genética y gravedad.</li>
+      </ol>
+
+      <p>Conviene tener presente que la concordancia en monocigotos, aun siendo la más alta, ronda el <span class="dato">40 – 50 %</span>. Es decir: <strong>ni siquiera con el genoma idéntico el riesgo llega a la mitad</strong>. Ése es el hueco que el modelo diátesis-estrés viene a llenar.</p>
+
+      <h3>Los cromosomas implicados</h3>
+      <p>El material enumera: <strong>brazo largo de los cromosomas 5, 11 y 18; brazo corto del 9; cromosoma X; y loci de los cromosomas 6, 8 y 22</strong>. Son resultados de estudios de ligamiento y hoy están en gran parte superados — ver sección 24. Pero uno de ellos se sostuvo y vale oro.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>La señal genética más fuerte y más replicada de toda la esquizofrenia está en el <strong>cromosoma 6</strong>, en el <strong>complejo mayor de histocompatibilidad</strong>, y se atribuye en buena parte a variantes del gen del <strong>complemento C4</strong>. El C4 marca sinapsis para que la microglía las elimine: <strong>es un regulador de la poda sináptica</strong>. Con eso, el locus del cromosoma 6 que el material lista sin explicación y la teoría del exceso de poda de la sección 10 dejan de ser dos datos sueltos y pasan a ser el mismo mecanismo visto desde la genética y desde la histología.</p>
+      </div>
+
+      <h3>Psiconeuroinmunoendocrinología</h3>
+      <p>El material describe <strong>disfunción de los linfocitos periféricos</strong>, <strong>reactividad celular y humoral anormal frente a neuronas</strong>, presencia de <strong>anticuerpos anticerebrales</strong> y resultados anormales en la <strong>prueba de supresión con dexametasona</strong>.</p>
+
+      <p>Son hallazgos antiguos e inespecíficos —la prueba de la dexametasona da alterada en la depresión mayor y en muchas otras condiciones—, pero la línea que abren sigue viva: hoy la neuroinflamación y la <strong>activación microglial</strong> son un campo de investigación activo, y conectan otra vez con el C4 y la poda sináptica. La microglía es, literalmente, quien ejecuta el recorte.</p>
+    </section>
+
+    <!-- ============ 13 ============ -->
+    <section class="seccion s-diferenciales" id="psicosocial">
+      <span class="seccion__pestana"><b>13</b> Etiología</span>
+      <h2 class="seccion__titulo">Los modelos psicosociales: qué quedó en pie</h2>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Todo lo que sigue tiene <strong>valor histórico y conceptual, no etiológico</strong>. Ninguno de estos modelos explica la causa de la esquizofrenia y ninguno tiene sustento empírico como tal. Importa decirlo con todas las letras porque no fueron inocuos: la teoría de la <strong>«madre esquizofrenógena»</strong> y sus derivados <strong>culpabilizaron a las familias durante décadas</strong>, agregando responsabilidad sobre quienes cuidaban al paciente. <strong>Hay una sola excepción</strong> con evidencia sólida —la emoción expresada— y está al final de la sección.</p>
+      </div>
+
+      <h3>Teorías psicoanalíticas</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Autor</th><th>Formulación</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Freud</strong></td><td>Resultado de <strong>fijaciones tempranas</strong>, previas al conflicto edípico, con una <strong>lábil estructuración del yo</strong> y alteración de las relaciones objetales tempranas.</td></tr>
+            <tr><td><strong>Mahler</strong></td><td>El niño <strong>no puede separarse</strong> ni progresar más allá de la cercanía y dependencia completa de la relación madre-hijo en la fase oral. <strong>Nunca alcanza la constancia objetal.</strong></td></tr>
+            <tr><td><strong>Federn</strong></td><td>La alteración fundamental es la <strong>incapacidad precoz de diferenciarse del objeto</strong>.</td></tr>
+            <tr><td><strong>Sullivan</strong></td><td>Es una alteración de las <strong>relaciones interpersonales</strong> y constituye un <strong>método adaptativo</strong> para evitar el pánico, el terror y la desintegración del sentido de sí mismo.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>El marco aporta dos ideas que siguen siendo útiles aunque se rechace la etiología.</p>
+
+      <p>La primera explica <strong>por qué la adolescencia</strong>: los síntomas aparecen justo cuando el sujeto necesita un yo fuerte para <strong>funcionar independientemente, separarse de los padres, identificar tareas, controlar los impulsos internos y sobrellevar la intensa estimulación externa</strong>. Es la misma ventana temporal que señala la poda sináptica, leída desde otro lenguaje.</p>
+
+      <p>La segunda es que <strong>los síntomas tienen un significado</strong>: las ideas delirantes y las alucinaciones serían <strong>intentos regresivos y reparadores</strong> de crear una nueva realidad o de expresar temores e impulsos ocultos. Como teoría causal no se sostiene; como orientación clínica es valiosa, porque un delirio de persecución en un paciente que vive aterrado no es un contenido azaroso.</p>
+
+      <h3>Teorías del aprendizaje y dinámica familiar</h3>
+      <p>Las teorías del aprendizaje sostienen que los niños <strong>aprenden reacciones y maneras de pensar irracionales imitando a padres</strong> con sus propios problemas emocionales. Sobre la dinámica familiar, el material hace una aclaración honesta que conviene rescatar: <strong>no siempre se encuentra una familia disfuncional</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Modelo</th><th>Descripción</th><th>Estado</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Doble mensaje</strong> (doble vínculo)</td>
+              <td>Mensajes parentales <strong>contradictorios</strong> sobre comportamiento, actitudes y sentimientos. El niño se retraería a un estado psicótico para escapar de una confusión insoluble.</td>
+              <td>Abandonado como etiología.</td>
+            </tr>
+            <tr>
+              <td><strong>Escisiones y familias sesgadas</strong></td>
+              <td>En las familias con escisión, uno de los progenitores tiene una relación demasiado estrecha con un hijo del sexo opuesto. En las sesgadas hay una <strong>lucha entre los padres por el dominio</strong> de los hijos.</td>
+              <td>Abandonado como etiología.</td>
+            </tr>
+            <tr>
+              <td><strong>Seudorrecíprocas y seudohostiles</strong></td>
+              <td>Familias que <strong>suprimen la expresión emocional</strong> mediante una comunicación de reciprocidad u hostilidad aparentes.</td>
+              <td>Abandonado como etiología.</td>
+            </tr>
+            <tr>
+              <td><strong>Emoción expresada</strong></td>
+              <td>Familias con alto nivel de <strong>crítica, hostilidad y sobreimplicación emocional</strong> hacia el paciente. Las familias con <strong>alto nivel de emoción expresada tienen alta tasa de recaída</strong>.</td>
+              <td><strong>Vigente y con evidencia sólida.</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>La emoción expresada es la excepción, y la diferencia con las anteriores es conceptual, no de grado: <strong>no dice que la familia cause la enfermedad, dice que el clima emocional del hogar modula las recaídas</strong> de una enfermedad ya instalada. Por eso es accionable — es la base de la psicoeducación familiar de la sección 22, que es una de las intervenciones más eficaces del arsenal.</p>
+    </section>
+
+    <!-- ============ 14 ============ -->
+    <section class="seccion s-clinica" id="prodromo">
+      <span class="seccion__pestana"><b>14</b> Clínica</span>
+      <h2 class="seccion__titulo">Pródromo y signos premórbidos</h2>
+
+      <p>Antes del primer episodio psicótico suele haber un período de meses o años en el que algo ya funciona distinto, aunque nadie lo llame todavía enfermedad. El material enumera los signos y síntomas premórbidos:</p>
+
+      <ul>
+        <li><strong>Rasgos de personalidad:</strong> trastorno <strong>esquizoide</strong>, <strong>esquizotípico</strong> y <strong>obsesivo compulsivo</strong> de la personalidad.</li>
+        <li><strong>Preocupación corporal:</strong> síntomas somáticos e hipocondría.</li>
+        <li><strong>Conducta y afecto:</strong> comportamiento marcadamente peculiar, afecto anormal, discurso poco habitual.</li>
+        <li><strong>Contenido mental:</strong> ideas excéntricas y <strong>experiencias perceptivas extrañas</strong>.</li>
+      </ul>
+
+      <p>Las <strong>experiencias perceptivas extrañas</strong> son el renglón más relevante de la lista: no son alucinaciones todavía, pero son de la misma familia — sensaciones de que algo cambió, de que el ambiente está cargado de un significado que no se puede precisar. Es el terreno del que después brota la percepción delirante.</p>
+
+      <p>Una advertencia sobre el uso de esta lista. El pródromo se reconoce <strong>hacia atrás</strong>, cuando ya se sabe el desenlace. Hacia adelante su poder predictivo es bajo: la enorme mayoría de los adolescentes retraídos y excéntricos <strong>no desarrollará esquizofrenia</strong>. Sirve para no perder de vista a un paciente y para acortar el tiempo hasta el tratamiento, no para anticipar un diagnóstico que todavía no existe.</p>
+    </section>
+
+    <!-- ============ 15 ============ -->
+    <section class="seccion s-clinica" id="positivos">
+      <span class="seccion__pestana"><b>15</b> Clínica</span>
+      <h2 class="seccion__titulo">Síntomas positivos</h2>
+
+      <p>Se llaman <strong>positivos</strong> porque se <em>agregan</em> a la experiencia normal: aparece algo que no debería estar.</p>
+
+      <h3>Alucinaciones</h3>
+      <p>Las más frecuentes son las <strong>auditivas</strong>, y el material precisa algo importante: sobre todo <strong>pseudoalucinaciones auditivas</strong> — voces que el paciente ubica en el <strong>espacio interior</strong>, «dentro de la cabeza», y no proyectadas en el mundo externo. Las formas características son:</p>
+
+      <ul>
+        <li><strong>Voces que comentan</strong> los actos o pensamientos del paciente.</li>
+        <li><strong>Voces que conversan</strong> entre sí sobre él, en tercera persona.</li>
+        <li>Voces <strong>amenazantes</strong>, y en algunos casos imperativas.</li>
+      </ul>
+
+      <p>Con menor frecuencia aparecen alucinaciones <strong>cenestésicas</strong> (corporales), <strong>olfatorias</strong> y <strong>visuales</strong>.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Que las alucinaciones auditivas sean las típicas tiene una consecuencia diagnóstica que se pregunta y que se olvida en la guardia: <strong>las alucinaciones visuales prominentes, las olfatorias y las táctiles obligan a buscar una causa orgánica</strong> —delirium, tóxicos, epilepsia del lóbulo temporal, lesión estructural— antes de atribuirlas a la esquizofrenia. Sumado a las voces imperativas, hay una segunda regla de guardia: <strong>preguntar siempre qué le ordenan</strong>, porque las voces imperativas de contenido autolítico o heteroagresivo cambian la conducta inmediata.</p>
+      </div>
+
+      <h3>Ideas delirantes</h3>
+      <p>El material las agrupa en dos bloques que conviene distinguir, porque el segundo es el que más peso diagnóstico tiene.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Grupo</th><th>Temáticas</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Delirios por su contenido</strong></td>
+              <td><strong>Persecutorias</strong>, celotípicas, culposas, <strong>megalómanas</strong> (de grandeza), religiosas o místicas, somáticas.</td>
+            </tr>
+            <tr>
+              <td><strong>Delirios de la esfera del yo</strong></td>
+              <td>Ideas delirantes de <strong>referencia</strong>, de <strong>control</strong>, de <strong>lectura de la mente</strong>, <strong>transmisión (difusión) del pensamiento</strong>, <strong>inserción del pensamiento</strong> y <strong>robo del pensamiento</strong>.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>El segundo grupo son, en su mayoría, los <strong>síntomas de primer orden de Schneider</strong>, y tienen en común un rasgo: todos implican que <strong>el límite entre el yo y el mundo se volvió permeable</strong>. El pensamiento entra, sale, se lo roban, lo leen. No es el contenido lo que llama la atención sino la pérdida de propiedad sobre el propio pensar.</p>
+
+      <p>Un rasgo transversal que da el material: en general son <strong>delirios poco sistematizados</strong>. Es un buen discriminador frente al trastorno delirante crónico, donde el delirio es único, coherente y está finamente construido.</p>
+
+      <h3>Comportamiento extraño</h3>
+      <p>Alteraciones en la <strong>indumentaria y el aspecto</strong>, y en el comportamiento <strong>social, sexual, agresivo, agitado, repetitivo y estereotipado</strong>.</p>
+
+      <h3>Trastornos del pensamiento</h3>
+      <p>Acá se altera la <strong>forma</strong> del pensamiento, no su contenido. El material enumera, en un gradiente que va de lo leve a lo grave:</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Alteración</th><th>En qué consiste</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Tangencialidad</strong></td><td>El paciente se va del tema y no vuelve; la respuesta se aparta de la pregunta.</td></tr>
+            <tr><td><strong>Disgregación</strong></td><td>Se pierde el hilo asociativo: las frases conservan gramática pero ya no se enlazan entre sí.</td></tr>
+            <tr><td><strong>Interceptación</strong></td><td>El pensamiento <strong>se corta de golpe</strong> a mitad de la frase, sin causa aparente. El paciente suele vivirlo como un robo.</td></tr>
+            <tr><td><strong>Incoherencia</strong></td><td>El discurso pierde la estructura y deja de ser comprensible.</td></tr>
+            <tr><td><strong>Jergafasia</strong></td><td>Grado máximo: el lenguaje se vuelve una jerga ininteligible, con neologismos.</td></tr>
+            <tr><td><strong>Asociación por sonido</strong></td><td>Las palabras se encadenan por su <strong>sonoridad</strong> y no por su significado.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ 16 ============ -->
+    <section class="seccion s-clinica" id="negativos">
+      <span class="seccion__pestana"><b>16</b> Clínica</span>
+      <h2 class="seccion__titulo">Síntomas negativos</h2>
+
+      <p>Se llaman <strong>negativos</strong> porque se <em>sustraen</em>: falta algo que debería estar. Son menos llamativos que los positivos y por eso se subestiman, pero son los que determinan el <strong>deterioro funcional a largo plazo</strong> y los que peor responden al tratamiento.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Síntoma</th><th>Manifestaciones</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Aplanamiento afectivo</strong></td>
+              <td>Expresión facial inmodificable, disminución de los movimientos espontáneos, escasa gesticulación expresiva, <strong>escaso contacto visual</strong>, falta de respuesta afectiva.</td>
+            </tr>
+            <tr>
+              <td><strong>Alogia</strong></td>
+              <td><strong>Pobreza del lenguaje y de su contenido</strong>, bloqueo y mayor latencia de respuesta. El paciente habla poco, y lo poco que dice aporta poca información.</td>
+            </tr>
+            <tr>
+              <td><strong>Falta de volición — apatía</strong></td>
+              <td>Falta de persistencia en el trabajo o en la escuela, falta de energía física y <strong>falta de higiene personal</strong>.</td>
+            </tr>
+            <tr>
+              <td><strong>Anhedonia — insociabilidad</strong></td>
+              <td>Poco interés en actividades recreativas, en la actividad sexual y en la relación con amigos o pares. <strong>Inatención social.</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Antes de atribuir los síntomas negativos a la enfermedad, hay que descartar que sean <strong>secundarios</strong>, porque en ese caso tienen tratamiento. Las cuatro causas a revisar: <strong>depresión</strong> comórbida; <strong>parkinsonismo farmacológico</strong> —la acinesia por bloqueo nigroestriado produce una cara inexpresiva y un enlentecimiento que <em>imitan</em> el aplanamiento afectivo—; <strong>síntomas positivos activos</strong> que retraen al paciente (quien se aísla porque las voces lo persiguen no tiene un síntoma negativo); e <strong>institucionalización</strong> o falta de estímulo del entorno.</p>
+      </div>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 410" role="img" aria-label="Comparación de los síntomas positivos y negativos de la esquizofrenia. La columna izquierda reúne los síntomas positivos, que se agregan a la experiencia normal: alucinaciones, ideas delirantes, desorganización del pensamiento y comportamiento extraño; responden bien al bloqueo dopaminérgico. La columna derecha reúne los negativos, que se sustraen: aplanamiento afectivo, alogia, abulia y anhedonia; responden mal al tratamiento y determinan el deterioro funcional.">
+          <defs>
+            <marker id="esq-c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="8" y="8" width="336" height="50" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="176" y="30" font-size="13" font-weight="700" fill="currentColor" text-anchor="middle">Síntomas positivos</text>
+          <text x="176" y="48" font-size="10.5" fill="currentColor" text-anchor="middle">Se agregan a la experiencia normal</text>
+
+          <rect x="356" y="8" width="336" height="50" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="524" y="30" font-size="13" font-weight="700" fill="currentColor" text-anchor="middle">Síntomas negativos</text>
+          <text x="524" y="48" font-size="10.5" fill="currentColor" text-anchor="middle">Se sustraen de la experiencia normal</text>
+
+          <rect x="8" y="68" width="336" height="58" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="22" y="88" font-size="11.5" font-weight="700" fill="currentColor">Alucinaciones</text>
+          <text x="22" y="106" font-size="10" fill="currentColor">Auditivas ante todo: voces que comentan</text>
+          <text x="22" y="120" font-size="10" fill="currentColor">y voces que conversan</text>
+
+          <rect x="8" y="134" width="336" height="58" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="22" y="154" font-size="11.5" font-weight="700" fill="currentColor">Ideas delirantes</text>
+          <text x="22" y="172" font-size="10" fill="currentColor">Persecutorias, de control, de referencia,</text>
+          <text x="22" y="186" font-size="10" fill="currentColor">robo e inserción del pensamiento</text>
+
+          <rect x="8" y="200" width="336" height="58" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="22" y="220" font-size="11.5" font-weight="700" fill="currentColor">Desorganización del pensamiento</text>
+          <text x="22" y="238" font-size="10" fill="currentColor">Tangencialidad, disgregación,</text>
+          <text x="22" y="252" font-size="10" fill="currentColor">interceptación, incoherencia, jergafasia</text>
+
+          <rect x="8" y="266" width="336" height="58" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="22" y="286" font-size="11.5" font-weight="700" fill="currentColor">Comportamiento extraño</text>
+          <text x="22" y="304" font-size="10" fill="currentColor">Indumentaria y aspecto, conducta social</text>
+          <text x="22" y="318" font-size="10" fill="currentColor">y sexual, estereotipias, agitación</text>
+
+          <rect x="356" y="68" width="336" height="58" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="370" y="88" font-size="11.5" font-weight="700" fill="currentColor">Aplanamiento afectivo</text>
+          <text x="370" y="106" font-size="10" fill="currentColor">Cara inmodificable, poca gesticulación,</text>
+          <text x="370" y="120" font-size="10" fill="currentColor">escaso contacto visual</text>
+
+          <rect x="356" y="134" width="336" height="58" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="370" y="154" font-size="11.5" font-weight="700" fill="currentColor">Alogia</text>
+          <text x="370" y="172" font-size="10" fill="currentColor">Pobreza del lenguaje y de su contenido,</text>
+          <text x="370" y="186" font-size="10" fill="currentColor">bloqueo, mayor latencia de respuesta</text>
+
+          <rect x="356" y="200" width="336" height="58" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="370" y="220" font-size="11.5" font-weight="700" fill="currentColor">Abulia y apatía</text>
+          <text x="370" y="238" font-size="10" fill="currentColor">No persiste en el trabajo ni en la escuela,</text>
+          <text x="370" y="252" font-size="10" fill="currentColor">falta de energía y de higiene personal</text>
+
+          <rect x="356" y="266" width="336" height="58" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="370" y="286" font-size="11.5" font-weight="700" fill="currentColor">Anhedonia e insociabilidad</text>
+          <text x="370" y="304" font-size="10" fill="currentColor">Sin interés en lo recreativo, lo sexual</text>
+          <text x="370" y="318" font-size="10" fill="currentColor">ni en los pares. Inatención social</text>
+
+          <line x1="176" y1="330" x2="176" y2="354" stroke="currentColor" stroke-width="1.5" marker-end="url(#esq-c)"></line>
+          <text x="188" y="347" font-size="10" fill="currentColor" opacity="0.75">efecto del antipsicótico</text>
+
+          <line x1="524" y1="330" x2="524" y2="354" stroke="currentColor" stroke-width="1.5" marker-end="url(#esq-c)"></line>
+          <text x="536" y="347" font-size="10" fill="currentColor" opacity="0.75">efecto del antipsicótico</text>
+
+          <rect x="8" y="358" width="336" height="44" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="176" y="378" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">Responden al bloqueo D2</text>
+          <text x="176" y="394" font-size="10" fill="currentColor" text-anchor="middle">Vía mesolímbica hiperactiva</text>
+
+          <rect x="356" y="358" width="336" height="44" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="524" y="378" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">Responden mal; pueden empeorar</text>
+          <text x="524" y="394" font-size="10" fill="currentColor" text-anchor="middle">Determinan el deterioro funcional</text>
+        </svg>
+        <figcaption>La asimetría del pie del esquema es la clave del pronóstico: el tratamiento resuelve bien la columna que más asusta y mal la columna que más incapacita.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ============ 17 ============ -->
+    <section class="seccion s-diagnostico" id="criterios">
+      <span class="seccion__pestana"><b>17</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">Criterios diagnósticos: del DSM-IV al DSM-5</h2>
+
+      <p>El material presenta los criterios del <strong>DSM-IV</strong> y después detalla qué cambió el DSM-5. Vale la pena conocer los dos, porque el DSM-IV sigue siendo el andamio sobre el que se explica el actual.</p>
+
+      <h3>Criterios DSM-IV</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Criterio</th><th>Contenido</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>A · Síntomas característicos</strong></td>
+              <td><strong>Dos o más</strong> de los siguientes, cada uno presente durante una parte significativa de un período de <strong>1 mes</strong> (o menos si fue tratado con éxito): <strong>1.</strong> ideas delirantes · <strong>2.</strong> alucinaciones · <strong>3.</strong> lenguaje desorganizado (descarrilamiento frecuente, incoherencia) · <strong>4.</strong> comportamiento catatónico o gravemente desorganizado · <strong>5.</strong> síntomas negativos (aplanamiento afectivo, alogia, abulia).<br><em>Nota:</em> sólo se requiere <strong>un</strong> síntoma si las ideas delirantes son <strong>extrañas</strong>, o si consisten en una <strong>voz que comenta continuamente</strong> los pensamientos o el comportamiento, o si <strong>dos o más voces conversan</strong> entre ellas.</td>
+            </tr>
+            <tr>
+              <td><strong>B · Disfunción social o laboral</strong></td>
+              <td>El trabajo, las relaciones interpersonales o el cuidado de uno mismo están <strong>claramente por debajo del nivel previo</strong>. Si el inicio fue en la infancia o adolescencia: fracaso en alcanzar el nivel esperable de rendimiento interpersonal, académico o laboral.</td>
+            </tr>
+            <tr>
+              <td><strong>C · Duración</strong></td>
+              <td>Signos continuos durante al menos <span class="dato">6 meses</span>, que deben incluir al menos <span class="dato">1 mes</span> de síntomas del criterio A. Puede incluir períodos <strong>prodrómicos y residuales</strong>, en los cuales la alteración puede manifestarse sólo por síntomas negativos o por dos o más síntomas del criterio A de forma <strong>atenuada</strong> (creencias raras, experiencias perceptivas no habituales).</td>
+            </tr>
+            <tr>
+              <td><strong>D · Exclusión</strong></td>
+              <td>Exclusión de los trastornos <strong>esquizoafectivo</strong> y <strong>del estado de ánimo</strong>.</td>
+            </tr>
+            <tr>
+              <td><strong>E · Exclusión</strong></td>
+              <td>Exclusión de <strong>consumo de sustancias</strong> y de <strong>enfermedad médica</strong>.</td>
+            </tr>
+            <tr>
+              <td><strong>F · Trastorno del desarrollo</strong></td>
+              <td>Si hay historia de trastorno autista u otro trastorno generalizado del desarrollo, el diagnóstico adicional de esquizofrenia <strong>sólo se hace si hay ideas delirantes o alucinaciones durante al menos 1 mes</strong>.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Fijate que los criterios <strong>B</strong> y <strong>C</strong> son los que hacen el trabajo pesado. El criterio A describe la psicosis, que muchas condiciones comparten; lo que define a la esquizofrenia son la <strong>repercusión funcional</strong> y los <strong>seis meses</strong>.</p>
+
+      <h3>Qué cambió el DSM-5</h3>
+      <p>El material señala <strong>dos cambios en el criterio A</strong> y la <strong>eliminación de los subtipos</strong>:</p>
+
+      <ol>
+        <li><strong>Cae la excepción del síntoma único.</strong> En el DSM-IV bastaba un solo síntoma si las ideas delirantes eran extrañas o si había esa clase de alucinaciones. En el DSM-5 se necesitan <strong>dos síntomas del criterio A siempre</strong>, debido a la <strong>no especificidad y la baja fiabilidad de la distinción entre delirios extraños y no extraños</strong>.</li>
+        <li><strong>Se agrega un requisito de composición.</strong> Al menos uno de los dos síntomas debe ser <strong>delirio, alucinación o habla desorganizada</strong>. Al menos uno de estos síntomas positivos es necesario para un diagnóstico fiable.</li>
+        <li><strong>Se eliminan los subtipos</strong> del DSM-IV por su <strong>limitada estabilidad diagnóstica, baja fiabilidad y poca validez</strong>; tampoco demostraron una respuesta al tratamiento ni un curso longitudinal diferenciados. En su lugar, la Sección III incorpora una <strong>aproximación dimensional</strong> para puntuar la gravedad de los síntomas.</li>
+      </ol>
+
+      <p>Los dos primeros cambios apuntan al mismo blanco: <strong>ya no se puede diagnosticar esquizofrenia sólo con síntomas negativos y desorganización</strong>. Tiene que haber, sí o sí, un síntoma psicótico franco.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 402" role="img" aria-label="Comparación del criterio A entre el DSM-IV y el DSM-5. En el DSM-IV se exigían dos o más síntomas de una lista de cinco, con una excepción que permitía diagnosticar con uno solo si el delirio era extraño o había voces que comentaban o conversaban. En el DSM-5 se exigen siempre dos síntomas y al menos uno debe ser delirio, alucinación o habla desorganizada. Debajo se listan los cinco síntomas del criterio A marcando los tres positivos, y se indica que los cinco subtipos clásicos fueron eliminados.">
+          <defs>
+            <marker id="esq-d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <text x="350" y="18" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">El criterio A y sus dos cambios</text>
+
+          <rect x="8" y="30" width="310" height="170" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5" stroke-dasharray="5 3"></rect>
+          <text x="24" y="52" font-size="12" font-weight="700" fill="currentColor">DSM-IV</text>
+          <text x="24" y="78" font-size="10.5" fill="currentColor"><tspan font-weight="700">Regla:</tspan> 2 o más síntomas de la lista</text>
+          <text x="24" y="94" font-size="10.5" fill="currentColor">de 5, durante 1 mes.</text>
+          <text x="24" y="122" font-size="10.5" fill="currentColor"><tspan font-weight="700">Excepción:</tspan> alcanza con 1 solo si</text>
+          <text x="24" y="138" font-size="10.5" fill="currentColor">el delirio es extraño, o si hay voces</text>
+          <text x="24" y="154" font-size="10.5" fill="currentColor">que comentan o que conversan.</text>
+          <text x="24" y="182" font-size="10" fill="currentColor" opacity="0.75">Sin exigencia sobre cuáles son los dos.</text>
+
+          <line x1="322" y1="118" x2="378" y2="118" stroke="currentColor" stroke-width="1.5" marker-end="url(#esq-d)"></line>
+          <text x="350" y="110" font-size="10" fill="currentColor" opacity="0.75" text-anchor="middle">2013</text>
+
+          <rect x="382" y="30" width="310" height="170" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="398" y="52" font-size="12" font-weight="700" fill="currentColor">DSM-5</text>
+          <text x="398" y="78" font-size="10.5" fill="currentColor"><tspan font-weight="700">Cambio 1:</tspan> se necesitan 2 síntomas</text>
+          <text x="398" y="94" font-size="10.5" fill="currentColor"><tspan font-weight="700">siempre.</tspan> Cae la excepción, porque la</text>
+          <text x="398" y="110" font-size="10.5" fill="currentColor">distinción entre delirio extraño y no</text>
+          <text x="398" y="126" font-size="10.5" fill="currentColor">extraño es poco fiable.</text>
+          <text x="398" y="152" font-size="10.5" fill="currentColor"><tspan font-weight="700">Cambio 2:</tspan> al menos 1 de los 2 debe</text>
+          <text x="398" y="168" font-size="10.5" fill="currentColor">ser delirio, alucinación o habla</text>
+          <text x="398" y="184" font-size="10.5" fill="currentColor">desorganizada.</text>
+
+          <line x1="350" y1="206" x2="350" y2="228" stroke="currentColor" stroke-width="1.5" marker-end="url(#esq-d)"></line>
+          <text x="360" y="222" font-size="10" fill="currentColor" opacity="0.75">se eligen de</text>
+
+          <rect x="8" y="232" width="684" height="76" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="24" y="253" font-size="11.5" font-weight="700" fill="currentColor">Los cinco síntomas del criterio A</text>
+          <text x="24" y="275" font-size="10.5" fill="currentColor"><tspan font-weight="700">1 · Ideas delirantes&#160;&#160;&#160;2 · Alucinaciones&#160;&#160;&#160;3 · Lenguaje desorganizado</tspan></text>
+          <text x="24" y="295" font-size="10.5" fill="currentColor">4 · Comportamiento catatónico o gravemente desorganizado&#160;&#160;&#160;5 · Síntomas negativos</text>
+          <text x="676" y="253" font-size="10" fill="currentColor" opacity="0.75" text-anchor="end">En negrita, los tres exigidos por el DSM-5</text>
+
+          <rect x="8" y="322" width="684" height="70" rx="3" fill="var(--c)" fill-opacity="0.06" stroke="var(--c)" stroke-width="1.5" stroke-dasharray="5 3"></rect>
+          <text x="24" y="343" font-size="11.5" font-weight="700" fill="currentColor">Subtipos: paranoide · desorganizado · catatónico · indiferenciado · residual</text>
+          <text x="24" y="365" font-size="10.5" fill="currentColor">Eliminados en el DSM-5 por baja estabilidad, baja fiabilidad y poca validez. No predecían ni la respuesta</text>
+          <text x="24" y="383" font-size="10.5" fill="currentColor">al tratamiento ni el curso. Los reemplaza una evaluación dimensional de la gravedad (Sección III).</text>
+        </svg>
+        <figcaption>Los dos cambios del criterio A van en la misma dirección: subir el piso probatorio. Ya no alcanza con un síntoma llamativo, y los dos que se exigen no pueden ser ambos negativos.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ============ 18 ============ -->
+    <section class="seccion s-importantes" id="subtipos">
+      <span class="seccion__pestana"><b>18</b> Histórico</span>
+      <h2 class="seccion__titulo">Los subtipos clásicos</h2>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Estos subtipos <strong>fueron eliminados en el DSM-5</strong> y no forman parte del diagnóstico actual. Se estudian porque siguen usándose como <strong>lenguaje descriptivo</strong> entre clínicos, porque aparecen en toda la bibliografía anterior a 2013 y porque se preguntan. Al escribir una historia clínica hoy, la gravedad se consigna en forma dimensional, no por subtipo.</p>
+      </div>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Subtipo</th><th>Rasgos característicos</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Paranoide</strong></td>
+              <td>Pacientes <strong>tensos, desconfiados, cautelosos</strong>, a veces hostiles, pero que <strong>pueden comportarse adecuadamente en situaciones sociales</strong>. Predominan las ideas delirantes de <strong>perjuicio o grandeza</strong> y las alucinaciones auditivas. Presentan <strong>menor regresión</strong> de sus facultades mentales, afectivas y conductuales. Es el de mejor pronóstico.</td>
+            </tr>
+            <tr>
+              <td><strong>Desorganizado</strong> (hebefrénico)</td>
+              <td><strong>Notable regresión</strong> a comportamientos primitivos, desinhibidos y desorganizados. Alteración del pensamiento muy marcada y <strong>escaso contacto con la realidad</strong>. Apariencia personal, conducta social y respuestas emocionales inadecuadas.</td>
+            </tr>
+            <tr>
+              <td><strong>Catatónico</strong></td>
+              <td>Marcada alteración de las <strong>funciones motoras</strong>: negativismo, rigidez, agitación, <strong>estupor</strong>, manierismos, <strong>flexibilidad cérea</strong>, mutismo.</td>
+            </tr>
+            <tr>
+              <td><strong>Indiferenciado</strong></td>
+              <td>Por sus características <strong>no encuadra</strong> en ninguno de los demás subtipos.</td>
+            </tr>
+            <tr>
+              <td><strong>Residual</strong></td>
+              <td>Afectividad embotada, <strong>aislamiento social</strong>, comportamiento excéntrico, pensamiento ilógico y ligera pérdida de las asociaciones. Si hay alucinaciones o ideas delirantes, <strong>no son acusadas ni se acompañan de fuerte carga afectiva</strong>.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>De los cinco, <strong>uno sobrevivió con otra forma</strong>: la <strong>catatonía</strong>. El DSM-5 la sacó de la esquizofrenia y la convirtió en un <strong>especificador transdiagnóstico</strong>, porque se comprobó que aparece igual en trastornos del ánimo, en cuadros médicos y neurológicos. El cambio no es burocrático: la catatonía tiene <strong>tratamiento propio</strong> —benzodiazepinas y, si no responde, terapia electroconvulsiva—, y reconocerla como síndrome independiente es lo que permite tratarla sin importar la enfermedad de base.</p>
+    </section>
+
+    <!-- ============ 19 ============ -->
+    <section class="seccion s-diferenciales" id="diferenciales">
+      <span class="seccion__pestana"><b>19</b> Diferenciales</span>
+      <h2 class="seccion__titulo">Diagnósticos diferenciales</h2>
+
+      <p>El material organiza el diferencial en cuatro grupos. El orden en que están listados <strong>es el orden en que hay que pensarlos</strong>: primero lo que mata o tiene tratamiento específico, después lo psiquiátrico.</p>
+
+      <h3>1 · Trastornos psicóticos secundarios</h3>
+      <p>El material los agrupa como <strong>enfermedades médicas no psiquiátricas</strong> —neurológicas, metabólicas, autoinmunes, infecciosas— y <strong>sustancias</strong>: anfetaminas, alucinógenos, cocaína y fenciclidina. Es el primer grupo a descartar y nunca se salta.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Grupo</th><th>Ejemplos a tener presentes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Neurológicas</strong></td><td>Epilepsia del lóbulo temporal, enfermedad de Huntington, enfermedad de Wilson, esclerosis múltiple, tumores y lesiones estructurales, delirium de cualquier causa.</td></tr>
+            <tr><td><strong>Metabólicas y endocrinas</strong></td><td>Alteraciones tiroideas, déficit de vitamina B<sub>12</sub>, porfiria, trastornos hidroelectrolíticos.</td></tr>
+            <tr><td><strong>Autoinmunes</strong></td><td>Lupus eritematoso sistémico y <strong>encefalitis autoinmune por anticuerpos anti-NMDA</strong>, que debuta con frecuencia por la psiquiatría y tiene tratamiento específico.</td></tr>
+            <tr><td><strong>Infecciosas</strong></td><td>VIH, neurosífilis, encefalitis.</td></tr>
+            <tr><td><strong>Sustancias</strong></td><td>Anfetaminas, alucinógenos, cocaína, fenciclidina; también cannabis y corticoides. Incluye tanto la intoxicación como la abstinencia.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">El material enumera las categorías sin desagregarlas. Los ejemplos concretos se agregan como ampliación, siguiendo Kaplan &amp; Sadock, <em>Sinopsis de Psiquiatría</em>.</p>
+
+      <h3>2 · Otros trastornos psicóticos</h3>
+      <p>Acá el discriminador principal es el <strong>tiempo</strong>, y por eso conviene verlos juntos en una escala:</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Cuadro</th><th>Qué lo separa de la esquizofrenia</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Trastorno psicótico breve</strong></td><td>Dura <strong>menos de 1 mes</strong> y hay retorno completo al nivel previo.</td></tr>
+            <tr><td><strong>Trastorno esquizofreniforme</strong></td><td>Cumple el criterio A pero dura <strong>entre 1 y 6 meses</strong>. Es la esquizofrenia que todavía no alcanzó los seis meses.</td></tr>
+            <tr><td><strong>Trastorno esquizoafectivo</strong></td><td>Hay un <strong>episodio afectivo mayor concurrente</strong> con los síntomas psicóticos, pero también <strong>delirios o alucinaciones durante al menos 2 semanas sin síntomas afectivos</strong>. Ese detalle es el que lo separa del trastorno del ánimo con síntomas psicóticos.</td></tr>
+            <tr><td><strong>Trastorno delirante crónico</strong></td><td>Delirio <strong>único, sistematizado y bien construido</strong>, sin el deterioro global ni la desorganización de la esquizofrenia. El resto del funcionamiento se conserva notablemente.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>3 · Trastornos del estado de ánimo</h3>
+      <p>La <strong>depresión con síntomas psicóticos</strong> y la <strong>manía con síntomas psicóticos</strong>. La clave es la <strong>cronología</strong>: en los trastornos del ánimo la psicosis aparece <strong>dentro</strong> del episodio afectivo y desaparece con él. Si los síntomas psicóticos persisten fuera del episodio, hay que pensar en otra cosa.</p>
+
+      <h3>4 · Trastornos de la personalidad</h3>
+      <p>Los trastornos <strong>esquizoide</strong>, <strong>esquizotípico</strong> y <strong>obsesivo compulsivo</strong>. Son los mismos que el material lista como signos premórbidos en la sección 14, y la coincidencia no es casual: comparten rasgos con el pródromo. La diferencia es que en el trastorno de personalidad hay un <strong>patrón estable y duradero desde la adultez temprana</strong>, sin episodios psicóticos francos ni el quiebre del nivel de funcionamiento que exige el criterio B.</p>
+    </section>
+
+    <!-- ============ 20 ============ -->
+    <section class="seccion s-tratamiento" id="farmacologico">
+      <span class="seccion__pestana"><b>20</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Tratamiento farmacológico</h2>
+
+      <p class="cita">Las secciones 20 a 23 <strong>no figuran en el material de cátedra</strong>, que termina en el diagnóstico. Se desarrollan como ampliación siguiendo Kaplan &amp; Sadock, <em>Sinopsis de Psiquiatría</em>; la <em>APA Practice Guideline for the Treatment of Patients With Schizophrenia</em>, 3.ª ed., 2020; y la guía NICE CG178, <em>Psychosis and schizophrenia in adults</em>. Las dosis son orientativas: verificá siempre el vademécum y el protocolo de tu institución.</p>
+
+      <h3>El principio general</h3>
+      <p>Todos los antipsicóticos disponibles actúan, en última instancia, <strong>bloqueando el receptor D2</strong> en la vía mesolímbica. Lo que los diferencia no es tanto la eficacia sobre los síntomas positivos —que es comparable entre casi todos— sino <strong>el perfil de efectos adversos</strong>. Elegir un antipsicótico es, en la práctica, elegir qué efectos adversos ese paciente puede tolerar.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Grupo</th><th>Fármacos</th><th>Mecanismo</th><th>Perfil de adversos</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Primera generación · alta potencia</strong></td>
+              <td>Haloperidol, trifluoperazina</td>
+              <td>Bloqueo D2 predominante</td>
+              <td>Muchos <strong>extrapiramidales</strong> e hiperprolactinemia; poca sedación y pocos efectos anticolinérgicos.</td>
+            </tr>
+            <tr>
+              <td><strong>Primera generación · baja potencia</strong></td>
+              <td>Clorpromazina, levomepromazina</td>
+              <td>Bloqueo D2 más antihistamínico, anticolinérgico y alfa-adrenérgico</td>
+              <td>Menos extrapiramidales, pero mucha <strong>sedación</strong>, <strong>hipotensión ortostática</strong>, sequedad bucal y constipación.</td>
+            </tr>
+            <tr>
+              <td><strong>Segunda generación</strong></td>
+              <td>Risperidona, olanzapina, quetiapina, aripiprazol, ziprasidona, clozapina</td>
+              <td>Antagonismo <strong>5-HT<sub>2A</sub> sumado al D2</strong>; el aripiprazol es agonista parcial D2</td>
+              <td>Menos extrapiramidales, pero <strong>más efectos metabólicos</strong>: aumento de peso, dislipidemia, resistencia a la insulina.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Conviene desarmar una idea instalada: <strong>«atípico» no significa «mejor»</strong>. Los ensayos pragmáticos de gran escala no mostraron una superioridad global de la segunda generación sobre la primera, con la única excepción clara de la clozapina. Lo que hay es un <strong>intercambio</strong>: se cambian efectos extrapiramidales por efectos metabólicos. Y dado que la primera causa de muerte en esta población es cardiovascular, ese intercambio no es gratis.</p>
+
+      <h3>Dosis orientativas en el episodio agudo</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Fármaco</th><th>Rango habitual por día</th><th>Nota</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Haloperidol</strong></td><td>5 – 15 mg</td><td>Por encima de ese rango se ganan extrapiramidales, no eficacia.</td></tr>
+            <tr><td><strong>Risperidona</strong></td><td>2 – 6 mg</td><td>Es la de segunda generación que más eleva la prolactina.</td></tr>
+            <tr><td><strong>Olanzapina</strong></td><td>10 – 20 mg</td><td>La de peor perfil metabólico junto con la clozapina.</td></tr>
+            <tr><td><strong>Quetiapina</strong></td><td>400 – 750 mg</td><td>Muy sedativa. Requiere titulación.</td></tr>
+            <tr><td><strong>Aripiprazol</strong></td><td>10 – 30 mg</td><td>Perfil metabólico favorable; puede producir acatisia.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Efectos adversos que hay que reconocer</h3>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Cuadro</th><th>Cuándo aparece</th><th>Cómo se presenta</th><th>Conducta</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Distonía aguda</strong></td>
+              <td>Horas a días</td>
+              <td>Contracción sostenida: tortícolis, crisis oculógira, trismus, <strong>laringoespasmo</strong>. Muy angustiante. Más frecuente en varones jóvenes.</td>
+              <td><strong>Anticolinérgico</strong> (biperideno) o difenhidramina, parenteral. Cede rápido.</td>
+            </tr>
+            <tr>
+              <td><strong>Acatisia</strong></td>
+              <td>Días a semanas</td>
+              <td><strong>Inquietud subjetiva</strong> intolerable, imposibilidad de quedarse quieto, balanceo, marcha continua.</td>
+              <td>Reducir dosis, rotar el fármaco, agregar propranolol o una benzodiazepina.</td>
+            </tr>
+            <tr>
+              <td><strong>Parkinsonismo</strong></td>
+              <td>Semanas</td>
+              <td>Rigidez, bradicinesia, temblor, facies inexpresiva. <strong>Simula síntomas negativos.</strong></td>
+              <td>Reducir dosis, rotar, o anticolinérgico.</td>
+            </tr>
+            <tr>
+              <td><strong>Discinesia tardía</strong></td>
+              <td>Meses a años</td>
+              <td>Movimientos coreoatetósicos, sobre todo <strong>bucolinguomasticatorios</strong>. Puede ser <strong>irreversible</strong>.</td>
+              <td>Prevención: mínima dosis eficaz y revisión periódica. Suspender el anticolinérgico, que la empeora.</td>
+            </tr>
+            <tr>
+              <td><strong>Síndrome neuroléptico maligno</strong></td>
+              <td>Cualquier momento, sobre todo tras aumentos rápidos</td>
+              <td><strong>Hipertermia + rigidez «en tubo de plomo» + disautonomía + alteración de la conciencia</strong>, con <strong>CPK muy elevada</strong> y leucocitosis.</td>
+              <td><strong>Emergencia.</strong> Suspender el antipsicótico, soporte, hidratación y enfriamiento. Puede requerir dantroleno o bromocriptina.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>La acatisia se confunde con agitación psicótica</strong>, y el error tiene consecuencias: se interpreta que el paciente está peor, se sube la dosis del antipsicótico y la acatisia empeora, lo que confirma aparentemente la impresión inicial. El círculo puede repetirse varias veces. La pregunta que lo desarma es simple: <strong>«¿la inquietud es de adentro o está pasando algo afuera?»</strong> — el paciente con acatisia describe una desazón corporal que reconoce como propia y que suele atribuir al remedio. La acatisia, además, se asocia a un aumento del riesgo suicida.</p>
+      </div>
+
+      <h3>Otros controles obligatorios</h3>
+      <ul>
+        <li><strong>Metabólicos:</strong> peso y perímetro abdominal, glucemia y perfil lipídico al inicio y periódicamente. Peores con <strong>olanzapina</strong> y <strong>clozapina</strong>.</li>
+        <li><strong>Prolactina:</strong> ante galactorrea, amenorrea o disfunción sexual. Más frecuente con <strong>risperidona</strong> y con los de primera generación.</li>
+        <li><strong>Intervalo QT:</strong> electrocardiograma con <strong>ziprasidona</strong> y con haloperidol parenteral, sobre todo si hay otros fármacos que prolongan el QT o alteraciones electrolíticas.</li>
+      </ul>
+
+      <h3>Adherencia</h3>
+      <p>La <strong>falta de adherencia es la primera causa de recaída</strong>, y no siempre por falta de conciencia de enfermedad: los efectos adversos pesan tanto como los síntomas. Cuando la adherencia es el problema central, los <strong>antipsicóticos inyectables de acción prolongada</strong> (depot) cambian el escenario, porque la interrupción del tratamiento se vuelve visible en el momento en que ocurre en vez de descubrirse semanas después, con el paciente ya descompensado.</p>
+    </section>
+
+    <!-- ============ 21 ============ -->
+    <section class="seccion s-tratamiento" id="clozapina">
+      <span class="seccion__pestana"><b>21</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Refractariedad y clozapina</h2>
+
+      <h3>Cuándo un paciente es refractario</h3>
+      <p>Un tercio de los pacientes, aproximadamente, no responde adecuadamente al tratamiento habitual. La definición operativa de <strong>esquizofrenia resistente al tratamiento</strong> exige tres condiciones, y las tres importan:</p>
+
+      <ol>
+        <li>Fracaso de <strong>al menos dos antipsicóticos distintos</strong>.</li>
+        <li>Cada uno usado a <strong>dosis adecuada</strong> y durante un <strong>tiempo adecuado</strong> — habitualmente 6 semanas o más.</li>
+        <li><strong>Adherencia verificada.</strong> Sin este punto no se puede hablar de fracaso del fármaco, sino de fracaso del tratamiento.</li>
+      </ol>
+
+      <p>El tercer punto es el que más se pasa por alto y el que más veces convierte una falsa refractariedad en un problema de adherencia. Antes de rotular a alguien como resistente hay que descartar también consumo de sustancias activo, un diagnóstico incorrecto y una comorbilidad no tratada.</p>
+
+      <h3>La clozapina</h3>
+      <p>Confirmada la refractariedad, la <strong>clozapina es el tratamiento indicado</strong>, y es el único fármaco con eficacia demostrada en esa situación. No es una opción más dentro de una lista: es la que corresponde.</p>
+
+      <p>Tiene además una propiedad que ningún otro antipsicótico comparte: es el único con <strong>evidencia de reducción de la conducta suicida</strong> en esta población, demostrada en un ensayo controlado diseñado específicamente para ese desenlace. Dado lo que vimos en la sección 05, no es un detalle menor.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>La clozapina está <strong>sistemáticamente subutilizada y se indica tarde</strong> — con frecuencia después de cuatro, cinco o más antipsicóticos fallidos y años de enfermedad activa. El motivo es el temor a la agranulocitosis, que es un riesgo real pero <strong>monitorizable</strong>. La demora, en cambio, no es inocua: cada año de psicosis activa sin respuesta agrega deterioro funcional que después no se recupera.</p>
+      </div>
+
+      <h3>Los efectos adversos que hay que vigilar</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Efecto adverso</th><th>Cuándo</th><th>Qué hacer</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Agranulocitosis</strong></td>
+              <td>Riesgo máximo en los primeros meses</td>
+              <td><strong>Hemograma seriado obligatorio</strong> según el protocolo vigente: semanal al inicio y luego con espaciamiento progresivo. Ante fiebre o angina, hemograma inmediato.</td>
+            </tr>
+            <tr>
+              <td><strong>Miocarditis</strong></td>
+              <td>Primeras semanas</td>
+              <td>Sospechar ante fiebre, taquicardia persistente, disnea o dolor torácico. Es la causa de muerte precoz más temida y se pasa por alto.</td>
+            </tr>
+            <tr>
+              <td><strong>Convulsiones</strong></td>
+              <td>Dosis-dependiente</td>
+              <td>Titulación lenta. A dosis altas puede requerir un anticonvulsivante (no carbamazepina, que agrava el riesgo hematológico).</td>
+            </tr>
+            <tr>
+              <td><strong>Constipación grave e íleo</strong></td>
+              <td>Cualquier momento</td>
+              <td>Subestimado y potencialmente <strong>mortal</strong>. Preguntar activamente por el tránsito y tratar de entrada con medidas higiénico-dietéticas y laxantes.</td>
+            </tr>
+            <tr>
+              <td><strong>Sialorrea y sedación</strong></td>
+              <td>Desde el inicio</td>
+              <td>Muy molestas y causa frecuente de abandono. Vale la pena advertirlas antes de que aparezcan.</td>
+            </tr>
+            <tr>
+              <td><strong>Síndrome metabólico</strong></td>
+              <td>Meses</td>
+              <td>Control de peso, glucemia y lípidos. Es de los peores en este aspecto.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Volvé un momento a la sección 05: la clozapina se metaboliza por <strong>CYP1A2</strong>, la misma vía que induce el humo del tabaco. En un paciente que fuma y está clozapinizado, <strong>dejar de fumar bruscamente eleva los niveles plasmáticos</strong> y puede precipitar sedación profunda, convulsiones o toxicidad. Es una de las interacciones más importantes de la psicofarmacología y ocurre, típicamente, durante una internación.</p>
+    </section>
+
+    <!-- ============ 22 ============ -->
+    <section class="seccion s-tratamiento" id="psicosociales">
+      <span class="seccion__pestana"><b>22</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Intervenciones psicosociales</h2>
+
+      <p>El fármaco controla los síntomas positivos; <strong>no devuelve por sí solo la capacidad de estudiar, trabajar y sostener vínculos</strong>. Esa parte la hacen las intervenciones psicosociales, y no son un complemento opcional: forman parte del tratamiento estándar.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Intervención</th><th>En qué consiste</th><th>Para qué</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Psicoeducación e intervención familiar</strong></td>
+              <td>Trabajo con la familia sobre la enfermedad, el tratamiento, los signos de recaída y —centralmente— el <strong>clima emocional del hogar</strong>: reducir la crítica, la hostilidad y la sobreimplicación.</td>
+              <td><strong>Reduce sustancialmente la tasa de recaída.</strong> Es la aplicación directa del concepto de emoción expresada de la sección 13, y la intervención psicosocial con mejor respaldo.</td>
+            </tr>
+            <tr>
+              <td><strong>Terapia cognitivo-conductual para la psicosis</strong></td>
+              <td>Trabajo sobre la <strong>relación</strong> del paciente con sus voces y creencias: reevaluar la evidencia, cuestionar el poder atribuido a la voz, reducir la angustia asociada.</td>
+              <td>Síntomas positivos <strong>persistentes</strong> pese al tratamiento farmacológico.</td>
+            </tr>
+            <tr>
+              <td><strong>Entrenamiento en habilidades sociales</strong></td>
+              <td>Práctica estructurada de conductas concretas: iniciar una conversación, sostener una entrevista, resolver un conflicto.</td>
+              <td>Mejora el funcionamiento social, que es lo que los síntomas negativos deterioran.</td>
+            </tr>
+            <tr>
+              <td><strong>Remediación cognitiva</strong></td>
+              <td>Ejercitación dirigida de atención, memoria de trabajo y funciones ejecutivas.</td>
+              <td>El déficit cognitivo es el que mejor predice el desempeño laboral, y es de los que menos responden al fármaco.</td>
+            </tr>
+            <tr>
+              <td><strong>Empleo con apoyo</strong></td>
+              <td>Búsqueda rápida de un empleo real en el mercado abierto, con acompañamiento sostenido, en lugar de largos períodos de entrenamiento previo.</td>
+              <td>Logra mayores tasas de empleo competitivo que los modelos de capacitación previa.</td>
+            </tr>
+            <tr>
+              <td><strong>Tratamiento asertivo comunitario</strong></td>
+              <td>Equipo interdisciplinario que sigue al paciente <strong>en su medio</strong>, con alta disponibilidad y caseload reducido.</td>
+              <td>Pacientes con internaciones repetidas o con vínculo frágil con el sistema de salud. Reduce hospitalizaciones.</td>
+            </tr>
+            <tr>
+              <td><strong>Equipos de intervención temprana</strong></td>
+              <td>Dispositivos específicos para el <strong>primer episodio psicótico</strong>, que combinan todo lo anterior en forma intensiva durante los primeros años.</td>
+              <td>Es donde el impacto es mayor, por lo que se ve en la sección siguiente.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Notá que la lógica de todo el cuadro es la misma que explicaba, en la sección 06, el <strong>mejor pronóstico en países en desarrollo</strong>: la reinserción comunitaria y familiar mejora la evolución. Lo que las intervenciones psicosociales hacen es <strong>reconstruir deliberadamente</strong> lo que en aquellos contextos venía dado.</p>
+    </section>
+
+    <!-- ============ 23 ============ -->
+    <section class="seccion s-clinica" id="pronostico">
+      <span class="seccion__pestana"><b>23</b> Evolución</span>
+      <h2 class="seccion__titulo">Curso y pronóstico</h2>
+
+      <h3>La forma habitual del curso</h3>
+      <p>El patrón típico va del <strong>pródromo</strong> al <strong>primer episodio psicótico</strong>, y de ahí a un curso de <strong>recaídas y remisiones</strong>. Cada recaída tiende a dejar un residuo, de modo que el nivel funcional basal desciende en escalones. El mayor deterioro se concentra en los <strong>primeros cinco a diez años</strong>; después el cuadro tiende a estabilizarse — un dato importante para no transmitir a la familia un deterioro indefinido que no ocurre.</p>
+
+      <p>Suele resumirse el desenlace en tercios aproximados: <strong>una parte</strong> con mejoría sustancial y buen funcionamiento, <strong>otra</strong> con curso fluctuante y síntomas residuales, y <strong>otra</strong> con evolución deteriorante. Es una regla gruesa, no una estadística fina, pero sirve para lo esencial: <strong>el pronóstico no es uniforme</strong>. Es exactamente lo que Bleuler sostenía contra Kraepelin, ciento veinte años atrás.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>El factor pronóstico <strong>modificable</strong> más importante es la <strong>duración de la psicosis no tratada</strong>: el tiempo que transcurre entre el comienzo de los síntomas psicóticos y el inicio del tratamiento. Cuanto más largo, peor la respuesta y peor el funcionamiento a largo plazo. Todos los demás factores de la tabla siguiente ya vienen dados cuando el paciente llega; éste depende de cuánto tarde el sistema de salud en reconocerlo y tratarlo. Es la justificación de los equipos de intervención temprana.</p>
+      </div>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Buen pronóstico</th><th>Mal pronóstico</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Inicio <strong>tardío</strong></td><td>Inicio <strong>precoz</strong></td></tr>
+            <tr><td>Comienzo <strong>agudo</strong></td><td>Comienzo <strong>insidioso</strong></td></tr>
+            <tr><td>Factor <strong>precipitante identificable</strong></td><td>Sin precipitante claro</td></tr>
+            <tr><td><strong>Buen ajuste premórbido</strong> — laboral, social, afectivo</td><td>Aislamiento y mal ajuste previos</td></tr>
+            <tr><td>Predominio de <strong>síntomas positivos</strong> y afectivos</td><td>Predominio de <strong>síntomas negativos</strong></td></tr>
+            <tr><td><strong>Buen soporte familiar y social</strong></td><td>Ausencia de red de apoyo · alta emoción expresada</td></tr>
+            <tr><td>Sin antecedentes familiares</td><td>Antecedentes familiares de esquizofrenia</td></tr>
+            <tr><td>Tratamiento <strong>temprano</strong> y buena adherencia</td><td>Psicosis no tratada prolongada · signos neurológicos</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Una lectura útil de la tabla: casi todos los factores de la columna izquierda describen a alguien que <strong>tenía una vida construida antes de enfermar</strong> y que enfermó de golpe. Los de la derecha describen a alguien en quien la enfermedad se instaló tan lentamente que nunca hubo un antes nítido. Esa diferencia —tener o no tener a dónde volver— es la que hace la mayor parte del pronóstico.</p>
+    </section>
+
+    <!-- ============ 24 ============ -->
+    <section class="seccion s-diferenciales" id="precisiones">
+      <span class="seccion__pestana"><b>24</b> Precisiones</span>
+      <h2 class="seccion__titulo">Precisiones al material de cátedra</h2>
+
+      <p>El material es de la era del DSM-IV y arrastra algunas cifras y marcos que hoy están corregidos. Lo que sigue no invalida el contenido: lo actualiza y señala dónde conviene no repetir el dato tal cual.</p>
+
+      <h3>1 · El riesgo de suicidio no es del 15 %</h3>
+      <p>La diapositiva 4 afirma que «el 15 % de los esquizofrénicos se suicida». Es una cifra clásica de la bibliografía, pero su origen la sobreestima: surgió de <strong>cohortes hospitalarias con seguimiento corto</strong>, es decir, de los pacientes más graves y en el período de mayor riesgo, y esa proporción se extrapoló a toda la vida y a toda la población con el diagnóstico.</p>
+      <p>Los estudios que corrigieron ese sesgo ubican el riesgo de suicidio de por vida <strong>en torno al 5 %</strong>. Sigue siendo un riesgo enorme —más de diez veces el de la población general— y no cambia en nada la conducta clínica. Pero conviene usar la cifra corregida.</p>
+      <p class="cita">Palmer BA, Pankratz VS, Bostwick JM. <em>The lifetime risk of suicide in schizophrenia: a reexamination.</em> Archives of General Psychiatry 2005. Confirmado por revisiones posteriores.</p>
+
+      <h3>2 · La proporción de personas en situación de calle está sobredimensionada</h3>
+      <p>La diapositiva 5 afirma que «de 1 a 2 tercios de las personas que viven en la calle son esquizofrénicos». Es decir, entre el 33 % y el 66 %. Las revisiones sistemáticas sobre población en situación de calle en países occidentales encuentran una prevalencia de <strong>trastornos psicóticos</strong> —todos, no sólo esquizofrenia— <strong>en torno al 10-15 %</strong>.</p>
+      <p>La prevalencia sigue siendo muchísimo más alta que en población general, y el punto de fondo del material es correcto: <strong>hay una relación estrecha entre esquizofrenia y situación de calle</strong>, en ambas direcciones. Pero la magnitud que da es cuatro o cinco veces superior a la mejor estimación disponible.</p>
+      <p class="cita">Fazel S, Khosla V, Doll H, Geddes J. <em>The prevalence of mental disorders among the homeless in western countries.</em> PLoS Medicine 2008.</p>
+
+      <h3>3 · El dato geográfico de los Estados Unidos: no pude verificarlo</h3>
+      <p>La diapositiva 4 afirma que «en EEUU es más frecuente en el noroeste». La formulación clásica de la bibliografía que se cita habitualmente refiere el <strong>noreste</strong>, no el noroeste, lo que sugiere un desliz de traducción — pero <strong>no encontré fuente indexada que confirme ninguna de las dos versiones</strong>, así que lo dejo señalado en vez de corregirlo.</p>
+      <p>En cualquier caso es un dato de <strong>bajo rendimiento</strong>: no orienta ninguna conducta y no aplica a nuestro medio. Lo que sí está bien establecido, y el material lo consigna aparte, es el efecto de la <strong>urbanicidad</strong>. La prevalencia alta en Irlanda es un hallazgo históricamente reportado, discutido en cuanto a su magnitud real.</p>
+
+      <h3>4 · La nicotina y las alucinaciones</h3>
+      <p>La diapositiva 4 afirma que «la nicotina reduce los síntomas positivos (alucinaciones)». La evidencia sostiene un efecto sobre el <strong>filtrado sensorial</strong> —el déficit de <em>gating</em> que la misma presentación describe en el EEG— y sobre los <strong>efectos adversos motores</strong> de los antipsicóticos. Presentarlo como una reducción de las alucinaciones excede lo que muestran los datos.</p>
+      <p>Y falta la contracara, que es la que produce accidentes clínicos: lo que induce el CYP1A2 <strong>no es la nicotina</strong> sino los <strong>hidrocarburos aromáticos policíclicos</strong> de la combustión. La consecuencia está desarrollada en la sección 05 y vuelve en la 21 — importa porque el parche de nicotina <strong>no</strong> sustituye esa inducción.</p>
+
+      <h3>5 · Los loci cromosómicos están superados</h3>
+      <p>La diapositiva 10 enumera «brazo largo de 5, 11 y 18, brazo corto del 9, cromosoma X, y loci de los 6, 8 y 22». Son resultados de <strong>estudios de ligamiento</strong> de la década del noventa, y la mayoría <strong>no replicó</strong> en muestras grandes.</p>
+      <p>Lo que sí se estableció después: la esquizofrenia es <strong>poligénica</strong>, con cientos de variantes comunes de efecto pequeño identificadas por estudios de asociación de genoma completo; la señal más fuerte se ubica en el <strong>complejo mayor de histocompatibilidad del cromosoma 6</strong> —uno de los que el material menciona— y se vincula al gen del complemento <strong>C4</strong>, regulador de la <strong>poda sináptica</strong>. También se identificaron variantes raras de gran efecto, como la <strong>microdeleción 22q11.2</strong> —otro de los loci listados—, que confiere un riesgo muy alto.</p>
+      <p>Dicho de otro modo: dos de los ocho loci de la lista resistieron, y ambos con un mecanismo que conecta con lo que la propia presentación explica en la diapositiva 8.</p>
+
+      <h3>6 · Los modelos familiares: valor histórico y un daño concreto</h3>
+      <p>La diapositiva 12 presenta el doble mensaje, las familias escindidas y sesgadas y las seudorrecíprocas y seudohostiles en el mismo plano que el resto de la etiología. <strong>No tienen sustento empírico como causa</strong> y quedaron abandonadas. Merecen mencionarse por dos motivos: porque se preguntan, y porque el linaje del que provienen —la «madre esquizofrenógena»— <strong>culpabilizó a las familias durante décadas</strong>.</p>
+      <p>El propio material introduce la salvedad correcta cuando aclara que «<strong>no siempre se encuentra una familia disfuncional</strong>». La única excepción con evidencia sólida es la <strong>emoción expresada</strong>, que además no afirma lo mismo: no dice que la familia cause la enfermedad, sino que el clima emocional modula las recaídas. Desarrollado en la sección 13.</p>
+
+      <h3>7 · Lo que el material no cubre</h3>
+      <p>Las diapositivas terminan en el diagnóstico. <strong>No hay ninguna sobre tratamiento, curso ni pronóstico</strong>, ni tampoco sobre la CIE-11. Las secciones 20 a 23 de este cuadernillo se agregaron para cubrir ese vacío, con las fuentes indicadas al comienzo de la sección 20. Están marcadas como ampliación para que puedas distinguir con claridad qué entró por la cátedra y qué no.</p>
+
+      <h3>8 · Erratas menores</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Dice</th><th>Debería decir</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Ewold Hecker (1843-<strong>1899</strong>)</td><td><strong>Ewald</strong> Hecker (1843-<strong>1909</strong>). El año de muerte parece copiado del de Kahlbaum, que sí murió en 1899.</td></tr>
+            <tr><td><strong>Benedict</strong> Morel</td><td><strong>Bénédict</strong> Augustin Morel.</td></tr>
+            <tr><td><strong>Eugene</strong> Bleuler</td><td><strong>Eugen</strong> Bleuler, sin «e» final.</td></tr>
+            <tr><td>R.M.I.</td><td><strong>RM</strong> o <strong>RMN</strong>. «MRI» es la sigla inglesa; «RMI» no existe en ninguno de los dos idiomas.</td></tr>
+            <tr><td>«los receptore D2»</td><td>los receptores D2.</td></tr>
+            <tr><td>«disminuición de los movimientos»</td><td>disminución.</td></tr>
+            <tr><td>«separase de los padres»</td><td>separarse.</td></tr>
+            <tr><td>«familias seudorecíprocas»</td><td>seudo<strong>rr</strong>ecíprocas.</td></tr>
+            <tr><td>«metabólica, autoinmunes, infecciosas»</td><td>metabólicas, en concordancia con el resto de la enumeración.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>9 · Una nota de lenguaje</h3>
+      <p>El material usa «los esquizofrénicos» como sustantivo. En este cuadernillo se escribe <strong>«las personas con esquizofrenia»</strong>. No es una corrección cosmética ni un tecnicismo: el sustantivo reduce a la persona a su diagnóstico, y en un cuadro donde el estigma es uno de los principales obstáculos para consultar y sostener el tratamiento, la forma de nombrar tiene efecto clínico.</p>
+    </section>
+
+    <!-- ============ Repaso ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>¿Qué quiso decir Bleuler con «mente escindida»?</summary>
+          <div class="fc__r">La <strong>escisión entre las funciones psíquicas</strong> —el pensamiento por un lado y el afecto por otro— dentro de una misma persona. <strong>No</strong> se refiere a doble personalidad, que es la confusión popular más extendida.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Cuál fue el quiebre conceptual entre Kraepelin y Bleuler?</summary>
+          <div class="fc__r">Kraepelin definía la <em>dementia praecox</em> por su <strong>curso deteriorante</strong>. Bleuler sostuvo que <strong>no todos los pacientes deterioran</strong> y pasó a definir la enfermedad por su psicopatología. Es lo que permite hoy hablar de recuperación funcional sin contradecir el diagnóstico.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Cuáles son las cuatro A de Bleuler?</summary>
+          <div class="fc__r"><strong>Asociaciones laxas, afectividad aplanada, ambivalencia y autismo.</strong> Son los síntomas <em>fundamentales</em>; alucinaciones y delirios eran para él <em>accesorios</em>, porque podían faltar.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué aportó Kurt Schneider y qué hizo el DSM-5 con ese aporte?</summary>
+          <div class="fc__r">Los <strong>síntomas de primer orden</strong>, que él mismo aclaró que <strong>no eran patognomónicos</strong>. El DSM-5 les quitó el peso diagnóstico especial: ya no alcanza un solo síntoma aunque sea de primer orden.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Por qué difiere la edad de comienzo entre hombres y mujeres, y qué implica?</summary>
+          <div class="fc__r">La prevalencia es <strong>igual</strong>, pero el pico es a los <strong>10-25 años en hombres</strong> y a los <strong>25-35 en mujeres</strong>. Implica que en la mujer el cuadro suele atribuirse durante meses a un trastorno del ánimo o a un problema vital antes de reconocerse.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué tienen en común la estación de nacimiento y las infecciones gestacionales?</summary>
+          <div class="fc__r">Son marcadores indirectos de una agresión sobre el <strong>sistema nervioso en desarrollo</strong>, años antes del primer síntoma. Sostienen la idea de la esquizofrenia como <strong>trastorno del neurodesarrollo con expresión tardía</strong>.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Cuál es el riesgo de suicidio de por vida y cuándo se concentra?</summary>
+          <div class="fc__r">En torno al <strong>5 %</strong> según las estimaciones actuales (el material dice 15 %, cifra clásica sobreestimada). Se concentra en los <strong>primeros años</strong>, en pacientes jóvenes, con buen nivel previo, <strong>conciencia de enfermedad conservada</strong> y síntomas depresivos.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>Un paciente estable con clozapina deja de fumar al internarse. ¿Qué esperás?</summary>
+          <div class="fc__r"><strong>Aumento de los niveles plasmáticos</strong> con la misma dosis. El humo del tabaco induce el <strong>CYP1A2</strong>; al cesar la inducción, el fármaco se acumula. Riesgo de sedación profunda, convulsiones y toxicidad. El responsable son los hidrocarburos aromáticos policíclicos, <strong>no la nicotina</strong> — el parche no sustituye la inducción.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Cuál es la principal causa de muerte en la esquizofrenia?</summary>
+          <div class="fc__r">La <strong>enfermedad cardiovascular</strong>, no el suicidio. La brecha de expectativa de vida es de <strong>10 a 20 años</strong>. Por eso el control metabólico es parte del tratamiento y no un accesorio.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿De qué dos observaciones nació la hipótesis dopaminérgica?</summary>
+          <div class="fc__r">1) La <strong>potencia de los antipsicóticos se correlaciona con su bloqueo D2</strong>. 2) Los fármacos que <strong>aumentan la dopamina</strong> (anfetamina) son psicotomiméticos. Ambas son indirectas: se dedujo el mecanismo de la enfermedad del mecanismo del tratamiento.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>Nombrá las cuatro vías dopaminérgicas y qué pasa al bloquear cada una.</summary>
+          <div class="fc__r"><strong>Mesolímbica:</strong> hiperactiva, da los síntomas positivos — bloquearla es el efecto buscado. <strong>Mesocortical:</strong> hipoactiva, da los negativos y cognitivos — bloquearla puede empeorarlos. <strong>Nigroestriada:</strong> bloquearla da extrapiramidales y discinesia tardía. <strong>Tuberoinfundibular:</strong> bloquearla da hiperprolactinemia.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Por qué subir la dosis del antipsicótico no siempre es la conducta?</summary>
+          <div class="fc__r">El efecto antipsicótico aparece con una ocupación D2 de aproximadamente <strong>65 %</strong>; por encima del <strong>80 %</strong> ya no se gana eficacia y sí se ganan <strong>efectos extrapiramidales</strong>.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Por qué la hipótesis glutamatérgica explica mejor el cuadro completo?</summary>
+          <div class="fc__r">Porque la <strong>fenciclidina</strong> (antagonista NMDA) reproduce síntomas <strong>positivos, negativos y cognitivos</strong>, mientras que la anfetamina sólo reproduce los positivos. En una frase: la anfetamina imita la psicosis, la PCP imita la esquizofrenia.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Cómo explica la poda sináptica el debut en la adolescencia?</summary>
+          <div class="fc__r">La densidad sináptica es máxima al año de vida y se recorta hasta valores adultos en la <strong>adolescencia temprana</strong>. Si el defecto es un <strong>exceso de poda</strong>, el cuadro sólo puede manifestarse cuando ese proceso ocurre — aunque la vulnerabilidad venga desde el neurodesarrollo.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué conecta el cromosoma 6 con la teoría de la poda sináptica?</summary>
+          <div class="fc__r">La señal genética más fuerte está en el <strong>complejo mayor de histocompatibilidad del cromosoma 6</strong> y se atribuye al gen del complemento <strong>C4</strong>, que <strong>marca sinapsis para que la microglía las elimine</strong>. Genética e histología describen el mismo mecanismo.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Sirve alguno de los hallazgos de neuroimagen para diagnosticar esquizofrenia?</summary>
+          <div class="fc__r"><strong>No.</strong> Son diferencias <strong>de grupo</strong>, con enorme superposición con controles. El diagnóstico es <strong>clínico</strong>; los complementarios se piden para <strong>descartar causa orgánica</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Por qué la disfunción de los movimientos oculares se considera un endofenotipo?</summary>
+          <div class="fc__r">Porque es <strong>independiente del tratamiento farmacológico</strong> y aparece también en <strong>familiares no afectados</strong>: marca vulnerabilidad, no enfermedad declarada.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué tienen en común los delirios de control, inserción, robo y difusión del pensamiento?</summary>
+          <div class="fc__r">Todos implican que <strong>el límite entre el yo y el mundo se volvió permeable</strong>: el pensamiento entra, sale, se lo roban o lo leen. Son, en su mayoría, los <strong>síntomas de primer orden de Schneider</strong>. Lo llamativo no es el contenido sino la pérdida de propiedad sobre el propio pensar.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Un paciente psicótico tiene alucinaciones visuales y olfatorias prominentes. ¿Qué pensás?</summary>
+          <div class="fc__r"><strong>Causa orgánica hasta que se demuestre lo contrario</strong>: delirium, tóxicos, epilepsia del lóbulo temporal, lesión estructural. En la esquizofrenia las típicas son las <strong>auditivas</strong>, sobre todo pseudoalucinaciones.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Cuáles son los cuatro síntomas negativos y por qué importan tanto?</summary>
+          <div class="fc__r"><strong>Aplanamiento afectivo, alogia, abulia-apatía y anhedonia-insociabilidad.</strong> Importan porque determinan el <strong>deterioro funcional a largo plazo</strong> y porque son los que <strong>peor responden</strong> al tratamiento.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Antes de atribuir síntomas negativos a la enfermedad, ¿qué cuatro cosas descartás?</summary>
+          <div class="fc__r"><strong>Depresión</strong> comórbida · <strong>parkinsonismo farmacológico</strong> (la acinesia imita el aplanamiento) · <strong>síntomas positivos activos</strong> que retraen al paciente · <strong>institucionalización</strong> o falta de estímulo. Los cuatro tienen tratamiento.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Cuáles son los dos cambios del criterio A en el DSM-5?</summary>
+          <div class="fc__r">1) Se exigen <strong>dos síntomas siempre</strong>: cae la excepción que permitía diagnosticar con uno solo si el delirio era extraño o había voces que comentaban o conversaban. 2) Al menos uno de los dos debe ser <strong>delirio, alucinación o habla desorganizada</strong>. Ambos apuntan a lo mismo: no se diagnostica esquizofrenia sin un síntoma psicótico franco.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Qué criterios del DSM-IV hacen el trabajo pesado del diagnóstico?</summary>
+          <div class="fc__r">El <strong>B</strong> (disfunción social o laboral) y el <strong>C</strong> (6 meses de signos continuos). El criterio A describe la psicosis, que muchas condiciones comparten; lo que define a la esquizofrenia son la <strong>repercusión funcional</strong> y el <strong>tiempo</strong>.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>De los cinco subtipos eliminados, ¿cuál sobrevivió y bajo qué forma?</summary>
+          <div class="fc__r">La <strong>catatonía</strong>, convertida en <strong>especificador transdiagnóstico</strong> porque aparece también en trastornos del ánimo y en cuadros médicos. No es un cambio burocrático: tiene <strong>tratamiento propio</strong> —benzodiazepinas y, si no responde, terapia electroconvulsiva—.</div>
+        </details>
+
+        <details class="fc s-diferenciales">
+          <summary>Trastorno psicótico breve, esquizofreniforme y esquizofrenia: ¿qué los separa?</summary>
+          <div class="fc__r">El <strong>tiempo</strong>. Breve: <strong>menos de 1 mes</strong> con retorno al nivel previo. Esquizofreniforme: <strong>entre 1 y 6 meses</strong>. Esquizofrenia: <strong>6 meses o más</strong> de signos continuos.</div>
+        </details>
+
+        <details class="fc s-diferenciales">
+          <summary>¿Qué distingue al trastorno esquizoafectivo del trastorno del ánimo con síntomas psicóticos?</summary>
+          <div class="fc__r">En el esquizoafectivo hay <strong>delirios o alucinaciones durante al menos 2 semanas sin síntomas afectivos</strong>. En el trastorno del ánimo, la psicosis vive y muere dentro del episodio afectivo.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Qué se gana y qué se pierde al elegir un antipsicótico de segunda generación?</summary>
+          <div class="fc__r">Se ganan <strong>menos efectos extrapiramidales</strong> y se pierden en <strong>efectos metabólicos</strong> — peso, lípidos, insulinorresistencia. Como la primera causa de muerte en esta población es cardiovascular, el intercambio no es gratis. «Atípico» no significa «mejor».</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Un paciente medicado no para de moverse y parece agitado. ¿Cuál es la trampa?</summary>
+          <div class="fc__r"><strong>Acatisia</strong> confundida con agitación psicótica: se sube la dosis, la acatisia empeora y parece confirmar la impresión. La pregunta que lo desarma: <strong>«¿la inquietud es de adentro o está pasando algo afuera?»</strong>. La acatisia además aumenta el riesgo suicida.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Fiebre, rigidez «en tubo de plomo», disautonomía y CPK muy alta en un paciente medicado.</summary>
+          <div class="fc__r"><strong>Síndrome neuroléptico maligno.</strong> Emergencia: <strong>suspender el antipsicótico</strong>, soporte, hidratación y enfriamiento. Puede requerir dantroleno o bromocriptina.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Cuándo se define resistencia al tratamiento y qué corresponde entonces?</summary>
+          <div class="fc__r">Fracaso de <strong>dos antipsicóticos distintos</strong>, cada uno a <strong>dosis y tiempo adecuados</strong> (unas 6 semanas), con <strong>adherencia verificada</strong>. Corresponde <strong>clozapina</strong>, único fármaco con eficacia demostrada en refractariedad y el único con evidencia de reducción de la conducta suicida.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Cuál es la intervención psicosocial con mejor respaldo y de qué concepto se desprende?</summary>
+          <div class="fc__r">La <strong>psicoeducación e intervención familiar</strong>, que reduce sustancialmente la tasa de recaída. Se desprende del concepto de <strong>emoción expresada</strong>: alta crítica, hostilidad y sobreimplicación predicen recaída.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Cuál es el factor pronóstico modificable más importante?</summary>
+          <div class="fc__r">La <strong>duración de la psicosis no tratada</strong>. Todos los demás factores ya vienen dados cuando el paciente llega; éste depende de cuánto tarde el sistema en reconocerlo y tratarlo. Es la justificación de los equipos de intervención temprana.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Triada clave</dt>
+        <dd><strong>Síntomas positivos</strong> (alucinaciones auditivas, delirios de la esfera del yo, desorganización) + <strong>síntomas negativos</strong> (aplanamiento, alogia, abulia, anhedonia) + <strong>deterioro del funcionamiento</strong>, sostenidos <strong>6 meses</strong>.</dd>
+
+        <dt class="r-gold">Regla diagnóstica</dt>
+        <dd>El diagnóstico es <strong>clínico</strong>: ninguna imagen, EEG ni potencial evocado lo confirma. DSM-5: <strong>2 síntomas del criterio A</strong>, y al menos uno debe ser <strong>delirio, alucinación o habla desorganizada</strong>. Los complementarios sirven para <strong>descartar causa orgánica</strong>.</dd>
+
+        <dt class="r-tto">Tratamiento de 1ª línea</dt>
+        <dd><strong>Antipsicótico</strong> elegido por perfil de efectos adversos, a la <strong>mínima dosis eficaz</strong> (ocupación D2 en torno al 65 %), más <strong>psicoeducación familiar</strong>. Tras <strong>2 antipsicóticos fallidos</strong> a dosis y tiempo adecuados con adherencia verificada: <strong>clozapina</strong>.</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd><strong>Alucinaciones visuales, olfatorias o táctiles prominentes</strong> → buscar causa orgánica. <strong>Voces imperativas</strong> → preguntar siempre qué ordenan. <strong>Fiebre + rigidez + CPK alta</strong> → síndrome neuroléptico maligno. <strong>Inquietud «de adentro»</strong> → acatisia, no subir la dosis.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir de la presentación <em>Esquizofrenia</em> del Dr. Fabián S. Romeo (19 diapositivas). Las secciones 20 a 23 amplían el material siguiendo Kaplan &amp; Sadock, la APA Practice Guideline 2020 y NICE CG178. Material de estudio: no reemplaza el criterio clínico ni la guía institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link'));
+
+  function porMeta(hash){
+    for (var i = 0; i < enlaces.length; i++){
+      if (enlaces[i].getAttribute('href') === '#' + hash) return enlaces[i];
+    }
+    return null;
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var enlace = porMeta(e.target.id);
+        if (!enlace) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          enlace.setAttribute('aria-current', 'true');
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>
+<script>
+(function(){
+  "use strict";
+  var clave = document.body.dataset.clave || "";
+  var enApp = typeof window.WordmedApp !== "undefined";
+  var MEM = "wordmed:progreso";
+
+  function leer(){ try{ return JSON.parse(localStorage.getItem(MEM)) || {}; }catch(e){ return {}; } }
+  function guardar(m){ try{ localStorage.setItem(MEM, JSON.stringify(m)); }catch(e){} }
+
+  function alto(){
+    return Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+  }
+
+  /* retomar donde quedó */
+  if (clave) {
+    var m = leer()[clave];
+    if (m && m.y > 0) {
+      window.addEventListener("load", function(){
+        window.scrollTo(0, Math.min(m.y, alto()));
+      });
+    }
+  }
+
+  /* anotar el avance, sin ahogar el scroll */
+  var pendiente = false;
+  window.addEventListener("scroll", function(){
+    if (pendiente || !clave) return;
+    pendiente = true;
+    requestAnimationFrame(function(){
+      pendiente = false;
+      var y = window.scrollY;
+      var pct = Math.round((y / alto()) * 100);
+      pct = Math.max(0, Math.min(100, pct));
+      var m = leer();
+      m[clave] = { y: y, pct: pct, ts: Date.now() };
+      guardar(m);
+      if (enApp && window.WordmedApp.progreso) window.WordmedApp.progreso(clave, pct, y);
+    });
+  }, { passive: true });
+
+  /* volver: solo cuando vinimos de la cáscara web */
+  if (!enApp && document.referrer && document.referrer.indexOf(location.origin) === 0) {
+    var b = document.createElement("button");
+    b.className = "volver";
+    b.type = "button";
+    b.setAttribute("aria-label", "Volver");
+    b.innerHTML = '<svg class="volver__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg>';
+    b.addEventListener("click", function(){ history.back(); });
+    document.body.appendChild(b);
+  }
+})();
+</script>
+</body>
+</html>

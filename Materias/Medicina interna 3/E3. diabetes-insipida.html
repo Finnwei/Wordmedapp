@@ -1,0 +1,1210 @@
+<title>Diabetes Insípida</title>
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+}
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índice lateral ---------- */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Ficha de sección ---------- */
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.35rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-row:1/3; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+.importante__titulo{
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso{ display:none !important; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-generalidades"  href="#fisiologia">Fisiología de la ADH</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#definicion">Definición &amp; Clasificación</a></li>
+      <li><a class="indice__link i-clinica"        href="#central">DI Central</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#otras">Las Otras Tres Entidades</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#clinica">Clínica &amp; Diagnóstico</a></li>
+      <li><a class="indice__link i-diferenciales"  href="#pruebas">Pruebas Dinámicas</a></li>
+      <li><a class="indice__link i-importantes"    href="#tratamiento">Tratamiento &amp; Alertas</a></li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Medicina Interna III · Endocrinología · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Diabetes Insípida</h1>
+      <p class="portada__bajada">Incapacidad de concentrar la orina. De la fisiología de la vasopresina a las cuatro entidades que comparten el síndrome polidípsico-poliúrico.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">7 secciones</span>
+        <span class="etiqueta s-fisiopatologia">ADH · V2 · AQP2</span>
+        <span class="etiqueta s-diagnostico">Cuatro entidades</span>
+        <span class="etiqueta s-diferenciales">Test de Miller</span>
+      </div>
+    </header>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="fisiologia">
+      <span class="seccion__pestana"><b>01</b> Fisiología</span>
+      <h2 class="seccion__titulo">Fisiología de la ADH</h2>
+
+      <p>Del latín <em>diabētes</em>, que deriva de un vocablo griego que significa <strong>«atravesar»</strong>. Existen <strong>dos diabetes que no tienen ninguna relación patológica entre sí</strong> pero comparten poliuria, sed intensa y adelgazamiento: la <strong>diabetes mellitus</strong> y la <strong>diabetes insípida</strong>.</p>
+
+      <h3>Síntesis y almacenamiento</h3>
+      <ul>
+        <li>Se generan <strong>oxitocina y ADH</strong> en las <strong>células magnocelulares</strong> de los núcleos <strong>paraventricular y supraóptico</strong>.</li>
+        <li>Estas <strong>preprohormonas</strong> se introducen en <strong>gránulos de secreción</strong> y viajan por <strong>mecanismo microtubular</strong>.</li>
+        <li>Se almacenan en los <strong>cuerpos de Herring</strong>, en la neurohipófisis.</li>
+        <li>La liberación de ADH es desencadenada por la <strong>osmolaridad plasmática</strong> y el <strong>volumen circulante efectivo</strong>.</li>
+      </ul>
+
+      <h3>Vasopresina</h3>
+      <p>Hormona peptídica de <strong><span class="dato">9 aminoácidos</span></strong> cuya función principal es <strong>concentrar la orina</strong>. Está implicada en el control de la <strong>osmolalidad plasmática, el volumen plasmático y la tensión arterial</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 392" role="img" aria-label="Cascada de acción de la hormona antidiurética. Un aumento de la osmolalidad plasmática por encima de 290 miliosmoles por kilogramo, o una caída del volumen circulante efectivo, es detectado por los osmorreceptores hipotalámicos. Eso desencadena la liberación de vasopresina desde la neurohipófisis, donde estaba almacenada en los cuerpos de Herring. La vasopresina se une al receptor V2 del túbulo distal y colector, que es una proteína G. Esa unión moviliza la acuaporina 2 preformada desde la reserva citoplasmática hasta la membrana apical. El resultado es la reabsorción pasiva de agua y una orina concentrada. Los tres receptores de la hormona son el V1 vascular, el V2 renal y el V3 hipofisario. Las acuaporinas son la 1 en túbulo proximal, cerebro y ojos, la 2 en el túbulo colector, que es la que moviliza la hormona, y la 3 en estómago, intestino y vejiga.">
+          <defs>
+            <marker id="pta-adh" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="14" y="36" width="380" height="54" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="58" font-size="12.5" font-weight="700" fill="currentColor">Estímulo</text>
+          <text x="30" y="76" font-size="11.5" fill="currentColor" opacity="0.8">Osm plasmática &gt; 290 mOsm/kg o ↓ del volumen</text>
+
+          <line x1="204" y1="90" x2="204" y2="106" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-adh)"></line>
+          <text x="212" y="103" font-size="10.5" fill="currentColor" opacity="0.65">lo detectan</text>
+
+          <rect x="14" y="108" width="380" height="54" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="130" font-size="12.5" font-weight="700" fill="currentColor">Liberación de AVP</text>
+          <text x="30" y="148" font-size="11.5" fill="currentColor" opacity="0.8">Desde la neurohipófisis · cuerpos de Herring</text>
+
+          <line x1="204" y1="162" x2="204" y2="178" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-adh)"></line>
+          <text x="212" y="175" font-size="10.5" fill="currentColor" opacity="0.65">se une a</text>
+
+          <rect x="14" y="180" width="380" height="54" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="30" y="202" font-size="12.5" font-weight="700" fill="currentColor">Receptor V2</text>
+          <text x="30" y="220" font-size="11.5" fill="currentColor" opacity="0.8">Túbulo distal y colector · proteína G</text>
+
+          <line x1="204" y1="234" x2="204" y2="250" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-adh)"></line>
+          <text x="212" y="247" font-size="10.5" fill="currentColor" opacity="0.65">moviliza</text>
+
+          <rect x="14" y="252" width="380" height="54" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="30" y="274" font-size="12.5" font-weight="700" fill="currentColor">Acuaporina 2</text>
+          <text x="30" y="292" font-size="11.5" fill="currentColor" opacity="0.8">Del citoplasma a la membrana apical</text>
+
+          <line x1="204" y1="306" x2="204" y2="322" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-adh)"></line>
+          <text x="212" y="319" font-size="10.5" fill="currentColor" opacity="0.65">permite</text>
+
+          <rect x="14" y="324" width="380" height="54" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="346" font-size="12.5" font-weight="700" fill="currentColor">Reabsorción pasiva de agua</text>
+          <text x="30" y="364" font-size="11.5" fill="currentColor" opacity="0.8">Orina concentrada · osmolaridad urinaria alta</text>
+
+          <rect x="414" y="36" width="272" height="150" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="430" y="60" font-size="11.5" font-weight="700" fill="currentColor">Receptores de la ADH</text>
+          <text x="430" y="86" font-size="11" font-weight="700" fill="currentColor">V1 · vascular</text>
+          <text x="430" y="104" font-size="11" fill="currentColor" opacity="0.75">Vasoconstricción</text>
+          <text x="430" y="128" font-size="11" font-weight="700" fill="currentColor">V2 · renal</text>
+          <text x="430" y="146" font-size="11" fill="currentColor" opacity="0.75">Túbulo distal y colector</text>
+          <text x="430" y="170" font-size="11" font-weight="700" fill="currentColor">V3 · hipofisario</text>
+
+          <rect x="414" y="206" width="272" height="172" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="430" y="230" font-size="11.5" font-weight="700" fill="currentColor">Acuaporinas</text>
+          <text x="430" y="256" font-size="11" font-weight="700" fill="currentColor">AQP1 · túbulo proximal,</text>
+          <text x="430" y="274" font-size="11" fill="currentColor" opacity="0.75">cerebro y ojos</text>
+          <text x="430" y="298" font-size="11" font-weight="700" fill="currentColor">AQP2 · túbulo colector</text>
+          <text x="430" y="316" font-size="11" fill="currentColor" opacity="0.75">Es la que moviliza la ADH</text>
+          <text x="430" y="340" font-size="11" font-weight="700" fill="currentColor">AQP3 · estómago,</text>
+          <text x="430" y="358" font-size="11" fill="currentColor" opacity="0.75">intestino y vejiga</text>
+        </svg>
+        <figcaption>Toda la enfermedad se entiende desde esta cascada: la <strong>DI central</strong> falla arriba —no hay hormona— y la <strong>nefrogénica</strong> falla abajo —hay hormona pero el receptor V2 no responde—. Por eso una corrige con desmopresina y la otra no.</figcaption>
+      </figure>
+
+      <h3>Regulación</h3>
+      <ul>
+        <li>La AVP se halla regulada principalmente por la <strong>osmolalidad plasmática</strong> y el <strong>volumen circulante efectivo</strong>.</li>
+        <li>El <strong>sodio</strong> es el catión predominante del compartimento extracelular y, por tanto, el <strong>principal determinante de la osmolalidad plasmática</strong>.</li>
+        <li>Los <strong>osmorreceptores hipotalámicos</strong> mantienen la osmolalidad plasmática entre <strong><span class="dato">280 y 290 mOsm/kg</span></strong> modificando la secreción de AVP:
+          <ul>
+            <li><strong>Por debajo de 280 mOsm/kg</strong> la secreción está <strong>máximamente inhibida</strong>.</li>
+            <li><strong>Por encima de 290 mOsm/kg</strong> se estimula al máximo la secreción de AVP, así como los <strong>osmorreceptores de la sed</strong>.</li>
+          </ul>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-fisiopatologia" id="definicion">
+      <span class="seccion__pestana"><b>02</b> Definición</span>
+      <h2 class="seccion__titulo">Definición &amp; Clasificación</h2>
+
+      <p>Enfermedad caracterizada por la <strong>incapacidad total o parcial de concentrar la orina</strong>. Se presenta con <strong>grandes volúmenes de orina diluida</strong> y <strong>polidipsia compensatoria</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Criterio</th><th>Valor</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Es un estado de</td><td><strong>Poliuria hipotónica</strong></td></tr>
+            <tr><td><strong>Volumen urinario</strong></td><td><strong>&gt; <span class="dato">50 – 60 mL/kg/día</span></strong></td></tr>
+            <tr><td><strong>Osmolaridad urinaria</strong></td><td><strong>&lt; <span class="dato">300 mOsm/kg</span></strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Las cuatro entidades</h3>
+      <p>Las cuatro comparten el <strong>síndrome polidípsico-poliúrico</strong>, pero el defecto está en un lugar distinto en cada una. Esa diferencia es la que las pruebas dinámicas se encargan de revelar.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 350" role="img" aria-label="Matriz comparativa de las cuatro entidades del síndrome polidípsico-poliúrico. En la diabetes insípida central la hormona antidiurética está baja porque no se sintetiza ni se secreta, no concentra con la deshidratación quedando la osmolaridad urinaria por debajo de 300, y sube más del cincuenta por ciento con desmopresina. En la nefrogénica la hormona es normal o alta pero el túbulo no responde por alteración del receptor V2, tampoco concentra con la deshidratación, y no sube con desmopresina. En la gestacional la hormona se degrada por la vasopresinasa placentaria, no concentra, pero sí responde a la desmopresina porque esta resiste la enzima. En la polidipsia primaria la hormona está suprimida por la ingesta excesiva de agua, sí concentra con la deshidratación superando los 600, y no sube más con desmopresina porque ya había concentrado.">
+          <text x="200" y="28" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">DI</text>
+          <text x="200" y="44" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">central</text>
+          <text x="340" y="28" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">DI</text>
+          <text x="340" y="44" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">nefrogénica</text>
+          <text x="480" y="28" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">DI</text>
+          <text x="480" y="44" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">gestacional</text>
+          <text x="620" y="28" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">Polidipsia</text>
+          <text x="620" y="44" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">primaria</text>
+
+          <text x="14" y="96" font-size="11.5" font-weight="700" fill="currentColor">ADH</text>
+          <rect x="134" y="56" width="132" height="64" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="200" y="94" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">↓ baja</text>
+          <rect x="274" y="56" width="132" height="64" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="340" y="94" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">normal o ↑</text>
+          <rect x="414" y="56" width="132" height="64" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2"></rect>
+          <text x="480" y="94" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">↓ degradada</text>
+          <rect x="554" y="56" width="132" height="64" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2"></rect>
+          <text x="620" y="94" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">↓ suprimida</text>
+
+          <text x="14" y="168" font-size="11.5" font-weight="700" fill="currentColor">Defecto</text>
+          <rect x="134" y="128" width="132" height="64" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2"></rect>
+          <text x="200" y="154" font-size="10.5" fill="currentColor" opacity="0.85" text-anchor="middle">No se sintetiza</text>
+          <text x="200" y="172" font-size="10.5" fill="currentColor" opacity="0.85" text-anchor="middle">ni se secreta</text>
+          <rect x="274" y="128" width="132" height="64" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2"></rect>
+          <text x="340" y="154" font-size="10.5" fill="currentColor" opacity="0.85" text-anchor="middle">El túbulo no</text>
+          <text x="340" y="172" font-size="10.5" fill="currentColor" opacity="0.85" text-anchor="middle">responde (V2)</text>
+          <rect x="414" y="128" width="132" height="64" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2"></rect>
+          <text x="480" y="154" font-size="10.5" fill="currentColor" opacity="0.85" text-anchor="middle">Vasopresinasa</text>
+          <text x="480" y="172" font-size="10.5" fill="currentColor" opacity="0.85" text-anchor="middle">placentaria</text>
+          <rect x="554" y="128" width="132" height="64" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2"></rect>
+          <text x="620" y="154" font-size="10.5" fill="currentColor" opacity="0.85" text-anchor="middle">Ingesta excesiva</text>
+          <text x="620" y="172" font-size="10.5" fill="currentColor" opacity="0.85" text-anchor="middle">de agua</text>
+
+          <text x="14" y="240" font-size="11.5" font-weight="700" fill="currentColor">Privación</text>
+          <text x="14" y="256" font-size="11.5" font-weight="700" fill="currentColor">de agua</text>
+          <rect x="134" y="200" width="132" height="64" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2"></rect>
+          <text x="200" y="226" font-size="10.5" fill="currentColor" opacity="0.85" text-anchor="middle">No concentra</text>
+          <text x="200" y="244" font-size="10.5" fill="currentColor" opacity="0.85" text-anchor="middle">OsmU &lt; 300</text>
+          <rect x="274" y="200" width="132" height="64" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2"></rect>
+          <text x="340" y="226" font-size="10.5" fill="currentColor" opacity="0.85" text-anchor="middle">No concentra</text>
+          <text x="340" y="244" font-size="10.5" fill="currentColor" opacity="0.85" text-anchor="middle">OsmU &lt; 300</text>
+          <rect x="414" y="200" width="132" height="64" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2"></rect>
+          <text x="480" y="236" font-size="10.5" fill="currentColor" opacity="0.85" text-anchor="middle">No concentra</text>
+          <rect x="554" y="200" width="132" height="64" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="620" y="226" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">Sí concentra</text>
+          <text x="620" y="244" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">OsmU &gt; 600</text>
+
+          <text x="14" y="312" font-size="11.5" font-weight="700" fill="currentColor">Desmopresina</text>
+          <rect x="134" y="272" width="132" height="64" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="200" y="298" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">Sube &gt; 50 %</text>
+          <text x="200" y="316" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">(al doble)</text>
+          <rect x="274" y="272" width="132" height="64" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2"></rect>
+          <text x="340" y="298" font-size="10.5" fill="currentColor" opacity="0.85" text-anchor="middle">No sube</text>
+          <text x="340" y="316" font-size="10.5" fill="currentColor" opacity="0.85" text-anchor="middle">(&lt; 10 %)</text>
+          <rect x="414" y="272" width="132" height="64" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2"></rect>
+          <text x="480" y="308" font-size="10.5" fill="currentColor" opacity="0.85" text-anchor="middle">Sí responde</text>
+          <rect x="554" y="272" width="132" height="64" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2"></rect>
+          <text x="620" y="298" font-size="10.5" fill="currentColor" opacity="0.85" text-anchor="middle">No sube más</text>
+          <text x="620" y="316" font-size="10.5" fill="currentColor" opacity="0.85" text-anchor="middle">(ya concentró)</text>
+        </svg>
+        <figcaption>Las dos filas de abajo son el examen entero. La <strong>polidipsia primaria concentra con la privación de agua</strong> —eso ya la separa de las tres DI—; entre central y nefrogénica decide la <strong>desmopresina</strong>.</figcaption>
+      </figure>
+
+      <p class="cita">Profundización: la <strong>DI gestacional responde a la desmopresina</strong> aunque el defecto sea la degradación de la hormona, porque la desmopresina es <strong>resistente a la vasopresinasa placentaria</strong>. Ese detalle no figura en el material de cátedra y explica por qué el tratamiento funciona. Fuente: Harrison, Principios de Medicina Interna, capítulo de trastornos de la neurohipófisis.</p>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-clinica" id="central">
+      <span class="seccion__pestana"><b>03</b> Central</span>
+      <h2 class="seccion__titulo">Diabetes Insípida Central</h2>
+
+      <ul>
+        <li>Causada por la <strong>incapacidad de secretar —o sintetizar— ADH</strong>.</li>
+        <li>Requiere <strong>daño en las células magnocelulares del <span class="dato">80 – 90 %</span></strong>: hace falta perder casi toda la reserva para que aparezca la clínica.</li>
+        <li>También puede deberse a <strong>daño en los osmostatos del tercer ventrículo</strong>.</li>
+        <li>Es de <strong>instalación más brusca</strong> que la nefrogénica.</li>
+      </ul>
+
+      <h3>Etiología</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Causa</th><th>Frecuencia</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Idiopática</strong></td><td><span class="dato">25 – 30 %</span></td></tr>
+            <tr><td><strong>Traumatismo craneoencefálico</strong></td><td><span class="dato">20 – 25 %</span></td></tr>
+            <tr><td><strong>Tumores hipofisarios o cerebrales</strong></td><td><span class="dato">15 – 20 %</span></td></tr>
+            <tr><td><strong>Cirugía transcraneal</strong></td><td><span class="dato">15 – 20 %</span></td></tr>
+            <tr><td>Enfermedades infiltrativas: <strong>sarcoidosis</strong>, <strong>amiloidosis</strong></td><td>—</td></tr>
+            <tr><td>Lesiones vasculares · encefalopatía hipóxica</td><td>—</td></tr>
+            <tr>
+              <td><strong>Congénitas</strong></td>
+              <td><strong>DI familiar</strong>: autosómica dominante, mutación en la prohormona<br><strong>Síndrome de Wolfram</strong>: autosómica recesiva</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Nota: el material escribe «síndrome de Wolfman». El nombre correcto es <strong>síndrome de Wolfram</strong>, también conocido por el acrónimo <strong>DIDMOAD</strong> — <em>diabetes insípida, diabetes mellitus, atrofia óptica y sordera</em>. Fuente: Harrison, Principios de Medicina Interna.</p>
+
+      <h3>Patrones según el curso evolutivo</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Patrón</th><th>Descripción</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Transitoria</strong></td>
+              <td>Aparece a las <strong><span class="dato">24 – 48 h</span> de la cirugía</strong> y <strong>resuelve durante los 10 días siguientes</strong>. Se produce por <strong>disfunción transitoria</strong> de las neuronas productoras de AVP, como consecuencia del traumatismo de la manipulación quirúrgica o de la <strong>reducción del aporte sanguíneo</strong> al tallo y la hipófisis posterior</td>
+            </tr>
+            <tr>
+              <td><strong>Permanente</strong></td>
+              <td>Cuando <strong>más del <span class="dato">80 – 90 %</span> de las neuronas hipotalámicas productoras de AVP degeneran</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Trifásica</strong></td>
+              <td>Relativamente <strong>infrecuente</strong>: <span class="dato">1,1 %</span> de los pacientes. Ver el esquema</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 280" role="img" aria-label="Línea de tiempo del patrón trifásico postquirúrgico, que aparece en el uno coma uno por ciento de los pacientes. La primera fase dura de cinco a siete días y es una diabetes insípida con poliuria hipotónica por disfunción de las neuronas, con riesgo de hipernatremia, y se trata con desmopresina si es necesaria. La segunda fase dura de dos a catorce días y es un síndrome de secreción inadecuada de hormona antidiurética, por liberación incontrolada de vasopresina desde las terminaciones nerviosas degeneradas, con riesgo de hiponatremia, por lo que hay que suspender la desmopresina. La tercera fase es la reaparición de la diabetes insípida, con frecuencia permanente, una vez agotados los depósitos de vasopresina y con un número insuficiente de neuronas capaces de sintetizarla.">
+          <defs>
+            <marker id="pta-tri" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <text x="14" y="30" font-size="11.5" font-weight="700" fill="currentColor">Patrón trifásico postquirúrgico · aparece en el 1,1 % de los pacientes</text>
+
+          <rect x="16" y="52" width="218" height="175" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="32" y="76" font-size="12.5" font-weight="700" fill="currentColor">FASE 1 · DI</text>
+          <text x="32" y="98" font-size="11" font-weight="700" fill="currentColor">Días 0 – 7</text>
+          <text x="32" y="124" font-size="10.5" fill="currentColor" opacity="0.85">Poliuria hipotónica por</text>
+          <text x="32" y="142" font-size="10.5" fill="currentColor" opacity="0.85">disfunción de las neuronas</text>
+          <text x="32" y="168" font-size="10.5" font-weight="700" fill="currentColor">Riesgo: hipernatremia</text>
+          <text x="32" y="194" font-size="10.5" fill="currentColor" opacity="0.85">Desmopresina si</text>
+          <text x="32" y="212" font-size="10.5" fill="currentColor" opacity="0.85">es necesaria</text>
+
+          <rect x="242" y="52" width="218" height="175" rx="3" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="258" y="76" font-size="12.5" font-weight="700" fill="currentColor">FASE 2 · SIADH</text>
+          <text x="258" y="98" font-size="11" font-weight="700" fill="currentColor">2 – 14 días</text>
+          <text x="258" y="124" font-size="10.5" fill="currentColor" opacity="0.85">Liberación incontrolada de</text>
+          <text x="258" y="142" font-size="10.5" fill="currentColor" opacity="0.85">AVP desde terminaciones</text>
+          <text x="258" y="160" font-size="10.5" fill="currentColor" opacity="0.85">nerviosas degeneradas</text>
+          <text x="258" y="186" font-size="10.5" font-weight="700" fill="currentColor">Riesgo: HIPOnatremia</text>
+          <text x="258" y="212" font-size="10.5" font-weight="700" fill="currentColor">Suspender desmopresina</text>
+
+          <rect x="468" y="52" width="218" height="175" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="484" y="76" font-size="12.5" font-weight="700" fill="currentColor">FASE 3 · DI</text>
+          <text x="484" y="98" font-size="11" font-weight="700" fill="currentColor">Con frecuencia permanente</text>
+          <text x="484" y="124" font-size="10.5" fill="currentColor" opacity="0.85">Depósitos de AVP agotados</text>
+          <text x="484" y="142" font-size="10.5" fill="currentColor" opacity="0.85">y número de neuronas</text>
+          <text x="484" y="160" font-size="10.5" fill="currentColor" opacity="0.85">insuficiente para sintetizarla</text>
+          <text x="484" y="186" font-size="10.5" font-weight="700" fill="currentColor">Tratamiento crónico</text>
+
+          <line x1="16" y1="246" x2="672" y2="246" stroke="currentColor" stroke-width="1.5" stroke-opacity="0.5" marker-end="url(#pta-tri)"></line>
+          <text x="350" y="268" font-size="10.5" fill="currentColor" opacity="0.65" text-anchor="middle">tiempo desde la cirugía</text>
+        </svg>
+        <figcaption>La <strong>fase 2 es la trampa</strong>: el paciente pasa de hipernatrémico a hiponatrémico. Si se sigue dando desmopresina por inercia, se agrava la hiponatremia.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-diagnostico" id="otras">
+      <span class="seccion__pestana"><b>04</b> Otras tres</span>
+      <h2 class="seccion__titulo">Las Otras Tres Entidades</h2>
+
+      <h3>Diabetes insípida nefrogénica</h3>
+      <ul>
+        <li><strong>Incapacidad de las células del túbulo colector para responder a la ADH</strong>, de forma <strong>parcial o total</strong>.</li>
+        <li>Cambios en la <strong>osmolaridad de la médula renal</strong>.</li>
+        <li><strong>Alteración del receptor V2.</strong></li>
+        <li>Es de <strong>instalación más lenta</strong> que la central.</li>
+      </ul>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Grupo etiológico</th><th>Causas</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Hipercalcemia</strong> y <strong>fármacos</strong><br><strong>Causa más común en adultos</strong></td>
+              <td><strong>Litio</strong> · demeclociclina · fluorados · ofloxacino · orlistat</td>
+            </tr>
+            <tr>
+              <td>Enfermedades túbulo-intersticiales</td>
+              <td>Sarcoidosis · pielonefritis · mieloma múltiple</td>
+            </tr>
+            <tr>
+              <td><strong>Mutaciones en V2</strong> y <strong>mutaciones en AQP2</strong><br><strong>Causa más común en niños</strong></td>
+              <td>Formas congénitas</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>La distinción de edad es la que más rinde: en el <strong>adulto</strong> la primera sospecha son los <strong>fármacos y la hipercalcemia</strong>; en el <strong>niño</strong>, las <strong>mutaciones</strong> del receptor o del canal.</p>
+
+      <h3>Diabetes insípida gestacional</h3>
+      <ul>
+        <li>Aquella que <strong>se desarrolla en el embarazo</strong>.</li>
+        <li>Causada por el <strong>aumento en el metabolismo de la ADH</strong>.</li>
+        <li><strong>Revierte a las pocas semanas</strong> de culminado el embarazo.</li>
+      </ul>
+
+      <h3>Polidipsia primaria</h3>
+      <p>Generada por la <strong>ingesta excesiva de líquidos</strong>, que supera la acción de la ADH. Hay <strong>producción suprimida de ADH</strong> y <strong>supresión de la AQP2</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Forma</th><th>Mecanismo y causas</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Diabetes insípida dipsógena</strong></td>
+              <td><strong>Alteración en los osmostatos</strong>, que produce en el paciente una <strong>sed excesiva</strong>: idiopática, traumatismo craneoencefálico, tumores hipotalámicos, enfermedades infiltrativas</td>
+            </tr>
+            <tr>
+              <td><strong>Polidipsia primaria psicógena</strong></td>
+              <td>Generada por <strong>alteraciones psiquiátricas</strong>: esquizofrenia, trastorno obsesivo-compulsivo, manías</td>
+            </tr>
+            <tr>
+              <td><strong>Polidipsia primaria iatrógena</strong></td>
+              <td>Generada por <strong>recomendaciones de tomar altas cantidades de agua</strong> por motivos supuestamente benéficos, o por costumbre de tomar gran cantidad de agua</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>Siempre realizar estudio de imagen antes de diagnosticar polidipsia primaria.</strong> La forma <strong>dipsógena</strong> se debe a una lesión de los osmostatos —tumor, infiltración, trauma— y etiquetarla como psicógena sin imagen deja sin diagnosticar la lesión de base.</p>
+      </div>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-tratamiento" id="clinica">
+      <span class="seccion__pestana"><b>05</b> Clínica</span>
+      <h2 class="seccion__titulo">Clínica &amp; Diagnóstico</h2>
+
+      <h3>Manifestaciones clínicas</h3>
+      <ul>
+        <li><strong>Poliuria</strong> de <span class="dato">3 a 18 litros</span> por día.</li>
+        <li><strong>Sed excesiva</strong> — <strong>ausente en los pacientes con daño en los osmostatos</strong>, que es lo que los hace peligrosos: no tienen el mecanismo compensador.</li>
+        <li><strong>Polidipsia</strong> y <strong>nicturia</strong>.</li>
+        <li><strong>Hipernatremia</strong> — aunque los pacientes con <strong>polidipsia primaria pueden tener incluso hiponatremia</strong>.</li>
+        <li><strong>Hiperuricemia.</strong></li>
+        <li><strong>Lesión renal aguda.</strong></li>
+      </ul>
+
+      <h3>Diagnóstico clínico</h3>
+      <p>Hay que <strong>pensar en DI en todos los pacientes con poliuria significativa</strong> — más de <span class="dato">50 mL/kg/día</span> — y con <strong>nicturia</strong>. El interrogatorio debe cubrir:</p>
+      <ul>
+        <li><strong>Ingesta de agua y por qué motivo la realiza</strong> — es lo que distingue la polidipsia primaria.</li>
+        <li>Antecedente de <strong>cirugía intracraneana</strong> y de <strong>traumatismo craneoencefálico</strong>.</li>
+        <li><strong>Pérdida de campos visuales</strong> — orienta a lesión selar.</li>
+        <li><strong>Enfermedades concomitantes</strong>, <strong>uso de medicamentos</strong> y <strong>antecedentes heredofamiliares</strong>.</li>
+      </ul>
+
+      <h3>Laboratorio</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Parámetro</th><th>Hallazgo</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Diuresis</strong></td><td>Elevada, generalmente <strong>&gt; <span class="dato">40 – 50 mL/kg/día</span></strong> en adultos — normalmente 3 a 3,5 L/día</td></tr>
+            <tr><td><strong>Ritmo horario</strong></td><td>Un volumen de orina <strong>&gt; <span class="dato">200 – 300 mL/hora</span> durante 2 – 3 horas consecutivas</strong> es un indicador razonable para sospechar el diagnóstico</td></tr>
+            <tr><td><strong>Osmolalidad urinaria</strong></td><td><strong>&lt; <span class="dato">300 mOsm/kg</span></strong>, o inapropiadamente baja en relación con la plasmática</td></tr>
+            <tr><td><strong>Plasma</strong></td><td><strong>Hiperosmolaridad sérica</strong> e <strong>hipernatremia</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Cálculo de la osmolaridad urinaria</h3>
+      <p>El material aporta dos fórmulas equivalentes:</p>
+      <ul>
+        <li><span class="dato">OsmU = 2 × (Na⁺ orina + K⁺ orina) + glucosa/18 + BUN/2,8</span></li>
+        <li><span class="dato">OsmU = 2 × [Na⁺ orina (mmol/L) + K⁺ orina (mmol/L)] + urea en orina (mg/dL) / 5,8</span></li>
+      </ul>
+      <p>La diferencia entre ambas es sólo el manejo del nitrógeno: la primera usa <strong>BUN</strong> y la segunda <strong>urea</strong>, y por eso cambian el divisor.</p>
+
+      <h3>Diagnóstico diferencial</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Entidad</th><th>Por qué confunde</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Poliuria osmótica</strong></td>
+              <td>Debida a la <strong>glucosuria</strong> en pacientes con hiperglucemia. La <strong>osmolaridad urinaria puede resultar falsamente incrementada</strong> por la glucosuria, y la <strong>natremia estar más baja</strong> en presencia de hiperglucemia</td>
+            </tr>
+            <tr>
+              <td><strong>Exceso de líquidos endovenosos</strong></td>
+              <td>La excreción durante el <strong>postoperatorio</strong> de una administración excesiva de líquidos en el período perioperatorio. <strong>Es muy frecuente</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Acromegalia</strong></td>
+              <td>Se puede producir <strong>incremento de la diuresis tras la resección del adenoma</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-diferenciales" id="pruebas">
+      <span class="seccion__pestana"><b>06</b> Pruebas</span>
+      <h2 class="seccion__titulo">Pruebas Dinámicas</h2>
+
+      <h3>Prueba de deshidratación — test de Miller</h3>
+      <p>Se realiza <strong>sólo en pacientes que cursan únicamente con polidipsia y poliuria</strong>, sin otros hallazgos.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 372" role="img" aria-label="Test de Miller o prueba de deshidratación, paso a paso. Se realiza sólo en pacientes que cursan con polidipsia y poliuria aisladas. Primer paso, preparación: hospitalizar al paciente, privarlo de agua, pesarlo y medir la osmolaridad urinaria y el volumen de orina. Segundo paso, seguimiento: repesar y medir osmolaridad urinaria y volumen cada hora, o cada litro que el paciente orine. Tercer paso, criterio de finalización: pérdida de más del dos por ciento del peso, o tres muestras consecutivas con menos del diez por ciento de variación de osmolaridad entre ellas. Cuarto paso: medir sodio y osmolaridad plasmática y administrar desmopresina, cuatro microgramos por vía intravenosa o diez microgramos por vía intranasal.">
+          <defs>
+            <marker id="pta-mil" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="70" y="8" width="560" height="44" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.25" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="350" y="35" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">Sólo en pacientes que cursan con polidipsia y poliuria aisladas</text>
+
+          <rect x="70" y="64" width="560" height="56" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="86" y="90" font-size="12.5" font-weight="700" fill="currentColor">1 · Preparación</text>
+          <text x="86" y="110" font-size="11.5" fill="currentColor" opacity="0.85">Hospitalizar · privar de agua · pesar · medir OsmU y volumen de orina</text>
+
+          <line x1="350" y1="120" x2="350" y2="136" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-mil)"></line>
+          <text x="358" y="133" font-size="10.5" fill="currentColor" opacity="0.65">luego</text>
+
+          <rect x="70" y="140" width="560" height="56" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="86" y="166" font-size="12.5" font-weight="700" fill="currentColor">2 · Seguimiento</text>
+          <text x="86" y="186" font-size="11.5" fill="currentColor" opacity="0.85">Repesar y medir OsmU y volumen cada hora, o cada litro que orine</text>
+
+          <line x1="350" y1="196" x2="350" y2="212" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-mil)"></line>
+          <text x="358" y="209" font-size="10.5" fill="currentColor" opacity="0.65">hasta</text>
+
+          <rect x="70" y="216" width="560" height="64" rx="3" fill="var(--c)" fill-opacity="0.26" stroke="var(--c)" stroke-width="2.2"></rect>
+          <text x="86" y="240" font-size="12.5" font-weight="700" fill="currentColor">3 · Criterio de finalización</text>
+          <text x="86" y="260" font-size="11.5" fill="currentColor" opacity="0.85">Pérdida &gt; 2 % del peso, o 3 muestras consecutivas</text>
+          <text x="86" y="276" font-size="11.5" fill="currentColor" opacity="0.85">con &lt; 10 % de variación de osmolaridad entre ellas</text>
+
+          <line x1="350" y1="280" x2="350" y2="296" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-mil)"></line>
+          <text x="358" y="293" font-size="10.5" fill="currentColor" opacity="0.65">entonces</text>
+
+          <rect x="70" y="300" width="560" height="56" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="86" y="326" font-size="12.5" font-weight="700" fill="currentColor">4 · Desmopresina</text>
+          <text x="86" y="346" font-size="11.5" fill="currentColor" opacity="0.85">Medir Na y osmolaridad plasmática · desmopresina 4 µg IV o 10 µg intranasal</text>
+        </svg>
+        <figcaption>El criterio de finalización tiene dos salidas: o el paciente <strong>pierde más del 2 % del peso</strong> —y hay que parar por seguridad— o la osmolaridad <strong>se estabiliza en una meseta</strong>, que indica que ya no puede concentrar más.</figcaption>
+      </figure>
+
+      <h3>Prueba con desmopresina</h3>
+      <ul>
+        <li>Ya establecido el diagnóstico de DI, se administra desmopresina y <strong>se evalúa la elevación de la osmolaridad urinaria</strong>.</li>
+        <li>Una <strong>elevación al doble</strong> indica <strong>DI central</strong>.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>La mejor prueba para diferenciar entre DI central y DI nefrogénica es la cuantificación de ADH</strong>, por encima del test de deshidratación.</p>
+      </div>
+
+      <p class="cita">Profundización: en la práctica actual esa cuantificación se hace midiendo <strong>copeptina</strong> —el fragmento C-terminal de la provasopresina, que se libera en cantidades equimolares con la AVP y es mucho más estable en plasma—. La <strong>copeptina estimulada con arginina o con solución salina hipertónica</strong> ha desplazado al test de deshidratación clásico en las guías, por mayor exactitud diagnóstica y mejor tolerancia. Una copeptina basal &gt; 21,4 pmol/L identifica la DI nefrogénica sin necesidad de estímulo. Fuente: Fenske W et al., <em>A copeptin-based approach in the diagnosis of diabetes insipidus</em>, N Engl J Med 2018.</p>
+
+      <h3>Diagnóstico etiológico</h3>
+      <p><strong>Resonancia magnética de hipófisis e hipotálamo.</strong></p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>El diagnóstico de <strong>diabetes insípida idiopática</strong> sólo se establece <strong>después de 4 años de seguimiento con resonancia anual</strong>. Muchas lesiones —germinomas, histiocitosis, infiltraciones— se hacen visibles recién con el tiempo.</p>
+      </div>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-importantes" id="tratamiento">
+      <span class="seccion__pestana"><b>07</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Tratamiento &amp; Alertas</h2>
+
+      <p>El objetivo es <strong>asegurar la restauración y/o el mantenimiento de la homeostasis osmótica</strong>. El <strong>tratamiento farmacológico se reserva</strong> para aquellos casos en que la <strong>poliuria es excesiva e incomoda al paciente</strong>, o si <strong>aparece hipernatremia</strong>.</p>
+
+      <h3>Diabetes insípida central — desmopresina</h3>
+      <p>Análogo de la AVP que <strong>interacciona exclusivamente con los receptores V2</strong>. Su administración consigue una <strong>rápida reducción de la diuresis</strong>, con una <strong>duración del efecto de <span class="dato">6 a 12 horas</span></strong>.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Vía</th><th>Dosis</th><th>Uso</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Subcutánea</strong></td><td><span class="dato">1 – 2 µg</span></td><td><strong>Muy usada en el postoperatorio inmediato</strong></td></tr>
+            <tr><td><strong>Intranasal</strong></td><td><span class="dato">10 µg</span></td><td>Mantenimiento</td></tr>
+            <tr><td><strong>Oral</strong></td><td><span class="dato">0,1 – 0,2 mg</span></td><td>Mantenimiento</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Que actúe <strong>sólo sobre V2</strong> es lo que la diferencia de la vasopresina nativa: <strong>no tiene efecto vasoconstrictor V1</strong>, y por eso no sube la presión arterial.</p>
+
+      <h3>Diabetes insípida nefrogénica</h3>
+      <p>Acá la desmopresina no sirve —el receptor no responde—, así que el abordaje es distinto:</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Medida</th><th>Mecanismo</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Quitar el factor desencadenante</strong></td>
+              <td>Es lo primero: suspender el litio u otro fármaco responsable, corregir la hipercalcemia</td>
+            </tr>
+            <tr>
+              <td><strong>Restricción de sal y proteínas</strong></td>
+              <td>Reduce la carga osmolar que el riñón debe excretar</td>
+            </tr>
+            <tr>
+              <td><strong>Tiazidas</strong><br><em>hidroclorotiazida</em></td>
+              <td>Provocan una <strong>ligera depleción de volumen</strong>, lo que <strong>paradójicamente aumenta la reabsorción de sodio y agua en el túbulo proximal</strong>, reduciendo así la cantidad de agua que llega al túbulo colector. <strong>Efecto neto: disminuye el volumen de orina</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Amilorida</strong></td>
+              <td>Diurético ahorrador de potasio que <strong>bloquea los canales de sodio en el túbulo colector</strong>. <strong>Útil especialmente en la DI nefrogénica inducida por litio</strong>, ya que <strong>protege contra la entrada de litio a las células renales</strong></td>
+            </tr>
+            <tr>
+              <td><strong>AINEs</strong><br><em>indometacina o ibuprofeno</em></td>
+              <td><strong>Inhiben la síntesis de prostaglandinas</strong>, que normalmente <strong>antagonizan la acción de la ADH</strong>. Al reducirlas se mejora parcialmente la acción residual de la hormona. Se usan como <strong>tratamiento adyuvante en casos refractarios</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Profundización sobre la corrección de la hipernatremia: en el cuadro <strong>crónico</strong> —más de 48 h— el descenso de la natremia no debe superar los <strong>10 mEq/L en 24 horas</strong> (aproximadamente 0,5 mEq/L por hora), por el riesgo de <strong>edema cerebral</strong>. Se prefiere la reposición por <strong>vía oral o enteral con agua libre</strong> cuando el paciente la tolera. Fuente: Adrogué HJ, Madias NE. Hypernatremia. N Engl J Med 2000, y Harrison, Principios de Medicina Interna.</p>
+
+      <h3>Caso del material</h3>
+      <p>Un paciente con síndrome polidípsico-poliúrico presenta, en el test de la sed, una <strong>osmolaridad urinaria de 700 mOsm/kg</strong> y, tras la administración de vasopresina, <strong>710 mOsm/kg</strong>.</p>
+      <div class="repaso">
+        <details class="fc s-importantes">
+          <summary>¿Cuál es el diagnóstico más probable?</summary>
+          <div class="fc__r"><strong>Polidipsia primaria.</strong> El razonamiento es doble: <strong>concentró bien con la privación de agua</strong> —700 mOsm/kg está muy por encima de los 300 que definen la DI—, lo cual <strong>excluye las tres formas de diabetes insípida</strong>; y <strong>no subió con la vasopresina</strong> —de 700 a 710, apenas un 1,4 %—, porque ya estaba concentrando al máximo con su propia ADH. En una <strong>DI central</strong> la osmolaridad habría sido baja y habría <strong>subido al doble</strong> con la vasopresina; en una <strong>nefrogénica</strong> habría sido baja y <strong>no habría subido</strong>.</div>
+        </details>
+      </div>
+
+      <h3>Las alertas de este cuadernillo</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Situación</th><th>Qué recordar</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Postoperatorio de cirugía hipofisaria</strong></td><td>Vigilar el <strong>patrón trifásico</strong>: en la fase 2 el paciente se <strong>hiponatremiza</strong> y hay que <strong>suspender la desmopresina</strong></td></tr>
+            <tr><td><strong>Sospecha de polidipsia primaria</strong></td><td><strong>Siempre imagen antes</strong>: la forma dipsógena esconde una lesión de los osmostatos</td></tr>
+            <tr><td><strong>DI «idiopática»</strong></td><td>Sólo se rotula así tras <strong>4 años de RM anual</strong> sin hallazgos</td></tr>
+            <tr><td><strong>Paciente sin sed</strong></td><td>Daño en osmostatos: <strong>no tiene el mecanismo compensador</strong> y es el que más riesgo de hipernatremia grave corre</td></tr>
+            <tr><td><strong>DI nefrogénica por litio</strong></td><td><strong>Amilorida</strong> es la opción de elección: bloquea la entrada de litio a la célula renal</td></tr>
+            <tr><td><strong>Poliuria con hiperglucemia</strong></td><td>Pensar en <strong>poliuria osmótica</strong>: la OsmU puede estar falsamente alta por la glucosuria</td></tr>
+            <tr><td><strong>Corrección de la hipernatremia crónica</strong></td><td>No más de <strong>10 mEq/L en 24 h</strong>, por riesgo de edema cerebral</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ Repaso activo ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>¿Dónde se sintetiza la ADH y dónde se almacena?</summary>
+          <div class="fc__r">Se sintetiza en las <strong>células magnocelulares</strong> de los núcleos <strong>paraventricular y supraóptico</strong>; viaja por <strong>mecanismo microtubular</strong> en gránulos de secreción y se almacena en los <strong>cuerpos de Herring</strong> de la neurohipófisis.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Nombrá los tres receptores de la ADH y las tres acuaporinas.</summary>
+          <div class="fc__r">Receptores: <strong>V1 vascular</strong>, <strong>V2 renal</strong> (túbulo distal y colector) y <strong>V3 hipofisario</strong>. Acuaporinas: <strong>AQP1</strong> en túbulo proximal, cerebro y ojos; <strong>AQP2</strong> en túbulo colector —la que moviliza la ADH—; <strong>AQP3</strong> en estómago, intestino y vejiga.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Entre qué valores mantienen los osmorreceptores la osmolalidad plasmática?</summary>
+          <div class="fc__r">Entre <strong>280 y 290 mOsm/kg</strong>. Por <strong>debajo de 280</strong> la secreción de AVP está <strong>máximamente inhibida</strong>; por <strong>encima de 290</strong> se estimula al máximo, junto con los osmorreceptores de la sed.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>Definí diabetes insípida con sus dos umbrales.</summary>
+          <div class="fc__r">Incapacidad total o parcial de concentrar la orina, con <strong>poliuria hipotónica</strong>: volumen urinario <strong>&gt; 50 – 60 mL/kg/día</strong> y osmolaridad urinaria <strong>&lt; 300 mOsm/kg</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué porcentaje de células magnocelulares hay que perder para que aparezca DI central?</summary>
+          <div class="fc__r"><strong>Más del 80 – 90 %.</strong> Por eso la enfermedad se manifiesta tarde en los procesos degenerativos, y de forma brusca en los agudos.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Describí las tres fases del patrón trifásico y el error a evitar.</summary>
+          <div class="fc__r"><strong>Fase 1</strong>: DI de 5 – 7 días. <strong>Fase 2</strong>: SIADH de 2 – 14 días por liberación incontrolada de AVP desde terminaciones degeneradas, con <strong>hiponatremia</strong>. <strong>Fase 3</strong>: reaparición de la DI, con frecuencia permanente. El error es <strong>seguir dando desmopresina en la fase 2</strong> y agravar la hiponatremia.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Causa más común de DI nefrogénica en adultos y en niños.</summary>
+          <div class="fc__r"><strong>Adultos</strong>: <strong>hipercalcemia y fármacos</strong> —litio, demeclociclina, fluorados, ofloxacino, orlistat—. <strong>Niños</strong>: <strong>mutaciones en V2 y en AQP2</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Cuáles son las tres formas de polidipsia primaria?</summary>
+          <div class="fc__r"><strong>Dipsógena</strong> (alteración de los osmostatos con sed excesiva), <strong>psicógena</strong> (esquizofrenia, TOC, manías) e <strong>iatrógena</strong> (recomendación o costumbre de tomar mucha agua). Siempre <strong>pedir imagen antes</strong> de rotularla.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Paciente poliúrico sin sed: ¿qué implica y por qué es grave?</summary>
+          <div class="fc__r">Implica <strong>daño en los osmostatos</strong>. Es grave porque <strong>pierde el mecanismo compensador</strong>: no bebe para reponer y desarrolla <strong>hipernatremia severa</strong>.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Poliuria con hiperglucemia: ¿por qué puede confundir?</summary>
+          <div class="fc__r">Es <strong>poliuria osmótica</strong> por glucosuria. La <strong>osmolaridad urinaria puede resultar falsamente incrementada</strong> por la glucosa, y la <strong>natremia estar más baja</strong> por el efecto dilucional de la hiperglucemia.</div>
+        </details>
+
+        <details class="fc s-diferenciales">
+          <summary>Test de la sed: OsmU 700, y tras vasopresina 710. ¿Diagnóstico?</summary>
+          <div class="fc__r"><strong>Polidipsia primaria.</strong> Concentró bien con la privación —700 excluye la DI— y no subió con la vasopresina porque ya estaba al máximo con su propia ADH.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Por qué la amilorida es de elección en la DI nefrogénica por litio?</summary>
+          <div class="fc__r">Porque <strong>bloquea los canales de sodio del túbulo colector</strong>, que son la puerta de entrada del litio a la célula renal: <strong>protege contra su entrada</strong>, además de reducir la diuresis.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Definición clave</dt>
+        <dd><strong>Poliuria hipotónica</strong>: volumen urinario <strong>&gt; 50 – 60 mL/kg/día</strong> con <strong>osmolaridad urinaria &lt; 300 mOsm/kg</strong>, más polidipsia compensatoria. Clínica: poliuria de 3 a 18 L, nicturia, hipernatremia — y <strong>sed ausente si hay daño osmostático</strong>.</dd>
+
+        <dt class="r-gold">Estudio de elección</dt>
+        <dd><strong>Test de Miller</strong>: privación de agua hasta perder &gt; 2 % del peso o alcanzar meseta de osmolaridad, y luego <strong>desmopresina 4 µg IV o 10 µg intranasal</strong>. La mejor prueba para separar central de nefrogénica es la <strong>cuantificación de ADH</strong> —hoy, copeptina—. Etiología: <strong>RM de hipófisis e hipotálamo</strong>.</dd>
+
+        <dt class="r-tto">Tratamiento de 1ª línea</dt>
+        <dd><strong>Central</strong>: desmopresina — SC 1 – 2 µg, intranasal 10 µg, oral 0,1 – 0,2 mg; efecto de 6 – 12 h. <strong>Nefrogénica</strong>: quitar el desencadenante, restricción de sal y proteínas, <strong>tiazidas</strong>, <strong>amilorida</strong> (de elección si es por litio) y <strong>AINEs</strong> en refractarios.</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd><strong>Patrón trifásico</strong> postquirúrgico: en la fase 2 hay <strong>SIADH e hiponatremia</strong> — suspender la desmopresina. <strong>Imagen antes</strong> de diagnosticar polidipsia primaria. La <strong>idiopática</strong> exige 4 años de RM anual. Corregir la hipernatremia crónica <strong>≤ 10 mEq/L en 24 h</strong>.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir del material de cátedra «Diabetes Insípida» del Dr. Malco Rubin (Medicina Interna III, 2026), complementado con Harrison, Principios de Medicina Interna. Material de estudio: no reemplaza el criterio clínico ni la guía institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link'));
+
+  function porMeta(hash){
+    for (var i = 0; i < enlaces.length; i++){
+      if (enlaces[i].getAttribute('href') === '#' + hash) return enlaces[i];
+    }
+    return null;
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var enlace = porMeta(e.target.id);
+        if (!enlace) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          enlace.setAttribute('aria-current', 'true');
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>

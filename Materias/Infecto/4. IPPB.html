@@ -1,0 +1,1414 @@
+<title>Infecciones de Piel y Partes Blandas</title>
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+}
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índice lateral ---------- */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Ficha de sección ---------- */
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.35rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-row:1/3; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+.importante__titulo{
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso{ display:none !important; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Base</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-generalidades" href="#mapa">Mapa de profundidad</a></li>
+    </ul>
+    <p class="indice__rotulo" style="margin-top:1.2rem">Erisipela</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-generalidades" href="#eri-base">Definición &amp; Epidemiología</a></li>
+      <li><a class="indice__link i-clinica"       href="#eri-clinica">Clínica &amp; Diagnóstico</a></li>
+    </ul>
+    <p class="indice__rotulo" style="margin-top:1.2rem">Celulitis</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-generalidades" href="#cel-base">Definición &amp; Epidemiología</a></li>
+      <li><a class="indice__link i-clinica"       href="#cel-clinica">Clínica &amp; Diagnóstico</a></li>
+      <li><a class="indice__link i-tratamiento"   href="#cel-tratamiento">Tratamiento (con erisipela)</a></li>
+    </ul>
+    <p class="indice__rotulo" style="margin-top:1.2rem">Impétigo</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-generalidades" href="#imp-base">Definición &amp; Clínica</a></li>
+      <li><a class="indice__link i-tratamiento"   href="#imp-tratamiento">Tratamiento</a></li>
+    </ul>
+    <p class="indice__rotulo" style="margin-top:1.2rem">Forunculosis</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-generalidades" href="#for-base">Definición &amp; Clínica</a></li>
+      <li><a class="indice__link i-tratamiento"   href="#for-tratamiento">Tratamiento</a></li>
+    </ul>
+    <p class="indice__rotulo" style="margin-top:1.2rem">Necrotizantes</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-generalidades" href="#nec-base">Definición &amp; Etiología</a></li>
+      <li><a class="indice__link i-diagnostico"   href="#nec-diagnostico">Diagnóstico</a></li>
+      <li><a class="indice__link i-importantes"   href="#nec-tratamiento">Tratamiento &amp; Alerta</a></li>
+    </ul>
+    <p class="indice__rotulo" style="margin-top:1.2rem">Cierre</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-diferenciales" href="#diferenciales">Diagnósticos Diferenciales</a></li>
+      <li><a class="indice__link i-clinica"       href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"   href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Infectología · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Infecciones de Piel y Partes Blandas</h1>
+      <p class="portada__bajada">Impétigo, forúnculo, erisipela, celulitis e infecciones necrotizantes. Cinco entidades que se ordenan por una sola variable: <strong>hasta qué capa llegó la infección</strong>. Esa profundidad decide el germen, el estudio y si hace falta un quirófano.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">5 entidades por profundidad</span>
+        <span class="etiqueta s-clinica">Bordes netos vs difusos</span>
+        <span class="etiqueta s-tratamiento">Algoritmo SAMR</span>
+        <span class="etiqueta s-importantes">Sin cirugía, mortalidad 100 %</span>
+      </div>
+    </header>
+
+    <!-- ═══════════ MAPA ═══════════ -->
+    <section class="seccion s-generalidades" id="mapa">
+      <span class="seccion__pestana"><b>00</b> Base</span>
+      <h2 class="seccion__titulo">El mapa que ordena todo el tema</h2>
+
+      <p>Las infecciones de piel y partes blandas <strong>no se distinguen por el germen</strong> —casi todas son <em>S. pyogenes</em> o <em>S. aureus</em>— sino por <strong>la capa que comprometen</strong>. Esa profundidad es la que determina el aspecto de la lesión, si cura con o sin cicatriz, y sobre todo <strong>si alcanza con antibiótico o hace falta cirugía</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 430" role="img" aria-label="Mapa de las infecciones de piel y partes blandas según la capa anatómica comprometida. La epidermis corresponde al impétigo, piodermitis superficial que cura sin cicatriz y forma costras melicéricas. La dermis superficial y los vasos linfáticos corresponden a la erisipela, placa de bordes netos no sobreelevada con adenopatía regional. El folículo piloso en su parte profunda corresponde al forúnculo, que desorganiza la dermis y cura con cicatriz. El tejido celular subcutáneo corresponde a la celulitis, sin límites netos, que es la diferencia con la erisipela. La fascia superficial y muscular corresponde a la celulitis necrotizante, que compromete piel y tejido celular subcutáneo sin alcanzar la fascia muscular, y a la fascitis necrotizante, que compromete fascia superficial y muscular. La masa muscular corresponde a la mionecrosis, proceso agudo sumamente tóxico de progresión rápida y potencialmente fatal.">
+          <text x="10" y="26" font-size="12.5" font-weight="700" fill="currentColor">De la superficie a la profundidad — cada capa tiene su entidad</text>
+
+          <rect x="10" y="48" width="680" height="56" rx="3" fill="var(--c)" fill-opacity="0.06" stroke="var(--c)" stroke-width="1.3"></rect>
+          <line x1="250" y1="48" x2="250" y2="104" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></line>
+          <text x="26" y="82" font-size="11.5" font-weight="700" fill="currentColor">Epidermis</text>
+          <text x="266" y="74" font-size="12.5" font-weight="700" fill="currentColor">IMPÉTIGO</text>
+          <text x="266" y="93" font-size="10.5" fill="currentColor" opacity="0.8">Piodermitis superficial · cura SIN cicatriz · costras melicéricas</text>
+
+          <rect x="10" y="108" width="680" height="56" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.3"></rect>
+          <line x1="250" y1="108" x2="250" y2="164" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></line>
+          <text x="26" y="136" font-size="11.5" font-weight="700" fill="currentColor">Dermis superficial y</text>
+          <text x="26" y="152" font-size="11.5" font-weight="700" fill="currentColor">vasos linfáticos</text>
+          <text x="266" y="134" font-size="12.5" font-weight="700" fill="currentColor">ERISIPELA</text>
+          <text x="266" y="153" font-size="10.5" fill="currentColor" opacity="0.8">Placa de BORDES NETOS, no sobreelevada · adenopatía regional</text>
+
+          <rect x="10" y="168" width="680" height="56" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="1.3"></rect>
+          <line x1="250" y1="168" x2="250" y2="224" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></line>
+          <text x="26" y="196" font-size="11.5" font-weight="700" fill="currentColor">Folículo piloso,</text>
+          <text x="26" y="212" font-size="11.5" font-weight="700" fill="currentColor">parte profunda</text>
+          <text x="266" y="194" font-size="12.5" font-weight="700" fill="currentColor">FORÚNCULO</text>
+          <text x="266" y="213" font-size="10.5" fill="currentColor" opacity="0.8">Desorganiza la dermis · cura CON cicatriz · drena al exterior</text>
+
+          <rect x="10" y="228" width="680" height="56" rx="3" fill="var(--c)" fill-opacity="0.18" stroke="var(--c)" stroke-width="1.3"></rect>
+          <line x1="250" y1="228" x2="250" y2="284" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></line>
+          <text x="26" y="256" font-size="11.5" font-weight="700" fill="currentColor">Tejido celular</text>
+          <text x="26" y="272" font-size="11.5" font-weight="700" fill="currentColor">subcutáneo (TCS)</text>
+          <text x="266" y="254" font-size="12.5" font-weight="700" fill="currentColor">CELULITIS</text>
+          <text x="266" y="273" font-size="10.5" fill="currentColor" opacity="0.8">SIN límites netos — ésa es la diferencia con la erisipela</text>
+
+          <rect x="10" y="288" width="680" height="72" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2"></rect>
+          <line x1="250" y1="288" x2="250" y2="360" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></line>
+          <text x="26" y="318" font-size="11.5" font-weight="700" fill="currentColor">Fascia superficial</text>
+          <text x="26" y="334" font-size="11.5" font-weight="700" fill="currentColor">y muscular</text>
+          <text x="266" y="312" font-size="11.5" font-weight="700" fill="currentColor">CELULITIS NECROTIZANTE</text>
+          <text x="266" y="329" font-size="10.5" fill="currentColor" opacity="0.8">Piel y TCS, sin alcanzar la fascia muscular</text>
+          <text x="266" y="350" font-size="11.5" font-weight="700" fill="currentColor">FASCITIS NECROTIZANTE — fascia superficial Y muscular</text>
+
+          <rect x="10" y="364" width="680" height="56" rx="3" fill="var(--c)" fill-opacity="0.26" stroke="var(--c)" stroke-width="2.5"></rect>
+          <line x1="250" y1="364" x2="250" y2="420" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></line>
+          <text x="26" y="398" font-size="11.5" font-weight="700" fill="currentColor">Masa muscular</text>
+          <text x="266" y="390" font-size="12.5" font-weight="700" fill="currentColor">MIONECROSIS</text>
+          <text x="266" y="409" font-size="10.5" fill="currentColor" opacity="0.8">Agudo, sumamente tóxico, de progresión rápida y potencialmente fatal</text>
+        </svg>
+        <figcaption>Las cuatro primeras filas se resuelven con antibiótico. Las dos últimas requieren quirófano: es la línea que hay que saber dónde está.</figcaption>
+      </figure>
+
+      <p class="cita">Fuente: clase «Infecciones de piel y partes blandas» de la Dra. Macarena Pérez, residente de 2.º año de Infectología del HTJS.</p>
+    </section>
+
+    <!-- ═══════════ ERISIPELA ═══════════ -->
+    <section class="seccion s-generalidades" id="eri-base">
+      <span class="seccion__pestana"><b>01</b> Erisipela</span>
+      <h2 class="seccion__titulo">Erisipela — Definición &amp; Epidemiología</h2>
+
+      <p>Infección aguda que compromete la <strong>dermis superficial y los vasos linfáticos subyacentes</strong>.</p>
+
+      <h3>Lesión característica</h3>
+      <ul>
+        <li><strong>Placa edematosa y caliente</strong>, de <strong>bordes netos</strong> y <strong>no sobreelevada</strong>.</li>
+        <li>Puede ser <strong>eritematosa</strong>, <strong>eritemato-purpúrica</strong>, <strong>ampollar</strong> o a veces <strong>necrótica</strong>.</li>
+        <li><strong>Adenopatía regional</strong> — el compromiso linfático es parte de la definición.</li>
+      </ul>
+
+      <h3>Localización y etiología</h3>
+      <ul>
+        <li>Más frecuente en <strong>miembros inferiores</strong>. También en la <strong>cara</strong>, pero con menor frecuencia.</li>
+        <li><strong>Etiología:</strong> <em>S. pyogenes</em> y <strong>estafilococos</strong>, principalmente.</li>
+      </ul>
+
+      <h3>Fisiopatología</h3>
+      <p>Se necesitan <strong>dos condiciones simultáneas</strong>: <strong>colonización de la piel</strong> más <strong>disrupción de la barrera mecánica</strong> — trauma, <strong>intertrigo</strong> u <strong>onicomicosis</strong>. Ésa es la razón por la que tratar la puerta de entrada es parte del tratamiento y no un detalle.</p>
+
+      <h3>Factores de riesgo</h3>
+      <ul>
+        <li><strong>Obesidad.</strong></li>
+        <li><strong>Insuficiencia venosa.</strong></li>
+        <li><strong>Diabetes.</strong></li>
+        <li><strong>Enolismo</strong> (alcoholismo).</li>
+        <li><strong>Cirrosis.</strong></li>
+      </ul>
+
+      <p class="cita">Fuente: clase «Infecciones de piel y partes blandas» de la cátedra de Infectología, HTJS.</p>
+    </section>
+
+    <section class="seccion s-clinica" id="eri-clinica">
+      <span class="seccion__pestana"><b>02</b> Erisipela</span>
+      <h2 class="seccion__titulo">Erisipela — Clínica &amp; Diagnóstico</h2>
+
+      <h3>Manifestaciones sistémicas</h3>
+      <ul>
+        <li>Puede presentarse con <strong>hipertermia</strong> y <strong>taquicardia</strong>.</li>
+        <li>En <strong>casos severos</strong> asocia <strong>confusión</strong> e <strong>hipotensión</strong>, además de la lesión de piel.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>La erisipela con <strong>confusión e hipotensión</strong> es un cuadro <strong>GRAVE con criterio de internación</strong>. La lesión cutánea puede verse igual: lo que cambia la conducta es el estado general del paciente.</p>
+      </div>
+
+      <h3>Diagnóstico</h3>
+      <ul>
+        <li><strong>El diagnóstico es CLÍNICO.</strong> <strong>No son necesarios los estudios complementarios.</strong></li>
+        <li><strong>Laboratorio</strong> (cuando se pide): <strong>leucocitosis</strong>, <strong>VSG acelerada</strong> y <strong>PCR aumentada</strong>.</li>
+        <li><strong>Hemocultivos:</strong> son positivos en <strong>menos del <span class="dato">5 %</span></strong> de los casos, por lo que <strong>NO están indicados</strong> — excepto en <strong>cuadros invasivos por <em>S. pyogenes</em></strong>.</li>
+      </ul>
+
+      <p class="cita">Fuente: clase «Infecciones de piel y partes blandas» de la cátedra de Infectología, HTJS.</p>
+    </section>
+
+    <!-- ═══════════ CELULITIS ═══════════ -->
+    <section class="seccion s-generalidades" id="cel-base">
+      <span class="seccion__pestana"><b>01</b> Celulitis</span>
+      <h2 class="seccion__titulo">Celulitis — Definición &amp; Epidemiología</h2>
+
+      <p>Infección aguda que compromete el <strong>tejido celular subcutáneo (TCS)</strong>, y que se presenta <strong>SIN límites netos</strong>. Ésa es <strong>la diferencia con la erisipela</strong>.</p>
+
+      <h3>Etiología</h3>
+      <ul>
+        <li><strong><em>S. pyogenes</em> y <em>S. aureus</em></strong>, igual que la erisipela.</li>
+        <li><strong>Dependiendo de la puerta de entrada puede modificarse el patógeno</strong>: por ejemplo, en <strong>mordeduras</strong> y en <strong>adictos a drogas endovenosas (ADIV)</strong> aumenta el riesgo de <strong>bacilos gramnegativos</strong>.</li>
+      </ul>
+
+      <h3>Factores de riesgo</h3>
+      <ul>
+        <li><strong>Disrupción de la barrera cutánea.</strong></li>
+        <li><strong>Diabetes</strong> y <strong>obesidad</strong>.</li>
+        <li><strong>Edemas crónicos.</strong></li>
+        <li><strong>Alcoholismo.</strong></li>
+        <li><strong>Inmunosupresión.</strong></li>
+        <li><strong>Adictos a drogas endovenosas (ADIV).</strong></li>
+        <li><strong>Picaduras</strong> y <strong>mordeduras</strong>.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>Según la localización aumenta su gravedad.</strong> El ejemplo clásico es la <strong>celulitis orbitaria frente a la periorbitaria</strong>: la misma infección cambia radicalmente de pronóstico según de qué lado del septo orbitario esté.</p>
+      </div>
+
+      <p class="cita">Fuente: clase «Infecciones de piel y partes blandas» de la cátedra de Infectología, HTJS.</p>
+    </section>
+
+    <section class="seccion s-clinica" id="cel-clinica">
+      <span class="seccion__pestana"><b>02</b> Celulitis</span>
+      <h2 class="seccion__titulo">Celulitis — Clínica &amp; Diagnóstico</h2>
+
+      <h3>Presentación</h3>
+      <ul>
+        <li><strong>Inicio brusco</strong>, con <strong>edema</strong>, <strong>eritema</strong>, <strong>aumento de temperatura</strong>, <strong>dolor</strong> y <strong>límites poco definidos</strong>.</li>
+        <li><strong>Síntomas sistémicos:</strong> <strong>fiebre</strong> y <strong>escalofríos</strong>. El <strong>shock es infrecuente</strong>.</li>
+      </ul>
+
+      <h3>Diagnóstico</h3>
+      <p><strong>El diagnóstico es clínico.</strong> Los estudios se piden para responder preguntas puntuales, no para confirmar la celulitis.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Estudio</th><th>Cuándo se pide</th><th>Rendimiento</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Radiografía</strong></td>
+              <td>Ante <strong>sospecha de infección necrotizante</strong></td>
+              <td>Busca <strong>presencia de gas</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Ecografía y TAC</strong></td>
+              <td>Ante <strong>sospecha de colecciones</strong></td>
+              <td>Definen si hay algo para drenar</td>
+            </tr>
+            <tr>
+              <td><strong>Hemocultivos</strong></td>
+              <td><strong>No son útiles de rutina</strong> en inmunocompetentes. Indicados en <strong>inmunocomprometidos</strong>, <strong>mayores de 65 años</strong>, <strong>signos de gravedad</strong> y <strong>shock</strong></td>
+              <td>Positivos en el <span class="dato">2 – 5 %</span> de los casos</td>
+            </tr>
+            <tr>
+              <td><strong>Cultivo por punción</strong></td>
+              <td>Sólo en <strong>inmunocomprometidos</strong>, <strong>presentación atípica</strong>, <strong>gérmenes atípicos</strong> y <strong>cuadros severos</strong></td>
+              <td><strong>Bajo rédito</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Fuente: clase «Infecciones de piel y partes blandas» de la cátedra de Infectología, HTJS.</p>
+    </section>
+
+    <section class="seccion s-tratamiento" id="cel-tratamiento">
+      <span class="seccion__pestana"><b>03</b> Celulitis + Erisipela</span>
+      <h2 class="seccion__titulo">Erisipela y Celulitis — Tratamiento</h2>
+
+      <p>Las dos comparten esquema porque comparten los dos gérmenes que hay que cubrir: <strong><em>S. pyogenes</em> y <em>S. aureus</em></strong>. Lo que decide el esquema concreto son otras dos preguntas: <strong>¿es leve o grave?</strong> y <strong>¿hay factores de riesgo para SAMR?</strong></p>
+
+      <h3>Criterios de internación</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Categoría</th><th>Criterios</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Gravedad del cuadro</strong></td>
+              <td><strong>Hipotensión</strong> · <strong>compromiso del estado general</strong> · <strong>fallo renal</strong> · <strong>acidosis</strong> · <strong>leucocitosis con formas inmaduras</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Factores locales</strong></td>
+              <td><strong>Heridas penetrantes</strong> · posibilidad de <strong>gérmenes infrecuentes</strong> · <strong>dudas diagnósticas</strong> por presencia de <strong>colecciones</strong> o sospecha de <strong>infección necrotizante</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Comorbilidades</strong></td>
+              <td><strong>Diabetes</strong> · <strong>inmunosupresión</strong> · <strong>obesidad</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 392" role="img" aria-label="Algoritmo de tratamiento antibiótico de las infecciones de piel y partes blandas. En el cuadro leve de manejo ambulatorio, sin factores de riesgo para SAMR se indica cefalexina un gramo cada doce horas por siete a catorce días; con factores de riesgo para SAMR, minociclina cien miligramos cada doce horas o trimetoprima sulfametoxazol forte un comprimido cada doce horas, por siete a catorce días. En el cuadro grave con internación, sin factores de riesgo para SAMR se indica cefalotina uno a dos gramos cada seis horas por siete a catorce días; con factores de riesgo para SAMR, vancomicina uno o dos gramos por siete a catorce días. En ambas ramas, si hay mala evolución en el control de las cuarenta y ocho a setenta y dos horas se pasa al esquema con cobertura para SAMR.">
+          <defs>
+            <marker id="pta-ippb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="280" y="8" width="140" height="38" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--ct)" stroke-width="2.5"></rect>
+          <text x="350" y="33" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">IPPB</text>
+
+          <line x1="350" y1="46" x2="350" y2="62" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="175" y1="62" x2="525" y2="62" stroke="currentColor" stroke-width="1.5"></line>
+          <line x1="175" y1="62" x2="175" y2="80" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ippb)"></line>
+          <line x1="525" y1="62" x2="525" y2="80" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ippb)"></line>
+
+          <rect x="10" y="82" width="330" height="34" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.45" stroke-width="1.4"></rect>
+          <text x="175" y="105" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">LEVE — manejo ambulatorio</text>
+
+          <rect x="360" y="82" width="330" height="34" rx="3" fill="var(--c)" fill-opacity="0.9"></rect>
+          <text x="525" y="105" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">GRAVE — internación</text>
+
+          <rect x="20" y="128" width="310" height="76" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="36" y="150" font-size="11" font-weight="700" fill="currentColor">SIN factores de riesgo para SAMR</text>
+          <text x="36" y="174" font-size="12" font-weight="700" fill="currentColor">CEFALEXINA 1 g c/12 h</text>
+          <text x="36" y="194" font-size="10.5" fill="currentColor" opacity="0.8">7 – 14 días</text>
+
+          <rect x="370" y="128" width="310" height="76" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"></rect>
+          <text x="386" y="150" font-size="11" font-weight="700" fill="currentColor">SIN factores de riesgo para SAMR</text>
+          <text x="386" y="174" font-size="12" font-weight="700" fill="currentColor">CEFALOTINA 1 – 2 g c/6 h EV</text>
+          <text x="386" y="194" font-size="10.5" fill="currentColor" opacity="0.8">7 – 14 días</text>
+
+          <line x1="175" y1="204" x2="175" y2="228" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ippb)"></line>
+          <line x1="525" y1="204" x2="525" y2="228" stroke="currentColor" stroke-width="1.5" marker-end="url(#pta-ippb)"></line>
+          <text x="185" y="221" font-size="10" fill="currentColor" opacity="0.7">mala evolución · control 48 – 72 h</text>
+          <text x="535" y="221" font-size="10" fill="currentColor" opacity="0.7">mala evolución · control 48 – 72 h</text>
+
+          <rect x="20" y="230" width="310" height="96" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="36" y="252" font-size="11" font-weight="700" fill="currentColor">CON factores de riesgo para SAMR</text>
+          <text x="36" y="276" font-size="12" font-weight="700" fill="currentColor">MINOCICLINA 100 mg c/12 h</text>
+          <text x="36" y="296" font-size="12" font-weight="700" fill="currentColor">o TMS FORTE 1 comp c/12 h</text>
+          <text x="36" y="316" font-size="10.5" fill="currentColor" opacity="0.8">7 – 14 días · vía oral</text>
+
+          <rect x="370" y="230" width="310" height="96" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="386" y="252" font-size="11" font-weight="700" fill="currentColor">CON factores de riesgo para SAMR</text>
+          <text x="386" y="276" font-size="12" font-weight="700" fill="currentColor">VANCOMICINA 1 o 2 g</text>
+          <text x="386" y="296" font-size="10.5" fill="currentColor" opacity="0.8">7 – 14 días</text>
+          <text x="386" y="316" font-size="10.5" fill="currentColor" opacity="0.8">También en alérgicos y signos de gravedad</text>
+
+          <rect x="10" y="344" width="680" height="42" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.28" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="26" y="364" font-size="11" font-weight="700" fill="currentColor">En los casos graves se agrega CLINDAMICINA 600 mg c/6 h como inmunomodulador</text>
+          <text x="26" y="380" font-size="10.5" fill="currentColor" opacity="0.78">Y siempre: elevación del miembro afectado + tratamiento de la puerta de entrada para evitar recidivas.</text>
+        </svg>
+        <figcaption>Dos preguntas resuelven el esquema. La mala evolución a las 48 – 72 h no cambia de familia: mueve al paciente a la columna que cubre SAMR.</figcaption>
+      </figure>
+
+      <h3>Esquemas y dosis</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Fármaco</th><th>Dosis y vía</th><th>Indicación</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Cefalexina</strong></td><td>VO 500 mg c/6 h — o <strong>1 g c/12 h</strong></td><td>Cuadro <strong>leve</strong>, sin factores de riesgo para SAMR</td></tr>
+            <tr><td><strong>Cefalotina</strong></td><td>EV 1 g c/4 – 6 h — o <strong>1 – 2 g c/6 h</strong></td><td>Cuadro <strong>grave</strong>, internado, sin factores de riesgo para SAMR</td></tr>
+            <tr><td><strong>TMS FORTE</strong></td><td>VO 1 comprimido c/12 h</td><td><strong>Mala evolución</strong> con tratamiento antibiótico o <strong>sospecha de colonización por SAMR</strong></td></tr>
+            <tr><td><strong>Minociclina</strong></td><td>VO 100 mg c/12 h</td><td><strong>Mala evolución</strong> o <strong>sospecha de SAMR</strong></td></tr>
+            <tr><td><strong>Vancomicina</strong></td><td>15 – 20 mg/kg c/8 – 12 h — o 1 a 2 g</td><td><strong>Casos graves</strong>, <strong>alérgicos</strong>, <strong>fallas de tratamiento</strong> y <strong>signos de gravedad</strong></td></tr>
+            <tr><td><strong>Clindamicina</strong></td><td>600 mg c/6 h</td><td>Se <strong>agrega</strong> en casos graves como <strong>inmunomodulador</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Medidas que no son antibiótico</h3>
+      <ul>
+        <li><strong>Duración total: <span class="dato">7 – 14 días</span>.</strong></li>
+        <li><strong>Elevación del miembro afectado.</strong></li>
+        <li><strong>Tratamiento de la puerta de entrada</strong> —intertrigo, onicomicosis, herida— <strong>para evitar recidivas</strong>. Sin esto el paciente vuelve.</li>
+        <li><strong>Control a las 48 – 72 h</strong> para evaluar la respuesta.</li>
+      </ul>
+
+      <p class="cita">Fuente: clase «Infecciones de piel y partes blandas» de la cátedra de Infectología, HTJS. La presentación consigna la cefalexina con dos posologías equivalentes en distintas diapositivas (500 mg c/6 h y 1 g c/12 h); se reproducen ambas.</p>
+    </section>
+
+    <!-- ═══════════ IMPÉTIGO ═══════════ -->
+    <section class="seccion s-generalidades" id="imp-base">
+      <span class="seccion__pestana"><b>01</b> Impétigo</span>
+      <h2 class="seccion__titulo">Impétigo — Definición, Clínica &amp; Diagnóstico</h2>
+
+      <p><strong>Piodermitis superficial que afecta la epidermis y cura SIN cicatriz.</strong> Es la más superficial de las cinco entidades, y esa profundidad explica todo lo demás.</p>
+
+      <h3>Fisiopatología</h3>
+      <p><strong>Colonización de la piel</strong> → <strong>puerta de entrada</strong> → <strong>lesión que se rompe</strong> → <strong>el líquido se deseca y forma costras melicéricas</strong>. Es <strong>altamente transmisible por contacto directo</strong>, y el propio paciente se <strong>autoinocula</strong>.</p>
+
+      <h3>Los dos tipos</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Rasgo</th><th>No ampollar</th><th>Ampollar</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Frecuencia</strong></td><td><strong>Es el más frecuente</strong></td><td>Menos frecuente</td></tr>
+            <tr><td><strong>Etiología</strong></td><td><em>S. pyogenes</em> y <em>S. aureus</em> (<span class="dato">70 %</span>)</td><td><strong>Siempre <em>S. aureus</em></strong>, por toxina</td></tr>
+            <tr><td><strong>Mecanismo</strong></td><td>Colonización y ruptura de la lesión</td><td><strong>Toxinas exfoliativas A y B</strong> del <em>S. aureus</em></td></tr>
+            <tr><td><strong>Lesión</strong></td><td><strong>Ampollas epidérmicas que no se ven</strong> y que rápidamente se rompen y se cubren de <strong>costras</strong></td><td>Ampollas visibles — es un <strong>síndrome de la piel escaldada localizado</strong></td></tr>
+            <tr><td><strong>Evolución</strong></td><td>Cura sin cicatriz</td><td><strong>Sin tratamiento puede complicarse</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Localización y diagnóstico</h3>
+      <ul>
+        <li>Se encuentra principalmente en <strong>zonas expuestas: cara y extremidades</strong>.</li>
+        <li><strong>El diagnóstico es clínico.</strong></li>
+        <li><strong>No es útil la determinación de ASTO.</strong></li>
+      </ul>
+
+      <p class="cita">Fuente: clase «Infecciones de piel y partes blandas» de la cátedra de Infectología, HTJS.</p>
+    </section>
+
+    <section class="seccion s-tratamiento" id="imp-tratamiento">
+      <span class="seccion__pestana"><b>02</b> Impétigo</span>
+      <h2 class="seccion__titulo">Impétigo — Tratamiento</h2>
+
+      <p>La cobertura apunta <strong>principalmente a <em>S. aureus</em></strong>. Lo que decide entre tópico y sistémico es la <strong>extensión</strong> y la presencia de <strong>síntomas sistémicos</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Vía</th><th>Fármacos</th><th>Cuándo</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Tópico</strong></td>
+              <td><strong>Ácido fusídico</strong> o <strong>mupirocina</strong> — <span class="dato">3 veces por día</span> durante <span class="dato">7 días</span></td>
+              <td><strong>Áreas limitadas</strong>, tipo <strong>no bulloso</strong>. Su eficacia es <strong>similar al tratamiento sistémico</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Sistémico</strong></td>
+              <td><strong>Cefalosporinas de 1.ª generación</strong> o <strong>amoxicilina-clavulánico</strong></td>
+              <td><strong>Mayor superficie corporal</strong> comprometida o presencia de <strong>síntomas sistémicos</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>En áreas limitadas y en el tipo no bulloso, el <strong>tratamiento tópico tiene eficacia similar al sistémico</strong>: no hace falta antibiótico por boca. Y como el impétigo es <strong>altamente transmisible por contacto directo</strong>, las medidas de higiene y evitar el rascado —que produce <strong>autoinoculación</strong>— son parte del tratamiento.</p>
+      </div>
+
+      <p class="cita">Fuente: clase «Infecciones de piel y partes blandas» de la cátedra de Infectología, HTJS.</p>
+    </section>
+
+    <!-- ═══════════ FORUNCULOSIS ═══════════ -->
+    <section class="seccion s-generalidades" id="for-base">
+      <span class="seccion__pestana"><b>01</b> Forunculosis</span>
+      <h2 class="seccion__titulo">Forunculosis — Definición &amp; Clínica</h2>
+
+      <h3>Definiciones</h3>
+      <ul>
+        <li><strong>Forúnculo:</strong> infección aguda del <strong>folículo piloso en su parte más profunda</strong>, con <strong>perifoliculitis</strong>. <strong>Desorganiza la dermis y cura con cicatriz.</strong> Es un <strong>nódulo que se origina de una foliculitis</strong> y que <strong>tiene tendencia a drenar al exterior</strong>.</li>
+        <li><strong>Forunculosis:</strong> <strong>aparición repetida o simultánea de varios forúnculos</strong>.</li>
+        <li><strong>Etiología: <em>S. aureus</em>.</strong></li>
+      </ul>
+
+      <h3>Evolución de la lesión</h3>
+      <p>Comienza como un <strong>nódulo inflamatorio, rojo y doloroso</strong>, <strong>centrado por el orificio de un folículo piloso</strong>. Luego de unos días <strong>se absceda</strong>, evoluciona con <strong>necrosis central</strong>, <strong>drena</strong> y <strong>cura con cicatriz</strong>.</p>
+
+      <h3>Factores de riesgo</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Locales</th><th>Generales</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Zonas pilosas y de roce</strong>, oclusión y transpiración</td>
+              <td><strong>Obesidad</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Disrupciones de la barrera cutánea por rascado</strong></td>
+              <td><strong>Defectos en la función de los neutrófilos</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Transpiración excesiva</strong> y <strong>falta de higiene</strong></td>
+              <td><strong>Tratamiento con corticoides</strong> · <strong>inmunosupresión</strong> · <strong>diabetes</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Fuente: clase «Infecciones de piel y partes blandas» de la cátedra de Infectología, HTJS.</p>
+    </section>
+
+    <section class="seccion s-tratamiento" id="for-tratamiento">
+      <span class="seccion__pestana"><b>02</b> Forunculosis</span>
+      <h2 class="seccion__titulo">Forunculosis — Tratamiento</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Escenario</th><th>Conducta</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Lesiones pequeñas</strong></td>
+              <td><strong>Tratamiento local:</strong> agua y jabón, y eventualmente <strong>calor húmedo</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Lesiones de mayor tamaño</strong></td>
+              <td><strong>Eventual drenaje quirúrgico</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Celulitis circundante o compromiso sistémico</strong></td>
+              <td><strong>Tratamiento sistémico</strong> con <strong>cefalosporina de 1.ª generación</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Colonización</strong> (forunculosis a repetición)</td>
+              <td><strong>Mupirocina nasal</strong> cada <span class="dato">12 h</span> los <strong>primeros 5 días de cada mes</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>El tratamiento sistémico no suele ser necesario</strong> a menos que haya <strong>celulitis circundante</strong> o <strong>compromiso sistémico</strong>. Frente a la <strong>forunculosis a repetición</strong>, lo que hay que atacar no es cada lesión sino la <strong>colonización nasal por <em>S. aureus</em></strong>, con mupirocina cíclica.</p>
+      </div>
+
+      <p class="cita">Fuente: clase «Infecciones de piel y partes blandas» de la cátedra de Infectología, HTJS.</p>
+    </section>
+
+    <!-- ═══════════ NECROTIZANTES ═══════════ -->
+    <section class="seccion s-generalidades" id="nec-base">
+      <span class="seccion__pestana"><b>01</b> Necrotizantes</span>
+      <h2 class="seccion__titulo">Infecciones Necrotizantes — Definición &amp; Etiología</h2>
+
+      <p><strong>Infecciones graves con elevada morbimortalidad</strong> que requieren <strong>tratamiento quirúrgico y antibiótico de amplio espectro empírico precoz</strong>. El tratamiento es <strong>similar entre todas</strong>; lo importante es <strong>diferenciar precozmente</strong> la infección grave que necesita quirófano del cuadro no grave que evoluciona bien con drenaje y antibiótico.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 332" role="img" aria-label="Las tres infecciones necrotizantes según la profundidad y su etiología. La celulitis necrotizante compromete piel y tejido celular subcutáneo, es decir la fascia superficial, sin alcanzar la fascia muscular, y es un proceso rápidamente progresivo con necrosis extensa. La fascitis necrotizante compromete fascia superficial y muscular. La mionecrosis compromete la masa muscular y es un proceso agudo sumamente tóxico, de progresión rápida y potencialmente fatal. En cuanto a la etiología, en inmunocompetentes predominan Streptococcus pyogenes y Staphylococcus aureus; los procesos pueden ser monomicrobianos, mediados por toxinas, o polimicrobianos, por sinergismo entre aerobios y anaerobios.">
+          <rect x="10" y="8" width="390" height="96" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="26" y="32" font-size="12.5" font-weight="700" fill="currentColor">CELULITIS NECROTIZANTE</text>
+          <text x="26" y="56" font-size="10.5" fill="currentColor" opacity="0.85">Compromete piel y TCS (fascia superficial)</text>
+          <text x="26" y="74" font-size="10.5" font-weight="700" fill="currentColor">SIN alcanzar la fascia muscular</text>
+          <text x="26" y="94" font-size="10.5" fill="currentColor" opacity="0.85">Rápidamente progresivo, con necrosis extensa</text>
+
+          <rect x="10" y="116" width="390" height="96" rx="3" fill="var(--c)" fill-opacity="0.20" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="26" y="140" font-size="12.5" font-weight="700" fill="currentColor">FASCITIS NECROTIZANTE (FN)</text>
+          <text x="26" y="164" font-size="10.5" fill="currentColor" opacity="0.85">Compromete la fascia superficial</text>
+          <text x="26" y="182" font-size="10.5" font-weight="700" fill="currentColor">Y TAMBIÉN la fascia muscular</text>
+          <text x="26" y="202" font-size="10.5" fill="currentColor" opacity="0.85">Es la que da nombre al grupo</text>
+
+          <rect x="10" y="224" width="390" height="96" rx="3" fill="var(--c)" fill-opacity="0.28" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="26" y="248" font-size="12.5" font-weight="700" fill="currentColor">MIONECROSIS</text>
+          <text x="26" y="272" font-size="10.5" fill="currentColor" opacity="0.85">Compromete la masa muscular</text>
+          <text x="26" y="292" font-size="10.5" font-weight="700" fill="currentColor">Agudo, sumamente tóxico</text>
+          <text x="26" y="310" font-size="10.5" fill="currentColor" opacity="0.85">Progresión rápida y potencialmente fatal</text>
+
+          <rect x="416" y="8" width="274" height="312" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.3" stroke-dasharray="5 3"></rect>
+          <text x="432" y="32" font-size="12" font-weight="700" fill="currentColor">Etiología</text>
+          <text x="432" y="56" font-size="10.5" fill="currentColor" opacity="0.85">En inmunocompetentes:</text>
+          <text x="432" y="73" font-size="10.5" font-weight="700" fill="currentColor">S. pyogenes y S. aureus</text>
+
+          <line x1="432" y1="92" x2="674" y2="92" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+
+          <text x="432" y="114" font-size="11" font-weight="700" fill="currentColor">MONOmicrobianos</text>
+          <text x="432" y="131" font-size="10.5" fill="currentColor" opacity="0.8">Mediados por toxinas</text>
+          <text x="432" y="150" font-size="10.5" fill="currentColor" opacity="0.85">· FN por S. pyogenes</text>
+          <text x="432" y="167" font-size="10.5" fill="currentColor" opacity="0.85">· FN por S. aureus</text>
+          <text x="432" y="184" font-size="10.5" fill="currentColor" opacity="0.85">· Mionecrosis clostridial</text>
+
+          <line x1="432" y1="202" x2="674" y2="202" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+
+          <text x="432" y="224" font-size="11" font-weight="700" fill="currentColor">POLImicrobianos</text>
+          <text x="432" y="241" font-size="10.5" fill="currentColor" opacity="0.8">Sinergismo aerobios + anaerobios</text>
+          <text x="432" y="262" font-size="10.5" font-weight="700" fill="currentColor">Aerobios</text>
+          <text x="432" y="278" font-size="10.5" fill="currentColor" opacity="0.85">Enterobacterias, Streptococcus</text>
+          <text x="432" y="292" font-size="10.5" fill="currentColor" opacity="0.85">grupo A, S. aureus</text>
+          <text x="432" y="310" font-size="10.5" font-weight="700" fill="currentColor">Anaerobios: Peptostreptococcus,</text>
+        </svg>
+        <figcaption>La profundidad define el nombre, pero no cambia el tratamiento: las tres se resuelven con cirugía precoz y antibiótico de amplio espectro.</figcaption>
+      </figure>
+
+      <h3>Procesos monomicrobianos y polimicrobianos</h3>
+      <ul>
+        <li><strong>Monomicrobianos — mediados por toxinas:</strong> fascitis necrotizante por <em>S. pyogenes</em>, fascitis necrotizante por <em>S. aureus</em>, y <strong>mionecrosis clostridial</strong>.</li>
+        <li><strong>Polimicrobianos — sinergismo entre aerobios y anaerobios:</strong>
+          <ul>
+            <li><strong>Aerobios:</strong> enterobacterias, <em>Streptococcus</em> del grupo A y <em>S. aureus</em>.</li>
+            <li><strong>Anaerobios:</strong> <em>Peptostreptococcus</em> sp., grupo <em>Bacteroides fragilis</em>, <em>Prevotella</em> sp., <em>Porphyromonas</em> spp. y <em>Clostridium</em> sp.</li>
+          </ul>
+        </li>
+      </ul>
+
+      <h3>Factores de riesgo</h3>
+      <ul>
+        <li><strong>Traumas penetrantes</strong>, <strong>fracturas</strong>, <strong>inyectables</strong>.</li>
+        <li><strong>Lesiones de mucosa rectal, uretral, vaginal o gastrointestinal</strong> por procedimientos externos o cirugías.</li>
+        <li><strong>Diabetes con enfermedad vascular periférica</strong> y <strong>neutropenia</strong>.</li>
+      </ul>
+
+      <p class="cita">Fuente: clase «Infecciones de piel y partes blandas» de la cátedra de Infectología, HTJS.</p>
+    </section>
+
+    <section class="seccion s-diagnostico" id="nec-diagnostico">
+      <span class="seccion__pestana"><b>02</b> Necrotizantes</span>
+      <h2 class="seccion__titulo">Infecciones Necrotizantes — Diagnóstico</h2>
+
+      <p>El problema central del tema en una frase: <strong>es difícil discernir entre un proceso grave y una celulitis</strong>. Debe sospecharse en <strong>pacientes cuyo estado se deteriora rápidamente</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 386" role="img" aria-label="Elementos que hacen sospechar una infección necrotizante. En la clínica: dolor intenso desproporcionado, edema, eritema o palidez, fiebre, sensibilidad, necrosis de la piel, equimosis, crepitación, anestesia cutánea y deterioro rápido del estado general. En el laboratorio, los hallazgos que sugieren mal pronóstico son glóbulos blancos mayores a quince mil por milímetro cúbico, hiponatremia menor a ciento treinta y cinco miliequivalentes por litro, lactato mayor a seis milimoles por litro, proteína C reactiva aumentada y creatinina aumentada. Las imágenes no deben retrasar la intervención quirúrgica: la radiografía simple busca gas, la tomografía con contraste muestra el compromiso de la fascia y la resonancia muestra mayor intensidad de señal en T2. El diagnóstico definitivo es quirúrgico y la sospecha es clínica.">
+          <rect x="10" y="8" width="680" height="38" rx="3" fill="var(--c)" fill-opacity="0.9"></rect>
+          <text x="26" y="33" font-size="12.5" font-weight="700" fill="#FFFFFF">Sospechar cuando el estado del paciente se deteriora rápidamente</text>
+
+          <rect x="10" y="58" width="334" height="222" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="26" y="82" font-size="12" font-weight="700" fill="currentColor">CLÍNICA</text>
+          <text x="26" y="106" font-size="11" font-weight="700" fill="currentColor">· Dolor intenso DESPROPORCIONADO</text>
+          <text x="26" y="128" font-size="10.5" fill="currentColor" opacity="0.85">· Edema, eritema o palidez</text>
+          <text x="26" y="148" font-size="10.5" fill="currentColor" opacity="0.85">· Fiebre</text>
+          <text x="26" y="168" font-size="10.5" fill="currentColor" opacity="0.85">· Sensibilidad</text>
+          <text x="26" y="188" font-size="10.5" fill="currentColor" opacity="0.85">· Necrosis de la piel</text>
+          <text x="26" y="210" font-size="11" font-weight="700" fill="currentColor">· Equimosis</text>
+          <text x="26" y="230" font-size="11" font-weight="700" fill="currentColor">· Crepitación</text>
+          <text x="26" y="250" font-size="11" font-weight="700" fill="currentColor">· Anestesia cutánea</text>
+          <text x="26" y="272" font-size="10.5" fill="currentColor" opacity="0.8">Los tres últimos son los más específicos.</text>
+
+          <rect x="356" y="58" width="334" height="222" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.3"></rect>
+          <text x="372" y="82" font-size="12" font-weight="700" fill="currentColor">LABORATORIO — sugiere mal pronóstico</text>
+          <text x="372" y="106" font-size="10.5" fill="currentColor" opacity="0.85">· Glóbulos blancos &gt; 15.000/mm³</text>
+          <text x="372" y="126" font-size="10.5" fill="currentColor" opacity="0.85">· Hiponatremia &lt; 135 mEq/L</text>
+          <text x="372" y="146" font-size="10.5" fill="currentColor" opacity="0.85">· Lactato &gt; 6 mmol/L</text>
+          <text x="372" y="166" font-size="10.5" fill="currentColor" opacity="0.85">· PCR aumentada</text>
+          <text x="372" y="186" font-size="10.5" fill="currentColor" opacity="0.85">· Creatinina aumentada</text>
+          <line x1="372" y1="204" x2="674" y2="204" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="372" y="226" font-size="11" font-weight="700" fill="currentColor">IMÁGENES — sólo si hay dudas</text>
+          <text x="372" y="246" font-size="10.5" fill="currentColor" opacity="0.85">· Rx simple: presencia de gas</text>
+          <text x="372" y="264" font-size="10.5" fill="currentColor" opacity="0.85">· TAC con contraste y RNM: fascia</text>
+          <text x="372" y="276" font-size="10" font-weight="700" fill="currentColor">No deben retrasar la cirugía.</text>
+
+          <rect x="10" y="300" width="680" height="76" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="26" y="328" font-size="13" font-weight="700" fill="currentColor">El diagnóstico definitivo es QUIRÚRGICO. La sospecha es CLÍNICA.</text>
+          <text x="26" y="352" font-size="11" fill="currentColor" opacity="0.85">En el acto quirúrgico se evidencia hasta dónde ha avanzado la infección.</text>
+          <text x="26" y="370" font-size="11" font-weight="700" fill="currentColor">Ninguna imagen normal descarta el cuadro ni justifica demorar la exploración.</text>
+        </svg>
+        <figcaption>El dato clínico más traicionero es el <em>dolor desproporcionado al aspecto de la lesión</em>: aparece antes que la necrosis visible, cuando la piel todavía parece una celulitis.</figcaption>
+      </figure>
+
+      <h3>Imágenes — cuándo y para qué</h3>
+      <p>Las imágenes <strong>no deben retrasar la intervención quirúrgica</strong>; se piden <strong>cuando hay dudas</strong>.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Estudio</th><th>Hallazgo</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Radiografía simple</strong></td><td><strong>Presencia de gas</strong></td></tr>
+            <tr><td><strong>TAC con contraste</strong></td><td>Muestra el <strong>compromiso de la fascia</strong></td></tr>
+            <tr><td><strong>Resonancia magnética</strong></td><td><strong>Mayor intensidad de señal en T2</strong> y áreas de intensidad de señal anormal en la <strong>fascia profunda</strong></td></tr>
+            <tr><td><strong>Acto quirúrgico</strong></td><td><strong>Diagnóstico definitivo:</strong> se evidencia <strong>hasta dónde ha avanzado la infección</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Fuente: clase «Infecciones de piel y partes blandas» de la cátedra de Infectología, HTJS. En la diapositiva original el hallazgo tomográfico figura como «precipitación de la fascia», aparente error de tipeo; se consigna como compromiso de la fascia, que es el hallazgo descrito en la literatura.</p>
+    </section>
+
+    <section class="seccion s-importantes" id="nec-tratamiento">
+      <span class="seccion__pestana"><b>03</b> Necrotizantes</span>
+      <h2 class="seccion__titulo">Infecciones Necrotizantes — Tratamiento &amp; Alerta</h2>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>SIN CIRUGÍA LA MORTALIDAD ES DEL 100 %.</strong> El antibiótico acompaña, no reemplaza. Y la <strong>mortalidad disminuye si la intervención se realiza dentro de las <span class="dato">24 h</span> del diagnóstico</strong>.</p>
+      </div>
+
+      <h3>Tratamiento quirúrgico</h3>
+      <ul>
+        <li><strong>La mortalidad disminuye si se realiza la intervención dentro de las <span class="dato">24 h</span> del diagnóstico.</strong></li>
+        <li><strong>Intervención precoz y suficiente</strong>, hasta <strong>llegar al tejido vital</strong>.</li>
+        <li><strong>Dejar la herida abierta.</strong></li>
+        <li><strong>Control diario:</strong> <strong>repetir la intervención hasta que no haya necrosis</strong>.</li>
+      </ul>
+
+      <h3>Tratamiento antibiótico</h3>
+      <p>Cobertura de <strong>amplio espectro</strong> que cubra:</p>
+      <ul>
+        <li><strong>Cocos Gram positivos</strong>, tanto <strong>meticilino-sensibles como meticilino-resistentes</strong>.</li>
+        <li><strong>Bacilos gramnegativos.</strong></li>
+        <li><strong>Anaerobios.</strong></li>
+      </ul>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Componente</th><th>Qué cubre</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Piperacilina/tazobactam (PTZ)</strong></td><td><strong>Bacilos gramnegativos</strong> y <strong>anaerobios</strong></td></tr>
+            <tr><td><strong>Vancomicina</strong></td><td><strong>Cocos Gram positivos meticilino-resistentes</strong> (SAMR)</td></tr>
+            <tr><td><strong>Clindamicina</strong></td><td>Se agrega <strong>como antitoxina</strong> — frena la producción de toxinas de <em>S. pyogenes</em> y <em>S. aureus</em></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>El esquema que consigna la cátedra es <strong>PTZ + vancomicina + clindamicina</strong>.</p>
+
+      <h3>Por qué la clindamicina no es opcional acá</h3>
+      <p>Los <strong>procesos monomicrobianos son mediados por toxinas</strong>. Un antibiótico que sólo mata la bacteria no detiene la toxina ya producida ni la que sigue sintetizándose: la <strong>clindamicina actúa como antitoxina</strong>, y por eso se agrega aunque el esquema ya tenga cobertura antibacteriana suficiente. Es el mismo razonamiento por el que se usa como <strong>inmunomodulador</strong> en las celulitis graves.</p>
+
+      <p class="cita">Fuente: clase «Infecciones de piel y partes blandas» de la cátedra de Infectología, HTJS.</p>
+    </section>
+
+    <!-- ═══════════ DIFERENCIALES ═══════════ -->
+    <section class="seccion s-diferenciales" id="diferenciales">
+      <span class="seccion__pestana"><b>—</b> Diferenciales</span>
+      <h2 class="seccion__titulo">Diagnósticos Diferenciales entre las cinco entidades</h2>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 404" role="img" aria-label="Tabla discriminante entre las cinco entidades. Las costras melicéricas en cara o extremidades, que curan sin cicatriz, corresponden a impétigo y se tratan con mupirocina o ácido fusídico tópicos. El nódulo doloroso centrado en un folículo que se absceda y cura con cicatriz corresponde a forúnculo, con tratamiento local y drenaje si es grande. La placa eritematosa de bordes netos, no sobreelevada, con adenopatía regional, corresponde a erisipela, tratada con cefalexina por vía oral de siete a catorce días. El eritema y edema sin límites netos que compromete el tejido celular subcutáneo corresponde a celulitis, tratada con cefalexina oral o cefalotina endovenosa. El dolor desproporcionado con crepitación, equimosis, anestesia cutánea y deterioro rápido corresponde a infección necrotizante y requiere cirugía urgente más piperacilina tazobactam, vancomicina y clindamicina.">
+          <rect x="10" y="8" width="680" height="34" rx="3" fill="var(--c)" fill-opacity="0.9"></rect>
+          <text x="26" y="30" font-size="11.5" font-weight="700" fill="#FFFFFF">HALLAZGO QUE LA DEFINE</text>
+          <text x="360" y="30" font-size="11.5" font-weight="700" fill="#FFFFFF">ENTIDAD</text>
+          <text x="516" y="30" font-size="11.5" font-weight="700" fill="#FFFFFF">CONDUCTA</text>
+
+          <rect x="10" y="50" width="680" height="60" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2"></rect>
+          <line x1="344" y1="50" x2="344" y2="110" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></line>
+          <line x1="500" y1="50" x2="500" y2="110" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></line>
+          <text x="26" y="74" font-size="10.5" fill="currentColor" opacity="0.85">Costras melicéricas en cara o</text>
+          <text x="26" y="92" font-size="10.5" fill="currentColor" opacity="0.85">extremidades; cura SIN cicatriz</text>
+          <text x="360" y="86" font-size="12" font-weight="700" fill="currentColor">IMPÉTIGO</text>
+          <text x="516" y="78" font-size="10.5" fill="currentColor" opacity="0.85">Mupirocina o ácido</text>
+          <text x="516" y="94" font-size="10.5" fill="currentColor" opacity="0.85">fusídico tópicos</text>
+
+          <rect x="10" y="118" width="680" height="60" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2"></rect>
+          <line x1="344" y1="118" x2="344" y2="178" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></line>
+          <line x1="500" y1="118" x2="500" y2="178" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></line>
+          <text x="26" y="142" font-size="10.5" fill="currentColor" opacity="0.85">Nódulo doloroso centrado en un</text>
+          <text x="26" y="160" font-size="10.5" fill="currentColor" opacity="0.85">folículo; absceda y cura CON cicatriz</text>
+          <text x="360" y="154" font-size="12" font-weight="700" fill="currentColor">FORÚNCULO</text>
+          <text x="516" y="146" font-size="10.5" fill="currentColor" opacity="0.85">Local; drenaje si es</text>
+          <text x="516" y="162" font-size="10.5" fill="currentColor" opacity="0.85">de mayor tamaño</text>
+
+          <rect x="10" y="186" width="680" height="60" rx="3" fill="var(--c)" fill-opacity="0.06" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.3"></rect>
+          <line x1="344" y1="186" x2="344" y2="246" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></line>
+          <line x1="500" y1="186" x2="500" y2="246" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></line>
+          <text x="26" y="210" font-size="10.5" font-weight="700" fill="currentColor">Placa de BORDES NETOS, no</text>
+          <text x="26" y="228" font-size="10.5" fill="currentColor" opacity="0.85">sobreelevada + adenopatía regional</text>
+          <text x="360" y="222" font-size="12" font-weight="700" fill="currentColor">ERISIPELA</text>
+          <text x="516" y="214" font-size="10.5" fill="currentColor" opacity="0.85">Cefalexina VO</text>
+          <text x="516" y="230" font-size="10.5" fill="currentColor" opacity="0.85">7 – 14 días</text>
+
+          <rect x="10" y="254" width="680" height="60" rx="3" fill="var(--c)" fill-opacity="0.06" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.3"></rect>
+          <line x1="344" y1="254" x2="344" y2="314" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></line>
+          <line x1="500" y1="254" x2="500" y2="314" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></line>
+          <text x="26" y="278" font-size="10.5" font-weight="700" fill="currentColor">Eritema y edema SIN límites netos</text>
+          <text x="26" y="296" font-size="10.5" fill="currentColor" opacity="0.85">Compromete el TCS</text>
+          <text x="360" y="290" font-size="12" font-weight="700" fill="currentColor">CELULITIS</text>
+          <text x="516" y="282" font-size="10.5" fill="currentColor" opacity="0.85">Cefalexina VO o</text>
+          <text x="516" y="298" font-size="10.5" fill="currentColor" opacity="0.85">cefalotina EV</text>
+
+          <rect x="10" y="322" width="680" height="74" rx="3" fill="var(--c)" fill-opacity="0.20" stroke="var(--c)" stroke-width="2.5"></rect>
+          <line x1="344" y1="322" x2="344" y2="396" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <line x1="500" y1="322" x2="500" y2="396" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></line>
+          <text x="26" y="346" font-size="10.5" font-weight="700" fill="currentColor">Dolor DESPROPORCIONADO,</text>
+          <text x="26" y="364" font-size="10.5" font-weight="700" fill="currentColor">crepitación, equimosis, anestesia</text>
+          <text x="26" y="382" font-size="10.5" font-weight="700" fill="currentColor">cutánea, deterioro rápido</text>
+          <text x="360" y="358" font-size="11.5" font-weight="700" fill="currentColor">INFECCIÓN</text>
+          <text x="360" y="376" font-size="11.5" font-weight="700" fill="currentColor">NECROTIZANTE</text>
+          <text x="516" y="350" font-size="10.5" font-weight="700" fill="currentColor">CIRUGÍA URGENTE</text>
+          <text x="516" y="368" font-size="10.5" fill="currentColor" opacity="0.85">+ PTZ + vancomicina</text>
+          <text x="516" y="384" font-size="10.5" fill="currentColor" opacity="0.85">+ clindamicina</text>
+        </svg>
+        <figcaption>La fila resaltada abajo es la única que no se resuelve en el consultorio. Las tres claves que la separan de una celulitis son <em>dolor desproporcionado</em>, <em>crepitación</em> y <em>anestesia cutánea</em>.</figcaption>
+      </figure>
+
+      <h3>Erisipela y celulitis: la distinción que más se pregunta</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Rasgo</th><th>Erisipela</th><th>Celulitis</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Capa comprometida</strong></td><td><strong>Dermis superficial</strong> y vasos linfáticos</td><td><strong>Tejido celular subcutáneo</strong></td></tr>
+            <tr><td><strong>Bordes de la lesión</strong></td><td><strong>NETOS</strong>, bien delimitados</td><td><strong>SIN límites netos</strong>, poco definidos</td></tr>
+            <tr><td><strong>Relieve</strong></td><td>Placa <strong>no sobreelevada</strong></td><td>Edema difuso</td></tr>
+            <tr><td><strong>Adenopatía regional</strong></td><td><strong>Presente</strong> — hay compromiso linfático</td><td>No es un rasgo definitorio</td></tr>
+            <tr><td><strong>Etiología</strong></td><td><em>S. pyogenes</em> y estafilococos</td><td><em>S. pyogenes</em> y <em>S. aureus</em>; el <strong>germen cambia según la puerta de entrada</strong></td></tr>
+            <tr><td><strong>Hemocultivos</strong></td><td>Positivos en <strong>&lt; 5 %</strong> — no indicados salvo cuadro invasivo por <em>S. pyogenes</em></td><td>Positivos en <strong>2 – 5 %</strong> — indicados en inmunocomprometidos, &gt; 65 años, gravedad y shock</td></tr>
+            <tr><td><strong>Tratamiento</strong></td><td><strong>Comparten esquema:</strong> cobertura de <em>S. pyogenes</em> y <em>S. aureus</em>, 7 – 14 días</td><td>Ídem — lo que cambia el esquema es la <strong>gravedad</strong> y los <strong>factores de riesgo para SAMR</strong>, no cuál de las dos entidades sea</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Fuente: clase «Infecciones de piel y partes blandas» de la cátedra de Infectología, HTJS.</p>
+    </section>
+
+    <!-- ============ Repaso activo ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>Ordená las cinco entidades desde la más superficial a la más profunda.</summary>
+          <div class="fc__r"><strong>Impétigo</strong> (epidermis) → <strong>erisipela</strong> (dermis superficial y linfáticos) → <strong>forúnculo</strong> (folículo piloso profundo) → <strong>celulitis</strong> (TCS) → <strong>fascitis necrotizante</strong> (fascia) → <strong>mionecrosis</strong> (músculo).</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Definí erisipela y describí su lesión característica.</summary>
+          <div class="fc__r">Infección aguda que compromete la <strong>dermis superficial y los vasos linfáticos subyacentes</strong>. <strong>Placa edematosa y caliente, de bordes netos, NO sobreelevada</strong>; puede ser eritematosa, eritemato-purpúrica, ampollar o necrótica. Se acompaña de <strong>adenopatía regional</strong>. Predomina en <strong>miembros inferiores</strong>.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Qué dos condiciones se necesitan para que se produzca una erisipela?</summary>
+          <div class="fc__r"><strong>Colonización de la piel</strong> + <strong>disrupción de la barrera mecánica</strong> (trauma, <strong>intertrigo</strong>, <strong>onicomicosis</strong>). Por eso <strong>tratar la puerta de entrada</strong> es parte del tratamiento y no un accesorio.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Cuál es la diferencia clave entre erisipela y celulitis?</summary>
+          <div class="fc__r">La <strong>capa</strong> y, en consecuencia, los <strong>bordes</strong>. La erisipela compromete la <strong>dermis superficial</strong> y da una placa de <strong>bordes NETOS</strong>; la celulitis compromete el <strong>TCS</strong> y se presenta <strong>SIN límites netos</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Cuándo están indicados los hemocultivos en erisipela y en celulitis?</summary>
+          <div class="fc__r"><strong>Erisipela:</strong> positivos en <strong>&lt; 5 %</strong>, <strong>NO están indicados</strong> salvo en <strong>cuadros invasivos por <em>S. pyogenes</em></strong>.<br><strong>Celulitis:</strong> positivos en <strong>2 – 5 %</strong>; no son útiles de rutina en inmunocompetentes, pero sí en <strong>inmunocomprometidos, mayores de 65 años, signos de gravedad y shock</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué signos de gravedad convierten una erisipela en criterio de internación?</summary>
+          <div class="fc__r"><strong>Confusión e hipotensión</strong>, además de la lesión de piel. En celulitis se suman: compromiso del estado general, <strong>fallo renal, acidosis, leucocitosis con formas inmaduras</strong>, heridas penetrantes, dudas diagnósticas por colecciones o sospecha de necrotizante, y comorbilidades (<strong>diabetes, inmunosupresión, obesidad</strong>).</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Esquema antibiótico de la IPPB leve, con y sin factores de riesgo para SAMR.</summary>
+          <div class="fc__r"><strong>Sin FR para SAMR:</strong> <strong>cefalexina 1 g c/12 h</strong> (o 500 mg c/6 h) por <strong>7 – 14 días</strong>.<br><strong>Con FR para SAMR:</strong> <strong>minociclina 100 mg c/12 h</strong> o <strong>TMS FORTE 1 comprimido c/12 h</strong>, 7 – 14 días.<br>Si hay <strong>mala evolución en el control de 48 – 72 h</strong>, se pasa al esquema que cubre SAMR.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Esquema antibiótico de la IPPB grave (internado).</summary>
+          <div class="fc__r"><strong>Sin FR para SAMR:</strong> <strong>cefalotina 1 – 2 g c/6 h EV</strong> (o 1 g c/4 – 6 h), 7 – 14 días.<br><strong>Con FR para SAMR:</strong> <strong>vancomicina</strong> 1 o 2 g (15 – 20 mg/kg c/8 – 12 h), 7 – 14 días — también en <strong>alérgicos</strong> y <strong>fallas de tratamiento</strong>. Se agrega <strong>clindamicina 600 mg c/6 h como inmunomodulador</strong>.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Además del antibiótico, ¿qué dos medidas son parte del tratamiento de erisipela y celulitis?</summary>
+          <div class="fc__r"><strong>Elevación del miembro afectado</strong> y <strong>tratamiento de la puerta de entrada para evitar recidivas</strong>.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Impétigo: ¿cuáles son los dos tipos y qué los diferencia?</summary>
+          <div class="fc__r"><strong>No ampollar</strong> — el más frecuente: <em>S. pyogenes</em> y <em>S. aureus</em> (70 %); ampollas epidérmicas <strong>que no se ven</strong>, se rompen rápido y se cubren de costras.<br><strong>Ampollar</strong> — <strong>siempre <em>S. aureus</em></strong>, producido por las <strong>toxinas exfoliativas A y B</strong>; es un <strong>síndrome de la piel escaldada localizado</strong> y <strong>sin tratamiento puede complicarse</strong>.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Cuándo alcanza con tratamiento tópico en el impétigo?</summary>
+          <div class="fc__r">En <strong>áreas limitadas</strong> y en el tipo <strong>no bulloso</strong>: <strong>ácido fusídico o mupirocina, 3 veces por día durante 7 días</strong>, con eficacia <strong>similar al tratamiento sistémico</strong>. El sistémico (cefalosporinas de 1.ª generación o amoxi-clavulánico) se reserva para <strong>mayor superficie corporal o síntomas sistémicos</strong>.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Definí forúnculo y forunculosis, y decí cómo cura.</summary>
+          <div class="fc__r"><strong>Forúnculo:</strong> infección aguda del <strong>folículo piloso en su parte más profunda</strong>, con perifoliculitis; <strong>desorganiza la dermis y cura CON cicatriz</strong>. Nódulo que se origina de una foliculitis y tiende a <strong>drenar al exterior</strong>. Etiología: <strong><em>S. aureus</em></strong>.<br><strong>Forunculosis:</strong> aparición <strong>repetida o simultánea</strong> de varios forúnculos.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Cómo se maneja una forunculosis a repetición?</summary>
+          <div class="fc__r">Atacando la <strong>colonización</strong>, no cada lesión: <strong>mupirocina nasal cada 12 h los primeros 5 días de cada mes</strong>. El tratamiento sistémico sólo si hay <strong>celulitis circundante o compromiso sistémico</strong>.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Diferenciá celulitis necrotizante, fascitis necrotizante y mionecrosis.</summary>
+          <div class="fc__r"><strong>Celulitis necrotizante:</strong> piel y TCS (fascia superficial), <strong>SIN alcanzar la fascia muscular</strong>; rápidamente progresiva con necrosis extensa.<br><strong>Fascitis necrotizante:</strong> compromete <strong>fascia superficial Y muscular</strong>.<br><strong>Mionecrosis:</strong> compromete la <strong>masa muscular</strong>; proceso agudo <strong>sumamente tóxico</strong>, de progresión rápida y potencialmente fatal.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Qué signos clínicos hacen sospechar una infección necrotizante?</summary>
+          <div class="fc__r"><strong>Dolor intenso desproporcionado</strong>, edema, eritema o palidez, fiebre, sensibilidad, necrosis de la piel, <strong>equimosis</strong>, <strong>crepitación</strong> y <strong>anestesia cutánea</strong>. Y sobre todo: un paciente <strong>cuyo estado se deteriora rápidamente</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Enumerá los hallazgos de laboratorio de mal pronóstico en las necrotizantes.</summary>
+          <div class="fc__r"><strong>GB &gt; 15.000/mm³</strong> · <strong>hiponatremia &lt; 135 mEq/L</strong> · <strong>lactato &gt; 6 mmol/L</strong> · <strong>PCR aumentada</strong> · <strong>creatinina aumentada</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Cómo se hace el diagnóstico definitivo de una infección necrotizante?</summary>
+          <div class="fc__r"><strong>El diagnóstico definitivo es QUIRÚRGICO</strong> — en el acto se evidencia hasta dónde ha avanzado la infección. <strong>La sospecha es clínica.</strong> Las imágenes <strong>no deben retrasar la intervención</strong> y sólo se piden ante dudas.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>Tratamiento de las infecciones necrotizantes: cirugía y antibiótico.</summary>
+          <div class="fc__r"><strong>Cirugía:</strong> intervención <strong>dentro de las 24 h del diagnóstico</strong> (disminuye la mortalidad), <strong>precoz y suficiente hasta el tejido vital</strong>, <strong>dejar la herida abierta</strong> y <strong>repetir a diario hasta que no haya necrosis</strong>.<br><strong>Antibiótico:</strong> amplio espectro para cocos Gram+ (sensibles y resistentes), BGN y anaerobios → <strong>PTZ + vancomicina + clindamicina</strong>, esta última <strong>como antitoxina</strong>.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Cuál es la mortalidad de una infección necrotizante sin cirugía?</summary>
+          <div class="fc__r"><strong>100 %.</strong> El antibiótico acompaña pero no reemplaza al desbridamiento quirúrgico.</div>
+        </details>
+
+        <details class="fc s-diferenciales">
+          <summary>Paciente con celulitis que no mejora y con dolor desproporcionado: ¿qué hacés?</summary>
+          <div class="fc__r">Sospechar <strong>infección necrotizante</strong>. Buscar <strong>crepitación, equimosis y anestesia cutánea</strong>, pedir laboratorio (GB, natremia, lactato, PCR, creatinina), y <strong>consultar a cirugía</strong>: el diagnóstico definitivo es quirúrgico y <strong>ninguna imagen normal lo descarta</strong>.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Lo que define cada entidad</dt>
+        <dd><strong>Impétigo:</strong> epidermis · costras melicéricas · cura SIN cicatriz. <strong>Erisipela:</strong> dermis superficial y linfáticos · <strong>bordes NETOS</strong> · adenopatía. <strong>Forúnculo:</strong> folículo profundo · cura CON cicatriz. <strong>Celulitis:</strong> TCS · <strong>SIN límites netos</strong>. <strong>Necrotizante:</strong> dolor desproporcionado, crepitación, equimosis, anestesia cutánea.</dd>
+
+        <dt class="r-gold">Estudio de elección</dt>
+        <dd><strong>Todas son de diagnóstico CLÍNICO.</strong> Hemocultivos: &lt; 5 % en erisipela (no indicados salvo cuadro invasivo por <em>S. pyogenes</em>), 2 – 5 % en celulitis (sólo en inmunocomprometidos, &gt; 65 años, gravedad o shock). <strong>Necrotizante: el diagnóstico definitivo es QUIRÚRGICO</strong>; laboratorio de mal pronóstico GB &gt; 15.000, Na &lt; 135, lactato &gt; 6, PCR y creatinina altas. Las imágenes no retrasan la cirugía.</dd>
+
+        <dt class="r-tto">Tratamiento de 1ª línea</dt>
+        <dd><strong>Impétigo:</strong> mupirocina o ác. fusídico tópicos 3 v/día × 7 d. <strong>Forúnculo:</strong> local ± drenaje; mupirocina nasal 5 días/mes si recidiva. <strong>Erisipela y celulitis leves:</strong> <strong>cefalexina 1 g c/12 h</strong> 7 – 14 d; con FR SAMR, <strong>minociclina o TMS FORTE</strong>. <strong>Graves:</strong> <strong>cefalotina EV</strong>, o <strong>vancomicina</strong> si hay FR SAMR, + <strong>clindamicina</strong>. <strong>Necrotizante: CIRUGÍA + PTZ + vancomicina + clindamicina.</strong></dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd><strong>Sin cirugía, la infección necrotizante tiene mortalidad del 100 %</strong>; la mortalidad baja si se opera <strong>dentro de las 24 h</strong> del diagnóstico. Sospecharla ante <strong>deterioro rápido</strong> y <strong>dolor desproporcionado</strong>. En erisipela y celulitis: <strong>confusión, hipotensión, fallo renal, acidosis o leucocitosis con formas inmaduras</strong> → internación. Y siempre: <strong>tratar la puerta de entrada</strong>, o el paciente recidiva.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir de la clase «Infecciones de piel y partes blandas» de la Dra. Macarena Pérez, residente de 2.º año de Infectología del HTJS, Cátedra de Enfermedades Infecciosas. Material de estudio: no reemplaza el criterio clínico ni la guía institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link'));
+
+  function porMeta(hash){
+    for (var i = 0; i < enlaces.length; i++){
+      if (enlaces[i].getAttribute('href') === '#' + hash) return enlaces[i];
+    }
+    return null;
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var enlace = porMeta(e.target.id);
+        if (!enlace) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          enlace.setAttribute('aria-current', 'true');
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>

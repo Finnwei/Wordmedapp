@@ -1,0 +1,1235 @@
+<title>Hipófisis y Eje Hipotálamo-Hipofisario</title>
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+}
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índice lateral ---------- */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Ficha de sección ---------- */
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.35rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-row:1/3; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+.importante__titulo{
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso{ display:none !important; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-generalidades"  href="#generalidades">Sistema Endocrino</a></li>
+      <li><a class="indice__link i-diferenciales"  href="#anatomia">Anatomía &amp; Histología</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#eje">Eje Hipotálamo-Hipofisario</a></li>
+      <li><a class="indice__link i-clinica"        href="#adenohipofisis">Hormonas de la Adenohipófisis</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#neurohipofisis">Neurohipófisis</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#regulacion">Retroalimentación &amp; Ritmos</a></li>
+      <li><a class="indice__link i-importantes"    href="#adenomas">Adenomas Hipofisarios</a></li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Medicina Interna III · Endocrinología · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Hipófisis y Eje Hipotálamo-Hipofisario</h1>
+      <p class="portada__bajada">La glándula rectora del sistema endocrino: de la silla turca y los cinco tipos celulares al asa de retroalimentación que ordena todo el resto del programa.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">7 secciones</span>
+        <span class="etiqueta s-diferenciales">Silla turca</span>
+        <span class="etiqueta s-clinica">6 + 6 + 2 hormonas</span>
+        <span class="etiqueta s-diagnostico">Retroalimentación</span>
+      </div>
+    </header>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="generalidades">
+      <span class="seccion__pestana"><b>01</b> Generalidades</span>
+      <h2 class="seccion__titulo">El Sistema Endocrino y la Hipófisis</h2>
+
+      <p>Una <strong>hormona</strong> es un mensajero químico que una glándula vierte a la sangre y que actúa <strong>a distancia</strong>, únicamente sobre las células que poseen su <strong>receptor específico</strong>. Esa especificidad del receptor —y no la distribución del mensajero— es lo que define qué tejido responde.</p>
+
+      <h3>Los tres tipos de glándulas</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Tipo</th><th>Dónde vierte su contenido</th><th>Ejemplos</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Exocrinas</strong></td><td>Al <strong>exterior</strong> o a la <strong>luz del tubo digestivo</strong>, a través de un conducto</td><td>Sudoríparas, sebáceas, salivales</td></tr>
+            <tr><td><strong>Endocrinas</strong><br><em>o de secreción interna</em></td><td>A la <strong>sangre</strong>, sin conducto. Son las productoras de hormonas</td><td>Hipófisis, tiroides, suprarrenales, paratiroides</td></tr>
+            <tr><td><strong>Mixtas</strong></td><td>A <strong>ambos destinos</strong></td><td><strong>Páncreas</strong>: vierte el jugo pancreático al duodeno y libera a la sangre <strong>insulina y glucagón</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Nota sobre el material de cátedra: la diapositiva de glándulas ubica al <strong>páncreas dos veces</strong>, primero entre las exocrinas y después entre las mixtas. La clasificación correcta es <strong>mixta</strong> — la mención entre las exocrinas alude sólo a su componente acinar.</p>
+
+      <h3>La hipófisis en números</h3>
+      <p>Es una estructura <strong>pequeña, de forma ovalada</strong>, que <strong>pesa menos de un gramo</strong> y sin embargo <strong>regula prácticamente todas las demás glándulas endocrinas</strong>. Su tamaño es desproporcionadamente chico respecto de su impacto fisiológico.</p>
+      <ul>
+        <li><strong>Transversal:</strong> <span class="dato">10 – 13 mm</span></li>
+        <li><strong>Anteroposterior:</strong> <span class="dato">6 – 8 mm</span></li>
+        <li><strong>Altura:</strong> <span class="dato">5 – 8 mm</span></li>
+      </ul>
+
+      <h3>Naturaleza química de las hormonas</h3>
+      <p>De qué está hecha una hormona determina <strong>dónde está su receptor</strong> y <strong>cuánto tarda en actuar</strong>. Es la razón por la que algunas responden en minutos y otras necesitan horas.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Naturaleza</th><th>Ejemplos</th><th>Receptor</th><th>Latencia de acción</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Peptídicas y proteicas</strong><br>Hidrosolubles, no atraviesan la membrana</td><td><strong>Todas las hipofisarias</strong>: GH, PRL, ACTH, TSH, FSH, LH, ADH, oxitocina. Insulina, PTH</td><td><strong>De membrana</strong>, acoplado a segundos mensajeros</td><td><strong>Segundos a minutos</strong></td></tr>
+            <tr><td><strong>Esteroideas</strong><br>Liposolubles, viajan unidas a proteína transportadora</td><td>Cortisol, aldosterona, estradiol, testosterona</td><td><strong>Nuclear o citosólico</strong>, modifica la transcripción</td><td><strong>Horas</strong></td></tr>
+            <tr><td><strong>Derivadas de aminoácidos</strong></td><td>T3 y T4 (de tirosina); catecolaminas</td><td>T3 y T4 <strong>nuclear</strong>; catecolaminas <strong>de membrana</strong></td><td>Tiroideas: <strong>días</strong>. Catecolaminas: <strong>segundos</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>Todas las hormonas hipofisarias son peptídicas</strong>, y por eso <strong>ninguna se administra por vía oral</strong>: el tubo digestivo las degrada. La excepción terapéutica es la <strong>desmopresina</strong>, un análogo modificado de la ADH cuya estructura resiste la degradación y permite la vía oral o intranasal.</p>
+      </div>
+
+      <p class="cita">Fuente: Harrison, <em>Principios de Medicina Interna</em>, 21.ª ed., capítulo de Principios de endocrinología.</p>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-diferenciales" id="anatomia">
+      <span class="seccion__pestana"><b>02</b> Anatomía</span>
+      <h2 class="seccion__titulo">Anatomía &amp; Histología</h2>
+
+      <p>La hipófisis se aloja en la <strong>fosa hipofisaria de la silla turca</strong>, en el <strong>hueso esfenoides</strong>, y se conecta al hipotálamo por el <strong>tallo hipofisario o infundíbulo</strong>. Toda su patología compresiva se explica por lo que tiene alrededor.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 306" role="img" aria-label="Corte coronal esquemático de la región selar. En el centro, la hipófisis alojada en la fosa de la silla turca, unida por el tallo hipofisario al hipotálamo situado por encima. Inmediatamente por arriba de la glándula cruza el quiasma óptico, de modo que la expansión supraselar de un adenoma lo comprime desde abajo y produce hemianopsia bitemporal. A ambos lados se encuentran los senos cavernosos, que contienen la carótida interna y los pares craneales tercero, cuarto y sexto junto con las ramas oftálmica y maxilar del trigémino, de manera que la expansión paraselar produce oftalmoplejía. Por debajo se encuentra el seno esfenoidal lleno de aire, que es la vía por la que entra la cirugía transesfenoidal.">
+          <defs>
+            <marker id="pta-sella" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <text x="18" y="30" font-size="11" font-weight="700" fill="currentColor">EXPANSIÓN SUPRASELAR</text>
+          <text x="18" y="48" font-size="10.5" fill="currentColor">comprime el quiasma</text>
+          <text x="18" y="66" font-size="10.5" font-weight="700" fill="currentColor">→ hemianopsia bitemporal</text>
+          <polyline points="156,78 178,78 178,90 268,90" fill="none" stroke="currentColor" stroke-width="1.4" marker-end="url(#pta-sella)"></polyline>
+
+          <text x="682" y="30" font-size="11" font-weight="700" fill="currentColor" text-anchor="end">EXPANSIÓN PARASELAR</text>
+          <text x="682" y="48" font-size="10.5" fill="currentColor" text-anchor="end">invade el seno cavernoso</text>
+          <text x="682" y="66" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="end">→ oftalmoplejía (III, IV, VI)</text>
+          <polyline points="600,78 600,102 502,102 502,110" fill="none" stroke="currentColor" stroke-width="1.4" marker-end="url(#pta-sella)"></polyline>
+
+          <rect x="290" y="8" width="120" height="32" rx="3" fill="var(--c)" fill-opacity="0.20" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="350" y="29" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">HIPOTÁLAMO</text>
+
+          <rect x="341" y="40" width="18" height="78" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="366" y="60" font-size="10.5" fill="currentColor">tallo</text>
+          <text x="366" y="74" font-size="10.5" fill="currentColor">hipofisario</text>
+
+          <text x="272" y="74" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="end">quiasma óptico</text>
+          <rect x="272" y="80" width="156" height="20" rx="10" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1.8"></rect>
+
+          <path d="M 266,116 L 266,176 Q 266,194 284,194 L 416,194 Q 434,194 434,176 L 434,116" fill="none" stroke="currentColor" stroke-width="3"></path>
+
+          <ellipse cx="350" cy="150" rx="62" ry="36" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="2.5"></ellipse>
+          <text x="350" y="146" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">HIPÓFISIS</text>
+          <text x="350" y="164" font-size="10.5" fill="currentColor" text-anchor="middle" opacity="0.85">en la silla turca</text>
+
+          <rect x="140" y="112" width="116" height="86" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.8" stroke-dasharray="5 3"></rect>
+          <text x="198" y="131" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">SENO CAVERNOSO</text>
+          <text x="198" y="150" font-size="10.5" fill="currentColor" text-anchor="middle">carótida interna</text>
+          <text x="198" y="169" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">pares III · IV · VI</text>
+          <text x="198" y="188" font-size="10.5" fill="currentColor" text-anchor="middle">V1 · V2</text>
+
+          <rect x="444" y="112" width="116" height="86" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.8" stroke-dasharray="5 3"></rect>
+          <text x="502" y="131" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">SENO CAVERNOSO</text>
+          <text x="502" y="150" font-size="10.5" fill="currentColor" text-anchor="middle">carótida interna</text>
+          <text x="502" y="169" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">pares III · IV · VI</text>
+          <text x="502" y="188" font-size="10.5" fill="currentColor" text-anchor="middle">V1 · V2</text>
+
+          <text x="444" y="216" font-size="10.5" fill="currentColor" opacity="0.8">hueso esfenoides</text>
+
+          <rect x="266" y="222" width="168" height="44" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="350" y="248" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">SENO ESFENOIDAL</text>
+
+          <polyline points="290,262 290,202" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="5 3" marker-end="url(#pta-sella)"></polyline>
+          <text x="296" y="288" font-size="10.5" font-weight="700" fill="currentColor">vía transesfenoidal</text>
+        </svg>
+        <figcaption>Las tres direcciones de crecimiento explican los tres cuadros. <strong>Hacia arriba</strong>, el quiasma: hemianopsia bitemporal. <strong>Hacia los lados</strong>, el seno cavernoso: los pares III, IV y VI se toman en bloque porque los tres lo atraviesan. <strong>Hacia abajo</strong>, el seno esfenoidal lleno de aire — que por ser el único vecino sin estructura noble es la <strong>vía de acceso quirúrgico</strong>.</figcaption>
+      </figure>
+
+      <h3>División anatómica</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Porción</th><th>Proporción</th><th>Subdivisiones</th><th>Origen embriológico</th><th>Función</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>ADENOHIPÓFISIS</strong></td><td><strong><span class="dato">≈ 75 %</span></strong></td><td>Pars distalis<br>Pars tuberalis<br>Pars intermedia</td><td><strong>Bolsa de Rathke</strong> — ectodermo del techo de la faringe primitiva</td><td><strong>Sintetiza</strong> sus propias hormonas</td></tr>
+            <tr><td><strong>NEUROHIPÓFISIS</strong></td><td><strong><span class="dato">≈ 25 %</span></strong></td><td>Pars nervosa<br>Infundíbulo</td><td><strong>Evaginación del diencéfalo</strong> — neuroectodermo</td><td><strong>Almacena y libera</strong> hormonas producidas en el hipotálamo</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Profundización sobre el origen embriológico, que no está en el deck: las dos mitades de la hipófisis <strong>no comparten origen</strong>. Un resto persistente de la bolsa de Rathke da el <strong>quiste de Rathke</strong>, que figura entre las causas de compresión del tallo, y el mismo epitelio origina el <strong>craneofaringioma</strong>. Fuente: Melmed S, <em>Williams Textbook of Endocrinology</em>, 14.ª ed., capítulo de Hipófisis anterior.</p>
+
+      <h3>Tipos celulares de la adenohipófisis</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Célula</th><th>Proporción</th><th>Tinción</th><th>Hormona</th><th>Eje que gobierna</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Somatotropas</strong></td><td><strong><span class="dato">45 – 50 %</span></strong></td><td>Acidófila</td><td><strong>GH</strong></td><td>Somatotropo</td></tr>
+            <tr><td><strong>Lactotropas</strong></td><td><span class="dato">15 – 20 %</span></td><td>Acidófila</td><td><strong>Prolactina</strong></td><td>Lactotropo</td></tr>
+            <tr><td><strong>Corticotropas</strong></td><td><span class="dato">15 – 20 %</span></td><td>Basófila</td><td><strong>ACTH</strong></td><td>Corticotropo</td></tr>
+            <tr><td><strong>Gonadotropas</strong></td><td><span class="dato">10 – 15 %</span></td><td>Basófila</td><td><strong>FSH y LH</strong></td><td>Gonadotropo</td></tr>
+            <tr><td><strong>Tirotropas</strong></td><td><span class="dato">5 %</span></td><td>Basófila</td><td><strong>TSH</strong></td><td>Tirotropo</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Las células se agrupan en <strong>cordones y nidos rodeados por una red capilar fenestrada abundante</strong>, que es lo que permite que la hormona pase a la sangre apenas se secreta.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 256" role="img" aria-label="Barra proporcional de los cinco tipos celulares de la adenohipófisis. Las acidófilas ocupan cerca de dos tercios del total y comprenden las somatotropas, que representan del cuarenta y cinco al cincuenta por ciento y producen hormona de crecimiento, y las lactotropas, del quince al veinte por ciento, que producen prolactina. Las basófilas comprenden las corticotropas, del quince al veinte por ciento, que producen corticotropina; las gonadotropas, del diez al quince por ciento, que producen hormona foliculoestimulante y luteinizante; y las tirotropas, apenas el cinco por ciento, que producen tirotropina.">
+          <text x="30" y="20" font-size="10.5" fill="currentColor" opacity="0.8">% del total de células adenohipofisarias</text>
+
+          <rect x="30" y="32" width="416" height="22" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.2"></rect>
+          <text x="238" y="48" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">ACIDÓFILAS</text>
+          <rect x="446" y="32" width="224" height="22" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.2"></rect>
+          <text x="558" y="48" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">BASÓFILAS</text>
+
+          <rect x="30"  y="62" width="304" height="44" fill="var(--c)" fill-opacity="0.38" stroke="var(--c)" stroke-width="1.5"></rect>
+          <rect x="334" y="62" width="112" height="44" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="1.5"></rect>
+          <rect x="446" y="62" width="112" height="44" fill="var(--c)" fill-opacity="0.24" stroke="var(--c)" stroke-width="1.5"></rect>
+          <rect x="558" y="62" width="80"  height="44" fill="var(--c)" fill-opacity="0.18" stroke="var(--c)" stroke-width="1.5"></rect>
+          <rect x="638" y="62" width="32"  height="44" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+
+          <text x="182" y="89" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">45 – 50 %</text>
+          <text x="390" y="89" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">15 – 20 %</text>
+          <text x="502" y="89" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">15 – 20 %</text>
+          <text x="598" y="89" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">10 – 15 %</text>
+          <text x="654" y="89" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">5 %</text>
+
+          <polyline points="182,106 182,118 77,118 77,148"  fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.75"></polyline>
+          <polyline points="390,106 390,124 213,124 213,148" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.75"></polyline>
+          <polyline points="502,106 502,130 349,130 349,148" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.75"></polyline>
+          <polyline points="598,106 598,136 485,136 485,148" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.75"></polyline>
+          <polyline points="654,106 654,142 621,142 621,148" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.75"></polyline>
+
+          <rect x="12"  y="150" width="130" height="92" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="77" y="172" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">Somatotropas</text>
+          <text x="77" y="194" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">GH</text>
+          <text x="77" y="214" font-size="10.5" fill="currentColor" text-anchor="middle" opacity="0.85">acidófila</text>
+          <text x="77" y="234" font-size="10.5" fill="currentColor" text-anchor="middle">hígado, hueso</text>
+
+          <rect x="148" y="150" width="130" height="92" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="213" y="172" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">Lactotropas</text>
+          <text x="213" y="194" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">PRL</text>
+          <text x="213" y="214" font-size="10.5" fill="currentColor" text-anchor="middle" opacity="0.85">acidófila</text>
+          <text x="213" y="234" font-size="10.5" fill="currentColor" text-anchor="middle">mama</text>
+
+          <rect x="284" y="150" width="130" height="92" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="349" y="172" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">Corticotropas</text>
+          <text x="349" y="194" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">ACTH</text>
+          <text x="349" y="214" font-size="10.5" fill="currentColor" text-anchor="middle" opacity="0.85">basófila</text>
+          <text x="349" y="234" font-size="10.5" fill="currentColor" text-anchor="middle">suprarrenal</text>
+
+          <rect x="420" y="150" width="130" height="92" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="485" y="172" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">Gonadotropas</text>
+          <text x="485" y="194" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">FSH · LH</text>
+          <text x="485" y="214" font-size="10.5" fill="currentColor" text-anchor="middle" opacity="0.85">basófila</text>
+          <text x="485" y="234" font-size="10.5" fill="currentColor" text-anchor="middle">gónadas</text>
+
+          <rect x="556" y="150" width="130" height="92" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="621" y="172" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">Tirotropas</text>
+          <text x="621" y="194" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">TSH</text>
+          <text x="621" y="214" font-size="10.5" fill="currentColor" text-anchor="middle" opacity="0.85">basófila</text>
+          <text x="621" y="234" font-size="10.5" fill="currentColor" text-anchor="middle">tiroides</text>
+        </svg>
+        <figcaption>La histología predice la epidemiología. Las <strong>somatotropas y las lactotropas</strong> son las poblaciones más abundantes, y son justamente las que dan los <strong>dos adenomas funcionantes más frecuentes</strong>: prolactinoma y somatotropinoma. Las <strong>tirotropas son apenas el 5 %</strong> — y el TSHoma es raro.</figcaption>
+      </figure>
+
+      <p class="cita">Profundización: las somatotropas, lactotropas y tirotropas comparten el factor de transcripción <strong>Pit-1, codificado por el gen POU1F1</strong>, una proteína de 33 kDa que promueve los genes de GH y PRL. Ese linaje común explica que existan <strong>tumores plurihormonales que cosecretan GH y prolactina</strong>, y es la razón por la que ante un adenoma hipofisario se solicita <strong>IGF-1 aunque la consulta haya sido por hiperprolactinemia</strong>. Fuente: material de cátedra «Prolactinomas», Dr. R. Pelayes, integrado con Melmed S, <em>Williams Textbook of Endocrinology</em>, 14.ª ed.</p>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-fisiopatologia" id="eje">
+      <span class="seccion__pestana"><b>03</b> El eje</span>
+      <h2 class="seccion__titulo">Eje Hipotálamo-Hipofisario</h2>
+
+      <p>La secreción hipofisaria está controlada por el hipotálamo mediante <strong>dos vías completamente distintas</strong>, una para cada mitad de la glándula:</p>
+      <ul>
+        <li><strong>Vía nerviosa</strong> → a la <strong>neurohipófisis</strong>. Son <strong>fibras nerviosas</strong> que bajan directamente desde el hipotálamo.</li>
+        <li><strong>Vía humoral</strong> → a la <strong>adenohipófisis</strong>. Son <strong>hormonas</strong> conducidas por el sistema porta: factores <strong>liberadores o inhibidores</strong> de la secreción, regulados negativamente por las hormonas finales.</li>
+      </ul>
+
+      <h3>El sistema porta hipofisario</h3>
+      <p>Las hormonas hipotalámicas <strong>no pasan primero a la circulación sistémica</strong>. Llegan <strong>directamente a la adenohipófisis</strong> a través del sistema porta, y eso permite una <strong>regulación muy eficiente incluso con concentraciones muy bajas</strong>: la hormona no se diluye en todo el volumen sanguíneo antes de alcanzar su blanco.</p>
+
+      <h3>Las seis hormonas hipotalámicas</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Hormona hipotalámica</th><th>Efecto</th><th>Célula blanco</th><th>Hormona resultante</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>TRH</strong></td><td><strong>Estimula ↑</strong></td><td>Tirotropa <em>y</em> lactotropa</td><td><strong>TSH y prolactina</strong></td></tr>
+            <tr><td><strong>CRH</strong></td><td><strong>Estimula ↑</strong></td><td>Corticotropa</td><td><strong>ACTH</strong></td></tr>
+            <tr><td><strong>GnRH</strong></td><td><strong>Estimula ↑</strong></td><td>Gonadotropa</td><td><strong>FSH y LH</strong></td></tr>
+            <tr><td><strong>GHRH</strong></td><td><strong>Estimula ↑</strong></td><td>Somatotropa</td><td><strong>GH</strong></td></tr>
+            <tr><td><strong>Somatostatina</strong></td><td><strong>Inhibe ↓</strong></td><td>Somatotropa y tirotropa</td><td><strong>↓ GH y ↓ TSH</strong></td></tr>
+            <tr><td><strong>Dopamina</strong></td><td><strong>Inhibe ↓</strong></td><td>Lactotropa</td><td><strong>↓ Prolactina</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 358" role="img" aria-label="Esquema del eje hipotálamo-hipofisario completo. El hipotálamo libera TRH, CRH, GnRH y GHRH, que estimulan, junto con somatostatina y dopamina, que inhiben. Estas hormonas llegan por el sistema porta a la adenohipófisis, que secreta TSH, ACTH, GH, FSH y LH, y prolactina. Estas hormonas tróficas alcanzan la tiroides, la suprarrenal, el hígado y el hueso, las gónadas y la mama. Las cuatro primeras glándulas producen hormonas periféricas: T3 y T4, cortisol, IGF-1, estradiol y testosterona, que ejercen retroalimentación negativa sobre la adenohipófisis y sobre el hipotálamo. La mama es la excepción: la prolactina actúa directamente sobre ella y no genera hormona periférica que cierre el asa.">
+          <defs>
+            <marker id="pta-eje" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <text x="660" y="34" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="end">retroalimentación negativa (−)</text>
+
+          <rect x="180" y="14" width="290" height="62" rx="3" fill="var(--c)" fill-opacity="0.26" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="325" y="36" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">HIPOTÁLAMO</text>
+          <text x="325" y="54" font-size="10.5" fill="currentColor" text-anchor="middle">TRH · CRH · GnRH · GHRH   (estimulan)</text>
+          <text x="325" y="70" font-size="10.5" fill="currentColor" text-anchor="middle">somatostatina · dopamina   (inhiben)</text>
+
+          <polyline points="325,76 325,118" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-eje)"></polyline>
+          <text x="335" y="102" font-size="10.5" font-weight="700" fill="currentColor">sistema porta</text>
+
+          <rect x="180" y="120" width="290" height="56" rx="3" fill="var(--c)" fill-opacity="0.26" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="325" y="142" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">ADENOHIPÓFISIS</text>
+          <text x="325" y="162" font-size="10.5" fill="currentColor" text-anchor="middle">TSH · ACTH · GH · FSH/LH · PRL</text>
+
+          <polyline points="325,176 325,196" fill="none" stroke="currentColor" stroke-width="1.6"></polyline>
+          <text x="335" y="190" font-size="10.5" font-weight="700" fill="currentColor">hormonas tróficas</text>
+          <polyline points="75,196 585,196" fill="none" stroke="currentColor" stroke-width="1.6"></polyline>
+          <polyline points="75,196 75,209"   fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-eje)"></polyline>
+          <polyline points="203,196 203,209" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-eje)"></polyline>
+          <polyline points="330,196 330,209" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-eje)"></polyline>
+          <polyline points="457,196 457,209" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-eje)"></polyline>
+          <polyline points="585,196 585,209" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-eje)"></polyline>
+
+          <rect x="20"  y="213" width="110" height="54" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="75" y="236" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">Tiroides</text>
+          <text x="75" y="255" font-size="10.5" fill="currentColor" text-anchor="middle">TSH</text>
+
+          <rect x="148" y="213" width="110" height="54" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="203" y="236" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">Suprarrenal</text>
+          <text x="203" y="255" font-size="10.5" fill="currentColor" text-anchor="middle">ACTH</text>
+
+          <rect x="275" y="213" width="110" height="54" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="330" y="236" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">Hígado · hueso</text>
+          <text x="330" y="255" font-size="10.5" fill="currentColor" text-anchor="middle">GH</text>
+
+          <rect x="402" y="213" width="110" height="54" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="457" y="236" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">Gónadas</text>
+          <text x="457" y="255" font-size="10.5" fill="currentColor" text-anchor="middle">FSH · LH</text>
+
+          <rect x="530" y="213" width="110" height="54" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.8" stroke-dasharray="5 3"></rect>
+          <text x="585" y="236" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">Mama</text>
+          <text x="585" y="255" font-size="10.5" fill="currentColor" text-anchor="middle">PRL</text>
+          <text x="585" y="288" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">sin hormona periférica</text>
+
+          <polyline points="75,267 75,296"   fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-eje)"></polyline>
+          <polyline points="203,267 203,296" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-eje)"></polyline>
+          <polyline points="330,267 330,296" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-eje)"></polyline>
+          <polyline points="457,267 457,296" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-eje)"></polyline>
+
+          <rect x="20" y="300" width="620" height="48" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="330" y="322" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">HORMONAS PERIFÉRICAS</text>
+          <text x="330" y="340" font-size="10.5" fill="currentColor" text-anchor="middle">T3 y T4 · cortisol · IGF-1 · estradiol y testosterona</text>
+
+          <polyline points="640,324 666,324 666,45 472,45" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#pta-eje)"></polyline>
+          <polyline points="666,148 472,148" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#pta-eje)"></polyline>
+        </svg>
+        <figcaption>El asa se cierra en <strong>dos niveles</strong>: la hormona periférica frena a la vez a la hipófisis y al hipotálamo. La <strong>mama es la excepción</strong> — la prolactina actúa directamente sobre un órgano no endocrino y no genera hormona periférica, de modo que su asa la cierra <strong>la dopamina hipotalámica</strong> y no un producto glandular.</figcaption>
+      </figure>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>La <strong>prolactina es la única hormona adenohipofisaria bajo control predominantemente inhibitorio</strong>: la dopamina la frena de forma tónica y permanente. La consecuencia es directa — <strong>si se interrumpe la llegada de dopamina, la prolactina sube</strong>. Frente a una <strong>sección o compresión del tallo hipofisario, todas las hormonas caen menos la prolactina, que aumenta</strong>. Es el <strong>efecto de desconexión</strong>, y es el único patrón hormonal en el que una hormona sube al perder su conexión con el hipotálamo.</p>
+      </div>
+
+      <p class="cita">Profundización: por eso los valores de la hiperprolactinemia <strong>por compresión del tallo suelen ser inferiores a 100 – 150 ng/mL</strong>, mientras que un macroprolactinoma verdadero supera los 250. La magnitud del valor discrimina entre <strong>un tumor que produce prolactina</strong> y <strong>un tumor que sólo desconecta el tallo</strong>. Fuente: Melmed S et al., <em>Endocrine Society Clinical Practice Guideline on Hyperprolactinemia</em>, J Clin Endocrinol Metab 2011. Ver el cuadernillo de Hiperprolactinemia y Prolactinomas.</p>
+
+      <p class="cita">Profundización sobre la doble acción de la TRH: al estimular <strong>tanto a la tirotropa como a la lactotropa</strong>, un <strong>hipotiroidismo primario</strong> —en el que la TRH está elevada por falta de retroalimentación de T4— puede cursar con <strong>hiperprolactinemia</strong>. Ésa es la razón por la que el hipotiroidismo figura entre las causas que hay que descartar <strong>antes de pedir una resonancia</strong> ante una prolactina alta.</p>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-clinica" id="adenohipofisis">
+      <span class="seccion__pestana"><b>04</b> Adenohipófisis</span>
+      <h2 class="seccion__titulo">Hormonas de la Adenohipófisis</h2>
+
+      <p>Las hormonas hipofisarias son <strong>hormonas tróficas</strong>: su función principal <strong>no es actuar sobre un tejido, sino estimular otra glándula endocrina</strong>. La <strong>prolactina constituye la principal excepción</strong>, ya que actúa <strong>directamente sobre la glándula mamaria</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Hormona</th><th>Órgano blanco</th><th>Efecto</th><th>Hormona periférica</th><th>Qué pasa si falta</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>GH</strong></td><td>Hígado, hueso, músculo</td><td><strong>Crecimiento</strong></td><td><strong>IGF-1</strong></td><td>Niño: <strong>talla baja</strong>. Adulto: ↓ masa magra, ↑ grasa visceral, astenia</td></tr>
+            <tr><td><strong>ACTH</strong></td><td>Corteza suprarrenal — <strong>zona fasciculada</strong></td><td>Síntesis de cortisol</td><td><strong>Cortisol</strong></td><td><strong>Insuficiencia suprarrenal secundaria</strong>: sin hiperpigmentación y sin hiperkalemia</td></tr>
+            <tr><td><strong>TSH</strong></td><td>Tiroides</td><td>Síntesis de T3 y T4</td><td><strong>T3 y T4</strong></td><td><strong>Hipotiroidismo central</strong>: T4 baja con TSH normal o baja</td></tr>
+            <tr><td><strong>FSH</strong></td><td>Gónadas</td><td><strong>Gametogénesis</strong></td><td>Estradiol, inhibina</td><td>Infertilidad</td></tr>
+            <tr><td><strong>LH</strong></td><td>Gónadas</td><td><strong>Ovulación</strong> y síntesis de <strong>testosterona</strong></td><td>Testosterona, progesterona</td><td><strong>Hipogonadismo hipogonadotrófico</strong>: amenorrea, ↓ libido, disfunción eréctil</td></tr>
+            <tr><td><strong>Prolactina</strong></td><td><strong>Mama</strong> — órgano <em>no</em> endocrino</td><td><strong>Lactancia</strong></td><td><strong>Ninguna</strong> — actúa directo</td><td>Falla de la lactancia posparto</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Profundización sobre por qué la <strong>insuficiencia suprarrenal secundaria no da hiperkalemia</strong>: la ACTH gobierna la <strong>zona fasciculada</strong> (cortisol), pero la <strong>zona glomerulosa</strong> que produce aldosterona depende del <strong>sistema renina-angiotensina</strong> y del potasio, no de la hipófisis. Por eso, cuando falla la ACTH, <strong>la aldosterona se conserva</strong>. Ver el cuadernillo de Insuficiencia Suprarrenal en el Adulto.</p>
+
+      <h3>La POMC: un precursor, varios productos</h3>
+      <p>La corticotropa no sintetiza ACTH directamente, sino una <strong>proteína grande, la proopiomelanocortina (POMC)</strong>, que después se corta en varios fragmentos activos.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Fragmento de la POMC</th><th>Se escinde a su vez en</th><th>Relevancia clínica</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>ACTH</strong></td><td><strong>α-MSH</strong> y CLIP</td><td>Estimula la corteza suprarrenal. El fragmento <strong>MSH que contiene</strong> es el que explica la pigmentación</td></tr>
+            <tr><td><strong>β-lipotropina</strong></td><td>γ-lipotropina y <strong>β-endorfina</strong>; de la γ-lipotropina deriva la <strong>β-MSH</strong></td><td>β-endorfina: <strong>opioide endógeno</strong></td></tr>
+            <tr><td><strong>γ-MSH</strong></td><td>—</td><td>Acción melanocítica</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>ACTH y MSH comparten secuencia porque salen del mismo precursor.</strong> Cuando la ACTH está <strong>muy elevada</strong> —insuficiencia suprarrenal <strong>primaria</strong> (Addison), síndrome de Nelson—, arrastra actividad melanocítica y aparece la <strong>hiperpigmentación</strong> de pliegues, cicatrices y mucosas. En la <strong>insuficiencia secundaria</strong> la ACTH es <strong>baja</strong>, y por eso <strong>no hay hiperpigmentación</strong>: la piel pálida es un dato a favor del origen hipofisario.</p>
+      </div>
+
+      <p class="cita">Fuente: material de cátedra «Hipófisis» (esquema de la POMC), integrado con Harrison, <em>Principios de Medicina Interna</em>, 21.ª ed. Ver el cuadernillo de Insuficiencia Suprarrenal en el Adulto.</p>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-tratamiento" id="neurohipofisis">
+      <span class="seccion__pestana"><b>05</b> Neurohipófisis</span>
+      <h2 class="seccion__titulo">Neurohipófisis: ADH &amp; Oxitocina</h2>
+
+      <h3>Composición</h3>
+      <ul>
+        <li><strong>Axones</strong> de neuronas provenientes de los núcleos <strong>supraóptico</strong> y <strong>paraventricular</strong> del hipotálamo.</li>
+        <li><strong>Pituicitos</strong> — las células gliales de sostén.</li>
+        <li><strong>Cuerpos de Herring</strong> — dilataciones de los axones donde se acumula la neurosecreción a la espera de ser liberada.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>La neurohipófisis no sintetiza nada.</strong> La <strong>adenohipófisis fabrica sus propias hormonas</strong>; la neurohipófisis actúa como <strong>órgano de almacenamiento y liberación</strong> de hormonas producidas en el hipotálamo. La ADH y la oxitocina se sintetizan en los cuerpos neuronales del supraóptico y el paraventricular, <strong>viajan por transporte axónico</strong> y se almacenan en los cuerpos de Herring.</p>
+      </div>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th></th><th>ADH — vasopresina</th><th>Oxitocina</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Núcleo de origen</strong></td><td>Predominio <strong>supraóptico</strong></td><td>Predominio <strong>paraventricular</strong></td></tr>
+            <tr><td><strong>Estímulos</strong></td><td><strong>Hiperosmolaridad</strong> — el más sensible<br><strong>Hipovolemia</strong><br><strong>Hipotensión</strong></td><td><strong>Succión</strong> del pezón<br><strong>Distensión cervical</strong></td></tr>
+            <tr><td><strong>Receptor</strong></td><td><strong>V2</strong> en el túbulo colector<br><strong>V1a</strong> en el músculo liso vascular</td><td>Receptor de oxitocina en <strong>miometrio</strong> y <strong>células mioepiteliales</strong></td></tr>
+            <tr><td><strong>Funciones</strong></td><td><strong>Reabsorción renal de agua</strong><br><strong>Regulación de la osmolaridad plasmática</strong><br><strong>Vasoconstricción</strong></td><td><strong>Contracción uterina</strong><br><strong>Eyección de leche</strong></td></tr>
+            <tr><td><strong>Tipo de asa</strong></td><td>Retroalimentación <strong>negativa</strong> (osmolaridad)</td><td>Retroalimentación <strong>positiva</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Los dos receptores de la ADH</h3>
+      <p>La ADH tiene <strong>dos efectos que no van juntos</strong>, porque actúan por receptores distintos. Separarlos explica toda la farmacología del eje.</p>
+      <ul>
+        <li><strong>V2 — túbulo colector.</strong> Vía AMPc, inserta <strong>acuaporina 2</strong> en la membrana apical y permite reabsorber <strong>agua libre</strong>. Es la vía que <strong>no responde en la diabetes insípida nefrogénica</strong> y la que bloquean los <strong>vaptanes</strong>.</li>
+        <li><strong>V1a — músculo liso vascular.</strong> Produce <strong>vasoconstricción</strong>. Es el efecto que se busca en el <strong>shock vasopléjico</strong> y en la <strong>hemorragia por várices esofágicas</strong>, y la razón de ser de la terlipresina.</li>
+        <li>La <strong>desmopresina es un análogo selectivo V2</strong>: conserva el efecto antidiurético <strong>sin la vasoconstricción</strong>, y por eso se usa como tratamiento de reemplazo.</li>
+      </ul>
+
+      <p class="cita">Profundización: el <strong>umbral osmótico para liberar ADH</strong> (alrededor de <span class="dato">280 – 285 mOsm/kg</span>) es <strong>más bajo que el umbral de la sed</strong> (alrededor de <span class="dato">290 – 295 mOsm/kg</span>). El organismo <strong>primero ahorra agua y recién después la busca</strong> — por eso la sed intensa es un síntoma tardío, y por eso el paciente con diabetes insípida que pierde el acceso al agua se deshidrata rápidamente. Fuente: Harrison, <em>Principios de Medicina Interna</em>, 21.ª ed. Ver el cuadernillo de Diabetes Insípida.</p>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-diagnostico" id="regulacion">
+      <span class="seccion__pestana"><b>06</b> Regulación</span>
+      <h2 class="seccion__titulo">Retroalimentación &amp; Ritmos</h2>
+
+      <h3>Retroalimentación negativa</h3>
+      <p>Es el <strong>principal mecanismo regulador endocrino</strong>. La hormona final del eje <strong>frena a las dos instancias que están por encima de ella</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Eje</th><th>Hipotalámica → trófica</th><th>Hormona periférica</th><th>A quién inhibe</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Tiroideo</strong></td><td>TRH → <strong>TSH</strong></td><td><strong>T4 y T3</strong></td><td>TRH y TSH</td></tr>
+            <tr><td><strong>Corticotropo</strong></td><td>CRH → <strong>ACTH</strong></td><td><strong>Cortisol</strong></td><td>CRH y ACTH</td></tr>
+            <tr><td><strong>Somatotropo</strong></td><td>GHRH → <strong>GH</strong></td><td><strong>IGF-1</strong></td><td>GHRH y GH</td></tr>
+            <tr><td><strong>Gonadal · varón</strong></td><td>GnRH → <strong>LH</strong></td><td><strong>Testosterona</strong></td><td>GnRH y LH</td></tr>
+            <tr><td><strong>Gonadal · mujer</strong></td><td>GnRH → <strong>FSH y LH</strong></td><td><strong>Estradiol</strong></td><td>GnRH y gonadotrofinas <strong>en la mayor parte del ciclo</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>Ésta es la regla que ordena todo el resto de la endocrinología: la hormona trófica y la periférica se leen juntas, nunca por separado.</strong></p>
+        <p><strong>Periférica baja + trófica ALTA</strong> → la hipófisis funciona y está pidiendo; la falla es de <strong>la glándula</strong>. Es una insuficiencia <strong>primaria</strong>.<br>
+        <strong>Periférica baja + trófica NORMAL O BAJA</strong> → la glándula no recibe la orden; la falla es de <strong>la hipófisis</strong>. Es <strong>central o secundaria</strong>. Una TSH «normal» con T4 baja es un resultado <strong>patológico</strong>, no tranquilizador.</p>
+      </div>
+
+      <h3>Retroalimentación positiva</h3>
+      <p><strong>Amplifica una respuesta fisiológica hasta que el estímulo desaparece.</strong> Es un fenómeno <strong>poco frecuente</strong> justamente porque es inestable: por definición tiene que terminar en un evento que corte el estímulo. Dos ejemplos clásicos:</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Ovulación</th><th>Parto</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Estradiol elevado y sostenido</strong> →<br>estimulación hipotalámica →<br><strong>pico de LH</strong> →<br><strong>ovulación</strong></td>
+              <td><strong>Distensión cervical</strong> →<br><strong>oxitocina</strong> →<br>mayor contracción →<br><strong>mayor liberación de oxitocina</strong></td>
+            </tr>
+            <tr>
+              <td>El estímulo se corta con <strong>la ovulación misma</strong></td>
+              <td>El estímulo se corta con <strong>la expulsión del feto</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Ritmos biológicos de secreción</h3>
+      <p>Las hormonas <strong>no se secretan de manera continua</strong>: presentan distintos patrones fisiológicos, y conocerlos <strong>cambia cuándo se pide el laboratorio</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 320" role="img" aria-label="Comparación de los dos patrones de secreción hormonal sobre un mismo eje de veinticuatro horas. Arriba, el ritmo circadiano del cortisol: una curva continua con mínimo a medianoche, ascenso durante la madrugada, pico entre las seis y las ocho de la mañana y descenso progresivo durante el resto del día. Abajo, el ritmo pulsátil de la hormona de crecimiento, la GnRH, la LH y la ACTH: picos breves y separados sobre una concentración basal baja, con el pulso de mayor amplitud durante la noche.">
+          <text x="70" y="26" font-size="11" font-weight="700" fill="currentColor">RITMO CIRCADIANO · cortisol</text>
+
+          <path d="M 70,132 C 140,128 195,66 242,60 C 300,55 340,80 400,98 C 480,120 580,130 660,132 L 660,138 L 70,138 Z" fill="var(--c)" fill-opacity="0.16" stroke="none"></path>
+          <path d="M 70,132 C 140,128 195,66 242,60 C 300,55 340,80 400,98 C 480,120 580,130 660,132" fill="none" stroke="currentColor" stroke-width="2.5"></path>
+          <polyline points="70,138 660,138" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3"></polyline>
+          <polyline points="242,52 242,138" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3" opacity="0.6"></polyline>
+          <text x="250" y="50" font-size="10.5" font-weight="700" fill="currentColor">pico 6 – 8 h</text>
+          <text x="664" y="152" font-size="10.5" fill="currentColor" text-anchor="end">mínimo a medianoche</text>
+
+          <text x="70" y="172" font-size="11" font-weight="700" fill="currentColor">RITMO PULSÁTIL · GH · GnRH · LH · ACTH</text>
+          <text x="664" y="178" font-size="10.5" fill="currentColor" text-anchor="end">pulso nocturno mayor de GH</text>
+
+          <polygon points="70,265 85,265 90,182 96,265 145,265 150,240 156,265 210,265 215,214 221,265 285,265 290,246 296,265 355,265 360,220 366,265 425,265 430,249 436,265 495,265 500,218 506,265 565,265 570,243 576,265 625,265 630,188 636,265 660,265" fill="var(--c)" fill-opacity="0.22" stroke="currentColor" stroke-width="2"></polygon>
+
+          <polyline points="70,272 660,272" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+          <polyline points="70,272 70,278" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+          <polyline points="217,272 217,278" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+          <polyline points="365,272 365,278" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+          <polyline points="512,272 512,278" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+          <polyline points="660,272 660,278" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+          <text x="70"  y="292" font-size="10.5" fill="currentColor" text-anchor="middle">0 h</text>
+          <text x="217" y="292" font-size="10.5" fill="currentColor" text-anchor="middle">6 h</text>
+          <text x="365" y="292" font-size="10.5" fill="currentColor" text-anchor="middle">12 h</text>
+          <text x="512" y="292" font-size="10.5" fill="currentColor" text-anchor="middle">18 h</text>
+          <text x="660" y="292" font-size="10.5" fill="currentColor" text-anchor="middle">24 h</text>
+          <text x="70"  y="310" font-size="10.5" fill="currentColor" text-anchor="middle" opacity="0.75">medianoche</text>
+          <text x="365" y="310" font-size="10.5" fill="currentColor" text-anchor="middle" opacity="0.75">hora del día</text>
+        </svg>
+        <figcaption>Los dos patrones se miden distinto. Una hormona <strong>circadiana</strong> se dosa <strong>a una hora fija</strong> —el cortisol a las 8 de la mañana— y lo que se busca es la <strong>pérdida del ritmo</strong>. Una hormona <strong>pulsátil</strong> <strong>no se puede evaluar con un valor aislado</strong>: hay que medir su producto estable, como la <strong>IGF-1</strong> en lugar de la GH.</figcaption>
+      </figure>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Patrón</th><th>Hormonas</th><th>Comportamiento</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Circadiano</strong></td><td><strong>Cortisol</strong><br><strong>TSH</strong><br><strong>Melatonina</strong></td><td>Pico <strong>6 – 8 h</strong>, mínimo a <strong>medianoche</strong><br>Pico <strong>nocturno</strong><br>Pico <strong>durante la noche</strong></td></tr>
+            <tr><td><strong>Pulsátil</strong></td><td><strong>GH · GnRH · LH · ACTH</strong></td><td>La <strong>secreción pulsátil es esencial para mantener la sensibilidad de los receptores</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Profundización sobre las dos consecuencias prácticas del ritmo. <strong>Circadiano</strong>: el cortisol se dosa <strong>entre las 8 y las 9 de la mañana</strong> porque un valor tomado a otra hora no es interpretable, y lo que se busca en el síndrome de Cushing es precisamente <strong>la pérdida del ritmo</strong> mediante el <strong>cortisol salival nocturno</strong>. <strong>Pulsátil</strong>: la exposición <strong>continua</strong> a GnRH <strong>desensibiliza el receptor</strong> en lugar de estimularlo — ése es el fundamento de los <strong>agonistas de GnRH de depósito</strong> (leuprolide, goserelina), que tras un pico inicial producen una <strong>castración química</strong>, y por eso se usan en cáncer de próstata y endometriosis. Fuente: Harrison, <em>Principios de Medicina Interna</em>, 21.ª ed. Ver el cuadernillo de Síndrome de Cushing.</p>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-importantes" id="adenomas">
+      <span class="seccion__pestana"><b>07</b> Adenomas</span>
+      <h2 class="seccion__titulo">Adenomas Hipofisarios</h2>
+
+      <p>Son <strong>tumores benignos originados en la adenohipófisis</strong>, derivados de células endocrinas <strong>que pueden producir o no hormonas</strong>. Representan la <strong>patología tumoral más frecuente de la hipófisis</strong> y son generalmente de <strong>crecimiento lento</strong>.</p>
+
+      <h3>Clasificación</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Criterio</th><th>Categorías</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>A) Según tamaño</strong></td><td><strong>Microadenomas</strong>: <span class="dato">&lt; 10 mm</span><br><strong>Macroadenomas</strong>: <span class="dato">≥ 10 mm</span></td></tr>
+            <tr><td><strong>B) Según función hormonal</strong></td><td><strong>Funcionantes</strong> (secretantes)<br><strong>No funcionantes</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Nota sobre el material de cátedra: la diapositiva de clasificación equipara <strong>«no funcionantes» con «incidentalomas»</strong>. No son sinónimos. <strong>No funcionante</strong> describe que el tumor <strong>no secreta</strong>; <strong>incidentaloma</strong> describe <strong>cómo se lo encontró</strong> —en un estudio pedido por otro motivo—. Un incidentaloma puede resultar perfectamente funcionante al estudiarlo, y de hecho por eso se dosan hormonas ante todo hallazgo casual.</p>
+
+      <h3>Adenomas funcionantes</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Adenoma</th><th>Hormona</th><th>Síndrome</th><th>1ª línea</th><th>Dónde está el detalle</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Prolactinoma</strong><br><em>el más frecuente</em></td><td><strong>PRL</strong></td><td><strong>Galactorrea, amenorrea, hipogonadismo</strong></td><td><strong>Cabergolina</strong></td><td>Cuadernillo de <strong>Hiperprolactinemia y Prolactinomas</strong></td></tr>
+            <tr><td><strong>Somatotropinoma</strong></td><td><strong>GH</strong></td><td><strong>Acromegalia</strong> en el adulto; <strong>gigantismo</strong> si aparece antes del cierre epifisario</td><td><strong>Cirugía transesfenoidal</strong></td><td>—</td></tr>
+            <tr><td><strong>Corticotropinoma</strong></td><td><strong>ACTH</strong></td><td><strong>Enfermedad de Cushing</strong></td><td><strong>Cirugía transesfenoidal</strong></td><td>Cuadernillo de <strong>Síndrome de Cushing</strong></td></tr>
+            <tr><td><strong>TSHoma</strong><br><em>raro</em></td><td><strong>TSH</strong></td><td><strong>Hipertiroidismo central</strong>: T4 alta con TSH normal o alta</td><td><strong>Cirugía</strong></td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Manifestaciones clínicas generales</h3>
+      <p>Se dividen en <strong>tres grupos que conviene no mezclar</strong>: lo que produce la <strong>hipersecreción</strong>, lo que produce la <strong>hiposecreción</strong> por compresión del tejido sano, y lo que produce el <strong>efecto de masa</strong> sobre las estructuras vecinas.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Hipersecreción</th><th>Hiposecreción</th><th>Manifestaciones neurológicas</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Prolactinoma</strong><br><strong>Enfermedad de Cushing</strong><br><strong>Acromegalia</strong><br>Gonadotropinomas<br>Tirotropinomas</td>
+              <td>Déficit de <strong>GH</strong><br><strong>Hipotiroidismo</strong> central<br><strong>Insuficiencia suprarrenal</strong> secundaria<br><strong>Hipogonadismo</strong></td>
+              <td><strong>Cefalea</strong><br><strong>Hipertensión endocraneana</strong><br><strong>Déficit visual</strong><br><strong>Diplopía</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>La hemianopsia es bitemporal por dónde viene la compresión.</strong> El quiasma está <strong>por encima</strong> de la hipófisis, de modo que el adenoma lo comprime <strong>desde abajo</strong>. Las primeras fibras en tomarse son las <strong>nasales inferiores, que son las que cruzan</strong>, y son las que llevan los <strong>campos temporales superiores</strong>. Por eso el déficit <strong>empieza por los cuadrantes temporales superiores</strong> y sólo después se completa como hemianopsia bitemporal. Es el motivo por el que se pide <strong>campimetría</strong> y no alcanza con preguntar si ve bien.</p>
+      </div>
+
+      <h3>Diagnóstico</h3>
+      <ul>
+        <li><strong>RMN de hipófisis con contraste</strong> — <strong>gold standard</strong>.</li>
+        <li><strong>Dosaje hormonal basal</strong> — trófica y periférica juntas, según la regla de la sección 06.</li>
+        <li><strong>Campimetría visual</strong> y fondo de ojo.</li>
+      </ul>
+
+      <h3>Tratamiento</h3>
+      <ul>
+        <li><strong>Prolactinomas: agonistas dopaminérgicos (cabergolina).</strong> Es el <strong>único adenoma hipofisario cuyo tratamiento de primera línea es médico</strong> — reduce el tamaño del tumor, no sólo la hormona.</li>
+        <li><strong>Resto de los adenomas: cirugía transesfenoidal</strong>, hoy por vía endoscópica.</li>
+        <li><strong>Radioterapia</strong> en casos seleccionados, como complemento para evitar recidivas o cuando ya se produjeron. Una modalidad moderna es la <strong>radiocirugía estereotáxica</strong>.</li>
+        <li><strong>Tratamiento médico según la hormona</strong> en los demás casos.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante! — Apoplejía hipofisaria</p>
+        <p>Es la <strong>urgencia</strong> del tema: un <strong>infarto o una hemorragia dentro del adenoma</strong>, muchas veces en un tumor que no se sabía que existía.</p>
+        <p><strong>Cuadro:</strong> <strong>cefalea de instalación brusca e intensa</strong>, <strong>déficit visual</strong>, <strong>oftalmoplejía</strong> y <strong>alteración del sensorio</strong>. Puede simular una hemorragia subaracnoidea o una meningitis.</p>
+        <p><strong>Conducta:</strong> <strong>hidrocortisona endovenosa ante la sospecha, sin esperar el resultado del cortisol</strong> — lo que mata es la <strong>insuficiencia suprarrenal aguda</strong>, no el tumor. Luego <strong>RMN de urgencia</strong>, corrección hidroelectrolítica y <strong>evaluación neuroquirúrgica</strong>, que es indicación formal si hay compromiso visual progresivo o deterioro del sensorio.</p>
+      </div>
+
+      <p class="cita">La apoplejía hipofisaria <strong>no figura en el material de cátedra</strong> y se incluye por ser la única presentación de este tema que constituye una emergencia. Fuente: Rajasekaran S et al., <em>UK guidelines for the management of pituitary apoplexy</em>, Clin Endocrinol 2011.</p>
+
+      <p>El concepto que cierra el teórico: <strong>no todos los adenomas hipofisarios se comportan igual</strong>. Su conducta depende de <strong>dos variables independientes</strong> — <strong>qué hormona secreta</strong> y <strong>cuánto espacio ocupa</strong>. Un microprolactinoma puede dar mucha clínica hormonal y ninguna neurológica; un macroadenoma no funcionante puede dar lo contrario.</p>
+    </section>
+
+    <!-- ============ Repaso ============ -->
+    <section class="seccion s-clinica" id="repaso">
+      <span class="seccion__pestana"><b>08</b> Repaso</span>
+      <h2 class="seccion__titulo">Repaso Activo</h2>
+      <p>Respondé antes de abrir cada tarjeta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary class="fc__p">¿Por qué ninguna hormona hipofisaria se administra por vía oral?</summary>
+          <div class="fc__r">Porque <strong>todas son peptídicas</strong> y el tubo digestivo las degrada. La excepción terapéutica es la <strong>desmopresina</strong>, un análogo modificado de la ADH cuya estructura resiste la degradación y admite la vía oral o intranasal.</div>
+        </details>
+        <details class="fc s-diferenciales">
+          <summary class="fc__p">Dimensiones y peso de la hipófisis, y dónde se aloja</summary>
+          <div class="fc__r"><strong>Menos de un gramo.</strong> <strong>10 – 13 mm</strong> transversal, <strong>6 – 8 mm</strong> anteroposterior, <strong>5 – 8 mm</strong> de altura. Se aloja en la <strong>fosa hipofisaria de la silla turca</strong>, en el <strong>hueso esfenoides</strong>, y se une al hipotálamo por el <strong>tallo o infundíbulo</strong>.</div>
+        </details>
+        <details class="fc s-diferenciales">
+          <summary class="fc__p">Los cinco tipos celulares de la adenohipófisis con su proporción y tinción</summary>
+          <div class="fc__r"><strong>Somatotropas 45 – 50 %</strong>, acidófilas, GH. <strong>Lactotropas 15 – 20 %</strong>, acidófilas, PRL. <strong>Corticotropas 15 – 20 %</strong>, basófilas, ACTH. <strong>Gonadotropas 10 – 15 %</strong>, basófilas, FSH y LH. <strong>Tirotropas 5 %</strong>, basófilas, TSH.</div>
+        </details>
+        <details class="fc s-diferenciales">
+          <summary class="fc__p">¿Por qué el prolactinoma y el somatotropinoma son los adenomas funcionantes más frecuentes?</summary>
+          <div class="fc__r">Porque <strong>lactotropas y somatotropas son los tipos celulares más abundantes</strong>: la histología predice la epidemiología. En el otro extremo, las <strong>tirotropas son apenas el 5 %</strong> — y el TSHoma es raro.</div>
+        </details>
+        <details class="fc s-fisiopatologia">
+          <summary class="fc__p">Las seis hormonas hipotalámicas y su signo</summary>
+          <div class="fc__r"><strong>TRH</strong> ↑ TSH <em>y</em> prolactina. <strong>CRH</strong> ↑ ACTH. <strong>GnRH</strong> ↑ FSH y LH. <strong>GHRH</strong> ↑ GH. <strong>Somatostatina</strong> ↓ GH y ↓ TSH. <strong>Dopamina</strong> ↓ prolactina.</div>
+        </details>
+        <details class="fc s-fisiopatologia">
+          <summary class="fc__p">¿Qué pasa con las hormonas hipofisarias si se secciona el tallo?</summary>
+          <div class="fc__r"><strong>Todas bajan menos la prolactina, que sube.</strong> Es la única bajo <strong>control inhibitorio tónico</strong> (dopamina): perder la conexión con el hipotálamo la <strong>desinhibe</strong>. Es el <strong>efecto de desconexión</strong>, y por eso esos valores rara vez superan los <strong>100 – 150 ng/mL</strong>.</div>
+        </details>
+        <details class="fc s-fisiopatologia">
+          <summary class="fc__p">¿Por qué un hipotiroidismo primario puede dar hiperprolactinemia?</summary>
+          <div class="fc__r">Porque la <strong>TRH estimula tanto a la tirotropa como a la lactotropa</strong>. Al faltar la retroalimentación de T4, la TRH sube y arrastra también a la prolactina. Por eso el <strong>hipotiroidismo se descarta antes de pedir la resonancia</strong>.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary class="fc__p">¿Cuál es la excepción al concepto de hormona trófica?</summary>
+          <div class="fc__r">La <strong>prolactina</strong>. Las demás hormonas hipofisarias <strong>estimulan otra glándula endocrina</strong>; la prolactina actúa <strong>directamente sobre la glándula mamaria</strong>, un órgano no endocrino, y <strong>no tiene hormona periférica</strong> que cierre el asa — su freno es la dopamina hipotalámica.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary class="fc__p">¿Qué es la POMC y qué explica clínicamente?</summary>
+          <div class="fc__r">La <strong>proopiomelanocortina</strong>, precursor común de <strong>ACTH, MSH y β-endorfina</strong>. Como ACTH y MSH comparten secuencia, cuando la ACTH está <strong>muy alta</strong> (Addison primario, Nelson) aparece <strong>hiperpigmentación</strong>. En la insuficiencia <strong>secundaria</strong> la ACTH es baja y <strong>no hay hiperpigmentación</strong>.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary class="fc__p">¿Dónde se sintetizan la ADH y la oxitocina?</summary>
+          <div class="fc__r">En los <strong>núcleos supraóptico y paraventricular del hipotálamo</strong>. Viajan por <strong>transporte axónico</strong> y se almacenan en los <strong>cuerpos de Herring</strong>. La <strong>neurohipófisis almacena y libera, no sintetiza</strong>.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary class="fc__p">Los dos receptores de la ADH y su consecuencia farmacológica</summary>
+          <div class="fc__r"><strong>V2</strong> en el <strong>túbulo colector</strong>: inserta <strong>acuaporina 2</strong> y reabsorbe agua libre — es la vía que falla en la DI nefrogénica y la que bloquean los vaptanes. <strong>V1a</strong> en el <strong>músculo liso vascular</strong>: vasoconstricción — terlipresina en la hemorragia variceal. La <strong>desmopresina es selectiva V2</strong>: antidiurética sin vasoconstricción.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary class="fc__p">La regla que localiza la lesión en cualquier eje endocrino</summary>
+          <div class="fc__r"><strong>Leer la trófica y la periférica juntas.</strong> Periférica baja + trófica <strong>alta</strong> = falla de <strong>la glándula</strong> (primaria). Periférica baja + trófica <strong>normal o baja</strong> = falla de <strong>la hipófisis</strong> (central). Una TSH «normal» con T4 baja es un resultado <strong>patológico</strong>.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary class="fc__p">¿Por qué el cortisol se mide a las 8 de la mañana?</summary>
+          <div class="fc__r">Por el <strong>ritmo circadiano</strong>: <strong>pico 6 – 8 h, mínimo a medianoche</strong>. Un valor tomado a otra hora <strong>no es interpretable</strong>. Y lo que se busca en el Cushing es la <strong>pérdida del ritmo</strong>, mediante el <strong>cortisol salival nocturno</strong>.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary class="fc__p">¿Por qué la GnRH administrada en forma continua castra en vez de estimular?</summary>
+          <div class="fc__r">Porque la <strong>pulsatilidad es lo que mantiene la sensibilidad del receptor</strong>, y la exposición continua lo <strong>desensibiliza</strong>. Es el fundamento de los <strong>agonistas de GnRH de depósito</strong> —leuprolide, goserelina—: tras un pico inicial producen una <strong>castración química</strong>. Se usan en cáncer de próstata y endometriosis.</div>
+        </details>
+        <details class="fc s-importantes">
+          <summary class="fc__p">¿Por qué la hemianopsia del adenoma es bitemporal, y por dónde empieza?</summary>
+          <div class="fc__r">Porque el tumor comprime el <strong>quiasma desde abajo</strong> y toma primero las <strong>fibras nasales inferiores, que son las que cruzan</strong> y llevan los <strong>campos temporales</strong>. Empieza por los <strong>cuadrantes temporales superiores</strong> y sólo después se completa. De ahí la <strong>campimetría</strong>.</div>
+        </details>
+        <details class="fc s-importantes">
+          <summary class="fc__p">Cuadro y primera medida de la apoplejía hipofisaria</summary>
+          <div class="fc__r"><strong>Cefalea brusca e intensa + déficit visual + oftalmoplejía + alteración del sensorio.</strong> Primera medida: <strong>hidrocortisona endovenosa ante la sospecha, sin esperar el cortisol</strong> — lo que mata es la <strong>insuficiencia suprarrenal aguda</strong>. Después, RMN de urgencia y evaluación neuroquirúrgica.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Concepto clave</dt>
+        <dd><strong>Hipotálamo → sistema porta → adenohipófisis → glándula blanco → hormona periférica</strong>, con el asa de <strong>retroalimentación negativa</strong> cerrando sobre los dos niveles superiores. <strong>Seis</strong> hormonas hipotalámicas, <strong>seis</strong> adenohipofisarias y <strong>dos</strong> neurohipofisarias — que el hipotálamo sintetiza y la neurohipófisis sólo almacena.</dd>
+
+        <dt class="r-gold">Estudio de elección</dt>
+        <dd><strong>RMN de hipófisis con gadolinio</strong> — gold standard—, más <strong>dosaje hormonal basal</strong> y <strong>campimetría visual</strong>. La regla que ordena el laboratorio: <strong>trófica y periférica siempre se leen juntas</strong>. Periférica baja con trófica alta es primaria; con trófica normal o baja, central.</dd>
+
+        <dt class="r-tto">Tratamiento de 1ª línea</dt>
+        <dd><strong>Prolactinoma: cabergolina</strong> — el <strong>único adenoma hipofisario de tratamiento médico de primera línea</strong>, porque reduce el tamaño y no sólo la hormona. <strong>Resto de los adenomas: cirugía transesfenoidal endoscópica</strong>, con radioterapia o radiocirugía estereotáxica en casos seleccionados.</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd><strong>Apoplejía hipofisaria</strong>: cefalea brusca + déficit visual + oftalmoplejía → <strong>hidrocortisona EV inmediata sin esperar el cortisol</strong>. <strong>Hemianopsia bitemporal</strong> = quiasma comprimido <strong>desde abajo</strong>, empieza por los cuadrantes superiores. Ante un <strong>incidentaloma</strong>, dosar hormonas: no funcionante e incidentaloma <strong>no son lo mismo</strong>.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir del material de cátedra «Hipófisis» de Endocrinología y Diabetología, Medicina Interna III, Universidad de Mendoza, Sede San Rafael (Dres. Roberto M. Pelayes, Jorge F. Baldovino, Malco Rubín y Franco Bellomo), complementado con Harrison y el Williams Textbook of Endocrinology. Material de estudio: no reemplaza el criterio clínico ni la guía institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link'));
+
+  function porMeta(hash){
+    for (var i = 0; i < enlaces.length; i++){
+      if (enlaces[i].getAttribute('href') === '#' + hash) return enlaces[i];
+    }
+    return null;
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var enlace = porMeta(e.target.id);
+        if (!enlace) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          enlace.setAttribute('aria-current', 'true');
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>

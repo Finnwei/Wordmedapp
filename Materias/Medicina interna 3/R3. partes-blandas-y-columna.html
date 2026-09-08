@@ -1,0 +1,1567 @@
+<title>Reumatismo de Partes Blandas y Columna</title>
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+}
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índice lateral ---------- */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Ficha de sección ---------- */
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.35rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-row:1/3; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+.importante__titulo{
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso{ display:none !important; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-generalidades"  href="#enfoque">Enfoque</a></li>
+      <li><a class="indice__link i-clinica"        href="#hombro">Hombro</a></li>
+      <li><a class="indice__link i-diferenciales"  href="#codo">Codo</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#mano">Mano &amp; Atrapamientos</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#mmii">Miembro Inferior</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#cervicalgia">Cervicalgia</a></li>
+      <li><a class="indice__link i-importantes"    href="#lumbalgia">Lumbalgia</a></li>
+      <li><a class="indice__link i-diferenciales"  href="#vademecum">Vademécum de Maniobras</a></li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Medicina Interna III · Reumatología · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Reumatismo de Partes Blandas y Columna</h1>
+      <p class="portada__bajada">Todo lo que duele alrededor de la articulación y no dentro de ella: tendón, bursa, entesis, fascia y nervio periférico. Más cervicalgia y lumbalgia, que son la consulta más frecuente del aparato locomotor.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">8 secciones</span>
+        <span class="etiqueta s-clinica">23 maniobras</span>
+        <span class="etiqueta s-fisiopatologia">4 regiones</span>
+        <span class="etiqueta s-importantes">Banderas rojas</span>
+      </div>
+    </header>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="enfoque">
+      <span class="seccion__pestana"><b>01</b> Enfoque</span>
+      <h2 class="seccion__titulo">Enfoque del Reumatismo de Partes Blandas</h2>
+
+      <p>El <strong>reumatismo de partes blandas</strong> agrupa la patología <strong>periarticular</strong>: <strong>tendón, vaina tendinosa, bursa, entesis, fascia y nervio periférico</strong>. No es patología <em>de</em> la articulación, y por eso no comparte ni el estudio ni el tratamiento de las artritis.</p>
+
+      <h3>El dolor de hombro: dos preguntas en orden</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Nivel</th><th>Categorías</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>1. ¿De dónde viene?</strong></td><td><strong>EXTRÍNSECO</strong> — el dolor se origina fuera del hombro<br><strong>INTRÍNSECO</strong> — el problema está en el hombro</td></tr>
+            <tr><td><strong>2. Si es intrínseco, ¿qué estructura?</strong></td><td><strong>ARTICULAR</strong><br><strong>PERIARTICULAR</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>«Dolor de hombro que no empeora con el movimiento no es dolor de hombro.»</strong> Es la frase que ordena la primera pregunta: si mover el brazo no cambia nada, el hombro es <strong>el lugar donde se siente</strong>, no el lugar donde está el problema. Hay que buscar un <strong>origen extrínseco</strong>.</p>
+      </div>
+
+      <h3>Movilidad activa contra movilidad pasiva</h3>
+      <p>Es el segundo filtro y el más rentable de toda la sección. La lógica: el <strong>movimiento activo exige que el tendón se contraiga y se deslice</strong>; el <strong>movimiento pasivo sólo exige que la articulación se mueva</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 428" role="img" aria-label="Árbol de decisión del dolor de hombro. Primero se pregunta si el dolor empeora con el movimiento. Si no empeora, el origen es extrínseco y corresponde a un dolor referido de origen cervical, diafragmático, cardíaco o biliar. Si empeora, el origen es intrínseco y se pregunta si duele también la movilidad pasiva. Si sólo duele la movilidad activa, la lesión es periarticular: tendinitis, bursitis o tendinopatía del manguito rotador. Si duelen tanto la activa como la pasiva, la lesión es articular: artritis, artrosis o capsulitis. Existen dos excepciones importantes: la bursitis subacromial y la capsulitis adhesiva limitan también la movilidad pasiva, porque la compresión es mecánica y no depende de la contracción muscular.">
+          <defs>
+            <marker id="pta-act" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="260" y="10" width="180" height="34" rx="3" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="350" y="32" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">DOLOR DE HOMBRO</text>
+
+          <polyline points="350,44 350,68" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-act)"></polyline>
+
+          <rect x="210" y="70" width="280" height="32" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="350" y="91" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">¿empeora con el movimiento?</text>
+
+          <polyline points="350,102 350,118" fill="none" stroke="currentColor" stroke-width="1.6"></polyline>
+          <polyline points="99,118 350,118" fill="none" stroke="currentColor" stroke-width="1.6"></polyline>
+          <polyline points="99,118 99,134" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-act)"></polyline>
+          <polyline points="350,118 350,134" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-act)"></polyline>
+          <text x="111" y="114" font-size="10.5" font-weight="700" fill="currentColor">NO</text>
+          <text x="358" y="114" font-size="10.5" font-weight="700" fill="currentColor">SÍ</text>
+
+          <rect x="14" y="138" width="170" height="86" rx="3" fill="var(--c)" fill-opacity="0.20" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="99" y="160" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">EXTRÍNSECO</text>
+          <text x="99" y="180" font-size="10.5" fill="currentColor" text-anchor="middle">dolor referido</text>
+          <text x="99" y="200" font-size="10.5" fill="currentColor" text-anchor="middle">cervical · diafragmático</text>
+          <text x="99" y="216" font-size="10.5" fill="currentColor" text-anchor="middle">cardíaco · biliar</text>
+
+          <rect x="270" y="138" width="160" height="30" rx="3" fill="var(--c)" fill-opacity="0.20" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="350" y="158" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">INTRÍNSECO</text>
+
+          <polyline points="350,168 350,190" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-act)"></polyline>
+
+          <rect x="198" y="192" width="304" height="32" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="350" y="213" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">¿duele también la movilidad PASIVA?</text>
+
+          <polyline points="350,224 350,252" fill="none" stroke="currentColor" stroke-width="1.6"></polyline>
+          <polyline points="250,252 560,252" fill="none" stroke="currentColor" stroke-width="1.6"></polyline>
+          <polyline points="250,252 250,266" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-act)"></polyline>
+          <polyline points="560,252 560,266" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-act)"></polyline>
+          <text x="250" y="246" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">NO — sólo la activa</text>
+          <text x="560" y="246" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">SÍ — activa y pasiva</text>
+
+          <rect x="170" y="270" width="180" height="92" rx="3" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="260" y="294" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">PERIARTICULAR</text>
+          <text x="260" y="316" font-size="10.5" fill="currentColor" text-anchor="middle">tendinitis · bursitis</text>
+          <text x="260" y="334" font-size="10.5" fill="currentColor" text-anchor="middle">tendinopatía del</text>
+          <text x="260" y="352" font-size="10.5" fill="currentColor" text-anchor="middle">manguito rotador</text>
+
+          <rect x="470" y="270" width="180" height="92" rx="3" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="560" y="294" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">ARTICULAR</text>
+          <text x="560" y="316" font-size="10.5" fill="currentColor" text-anchor="middle">artritis · artrosis</text>
+          <text x="560" y="334" font-size="10.5" fill="currentColor" text-anchor="middle">derrame</text>
+          <text x="560" y="352" font-size="10.5" fill="currentColor" text-anchor="middle">capsulitis</text>
+
+          <rect x="130" y="376" width="480" height="46" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.8" stroke-dasharray="6 4"></rect>
+          <text x="370" y="396" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">EXCEPCIÓN: bursitis subacromial y capsulitis adhesiva</text>
+          <text x="370" y="414" font-size="10.5" fill="currentColor" text-anchor="middle">limitan también la pasiva — la compresión es mecánica</text>
+        </svg>
+        <figcaption>La regla y sus excepciones se aprenden juntas, porque las excepciones son <strong>las dos patologías de hombro más frecuentes</strong>. En el <strong>pinzamiento subacromial</strong> la bursa se comprime contra el acromion <strong>por geometría</strong>, no por contracción muscular — duele mueva quien mueva el brazo. En la <strong>capsulitis adhesiva</strong> la restricción es de la propia cápsula, y por eso limita <strong>en todos los planos</strong>.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-clinica" id="hombro">
+      <span class="seccion__pestana"><b>02</b> Hombro</span>
+      <h2 class="seccion__titulo">Hombro</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Entidad</th><th>Clínica</th><th>Maniobras</th><th>Diagnóstico</th><th>Tratamiento</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Tendinitis bicipital</strong></td>
+              <td>Dolor en la <strong>región anterior del hombro</strong>. Puede irradiar a la <strong>cara lateral del brazo</strong></td>
+              <td>Presión en la cara anterior<br><strong>Test de Yergason</strong><br><strong>Signo de Speed</strong></td>
+              <td><strong>Clínico</strong></td>
+              <td>Reposo, AINEs, fisioterapia, infiltración<br><strong>Ruptura</strong>: expectante o quirúrgico</td>
+            </tr>
+            <tr>
+              <td><strong>Tendinopatía del manguito rotador</strong></td>
+              <td><strong>Dolor profundo</strong> con <strong>exacerbación nocturna</strong>, dolor en el deltoides, dolor a la <strong>movilidad resistida</strong> en abducción y rotación externa o interna.<br>Examen: <strong>debilidad</strong>, dolor, <strong>pérdida de movilidad</strong> y <strong>crepitación</strong></td>
+              <td><strong>Arco doloroso</strong><br><strong>Neer</strong> · <strong>Hawkins</strong><br><strong>Jobe</strong><br>Rotación externa resistida<br><strong>Gerber</strong></td>
+              <td>Clínica, ecografía, RMN, Rx</td>
+              <td>AINEs, infiltración, fisioterapia y kinesiología<br><strong>Ruptura o desgarro</strong>: quirúrgico</td>
+            </tr>
+            <tr>
+              <td><strong>Capsulitis adhesiva</strong><br><em>hombro congelado</em></td>
+              <td><strong>Dolor y restricción de los movimientos en TODOS los planos</strong><br>Prevalencia <span class="dato">2 – 3 %</span> en población general</td>
+              <td>—</td>
+              <td>Clínica, Rx y <strong>artroscopia</strong> (confirma)</td>
+              <td>Infiltración · quirúrgico</td>
+            </tr>
+            <tr>
+              <td><strong>Bursitis subacromial</strong></td>
+              <td>Dolor en el hombro <strong>con la abducción</strong><br><strong>Movilidad activa Y pasiva disminuidas</strong></td>
+              <td>—</td>
+              <td><strong>Ecografía</strong></td>
+              <td>Reposo, infiltración, fisioterapia y ejercicios</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>Causas de la capsulitis adhesiva:</strong> <strong>idiopática</strong>; enfermedades sistémicas —<strong>diabetes</strong>, enfermedad tiroidea, neoplasias, radiculopatía cervical—; o como <strong>vía final común</strong> de distintos desórdenes del hombro.</p>
+      <p><strong>Causas de la bursitis subacromial:</strong> traumatismos, procesos degenerativos y <strong>calcificación del manguito rotador</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 392" role="img" aria-label="Mapa que asocia cada maniobra del hombro con la estructura que evalúa. El tendón de la porción larga del bíceps se evalúa con el test de Yergason, que busca dolor al resistir la supinación con el codo a noventa grados, y con el signo de Speed, que busca dolor al resistir la flexión del hombro. El pinzamiento subacromial se evalúa con el arco doloroso entre sesenta y ciento veinte grados de abducción activa, con el signo de Neer y con el test de Hawkins. El supraespinoso se evalúa con el test de Jobe. El infraespinoso y el redondo menor con la rotación externa resistida. El subescapular con el test de Gerber.">
+          <defs>
+            <marker id="pta-hom" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <text x="145" y="16" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">ESTRUCTURA</text>
+          <text x="495" y="16" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">MANIOBRA</text>
+
+          <rect x="20" y="26" width="250" height="60" rx="3" fill="var(--c)" fill-opacity="0.26" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="145" y="50" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">TENDÓN DEL BÍCEPS</text>
+          <text x="145" y="70" font-size="10.5" fill="currentColor" text-anchor="middle">porción larga</text>
+          <polyline points="272,56 306,56" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-hom)"></polyline>
+          <rect x="310" y="26" width="370" height="60" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="326" y="50" font-size="10.5" fill="currentColor"><tspan font-weight="700">Yergason</tspan> — codo a 90°, dolor al resistir la supinación</text>
+          <text x="326" y="70" font-size="10.5" fill="currentColor"><tspan font-weight="700">Speed</tspan> — dolor al resistir la flexión del hombro</text>
+
+          <rect x="20" y="96" width="250" height="76" rx="3" fill="var(--c)" fill-opacity="0.26" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="145" y="126" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">PINZAMIENTO</text>
+          <text x="145" y="146" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">SUBACROMIAL</text>
+          <polyline points="272,134 306,134" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-hom)"></polyline>
+          <rect x="310" y="96" width="370" height="76" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="326" y="120" font-size="10.5" fill="currentColor"><tspan font-weight="700">Arco doloroso</tspan> — 60 a 120° de abducción ACTIVA</text>
+          <text x="326" y="140" font-size="10.5" fill="currentColor"><tspan font-weight="700">Neer</tspan> — flexión máxima en rotación interna</text>
+          <text x="326" y="160" font-size="10.5" fill="currentColor"><tspan font-weight="700">Hawkins</tspan> — flexión 90° + rotación interna pasiva</text>
+
+          <rect x="20" y="182" width="250" height="60" rx="3" fill="var(--c)" fill-opacity="0.26" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="145" y="216" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">SUPRAESPINOSO</text>
+          <polyline points="272,212 306,212" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-hom)"></polyline>
+          <rect x="310" y="182" width="370" height="60" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="326" y="206" font-size="10.5" fill="currentColor"><tspan font-weight="700">Jobe</tspan> — abducción 90°, 30° adelante, pulgares</text>
+          <text x="326" y="226" font-size="10.5" fill="currentColor">abajo, resiste. Positivo: debilidad</text>
+
+          <rect x="20" y="252" width="250" height="60" rx="3" fill="var(--c)" fill-opacity="0.26" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="145" y="276" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">INFRAESPINOSO</text>
+          <text x="145" y="296" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">y REDONDO MENOR</text>
+          <polyline points="272,282 306,282" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-hom)"></polyline>
+          <rect x="310" y="252" width="370" height="60" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="326" y="276" font-size="10.5" font-weight="700" fill="currentColor">Rotación externa resistida</text>
+          <text x="326" y="296" font-size="10.5" fill="currentColor">codos a 90° pegados al cuerpo</text>
+
+          <rect x="20" y="322" width="250" height="60" rx="3" fill="var(--c)" fill-opacity="0.26" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="145" y="356" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">SUBESCAPULAR</text>
+          <polyline points="272,352 306,352" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-hom)"></polyline>
+          <rect x="310" y="322" width="370" height="60" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="326" y="346" font-size="10.5" fill="currentColor"><tspan font-weight="700">Gerber</tspan> — mano por detrás a nivel lumbar,</text>
+          <text x="326" y="366" font-size="10.5" fill="currentColor">rota internamente contra resistencia</text>
+        </svg>
+        <figcaption>Las maniobras <strong>no son intercambiables</strong>: cada una carga una estructura distinta. Las de <strong>pinzamiento</strong> —Neer y Hawkins— reproducen el <strong>choque</strong> del troquíter o del supraespinoso contra el acromion o el ligamento coracoacromial. Las de <strong>tendón específico</strong> —Jobe, rotación externa resistida, Gerber— buscan <strong>debilidad contra resistencia</strong>, no dolor al choque.</figcaption>
+      </figure>
+
+      <h3>Detalle de las maniobras</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Maniobra</th><th>Cómo se hace</th><th>Qué significa</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Test de Yergason</strong></td><td><strong>Codo flexionado a 90°</strong>. Dolor a la <strong>resistencia de la supinación</strong></td><td>Tendinitis bicipital</td></tr>
+            <tr><td><strong>Signo de Speed</strong></td><td>Dolor al <strong>resistir la flexión del hombro</strong></td><td>Tendinitis bicipital</td></tr>
+            <tr><td><strong>Test del arco doloroso</strong></td><td>Dolor a la <strong>movilidad ACTIVA entre 60 y 120°</strong> de abducción. <strong>No se observa en la movilidad pasiva</strong></td><td>Articulación <strong>glenohumeral</strong>.<br>Dolor <strong>por arriba de 170°</strong>: compromiso <strong>acromioclavicular</strong></td></tr>
+            <tr><td><strong>Signo de Neer</strong></td><td>Examinador <strong>por detrás</strong>, con una mano <strong>bloquea la escápula</strong>. El brazo, <strong>en rotación interna</strong>, es llevado a <strong>máxima flexión</strong></td><td><strong>Pinzamiento</strong>: choque del <strong>troquíter contra el acromion</strong>. Evalúa la gravedad del atrapamiento del supraespinoso</td></tr>
+            <tr><td><strong>Test de Hawkins</strong></td><td>Hombro en <strong>flexión a 90°</strong>, llevado <strong>pasivamente a rotación interna</strong></td><td>Choque del <strong>tendón del supraespinoso contra el ligamento coracoacromial</strong></td></tr>
+            <tr><td><strong>Test de Jobe</strong></td><td>Brazo en <strong>abducción a 90°</strong> y <strong>30° hacia adelante</strong>, con los <strong>pulgares hacia abajo</strong>. Resiste activamente la fuerza descendente del examinador</td><td><strong>Positivo: debilidad</strong> respecto del contralateral → tendinopatía del <strong>supraespinoso</strong></td></tr>
+            <tr><td><strong>Rotación externa resistida</strong></td><td>Brazos a los lados con los <strong>codos a 90°</strong>. Rotación externa <strong>contra resistencia</strong></td><td>Tendinopatía del <strong>infraespinoso y redondo menor</strong></td></tr>
+            <tr><td><strong>Test de Gerber</strong></td><td>Brazo en <strong>rotación interna</strong>, con la <strong>mano por detrás a nivel lumbar</strong>. El paciente <strong>rota internamente contra resistencia</strong></td><td>Tendinopatía del <strong>subescapular</strong></td></tr>
+            <tr><td><strong>Impingement test</strong></td><td><strong>Alivio del dolor</strong> al realizar la abducción <strong>después de inyectar 10 mL de lidocaína al 1 % en la bursa subacromial</strong></td><td>Confirma el origen <strong>subacromial</strong> del dolor</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Anatomía del manguito rotador</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Músculo</th><th>Origen → inserción</th><th>Acción</th><th>Inervación</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Supraespinoso</strong></td><td>Fosa supraespinosa → <strong>troquíter</strong>, cara superior</td><td>Rotación interna del brazo</td><td><strong>N. supraescapular</strong></td></tr>
+            <tr><td><strong>Infraespinoso</strong></td><td>Fosa infraespinosa → <strong>troquíter</strong>, cara externa</td><td><strong>Rotación externa</strong></td><td><strong>N. supraescapular</strong></td></tr>
+            <tr><td><strong>Redondo menor</strong></td><td>Borde lateral de la escápula (arriba) → <strong>troquíter</strong>, cara posterior</td><td><strong>Rotación externa</strong></td><td><strong>N. circunflejo</strong></td></tr>
+            <tr><td><strong>Subescapular</strong></td><td>Fosa subescapular (cara anterior de la escápula) → <strong>troquín</strong></td><td><strong>Rotación interna</strong> y aducción</td><td><strong>N. subescapular</strong></td></tr>
+            <tr><td><strong>Redondo mayor</strong><br><em>no es del manguito</em></td><td>Borde lateral de la escápula (abajo) → borde interno de la corredera bicipital</td><td>Rotación interna</td><td>—</td></tr>
+            <tr><td><strong>Deltoides</strong></td><td>V deltoidea del húmero → borde anterior de la clavícula y labio inferior de la espina del omóplato</td><td><strong>Abducción del brazo</strong></td><td><strong>N. circunflejo</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Del mismo bloque anatómico de cátedra: la <strong>porción larga del tríceps</strong> se inserta en la <strong>rugosidad infraglenoidea</strong> y pasa entre el <strong>redondo mayor por delante</strong> y el <strong>redondo menor por detrás</strong>. El <strong>pectoral mayor</strong> y el <strong>deltoides</strong> delimitan el <strong>surco deltopectoral</strong>, por donde corre la <strong>vena cefálica</strong>. El <strong>pectoral menor</strong> va de la apófisis coracoides a las costillas 3, 4 y 5; el <strong>subclavio</strong>, de la cara inferior de la clavícula a la 1.ª costilla, inervado por el n. subclavio. Entre ambos, la <strong>aponeurosis clavipectoral de Richet</strong>.</p>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-diferenciales" id="codo">
+      <span class="seccion__pestana"><b>03</b> Codo</span>
+      <h2 class="seccion__titulo">Codo</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Entidad</th><th>Causas</th><th>Clínica</th><th>Diagnóstico</th><th>Tratamiento</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Bursitis olecraneana</strong></td>
+              <td><strong>Microtrauma repetido</strong>, infecciones, <strong>depósito de cristales</strong>, artropatías inflamatorias</td>
+              <td><strong>Masa</strong> indolora o dolorosa, con <strong>eritema y calor</strong> según la causa.<br><strong>Aguda</strong>: dolor con la flexión activa y pasiva; <strong>la extensión pasiva es completa e indolora</strong></td>
+              <td><strong>Estudio del líquido sinovial</strong></td>
+              <td><strong>Infecciosa: ATB.</strong> Si no, infiltración. Puede requerir cirugía</td>
+            </tr>
+            <tr>
+              <td><strong>Epicondilitis lateral</strong><br><em>codo de tenista</em></td>
+              <td><strong>Tendinosis angiofibroblástica</strong> por actividades de la vida diaria que exigen el codo y el carpo</td>
+              <td>Dolor en el <strong>epicóndilo</strong> irradiado al antebrazo y al <strong>dorso de la mano</strong>. Se despierta a la palpación, al <strong>resistir la extensión del carpo</strong>, o al <strong>extender el codo con el carpo flexionado</strong></td>
+              <td><strong>Clínico.</strong> Ecografía o RMN <strong>no hacen falta</strong></td>
+              <td>Reposo, fisioterapia, kinesiología, infiltraciones</td>
+            </tr>
+            <tr>
+              <td><strong>Epicondilitis medial</strong><br><em>epitrocleítis</em></td>
+              <td>Sobreuso</td>
+              <td>Dolor a la palpación que se exacerba al <strong>resistir la flexión del carpo y la pronación del antebrazo</strong>. <strong>Generalmente no hay inflamación</strong>. Puede asociarse a <strong>neuropatía compresiva cubital</strong></td>
+              <td>Clínico</td>
+              <td><strong>Conservador</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Atrapamiento del n. cubital</strong></td>
+              <td>Trauma, <strong>masas ocupantes</strong>, <strong>engrosamiento del ligamento arcuato</strong></td>
+              <td><strong>Despertar con el codo flexionado</strong>, parestesias, dolor, disestesias permanentes hasta la <strong>pérdida de la sensibilidad</strong> y la <strong>atrofia muscular</strong></td>
+              <td>Tinel, test de flexión, test de presión.<br><strong>EMG confirma</strong></td>
+              <td>Infiltraciones. Ante síntomas persistentes: <strong>cirugía</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Síndrome del túnel radial</strong></td>
+              <td><strong>1)</strong> Tendinopatía por <strong>sobreuso del supinador</strong><br><strong>2)</strong> Compresión por <strong>ganglión, sinovitis, dislocación o fractura de la cabeza del radio</strong></td>
+              <td><strong>1)</strong> Dolor profundo en la <strong>cara dorsal y lateral del antebrazo</strong>, aumenta con la actividad y en reposo<br><strong>2)</strong> <strong>Parestesias</strong></td>
+              <td><strong>1)</strong> EMG con <strong>velocidad de conducción normal</strong><br><strong>2)</strong> EMG con <strong>denervación</strong></td>
+              <td><strong>1)</strong> Conservador<br><strong>2)</strong> <strong>Descompresión</strong> del nervio</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>Cómo se diferencia una bursitis olecraneana de una artritis del codo:</strong> en la bursitis la <strong>extensión pasiva es completa e indolora</strong> —la bursa está por fuera de la articulación y el movimiento no la comprime—. En la <strong>artritis</strong>, la extensión pasiva es <strong>incompleta y dolorosa</strong>. Es la misma lógica del activo contra pasivo de la sección 01, aplicada a un movimiento en particular.</p>
+      </div>
+
+      <h3>Las tres maniobras del nervio cubital</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Maniobra</th><th>Cómo se hace</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Signo de Tinel</strong></td><td><strong>Percusión del nervio a nivel del codo</strong>: puede causar dolor y parestesias</td></tr>
+            <tr><td><strong>Test de flexión</strong></td><td>Se <strong>reproducen los síntomas</strong> tras mantener el <strong>codo flexionado 60 segundos</strong></td></tr>
+            <tr><td><strong>Test de presión</strong></td><td>Los dedos <strong>índice y medio</strong> del examinador comprimen durante <strong>60 segundos</strong> el nervio <strong>proximal al túnel cubital</strong>, con el codo en flexión de <strong>20°</strong> y el antebrazo en <strong>supinación</strong></td></tr>
+            <tr><td><strong>EMG</strong></td><td><strong>Confirma</strong> el diagnóstico</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Anatomía muscular del codo</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Relieve</th><th>Músculos que se insertan</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Epicóndilo medial</strong> = <strong>epitróclea</strong><br><em>músculos epitrocleares</em></td><td><strong>Pronador redondo</strong>, palmar mayor, palmar menor, <strong>cubital anterior</strong> y un as del flexor común superficial de los dedos</td></tr>
+            <tr><td><strong>Epicóndilo lateral</strong> = <strong>epicóndilo</strong><br><em>músculos epicondíleos</em></td><td><strong>2.º radial</strong>, <strong>supinador corto</strong>, ancóneo, <strong>extensor común de los dedos</strong>, extensor propio del meñique y <strong>cubital posterior</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Nota terminológica del deck: <strong>ulna = cúbito</strong>. Y una consecuencia anatómica de la tabla: los <strong>epitrocleares flexionan y pronan</strong>, por eso la epicondilitis medial duele al resistir <strong>la flexión del carpo y la pronación</strong>; los <strong>epicondíleos extienden y supinan</strong>, por eso la lateral duele al resistir <strong>la extensión del carpo</strong>. La maniobra se deduce de la inserción.</p>
+
+      <p class="cita">Anatomía del <strong>nervio radial</strong>: se divide en una <strong>rama superficial sensitiva</strong> y una <strong>rama profunda</strong>, que se continúa como <strong>nervio interóseo posterior</strong>. Es esta última la comprometida en el síndrome del túnel radial.</p>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-tratamiento" id="mano">
+      <span class="seccion__pestana"><b>04</b> Mano</span>
+      <h2 class="seccion__titulo">Mano &amp; Atrapamientos Nerviosos</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Entidad</th><th>Qué es</th><th>Clínica</th><th>Tratamiento</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Tenosinovitis de Quervain</strong></td>
+              <td><strong>Tendinosis estenosante</strong> del <strong>abductor largo y el extensor corto del pulgar</strong>, que transcurren por el <strong>1.er compartimiento extensor</strong> de la muñeca.<br>Causa: injuria repetida por tareas manuales, <strong>AR</strong>, <strong>artritis psoriásica</strong></td>
+              <td>Dolor en la <strong>cara radial del carpo y la base del pulgar</strong><br><strong>Test de Finkelstein</strong></td>
+              <td>Reposo, terapia ocupacional, <strong>valvas o férula inmovilizadora</strong>, <strong>infiltración</strong> —guiada por ecografía si se sospecha <strong>tabicación</strong> cuando no responde a la primera—. <strong>Inusualmente requiere cirugía</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Síndrome del túnel carpiano</strong></td>
+              <td><strong>Neuropatía por atrapamiento</strong> del <strong>nervio mediano</strong></td>
+              <td>Dolor <strong>quemante y punzante</strong> y <strong>parestesias en el territorio del mediano</strong>. <strong>Empeora por la noche.</strong><br><strong>Debilidad y atrofia gradual de la eminencia tenar</strong></td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td><strong>Enfermedad de Dupuytren</strong></td>
+              <td><strong>Engrosamiento nodular de la fascia palmar</strong>, luego reemplazada por <strong>fibrosis</strong>, principalmente en los dedos <strong>anular y meñique</strong>.<br>Aumento del <strong>colágeno tipo III</strong> y de <strong>miofibroblastos</strong>, posiblemente estimulados por <strong>citoquinas fibrogénicas</strong></td>
+              <td><strong>Retracción palmar</strong> y <strong>contractura digital</strong> → <strong>deformidad en flexión</strong>.<br>En general <strong>bilateral y simétrico</strong>. Predomina en <strong>varones caucásicos</strong>, aumenta con la edad, con <strong>predisposición familiar</strong></td>
+              <td>Fisioterapia, ejercicios de elongación, infiltración, hasta <strong>fasciectomía</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Tendinopatía digital estenosante</strong><br><em>dedo en gatillo</em></td>
+              <td><strong>Hiperplasia de la polea cartilaginosa A1</strong>.<br>Causa más común: <strong>trauma repetido</strong></td>
+              <td>El tendón <strong>se traba en flexión</strong> y <strong>se destraba en extensión con un chasquido palmar</strong></td>
+              <td><strong>Modificar el tipo de actividad</strong>, infiltración</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>Asociaciones del Dupuytren:</strong> alcohol, <strong>diabetes</strong>, <strong>EPOC</strong>, otros desórdenes del tejido fibroso, <strong>distrofia simpática refleja</strong> o forma <strong>paraneoplásica</strong> (síndrome de Medsger).</p>
+      <p><strong>Diátesis de Dupuytren:</strong> asociación con otras lesiones fibróticas — <strong>nódulos en los nudillos</strong>, <strong>fibrosis de la fascia plantar</strong> y <strong>fibrosis del pene</strong>.</p>
+
+      <h3>Las cuatro pruebas del túnel carpiano</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Prueba</th><th>Cómo se hace</th><th>Positiva si</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Prueba de Phalen</strong></td><td><strong>Flexión máxima de muñecas</strong> mantenida <strong>60 segundos</strong></td><td>Se desencadenan <strong>parestesias en el territorio del mediano</strong></td></tr>
+            <tr><td><strong>Phalen inversa</strong></td><td><strong>Extensión de muñecas</strong> mantenida <strong>60 segundos</strong></td><td>Aparecen <strong>parestesias en el territorio del mediano</strong></td></tr>
+            <tr><td><strong>Signo de Tinel</strong></td><td>Se <strong>percute ligeramente con el martillo de reflejos sobre el túnel del carpo</strong></td><td>Se producen <strong>parestesias en el trayecto del mediano</strong></td></tr>
+            <tr><td><strong>Signo del círculo</strong></td><td><strong>Oponer el primer dedo con el segundo</strong>, intentando formar un círculo</td><td>Se forman <strong>otras figuras</strong> entre el índice y el pulgar, <strong>pero no el círculo</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Anatomía del túnel carpiano</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Componente</th><th>Detalle</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Componente óseo</strong></td><td><strong>Escafoides</strong>, <strong>grande</strong>, <strong>ganchoso</strong>, <strong>piramidal</strong> y <strong>pisiforme</strong></td></tr>
+            <tr><td><strong>Componente fibroso</strong></td><td><strong>Ligamento anular anterior del carpo</strong>: desde el <strong>tubérculo del escafoides</strong> hasta el <strong>pisiforme</strong>, donde <strong>se divide en dos hojas</strong> y forma el <strong>canal de Guyon</strong> junto al cubital anterior — por donde pasa el <strong>paquete vasculonervioso cubital</strong></td></tr>
+            <tr><td><strong>Contenido</strong></td><td><strong>Palmar mayor</strong> (pasa por un canal propio)<br><strong>NERVIO MEDIANO</strong><br><strong>Flexores común superficial y profundo</strong> de los dedos<br><strong>Flexor propio del pulgar</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 296" role="img" aria-label="Comparación de los cuatro atrapamientos nerviosos del bloque. El nervio mediano se comprime en el túnel carpiano de la muñeca y produce dolor quemante y parestesias en su territorio que empeoran de noche, con atrofia de la eminencia tenar; se evalúa con Phalen, Phalen inversa, Tinel y el signo del círculo. El nervio cubital se comprime en el túnel cubital del codo y hace despertar al paciente con el codo flexionado, con parestesias, disestesias, pérdida de sensibilidad y atrofia muscular; se evalúa con Tinel, test de flexión y test de presión, y la electromiografía confirma. El nervio radial se comprime en el túnel radial del antebrazo y da dolor profundo dorsal y lateral, con parestesias si hay compresión verdadera; la electromiografía es normal si es por sobreuso y muestra denervación si hay compresión. El nervio tibial posterior se comprime en el túnel tarsiano por detrás del maléolo medial y da dolor y parestesias en la cara plantar del pie con atrofia de los músculos intrínsecos.">
+          <text x="80" y="48" font-size="10.5" fill="currentColor" text-anchor="end" opacity="0.75">nervio</text>
+          <text x="80" y="87" font-size="10.5" fill="currentColor" text-anchor="end" opacity="0.75">dónde</text>
+          <text x="80" y="160" font-size="10.5" fill="currentColor" text-anchor="end" opacity="0.75">síntoma</text>
+          <text x="80" y="250" font-size="10.5" fill="currentColor" text-anchor="end" opacity="0.75">maniobra</text>
+
+          <rect x="88"  y="26" width="148" height="34" fill="var(--c)" fill-opacity="0.34" stroke="var(--c)" stroke-width="1.5"></rect>
+          <rect x="242" y="26" width="148" height="34" fill="var(--c)" fill-opacity="0.34" stroke="var(--c)" stroke-width="1.5"></rect>
+          <rect x="396" y="26" width="148" height="34" fill="var(--c)" fill-opacity="0.34" stroke="var(--c)" stroke-width="1.5"></rect>
+          <rect x="550" y="26" width="148" height="34" fill="var(--c)" fill-opacity="0.34" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="162" y="48" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">MEDIANO</text>
+          <text x="316" y="48" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">CUBITAL</text>
+          <text x="470" y="48" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">RADIAL</text>
+          <text x="624" y="48" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">TIBIAL POSTERIOR</text>
+
+          <rect x="88"  y="60" width="148" height="44" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.5"></rect>
+          <rect x="242" y="60" width="148" height="44" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.5"></rect>
+          <rect x="396" y="60" width="148" height="44" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.5"></rect>
+          <rect x="550" y="60" width="148" height="44" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="162" y="78" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">Túnel carpiano</text>
+          <text x="162" y="96" font-size="10.5" fill="currentColor" text-anchor="middle">muñeca</text>
+          <text x="316" y="78" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">Túnel cubital</text>
+          <text x="316" y="96" font-size="10.5" fill="currentColor" text-anchor="middle">codo</text>
+          <text x="470" y="78" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">Túnel radial</text>
+          <text x="470" y="96" font-size="10.5" fill="currentColor" text-anchor="middle">antebrazo</text>
+          <text x="624" y="78" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">Túnel tarsiano</text>
+          <text x="624" y="96" font-size="10.5" fill="currentColor" text-anchor="middle">tras el maléolo medial</text>
+
+          <rect x="88"  y="104" width="148" height="104" fill="var(--c)" fill-opacity="0.07" stroke="var(--c)" stroke-width="1.5"></rect>
+          <rect x="242" y="104" width="148" height="104" fill="var(--c)" fill-opacity="0.07" stroke="var(--c)" stroke-width="1.5"></rect>
+          <rect x="396" y="104" width="148" height="104" fill="var(--c)" fill-opacity="0.07" stroke="var(--c)" stroke-width="1.5"></rect>
+          <rect x="550" y="104" width="148" height="104" fill="var(--c)" fill-opacity="0.07" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="162" y="124" font-size="10.5" fill="currentColor" text-anchor="middle">dolor quemante y</text>
+          <text x="162" y="141" font-size="10.5" fill="currentColor" text-anchor="middle">punzante, parestesias</text>
+          <text x="162" y="158" font-size="10.5" fill="currentColor" text-anchor="middle">en su territorio</text>
+          <text x="162" y="175" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">empeora de noche</text>
+          <text x="162" y="192" font-size="10.5" fill="currentColor" text-anchor="middle">atrofia de la tenar</text>
+          <text x="316" y="124" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">despierta con el codo</text>
+          <text x="316" y="141" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">flexionado</text>
+          <text x="316" y="158" font-size="10.5" fill="currentColor" text-anchor="middle">parestesias, dolor</text>
+          <text x="316" y="175" font-size="10.5" fill="currentColor" text-anchor="middle">pérdida de sensibilidad</text>
+          <text x="316" y="192" font-size="10.5" fill="currentColor" text-anchor="middle">atrofia muscular</text>
+          <text x="470" y="124" font-size="10.5" fill="currentColor" text-anchor="middle">dolor profundo en la</text>
+          <text x="470" y="141" font-size="10.5" fill="currentColor" text-anchor="middle">cara dorsal y lateral</text>
+          <text x="470" y="158" font-size="10.5" fill="currentColor" text-anchor="middle">del antebrazo</text>
+          <text x="470" y="175" font-size="10.5" fill="currentColor" text-anchor="middle">parestesias si hay</text>
+          <text x="470" y="192" font-size="10.5" fill="currentColor" text-anchor="middle">compresión</text>
+          <text x="624" y="124" font-size="10.5" fill="currentColor" text-anchor="middle">dolor y parestesias</text>
+          <text x="624" y="141" font-size="10.5" fill="currentColor" text-anchor="middle">en la cara plantar</text>
+          <text x="624" y="158" font-size="10.5" fill="currentColor" text-anchor="middle">quemazón</text>
+          <text x="624" y="175" font-size="10.5" fill="currentColor" text-anchor="middle">entumecimiento</text>
+          <text x="624" y="192" font-size="10.5" fill="currentColor" text-anchor="middle">atrofia de intrínsecos</text>
+
+          <rect x="88"  y="208" width="148" height="78" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.5"></rect>
+          <rect x="242" y="208" width="148" height="78" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.5"></rect>
+          <rect x="396" y="208" width="148" height="78" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.5"></rect>
+          <rect x="550" y="208" width="148" height="78" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="162" y="228" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">Phalen</text>
+          <text x="162" y="245" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">Phalen inversa</text>
+          <text x="162" y="262" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">Tinel</text>
+          <text x="162" y="279" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">signo del círculo</text>
+          <text x="316" y="228" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">Tinel</text>
+          <text x="316" y="245" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">test de flexión</text>
+          <text x="316" y="262" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">test de presión</text>
+          <text x="316" y="279" font-size="10.5" fill="currentColor" text-anchor="middle">EMG confirma</text>
+          <text x="470" y="236" font-size="10.5" fill="currentColor" text-anchor="middle">EMG normal si es</text>
+          <text x="470" y="253" font-size="10.5" fill="currentColor" text-anchor="middle">por sobreuso;</text>
+          <text x="470" y="270" font-size="10.5" fill="currentColor" text-anchor="middle">denervación si comprime</text>
+          <text x="624" y="245" font-size="10.5" fill="currentColor" text-anchor="middle">clínica</text>
+          <text x="624" y="262" font-size="10.5" fill="currentColor" text-anchor="middle">EMG</text>
+        </svg>
+        <figcaption>Los cuatro comparten el mismo mecanismo —<strong>un nervio que atraviesa un espacio inextensible</strong>— y por eso comparten la secuencia clínica: primero <strong>parestesias</strong>, después <strong>dolor</strong>, y sólo al final <strong>déficit motor y atrofia</strong>. La atrofia es un signo <strong>tardío</strong>: cuando aparece, el nervio lleva mucho tiempo comprimido. El <strong>túnel tarsiano</strong> se desarrolla en la sección 05.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-fisiopatologia" id="mmii">
+      <span class="seccion__pestana"><b>05</b> Miembro inferior</span>
+      <h2 class="seccion__titulo">Miembro Inferior</h2>
+
+      <h3>Cadera</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Entidad</th><th>Definición</th><th>Causas y factores de riesgo</th><th>Clínica</th><th>Diagnóstico y tratamiento</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Trocanteritis</strong><br><em>síndrome de dolor trocantérico mayor</em></td>
+              <td>Dolor en la <strong>cara lateral de la cadera</strong> por inflamación de la <strong>bursa trocantérica</strong> y/o <strong>tendinopatía de los tendones glúteo medio y menor</strong></td>
+              <td><strong>Mujeres de mediana edad</strong>, <strong>obesidad</strong>, sobrecarga o sobreuso, <strong>disimetría de miembros inferiores</strong>, artrosis de cadera o rodilla, <strong>lumbalgia</strong></td>
+              <td>Dolor sobre el <strong>trocánter mayor</strong>. <strong>Dolor al acostarse sobre el lado afectado.</strong> Aumenta al caminar, subir escaleras o estar de pie. Dolor a la palpación y con la <strong>abducción resistida</strong></td>
+              <td><strong>Principalmente clínico.</strong> Ecografía o RMN si hay dudas o sospecha de <strong>rotura tendinosa</strong>.<br>Reposo relativo y modificación de actividades, AINEs, <strong>fisioterapia con fortalecimiento de abductores</strong>, infiltración en casos seleccionados, <strong>cirugía excepcional</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Bursitis trocantérea</strong></td>
+              <td>Inflamación de las <strong>bursas serosas de la extremidad proximal del fémur</strong></td>
+              <td>Enfermedades sistémicas, <strong>microtraumatismos</strong>, sobreuso, <strong>fricciones crónicas</strong>, infecciones</td>
+              <td>Dolor en la <strong>cara lateral de la cadera</strong> que puede <strong>irradiar a la cara lateral de la pierna</strong>. Limitación al movimiento e <strong>hipersensibilidad</strong> de la zona</td>
+              <td>AINEs, kinesiología, <strong>infiltración para extracción</strong>, <strong>eliminar el factor irritante</strong>, fortalecimiento muscular, <strong>educar al paciente</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Síndrome del piramidal</strong></td>
+              <td><strong>Dolor glúteo profundo</strong> por <strong>irritación o compresión del nervio ciático</strong> en la región del <strong>músculo piriforme</strong></td>
+              <td>Posición mantenida durante largos períodos, <strong>mala aplicación de inyecciones intramusculares</strong>, movimientos bruscos, traumatismos directos, malformaciones óseas, <strong>artroplastia total de cadera</strong></td>
+              <td><strong>Parestesias</strong> —hormigueo, adormecimiento, acorchamiento—. Dolor glúteo con <strong>irradiación a la cara posterior de la pierna</strong>. Limitación a la <strong>flexión y rotación de cadera</strong></td>
+              <td>Reposo relativo, kinesioterapia y estiramiento, <strong>fortalecimiento de glúteos</strong>, AINEs, <strong>infiltración guiada</strong> en casos seleccionados</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>El <strong>síndrome del piramidal puede simular una lumbociatalgia</strong> y es su <strong>diagnóstico diferencial</strong>. Los dos dan dolor glúteo con irradiación posterior de la pierna. Lo que los separa es el <strong>origen</strong>: en la lumbociatalgia la raíz se comprime <strong>en la columna</strong>; en el síndrome del piramidal el ciático se comprime <strong>en la nalga</strong>, ya fuera del canal. Por eso el síndrome del piramidal reaparece en la etiología de la lumbalgia de la sección 07.</p>
+      </div>
+
+      <h3>Rodilla</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Entidad</th><th>Localización del dolor</th><th>Qué es y con qué se asocia</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Quiste de Baker</strong></td><td><strong>POSTERIOR</strong> — hueco poplíteo</td><td><strong>Distensión de la bursa gastrocnemio-semimembranosa.</strong> Puede producir <strong>dolor y limitación de la flexión</strong>. Frecuentemente asociado a <strong>artrosis, artritis inflamatorias, meniscopatías o derrame articular</strong></td></tr>
+            <tr><td><strong>Bursitis anserina</strong><br><em>tendinitis de la pata de ganso</em></td><td><strong>ANTEROMEDIAL</strong> — por debajo de la interlínea</td><td>La pata de ganso está conformada por <strong>tres músculos</strong>. Dolor a la palpación. Asociada a <strong>artrosis, obesidad y alteraciones biomecánicas</strong></td></tr>
+            <tr><td><strong>Tendinopatía rotuliana</strong></td><td><strong>ANTERIOR</strong> — <strong>polo INFERIOR</strong> de la rótula</td><td>Asociada a <strong>sobrecarga y deportes con saltos</strong>. Dolor con la <strong>extensión resistida</strong></td></tr>
+            <tr><td><strong>Tendinopatía cuadricipital</strong></td><td><strong>ANTERIOR</strong> — <strong>polo SUPERIOR</strong> de la rótula</td><td>Asociada a <strong>sobrecarga del mecanismo extensor</strong></td></tr>
+            <tr><td><strong>Síndrome de la cintilla iliotibial</strong></td><td><strong>LATERAL</strong></td><td><strong>Lesión por sobreuso</strong> por <strong>fricción de la cintilla iliotibial</strong>. Es una de las <strong>principales causas de dolor lateral de rodilla en corredores y ciclistas</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>Prevención del síndrome de la cintilla iliotibial:</strong> técnicas apropiadas de entrenamiento, <strong>zapatos adecuados</strong>, equipamiento correcto, <strong>potenciación del cuádriceps</strong> y <strong>estiramiento de la banda iliotibial</strong>.</p>
+
+      <p class="cita">El tratamiento del <strong>quiste de Baker</strong> tiene una particularidad que conviene retener: <strong>debe dirigirse principalmente a la patología intraarticular subyacente</strong>. El quiste es una <strong>consecuencia</strong> del derrame, no la enfermedad — tratarlo aisladamente lo hace recidivar.</p>
+
+      <h3>Pie</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Entidad</th><th>Definición</th><th>Causas</th><th>Clínica</th><th>Tratamiento</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Tendinitis aquiliana</strong></td>
+              <td>Inflamación del <strong>tendón de Aquiles</strong> por <strong>repetición de una tensión</strong> o por un <strong>traumatismo</strong> que lo afecta directamente</td>
+              <td>Mal movimiento, <strong>patologías sistémicas (seronegativas)</strong>, traumatismos directos o indirectos, <strong>sobreuso</strong>, zapatos inadecuados, movimientos repetitivos, <strong>peso excesivo</strong>, infecciones, deformidades anatómicas</td>
+              <td>Dolor a la <strong>presión y palpación</strong>, inflamación, <strong>impotencia funcional</strong>, <strong>postura antálgica</strong>, calor, sensibilidad, <strong>crepitación</strong></td>
+              <td>Eliminar el factor irritante, <strong>tratar la causa sistémica</strong>, recuperar la amplitud del movimiento, fortalecimiento, reintegración del paciente, <strong>infiltraciones — ojo con los corticoides</strong>, educar</td>
+            </tr>
+            <tr>
+              <td><strong>Fascitis plantar</strong></td>
+              <td>Inflamación de la <strong>aponeurosis que recubre la musculatura de la planta del pie</strong> y de su <strong>zona insercional</strong></td>
+              <td><strong>Sobrecarga</strong>, <strong>pies planos o cavos</strong>, <strong>pronación exagerada</strong>, estrés repetitivo, personas que no hacen deportes, variaciones anatómicas, <strong>tendón corto (sobrepeso)</strong>, calzado inadecuado</td>
+              <td><strong>Dolor en la parte inferior del talón</strong>, enrojecimiento, hinchazón leve, sensibilidad en la parte inferior del talón, <strong>tensión en la planta del pie</strong></td>
+              <td><strong>Hielo en la fase aguda</strong>, ultrasonidos continuos, masaje profundo, ultrasonidos con estimulación eléctrica, <strong>ondas de choque extracorpóreas</strong>, infiltraciones, cirugía</td>
+            </tr>
+            <tr>
+              <td><strong>Síndrome del túnel tarsiano</strong></td>
+              <td><strong>Neuropatía por atrapamiento</strong> por compresión del <strong>nervio tibial posterior</strong> o de sus ramas dentro del <strong>túnel tarsiano</strong>, localizado <strong>por detrás del maléolo medial</strong> y cubierto por el <strong>retináculo flexor</strong></td>
+              <td><strong>Desde fuera del túnel</strong>: fragmentos óseos secundarios a fracturas, <strong>valgo del retropié</strong><br><strong>Desde dentro del túnel</strong>: <strong>varicosidades</strong>, tumor nervioso, <strong>fibrosis perineural</strong>, lipoma, exostosis</td>
+              <td><strong>Dolor y parestesias en la cara plantar del pie</strong>, entumecimiento, <strong>pinchazos o sensación de quemazón</strong>, disminución del control de la <strong>flexión plantar y dorsal de los dedos</strong>, <strong>atrofia de los músculos intrínsecos</strong></td>
+              <td>Fortalecimiento de tobillo y dedos, <strong>prevenir la pérdida del movimiento</strong>, ejercicios de estiramiento, fortalecimiento intrínseco y extrínseco, masajes, crioterapia y calor, <strong>infiltraciones con corticoides</strong>, cirugía</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Nota del deck sobre las infiltraciones en la tendinitis aquiliana: <strong>«ojo con los corticoides»</strong>. La advertencia es deliberada — la infiltración corticoidea <strong>intratendinosa</strong> se asocia a <strong>debilitamiento y riesgo de rotura</strong> del tendón de Aquiles, a diferencia de lo que ocurre en las bursas, donde la infiltración es de rutina.</p>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-diagnostico" id="cervicalgia">
+      <span class="seccion__pestana"><b>06</b> Cervicalgia</span>
+      <h2 class="seccion__titulo">Cervicalgia</h2>
+
+      <p>El <strong>dolor de espalda</strong> es una de las causas <strong>más frecuentes de consulta</strong> en atención primaria, urgencias y las especialidades del aparato locomotor. La <strong>mayoría de las raquialgias son inespecíficas y de predominio mecánico</strong>, y de ahí la importancia de una <strong>anamnesis correcta</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Dato</th><th>Cervicalgia</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Prevalencia</strong></td><td><strong><span class="dato">10 – 20 %</span></strong> de la población adulta</td></tr>
+            <tr><td><strong>Baja laboral</strong></td><td><strong>Poco frecuente</strong> por este motivo</td></tr>
+            <tr><td><strong>Causa más frecuente</strong></td><td><strong>Cambios degenerativos tipo artrosis</strong>, tanto en la aguda como en la crónica</td></tr>
+            <tr><td><strong>Pronóstico</strong></td><td>La <strong>mayoría mejora con tratamiento conservador</strong></td></tr>
+            <tr><td><strong>Tiempos</strong></td><td><strong>Aguda</strong> <span class="dato">&lt; 6 semanas</span><br><strong>Subaguda</strong> <span class="dato">6 – 12 semanas</span><br><strong>Crónica</strong> <span class="dato">≥ 12 semanas</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Recuerdo anatómico</h3>
+      <ul>
+        <li><strong>Siete vértebras</strong>: atlas, axis y C3 a C7.</li>
+        <li><strong>Lordosis poco profunda</strong>, sostenida gracias a los músculos del cuello.</li>
+        <li>Los <strong>músculos paracervicales y el trapecio</strong> cumplen función de <strong>sostén y estabilidad</strong>.</li>
+        <li>Los cambios degenerativos asientan <strong>mayoritariamente entre C4 y C7</strong>.</li>
+        <li>Pueden derivar en <strong>inversión de la lordosis</strong>.</li>
+        <li><strong>No hay evidencia de asociación entre el dolor y las alteraciones de la alineación cervical.</strong></li>
+      </ul>
+
+      <h3>Las tres maniobras cervicales</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Maniobra</th><th>Cómo se hace</th><th>Qué busca</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Test de Spurling</strong></td><td>Cabeza <strong>neutra o extendida</strong>, <strong>girada e inclinada hacia el lado doloroso</strong>. Siempre <strong>sobre el lado afectado</strong></td><td><strong>Reproducir</strong> el dolor radicular</td></tr>
+            <tr><td><strong>Test de Elvey</strong><br><em>Upper Limb Tension Test (ULTT)</em></td><td>Es <strong>como el Lasègue pero para el miembro superior</strong></td><td><strong>Tensar</strong> las raíces cervicales</td></tr>
+            <tr><td><strong>Test de distracción cervical</strong></td><td>Se <strong>tracciona la cabeza</strong></td><td><strong>Debería aliviar</strong> el dolor</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Del propio deck: la <strong>sensibilidad es mayor si las maniobras se usan juntas</strong>. Ninguna alcanza sola. Y notar la lógica opuesta: <strong>Spurling y Elvey buscan reproducir</strong> el dolor, mientras la <strong>distracción busca aliviarlo</strong> — las tres son positivas cuando confirman un origen radicular.</p>
+
+      <h3>Las seis entidades de la cervicalgia mecánica</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Patología</th><th>Síntomas</th><th>Examen físico</th><th>Maniobras</th><th>Complementarios</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Distensión o contractura cervical</strong><br><em>la más frecuente</em></td><td>Dolor y rigidez de <strong>menos de 6 semanas</strong>, cefalea</td><td><strong>Contractura paracervical y del trapecio</strong></td><td><strong>Negativas</strong></td><td><strong>No.</strong> Diagnóstico clínico</td></tr>
+            <tr><td><strong>Artrosis cervical</strong></td><td>Dolor y <strong>rigidez matutina</strong>, de ritmo inflamatorio</td><td>Dolor a la movilización</td><td><strong>Negativas</strong></td><td><strong>No.</strong> Sirve tener una Rx previa, aunque puede ser anodina</td></tr>
+            <tr><td><strong>Dolor discogénico</strong></td><td>Dolor y rigidez al <strong>leer, usar la computadora o conducir</strong></td><td><strong>Rango de movimiento disminuido</strong></td><td><strong>Variables</strong></td><td><strong>No.</strong> La Rx puede mostrar signos degenerativos</td></tr>
+            <tr><td><strong>Latigazo o esguince cervical</strong></td><td><strong>Antecedente de flexoextensión abrupta.</strong> Dolor, cefalea, omalgia y fatiga</td><td><strong>Espasmo cervical</strong> y rango de movimiento disminuido</td><td><strong>Negativas</strong></td><td><strong>No.</strong> Diagnóstico clínico</td></tr>
+            <tr><td><strong>Dolor miofascial</strong></td><td>Dolor <strong>regional</strong>, aumento de la sensibilidad, omalgia acompañante</td><td><strong>Dolor en puntos gatillo</strong></td><td><strong>Negativas</strong></td><td><strong>No.</strong> Diagnóstico clínico</td></tr>
+            <tr><td><strong>Hiperostosis esquelética</strong></td><td>Puede haber dolor en <strong>otras localizaciones</strong> —tórax, extremidades—. <strong>Disfagia</strong> y rigidez</td><td>Puede haber disminución del rango de movimiento</td><td><strong>Negativas</strong></td><td><strong>SÍ.</strong> Signos típicos en <strong>«cera derretida»</strong>. RMN</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Los <strong>puntos gatillo</strong> del dolor miofascial están presentes, entre otras entidades, en la <strong>fibromialgia</strong>. Y notar el patrón de la tabla: de las seis entidades, <strong>cinco no requieren ningún estudio</strong> y sus maniobras son negativas. La única que obliga a pedir imágenes es la <strong>hiperostosis esquelética</strong>.</p>
+
+      <h3>¿Cuándo pedir estudios? Signos de alarma</h3>
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Se piden estudios <strong>sólo ante</strong>:</p>
+        <p><strong>Hallazgos neurológicos</strong> que sugieran compresión de la médula espinal, <strong>mielopatía</strong> o <strong>radiculopatía grave</strong> · <strong>Síntomas constitucionales</strong> · <strong>Riesgo infeccioso</strong> —usuarios de drogas endovenosas, inmunosupresión— junto con signos de infección · <strong>Historia de malignidad</strong> · <strong>Cervicalgia persistente moderada a intensa de más de 6 semanas</strong>.</p>
+      </div>
+
+      <p><strong>En ausencia de señales de alarma</strong>, las pruebas de imagen <strong>no son necesarias</strong> en la cervicalgia aguda o crónica leve que <strong>no limita las actividades diarias</strong> y <strong>se ignora fácilmente cuando el paciente se distrae</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Estudio</th><th>Consideraciones</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Rx de cuello</strong></td><td>Las vistas <strong>que no sean AP y lateral generalmente no son necesarias</strong> en pacientes con sospecha de enfermedad degenerativa</td></tr>
+            <tr><td><strong>RMN cervical</strong></td><td><strong>Más sensible.</strong> Se realiza <strong>sin contraste</strong>; se administra <strong>gadolinio endovenoso</strong> cuando se sospecha <strong>malignidad o infección subyacente</strong></td></tr>
+            <tr><td><strong>Analítica de sangre</strong></td><td>Según la sospecha</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Tratamiento de la cervicalgia aguda</h3>
+      <p><strong>Objetivos:</strong> <strong>minimizar el dolor y la contractura</strong>, <strong>restablecer la lordosis</strong> y <strong>restaurar al máximo la función</strong>.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Escalón</th><th>Medida</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Todos los pacientes</strong></td><td><strong>Educación y tranquilización</strong> · <strong>Modificaciones posturales</strong> · <strong>Ejercicios</strong> · <strong>Calor o frío tópico</strong> si alivia los síntomas</td></tr>
+            <tr><td><strong>Si no hay mejoría</strong></td><td><strong>AINE o paracetamol</strong> por vía oral</td></tr>
+            <tr><td><strong>Siguiente escalón</strong></td><td><strong>+ Relajante muscular NO benzodiazepínico</strong>, añadido al AINE o al paracetamol</td></tr>
+            <tr><td><strong>Siguiente escalón</strong></td><td><strong>+ Tramadol <span class="dato">25 – 50 mg</span>, 2 a 3 veces al día</strong> (o sustituir por el relajante muscular)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Evaluar siempre los factores de riesgo de dolor crónico.</strong></p>
+
+      <p class="cita">Nota sobre el material: la diapositiva de tratamiento consigna <strong>«Naproxeno 500-1000 mg 3/24h»</strong>, cuya lectura es ambigua. La posología habitual del naproxeno en el dolor musculoesquelético agudo es de <strong>500 mg cada 12 horas</strong>, con un <strong>máximo de 1.000 a 1.250 mg al día</strong> — que es probablemente lo que la diapositiva intenta expresar. Conviene confirmarlo con el docente. También figura el <strong>diazepam</strong> con <strong>escasa evidencia</strong>, con el objetivo declarado de <strong>facilitar el sueño</strong>; la recomendación general del propio algoritmo es usar <strong>relajantes NO benzodiazepínicos</strong>.</p>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-importantes" id="lumbalgia">
+      <span class="seccion__pestana"><b>07</b> Lumbalgia</span>
+      <h2 class="seccion__titulo">Lumbalgia &amp; Banderas Rojas</h2>
+
+      <p>Dolor en la <strong>espalda baja</strong>, que comprende la <strong>columna lumbar</strong> —cinco vértebras lumbares y cinco sacras— y las <strong>estructuras musculares y nerviosas</strong> de esa región. Es un motivo frecuente en medicina de familia y en urgencias, y una <strong>causa muy prevalente de baja laboral</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Dato</th><th>Lumbalgia</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Prevalencia a lo largo de la vida</strong></td><td><strong><span class="dato">80 – 84 %</span></strong> de los adultos tendrá un episodio</td></tr>
+            <tr><td><strong>Tiempos</strong></td><td><strong>Aguda</strong> <span class="dato">&lt; 4 semanas</span><br><strong>Subaguda</strong> <span class="dato">4 – 12 semanas</span><br><strong>Crónica</strong> <span class="dato">≥ 12 semanas</span></td></tr>
+            <tr><td><strong>Factores de riesgo</strong></td><td><strong>Obesidad</strong>, <strong>tabaquismo</strong>, sexo femenino, trabajos que requieren <strong>esfuerzo físico</strong>, trabajos <strong>sedentarios</strong>, trabajos <strong>psicológicamente estresantes</strong>, bajo nivel educativo, <strong>insatisfacción laboral</strong>, somatización, <strong>ansiedad y depresión</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Nota sobre los tiempos: la <strong>cervicalgia aguda se define como menos de 6 semanas</strong> y la <strong>lumbalgia aguda como menos de 4</strong>. <strong>No es un error de la diapositiva</strong> — los cortes difieren realmente entre una y otra en las guías, y conviene aprenderlos por separado en lugar de unificarlos.</p>
+
+      <h3>Etiología, ordenada por gravedad</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Grupo</th><th>Frecuencia</th><th>Entidades</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1.º DOLOR LUMBAR SIMPLE</strong></td>
+              <td><strong><span class="dato">&gt; 85 %</span></strong></td>
+              <td>Sin causa clara, probablemente <strong>de etiología musculoesquelética</strong></td>
+            </tr>
+            <tr>
+              <td><strong>ETIOLOGÍAS GRAVES</strong></td>
+              <td><strong><span class="dato">&lt; 1 %</span></strong> de los que consultan en atención primaria</td>
+              <td><strong>Síndrome de cauda equina</strong> o cola de caballo<br><strong>Metástasis</strong><br><strong>Absceso epidural</strong> — ojo con los usuarios de drogas endovenosas<br><strong>Osteomielitis vertebral</strong> — ojo con la edad y la bacteriemia</td>
+            </tr>
+            <tr>
+              <td><strong>ETIOLOGÍAS MENOS GRAVES</strong></td>
+              <td><strong><span class="dato">10 %</span></strong></td>
+              <td><strong>Fractura vertebral</strong> — osteoporosis, edad avanzada, uso de corticoides<br><strong>Radiculopatías</strong><br><strong>Estenosis del canal lumbar</strong></td>
+            </tr>
+            <tr>
+              <td><strong>OTRAS</strong></td>
+              <td>—</td>
+              <td><strong>Espondiloartritis axial</strong>, espondilitis anquilosante, osteoartritis, escoliosis o hipercifosis<br><strong>Síndrome del piriforme</strong>, disfunción de la articulación sacroilíaca, <strong>síndrome de Bertolotti</strong></td>
+            </tr>
+            <tr>
+              <td><strong>FUERA DE LA COLUMNA</strong></td>
+              <td>—</td>
+              <td><strong>Pancreatitis</strong>, <strong>nefrolitiasis</strong>, <strong>pielonefritis</strong>, <strong>aneurisma de aorta abdominal</strong>, <strong>herpes zóster</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Corrección sobre el material: la diapositiva dice, bajo el ítem de radiculopatías, <strong>«El 90 % se deben a radiculopatías L5-S1»</strong>. Leído así <strong>contradice la misma diapositiva</strong>, que dos renglones más arriba sitúa el dolor lumbar simple en más del 85 %. Lo que corresponde es lo inverso: <strong>el 90 % de las radiculopatías lumbares comprometen las raíces L5 y S1</strong>, no que el 90 % de las lumbalgias sean radiculopatías.</p>
+
+      <p><strong>Sobre las metástasis:</strong> una <strong>historia de cáncer</strong> obliga a pensar en ellas. El <strong>80 % son tumores sólidos</strong> — <strong>pulmón, mama, próstata y riñón</strong>—, y pueden manifestarse con dolor o con <strong>síntomas neurológicos por compresión medular</strong>.</p>
+      <p><strong>Sobre la cauda equina:</strong> el <strong>dolor es el síntoma principal</strong>, pero suele acompañarse de <strong>disfunción motora (debilidad)</strong> y <strong>disminución de la sensibilidad</strong>.</p>
+
+      <h3>Evaluación inicial</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Componente</th><th>Qué incluye</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Anamnesis</strong></td><td><strong>Lugar, duración y gravedad</strong> del dolor. <strong>Historia de dolores de espalda previos.</strong> Síntomas generales: <strong>pérdida de peso, dolor nocturno</strong></td></tr>
+            <tr><td><strong>Examen físico</strong></td><td><strong>Inspección</strong> de la espalda y la postura · <strong>Palpación</strong> de la columna · <strong>Examen neurológico</strong> · <strong>Lasègue y Bragard</strong></td></tr>
+            <tr><td><strong>Preguntar siempre</strong></td><td><strong>Incontinencia urinaria de nueva aparición</strong> o empeoramiento</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante! — Cuándo la resonancia es urgente</p>
+        <p><strong>RMN URGENTE</strong> ante <strong>déficits neurológicos severos</strong>: <strong>síndrome de cauda equina</strong>, <strong>anestesia en silla de montar</strong>, <strong>incontinencia de esfínteres</strong>, y <strong>déficits motores severos que no se localizan en una sola raíz nerviosa</strong>.</p>
+        <p><strong>Rx AP y lateral urgente</strong> ante sospecha de <strong>fractura</strong> —osteoporótica o no— <strong>o malignidad</strong>. La <strong>proyección oblicua no aporta más información</strong>.</p>
+      </div>
+
+      <p><strong>Fuera de esos escenarios: no solicitar imágenes ni otras pruebas diagnósticas de rutina</strong> en pacientes con dolor lumbar inespecífico sin síntomas de alarma. La mayoría <strong>mejorará en 2 a 4 semanas</strong>.</p>
+
+      <p class="cita">Una razón adicional para no pedir imágenes de rutina: en la RMN se observan con frecuencia <strong>hallazgos que no se correlacionan con la clínica</strong> —<strong>nódulos de Schmorl</strong>, <strong>fisuras anulares</strong>, <strong>cambios degenerativos</strong>—. Encontrarlos en un paciente con dolor inespecífico <strong>genera una atribución causal falsa</strong> y conduce a tratamientos innecesarios.</p>
+
+      <h3>Manejo</h3>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 300" role="img" aria-label="Escalera terapéutica de la raquialgia, común a la cervicalgia y a la lumbalgia. Sobre todos los escalones rige que el reposo no está recomendado y que hay que retomar la actividad habitual lo antes posible. El primer escalón son las medidas no farmacológicas: educación del paciente, ejercicio físico, calor superficial y medidas posturales. El segundo escalón es un antiinflamatorio no esteroide o paracetamol. El tercer escalón agrega un relajante muscular no benzodiazepínico. El cuarto escalón agrega tramadol de veinticinco a cincuenta miligramos, dos a tres veces al día. Lo que cambia en cada fase: en la aguda, de menos de cuatro semanas, mejora en dos a cuatro semanas y se educa sobre la naturaleza benigna. En la subaguda, de cuatro a doce semanas, se busca el riesgo de cronificar para intensificar el manejo y se usan ciclos cortos de fármacos. En la crónica, de más de doce semanas, se usan amitriptilina o duloxetina en lugar del relajante muscular y se suma rehabilitación multidisciplinar y escuela de espalda.">
+          <defs>
+            <marker id="pta-esc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="20" y="10" width="660" height="34" rx="3" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="350" y="32" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">REPOSO NO RECOMENDADO — retomar la actividad habitual lo antes posible</text>
+
+          <rect x="18"  y="64" width="152" height="92" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="94" y="86" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">1º  MEDIDAS NO</text>
+          <text x="94" y="104" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">FARMACOLÓGICAS</text>
+          <text x="94" y="126" font-size="10.5" fill="currentColor" text-anchor="middle">educación · ejercicio</text>
+          <text x="94" y="144" font-size="10.5" fill="currentColor" text-anchor="middle">calor · postura</text>
+
+          <polyline points="172,110 188,110" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-esc)"></polyline>
+
+          <rect x="192" y="64" width="152" height="92" rx="3" fill="var(--c)" fill-opacity="0.20" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="268" y="90" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">2º  AINE</text>
+          <text x="268" y="112" font-size="10.5" fill="currentColor" text-anchor="middle">o paracetamol</text>
+
+          <polyline points="346,110 362,110" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-esc)"></polyline>
+
+          <rect x="366" y="64" width="152" height="92" rx="3" fill="var(--c)" fill-opacity="0.26" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="442" y="86" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">3º  + RELAJANTE</text>
+          <text x="442" y="104" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">MUSCULAR</text>
+          <text x="442" y="126" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">no benzodiazepínico</text>
+
+          <polyline points="520,110 536,110" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-esc)"></polyline>
+
+          <rect x="540" y="64" width="152" height="92" rx="3" fill="var(--c)" fill-opacity="0.34" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="616" y="86" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">4º  + TRAMADOL</text>
+          <text x="616" y="108" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">25 – 50 mg</text>
+          <text x="616" y="126" font-size="10.5" fill="currentColor" text-anchor="middle">2 – 3 veces al día</text>
+
+          <text x="350" y="172" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle" opacity="0.85">lo que cambia en cada fase</text>
+
+          <rect x="18"  y="180" width="213" height="110" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="125" y="202" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">AGUDA</text>
+          <text x="125" y="220" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">&lt; 4 semanas</text>
+          <text x="125" y="244" font-size="10.5" fill="currentColor" text-anchor="middle">mejora en 2 – 4 semanas</text>
+          <text x="125" y="262" font-size="10.5" fill="currentColor" text-anchor="middle">educar: naturaleza</text>
+          <text x="125" y="280" font-size="10.5" fill="currentColor" text-anchor="middle">benigna, buen pronóstico</text>
+
+          <rect x="244" y="180" width="213" height="110" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="350" y="202" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">SUBAGUDA</text>
+          <text x="350" y="220" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">4 – 12 semanas</text>
+          <text x="350" y="244" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">buscar riesgo de cronificar</text>
+          <text x="350" y="262" font-size="10.5" fill="currentColor" text-anchor="middle">→ intensificar el manejo</text>
+          <text x="350" y="280" font-size="10.5" fill="currentColor" text-anchor="middle">ciclos cortos de fármacos</text>
+
+          <rect x="470" y="180" width="213" height="110" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="577" y="202" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">CRÓNICA</text>
+          <text x="577" y="220" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">&gt; 12 semanas</text>
+          <text x="577" y="244" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">amitriptilina o duloxetina</text>
+          <text x="577" y="262" font-size="10.5" fill="currentColor" text-anchor="middle">en lugar del relajante</text>
+          <text x="577" y="280" font-size="10.5" fill="currentColor" text-anchor="middle">rehabilitación · escuela</text>
+        </svg>
+        <figcaption>La escalera es <strong>la misma para el cuello y para la cintura</strong>, y en las tres fases empieza igual: <strong>medidas no farmacológicas primero, fármacos después</strong>. Lo único que cambia con la cronicidad es <strong>el escalón 3</strong> — en la crónica, <strong>amitriptilina o duloxetina reemplazan al relajante muscular</strong>—, y que se suma la <strong>rehabilitación multidisciplinar</strong>. El <strong>paracetamol</strong> figura como alternativa del AINE en todas las fases.</figcaption>
+      </figure>
+
+      <h3>Medidas no farmacológicas: qué tiene evidencia y qué no</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Medida</th><th>Evidencia</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Calor superficial</strong></td><td><strong>Evidencia MODERADA</strong> de mejorar el dolor y la incapacidad, al <strong>reducir el espasmo muscular</strong></td></tr>
+            <tr><td><strong>Ejercicio físico y fisioterapia</strong></td><td><strong>Según tolerancia.</strong> Es la <strong>recomendación más extendida en la subaguda y la crónica</strong>. Estiramientos <strong>a partir de la 2.ª semana</strong></td></tr>
+            <tr><td><strong>Masaje</strong></td><td><strong>Sin evidencia</strong> de mejorar el dolor en la lumbalgia aguda, aunque <strong>algunos pacientes refieren mejoría</strong></td></tr>
+            <tr><td><strong>REPOSO</strong></td><td><strong>NO está recomendado.</strong> <strong>Enlentece la recuperación y empeora el dolor.</strong> Se recomienda <strong>retomar la actividad normal lo más rápido posible</strong></td></tr>
+            <tr><td><strong>Sin evidencia demostrada</strong></td><td>Aplicar <strong>frío</strong> · <strong>Técnicas de energía muscular</strong> · <strong>Tracción</strong> · <strong>Corsés y aparatos ortopédicos</strong> · <strong>Recomendaciones sobre el colchón</strong> · <strong>Yoga</strong> · <strong>Inyecciones paraespinales</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>La recomendación de una u otra terapia debe <strong>individualizarse</strong> según las preferencias del paciente y su accesibilidad.</p>
+
+      <h3>Riesgo de cronificar</h3>
+      <p>En la <strong>lumbalgia subaguda</strong>, el objetivo es <strong>identificar a los pacientes con alto riesgo de cronificar</strong> para <strong>intensificar el manejo</strong> y derivarlos antes a programas de ejercicio supervisado. Son señales de riesgo:</p>
+      <ul>
+        <li><strong>Comportamientos de afrontamiento del dolor desadaptativos</strong>: evitación del dolor o pesimismo ante el mismo.</li>
+        <li><strong>Alto nivel de deterioro funcional.</strong></li>
+        <li><strong>Presencia de otros dolores crónicos.</strong></li>
+        <li><strong>Insatisfacción laboral y estrés.</strong></li>
+        <li><strong>Obesidad</strong> y <strong>tabaquismo</strong>.</li>
+      </ul>
+
+      <h3>Educación del paciente</h3>
+      <p>En la aguda: explicar <strong>las causas del dolor</strong>, su <strong>naturaleza benigna</strong>, el <strong>buen pronóstico</strong>, la <strong>poca rentabilidad de las pruebas diagnósticas</strong>, y aconsejar <strong>mantenerse activo</strong>.</p>
+      <p>En la crónica: animar a <strong>mantener la actividad según lo tolere</strong> y las <strong>actividades habituales</strong>, proporcionar <strong>materiales escritos o recursos educativos</strong>, y <strong>mantener el énfasis en la terapia activa</strong> — que involucra al paciente en su atención y se centra en <strong>mejorar la función, no sólo en reducir el dolor</strong>.</p>
+    </section>
+
+    <!-- ============ 8 ============ -->
+    <section class="seccion s-diferenciales" id="vademecum">
+      <span class="seccion__pestana"><b>08</b> Vademécum</span>
+      <h2 class="seccion__titulo">Vademécum de Maniobras</h2>
+
+      <p>Las <strong>veintitrés maniobras</strong> del bloque, reunidas para repasar antes del práctico.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Región</th><th>Maniobra</th><th>Cómo se hace</th><th>Qué evalúa</th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="9"><strong>HOMBRO</strong></td><td><strong>Yergason</strong></td><td>Codo a <strong>90°</strong>, dolor al <strong>resistir la supinación</strong></td><td>Tendinitis bicipital</td></tr>
+            <tr><td><strong>Speed</strong></td><td>Dolor al <strong>resistir la flexión del hombro</strong></td><td>Tendinitis bicipital</td></tr>
+            <tr><td><strong>Arco doloroso</strong></td><td>Dolor entre <strong>60 y 120° de abducción ACTIVA</strong>; no en la pasiva</td><td>Glenohumeral. Por encima de <strong>170°</strong>: acromioclavicular</td></tr>
+            <tr><td><strong>Neer</strong></td><td>Escápula bloqueada; brazo en <strong>rotación interna</strong> a <strong>máxima flexión</strong></td><td><strong>Pinzamiento</strong>: troquíter contra acromion</td></tr>
+            <tr><td><strong>Hawkins</strong></td><td><strong>Flexión 90°</strong> + <strong>rotación interna pasiva</strong></td><td>Supraespinoso contra <strong>ligamento coracoacromial</strong></td></tr>
+            <tr><td><strong>Jobe</strong></td><td><strong>Abducción 90°</strong>, <strong>30° adelante</strong>, <strong>pulgares abajo</strong>, resiste</td><td><strong>Supraespinoso</strong>. Positivo: <strong>debilidad</strong></td></tr>
+            <tr><td><strong>Rotación externa resistida</strong></td><td><strong>Codos a 90°</strong> pegados al cuerpo</td><td><strong>Infraespinoso</strong> y <strong>redondo menor</strong></td></tr>
+            <tr><td><strong>Gerber</strong></td><td><strong>Mano por detrás a nivel lumbar</strong>, rota internamente contra resistencia</td><td><strong>Subescapular</strong></td></tr>
+            <tr><td><strong>Impingement test</strong></td><td><strong>Alivio</strong> tras <strong>10 mL de lidocaína al 1 %</strong> en la bursa subacromial</td><td>Confirma origen <strong>subacromial</strong></td></tr>
+
+            <tr><td rowspan="3"><strong>CODO</strong></td><td><strong>Tinel</strong></td><td><strong>Percusión del nervio</strong> a nivel del codo</td><td><strong>N. cubital</strong></td></tr>
+            <tr><td><strong>Test de flexión</strong></td><td>Codo <strong>flexionado 60 segundos</strong></td><td><strong>N. cubital</strong></td></tr>
+            <tr><td><strong>Test de presión</strong></td><td><strong>Índice y medio</strong> comprimen <strong>60 s</strong> proximal al túnel, codo a <strong>20°</strong> y antebrazo en <strong>supinación</strong></td><td><strong>N. cubital</strong></td></tr>
+
+            <tr><td rowspan="5"><strong>MANO</strong></td><td><strong>Finkelstein</strong></td><td><strong>Oponer el pulgar</strong>, cubrirlo con la flexión de los otros cuatro dedos y <strong>desviar la mano en dirección cubital</strong></td><td><strong>Tenosinovitis de Quervain</strong></td></tr>
+            <tr><td><strong>Phalen</strong></td><td><strong>Flexión máxima</strong> de muñecas <strong>60 segundos</strong></td><td><strong>Túnel carpiano</strong> (n. mediano)</td></tr>
+            <tr><td><strong>Phalen inversa</strong></td><td><strong>Extensión</strong> de muñecas <strong>60 segundos</strong></td><td><strong>Túnel carpiano</strong></td></tr>
+            <tr><td><strong>Tinel del carpo</strong></td><td><strong>Percusión con el martillo de reflejos</strong> sobre el túnel</td><td><strong>Túnel carpiano</strong></td></tr>
+            <tr><td><strong>Signo del círculo</strong></td><td><strong>Oponer el primer dedo con el segundo</strong> formando un círculo</td><td><strong>Túnel carpiano</strong>. Positivo: <strong>no se forma el círculo</strong></td></tr>
+
+            <tr><td><strong>CADERA</strong></td><td><strong>Abducción resistida</strong></td><td>Abducción de cadera <strong>contra resistencia</strong></td><td><strong>Trocanteritis</strong></td></tr>
+
+            <tr><td rowspan="3"><strong>CERVICAL</strong></td><td><strong>Spurling</strong></td><td>Cabeza <strong>neutra o extendida</strong>, <strong>girada e inclinada hacia el lado doloroso</strong></td><td><strong>Reproduce</strong> el dolor radicular</td></tr>
+            <tr><td><strong>Elvey (ULTT)</strong></td><td>Como el <strong>Lasègue pero para el miembro superior</strong></td><td><strong>Tensión</strong> de las raíces cervicales</td></tr>
+            <tr><td><strong>Distracción cervical</strong></td><td><strong>Tracción de la cabeza</strong></td><td><strong>Debería aliviar</strong> el dolor radicular</td></tr>
+
+            <tr><td rowspan="2"><strong>LUMBAR</strong></td><td><strong>Lasègue</strong></td><td>Elevación de la <strong>pierna extendida</strong> con el paciente en decúbito supino</td><td><strong>Radiculopatía lumbar</strong></td></tr>
+            <tr><td><strong>Bragard</strong></td><td><strong>Dorsiflexión del pie</strong> al llegar al ángulo doloroso del Lasègue</td><td><strong>Radiculopatía lumbar</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Nota: el deck nombra el <strong>Lasègue</strong>, el <strong>Bragard</strong> y la <strong>abducción resistida de la cadera</strong> sin describir su técnica. Se consigna la descripción estándar para que la tabla sea utilizable, pero conviene confirmarla en el práctico.</p>
+    </section>
+
+    <!-- ============ Repaso ============ -->
+    <section class="seccion s-clinica" id="repaso">
+      <span class="seccion__pestana"><b>09</b> Repaso</span>
+      <h2 class="seccion__titulo">Repaso Activo</h2>
+      <p>Respondé antes de abrir cada tarjeta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary class="fc__p">¿Qué significa que un dolor de hombro no empeore con el movimiento?</summary>
+          <div class="fc__r">Que <strong>no es un dolor de hombro</strong>: el hombro es donde se siente, no donde está el problema. Hay que buscar un origen <strong>extrínseco</strong> — <strong>cervical, diafragmático, cardíaco o biliar</strong>.</div>
+        </details>
+        <details class="fc s-generalidades">
+          <summary class="fc__p">Activo contra pasivo: ¿qué separa lo periarticular de lo articular?</summary>
+          <div class="fc__r">Si duele <strong>sólo la movilidad activa</strong> → <strong>PERIARTICULAR</strong> (tendinitis, bursitis, tendinopatía del manguito), porque el activo exige que el <strong>tendón se contraiga</strong>. Si duelen <strong>activa Y pasiva</strong> → <strong>ARTICULAR</strong>. Excepciones: <strong>bursitis subacromial y capsulitis adhesiva</strong> limitan también la pasiva.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary class="fc__p">Yergason y Speed: ¿qué evalúan y cómo se hacen?</summary>
+          <div class="fc__r">Los dos evalúan la <strong>tendinitis bicipital</strong>. <strong>Yergason</strong>: codo a <strong>90°</strong>, dolor al <strong>resistir la supinación</strong>. <strong>Speed</strong>: dolor al <strong>resistir la flexión del hombro</strong>.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary class="fc__p">Test del arco doloroso: rango, y qué significa el dolor por encima de 170°</summary>
+          <div class="fc__r">Dolor entre <strong>60 y 120° de abducción ACTIVA</strong> —<strong>no se observa en la pasiva</strong>— indica compromiso de la <strong>glenohumeral</strong>. Dolor <strong>por arriba de 170°</strong> indica compromiso <strong>acromioclavicular</strong>.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary class="fc__p">Neer, Hawkins, Jobe y Gerber: ¿qué evalúa cada uno?</summary>
+          <div class="fc__r"><strong>Neer</strong> y <strong>Hawkins</strong>: <strong>pinzamiento</strong> —Neer, troquíter contra acromion; Hawkins, supraespinoso contra el ligamento coracoacromial—. <strong>Jobe</strong>: <strong>supraespinoso</strong>, positivo si hay <strong>debilidad</strong>. <strong>Gerber</strong>: <strong>subescapular</strong>. Y la <strong>rotación externa resistida</strong>: <strong>infraespinoso y redondo menor</strong>.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary class="fc__p">¿Qué distingue a la capsulitis adhesiva del resto de los dolores de hombro?</summary>
+          <div class="fc__r"><strong>Restringe los movimientos en TODOS los planos</strong>, activos y pasivos, porque la lesión es de la <strong>cápsula</strong>. Causas: <strong>idiopática</strong>, sistémicas —<strong>diabetes</strong>, tiroidea, neoplasias, radiculopatía cervical— o <strong>vía final común</strong> de otros desórdenes. Prevalencia <strong>2 – 3 %</strong>. La <strong>artroscopia confirma</strong>.</div>
+        </details>
+        <details class="fc s-diferenciales">
+          <summary class="fc__p">¿Cómo se diferencia una bursitis olecraneana de una artritis del codo?</summary>
+          <div class="fc__r">Por la <strong>extensión pasiva</strong>. En la <strong>bursitis es completa e indolora</strong> —la bursa está fuera de la articulación—. En la <strong>artritis es incompleta y dolorosa</strong>.</div>
+        </details>
+        <details class="fc s-diferenciales">
+          <summary class="fc__p">Epicondilitis lateral contra medial: ¿qué movimiento resistido duele en cada una?</summary>
+          <div class="fc__r"><strong>Lateral</strong> (epicóndilo): duele al <strong>resistir la EXTENSIÓN del carpo</strong>, o al extender el codo con el carpo flexionado — los <strong>epicondíleos extienden y supinan</strong>. <strong>Medial</strong> (epitróclea): duele al <strong>resistir la FLEXIÓN del carpo y la PRONACIÓN</strong> — los <strong>epitrocleares flexionan y pronan</strong>.</div>
+        </details>
+        <details class="fc s-diferenciales">
+          <summary class="fc__p">Las dos formas del síndrome del túnel radial y cómo las separa el EMG</summary>
+          <div class="fc__r"><strong>1) Tendinopatía por sobreuso del supinador</strong>: dolor profundo dorsal y lateral del antebrazo; <strong>EMG con velocidad de conducción NORMAL</strong>; tratamiento <strong>conservador</strong>. <strong>2) Compresión</strong> por ganglión, sinovitis, dislocación o fractura de la cabeza del radio: <strong>parestesias</strong>; <strong>EMG con DENERVACIÓN</strong>; tratamiento <strong>descompresión</strong>.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary class="fc__p">Tenosinovitis de Quervain: qué tendones, qué compartimiento y qué maniobra</summary>
+          <div class="fc__r"><strong>Abductor largo y extensor corto del pulgar</strong>, que transcurren por el <strong>1.er compartimiento extensor</strong>. Dolor en la <strong>cara radial del carpo y la base del pulgar</strong>. Maniobra: <strong>Finkelstein</strong>.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary class="fc__p">Las cuatro pruebas del túnel carpiano</summary>
+          <div class="fc__r"><strong>Phalen</strong>: flexión máxima de muñecas 60 s. <strong>Phalen inversa</strong>: extensión 60 s. <strong>Tinel</strong>: percusión con el martillo sobre el túnel. <strong>Signo del círculo</strong>: al oponer pulgar e índice <strong>no se forma el círculo</strong>. Las tres primeras son positivas si aparecen <strong>parestesias en el territorio del mediano</strong>.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary class="fc__p">Contenido del túnel carpiano</summary>
+          <div class="fc__r"><strong>Palmar mayor</strong> (por un canal propio), <strong>NERVIO MEDIANO</strong>, <strong>flexores común superficial y profundo</strong> de los dedos y <strong>flexor propio del pulgar</strong>. El componente fibroso es el <strong>ligamento anular anterior</strong>, que al dividirse en dos hojas forma el <strong>canal de Guyon</strong> — por donde pasa el <strong>paquete vasculonervioso cubital</strong>.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary class="fc__p">¿Qué es la diátesis de Dupuytren?</summary>
+          <div class="fc__r">La asociación del Dupuytren con <strong>otras lesiones fibróticas</strong>: <strong>nódulos en los nudillos</strong>, <strong>fibrosis de la fascia plantar</strong> y <strong>fibrosis del pene</strong>. El Dupuytren mismo se asocia a <strong>alcohol, diabetes y EPOC</strong>.</div>
+        </details>
+        <details class="fc s-fisiopatologia">
+          <summary class="fc__p">Trocanteritis: definición y factores de riesgo</summary>
+          <div class="fc__r">Dolor en la <strong>cara lateral de la cadera</strong> por inflamación de la <strong>bursa trocantérica</strong> y/o <strong>tendinopatía del glúteo medio y menor</strong>. FR: <strong>mujeres de mediana edad</strong>, <strong>obesidad</strong>, sobreuso, <strong>disimetría de MMII</strong>, artrosis de cadera o rodilla, lumbalgia. Signo típico: <strong>dolor al acostarse sobre el lado afectado</strong>.</div>
+        </details>
+        <details class="fc s-fisiopatologia">
+          <summary class="fc__p">Dolor de rodilla por localización</summary>
+          <div class="fc__r"><strong>Posterior</strong>: quiste de Baker. <strong>Anteromedial, bajo la interlínea</strong>: bursitis anserina. <strong>Anterior, polo INFERIOR de la rótula</strong>: tendinopatía rotuliana. <strong>Anterior, polo SUPERIOR</strong>: cuadricipital. <strong>Lateral</strong>: síndrome de la cintilla iliotibial.</div>
+        </details>
+        <details class="fc s-fisiopatologia">
+          <summary class="fc__p">¿Por qué el quiste de Baker no se trata aisladamente?</summary>
+          <div class="fc__r">Porque es la <strong>distensión de la bursa gastrocnemio-semimembranosa</strong> secundaria a una <strong>patología intraarticular</strong> —artrosis, artritis inflamatoria, meniscopatía o derrame—. El tratamiento <strong>debe dirigirse a la causa subyacente</strong>; si no, recidiva.</div>
+        </details>
+        <details class="fc s-fisiopatologia">
+          <summary class="fc__p">Síndrome del piramidal: por qué es el diferencial de la lumbociatalgia</summary>
+          <div class="fc__r">Porque los dos dan <strong>dolor glúteo con irradiación posterior de la pierna</strong>. La diferencia es el <strong>sitio de compresión</strong>: en la lumbociatalgia la raíz se comprime <strong>en la columna</strong>; acá el ciático se comprime <strong>en la nalga</strong>, a la altura del piriforme. Causa clásica: <strong>mala aplicación de inyecciones intramusculares</strong>.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary class="fc__p">Las tres maniobras cervicales y su lógica opuesta</summary>
+          <div class="fc__r"><strong>Spurling</strong> —cabeza girada e inclinada al lado doloroso— y <strong>Elvey o ULTT</strong> —el Lasègue del miembro superior— buscan <strong>REPRODUCIR</strong> el dolor. La <strong>distracción cervical</strong> busca <strong>ALIVIARLO</strong>. La <strong>sensibilidad es mayor si se usan juntas</strong>.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary class="fc__p">De las seis entidades de la cervicalgia, ¿cuál obliga a pedir imágenes?</summary>
+          <div class="fc__r">Sólo la <strong>hiperostosis esquelética</strong> — signos típicos en <strong>«cera derretida»</strong>, RMN. Las otras cinco —contractura, artrosis, discogénico, latigazo y miofascial— tienen <strong>maniobras negativas y diagnóstico clínico</strong>.</div>
+        </details>
+        <details class="fc s-importantes">
+          <summary class="fc__p">Los cuatro escalones del tratamiento de la raquialgia</summary>
+          <div class="fc__r"><strong>1º</strong> medidas no farmacológicas (educación, ejercicio, calor, postura). <strong>2º</strong> AINE o paracetamol. <strong>3º</strong> + <strong>relajante muscular NO benzodiazepínico</strong>. <strong>4º</strong> + <strong>tramadol 25 – 50 mg, 2 a 3 veces al día</strong>. En la <strong>crónica</strong>, <strong>amitriptilina o duloxetina</strong> reemplazan al relajante. Y en todas: <strong>reposo NO recomendado</strong>.</div>
+        </details>
+        <details class="fc s-importantes">
+          <summary class="fc__p">Etiología de la lumbalgia por frecuencia</summary>
+          <div class="fc__r"><strong>Dolor lumbar simple: más del 85 %.</strong> <strong>Etiologías graves: menos del 1 %</strong> — cauda equina, metástasis, absceso epidural, osteomielitis vertebral. <strong>Menos graves: 10 %</strong> — fractura vertebral, radiculopatías, estenosis del canal. El <strong>90 % de las radiculopatías</strong> compromete <strong>L5 y S1</strong>.</div>
+        </details>
+        <details class="fc s-importantes">
+          <summary class="fc__p">¿Cuándo la RMN de columna lumbar es urgente?</summary>
+          <div class="fc__r">Ante <strong>déficits neurológicos severos</strong>: <strong>síndrome de cauda equina</strong>, <strong>anestesia en silla de montar</strong>, <strong>incontinencia de esfínteres</strong>, y <strong>déficits motores severos que no se localizan en una sola raíz</strong>. La <strong>Rx AP y lateral urgente</strong> va ante sospecha de <strong>fractura o malignidad</strong>.</div>
+        </details>
+        <details class="fc s-importantes">
+          <summary class="fc__p">¿Por qué no se piden imágenes de rutina en la lumbalgia inespecífica?</summary>
+          <div class="fc__r">Porque la mayoría <strong>mejora en 2 a 4 semanas</strong>, y porque la RMN muestra con frecuencia <strong>hallazgos que no se correlacionan con la clínica</strong> —<strong>nódulos de Schmorl, fisuras anulares, cambios degenerativos</strong>—, que generan una <strong>atribución causal falsa</strong> y llevan a tratamientos innecesarios.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Concepto clave</dt>
+        <dd><strong>Todo esto es PERIARTICULAR</strong>: tendón, vaina, bursa, entesis, fascia y nervio. El filtro es <strong>activo contra pasivo</strong> — si duele <strong>sólo el activo</strong> es periarticular, si duelen <strong>los dos</strong> es articular, con dos excepciones: <strong>bursitis subacromial y capsulitis adhesiva</strong>. Y antes de todo: <strong>un dolor de hombro que no empeora con el movimiento no es dolor de hombro</strong>.</dd>
+
+        <dt class="r-gold">Maniobras que hay que saber sí o sí</dt>
+        <dd><strong>Hombro</strong>: Yergason y Speed al bíceps · <strong>arco doloroso 60 – 120° activo</strong>, Neer y Hawkins al pinzamiento · <strong>Jobe</strong> al supraespinoso · rotación externa resistida al infraespinoso · <strong>Gerber</strong> al subescapular. <strong>Mano</strong>: <strong>Finkelstein</strong> en el Quervain; <strong>Phalen, Phalen inversa, Tinel y signo del círculo</strong> en el túnel carpiano. <strong>Cervical</strong>: <strong>Spurling</strong> reproduce, <strong>distracción</strong> alivia.</dd>
+
+        <dt class="r-tto">Tratamiento de la raquialgia</dt>
+        <dd><strong>Escalera única para cuello y cintura</strong>: <strong>1º no farmacológico</strong> —educación, ejercicio, calor, postura— · <strong>2º AINE o paracetamol</strong> · <strong>3º + relajante muscular NO benzodiazepínico</strong> · <strong>4º + tramadol 25 – 50 mg, 2 – 3 veces al día</strong>. En la <strong>crónica</strong>: <strong>amitriptilina o duloxetina</strong> en lugar del relajante, más rehabilitación multidisciplinar. <strong>El reposo NO está recomendado</strong> en ninguna fase — enlentece la recuperación.</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd><strong>RMN URGENTE</strong>: cauda equina, <strong>anestesia en silla de montar</strong>, incontinencia de esfínteres, déficit motor severo pluriradicular. <strong>Rx urgente</strong>: sospecha de fractura o malignidad. <strong>Banderas rojas comunes</strong>: síntomas constitucionales, antecedente de cáncer, riesgo infeccioso, dolor persistente más allá de las 6 semanas. <strong>Fuera de eso, no pedir imágenes</strong>: los hallazgos incidentales confunden más de lo que aportan.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir de los bloques de «Reumatismo de partes blandas — miembro superior, miembro inferior y columna» del material de cátedra del Dr. Brian Roldán (Reumatología, UBA) para Medicina Interna III. Completa el cuadernillo de Monoartritis y Poliartritis, que cubre los bloques restantes de la misma presentación. Material de estudio: no reemplaza el criterio clínico ni la guía institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link'));
+
+  function porMeta(hash){
+    for (var i = 0; i < enlaces.length; i++){
+      if (enlaces[i].getAttribute('href') === '#' + hash) return enlaces[i];
+    }
+    return null;
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var enlace = porMeta(e.target.id);
+        if (!enlace) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          enlace.setAttribute('aria-current', 'true');
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>
