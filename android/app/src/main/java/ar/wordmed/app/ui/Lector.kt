@@ -230,8 +230,11 @@ fun Lector(
            solo el ícono. */
         Box(
             Modifier
-                .align(Alignment.TopCenter)
+                /* A la derecha y no al centro: en este teléfono la cámara
+                   está justo en el medio de arriba y el dedo la tapaba. */
+                .align(Alignment.TopEnd)
                 .offset { IntOffset(0, altoBarra) }
+                .padding(end = 4.dp)
                 .size(44.dp)
                 .clip(RoundedCornerShape(50))
                 .clickable { barraVisible = !barraVisible },
