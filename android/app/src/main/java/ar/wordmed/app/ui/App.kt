@@ -2,17 +2,23 @@ package ar.wordmed.app.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -23,13 +29,16 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.FolderOpen
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,8 +48,10 @@ import ar.wordmed.app.datos.Estado
 sealed interface Ruta {
     data object Materias : Ruta
     data class Temas(val slug: String) : Ruta
-    data class Leyendo(val ruta: String, val clave: String) : Ruta
+    data class Leyendo(val ruta: String, val clave: String, val titulo: String, val materia: String) : Ruta
 }
+
+private const val SUAVE = 220
 
 @Composable
 fun App(estado: Estado, alAbrirRecurso: (String) -> Unit) {
@@ -49,17 +60,25 @@ fun App(estado: Estado, alAbrirRecurso: (String) -> Unit) {
     var cajonAbierto by remember { mutableStateOf(false) }
     var buscadorAbierto by remember { mutableStateOf(false) }
 
-    val esOscuro = estado.oscuro ?: androidx.compose.foundation.isSystemInDarkTheme()
+    val esOscuro = estado.oscuro ?: isSystemInDarkTheme()
 
     /* --- el lector ocupa la pantalla entera --- */
     (ruta as? Ruta.Leyendo)?.let { r ->
         Lector(
             ruta = r.ruta,
-            clave = r.clave,
+            titulo = r.titulo,
+            materia = estado.manifiesto?.materia(r.materia)?.nombre ?: "",
             oscuro = esOscuro,
-            deposito = estado.deposito,
+            tamanoLetra = estado.tamanoLetra,
+            alCambiarTamano = estado::fijarTamanoLetra,
+            alRestablecerTamano = estado::restablecerTamanoLetra,
+            alAlternarTema = estado::alternarTema,
             alProgreso = estado::anotarProgreso,
-            alVolver = { estado.refrescarProgreso(); ruta = volverDe(r, ruta, estado) },
+            alVolver = {
+                estado.refrescarProgreso()
+                ruta = if (estado.manifiesto?.materia(r.materia) != null) Ruta.Temas(r.materia)
+                else Ruta.Materias
+            },
         )
         return
     }
@@ -73,9 +92,7 @@ fun App(estado: Estado, alAbrirRecurso: (String) -> Unit) {
                     else -> "Wordmed"
                 },
                 atras = ruta is Ruta.Temas,
-                alPrincipal = {
-                    if (ruta is Ruta.Temas) ruta = Ruta.Materias else cajonAbierto = true
-                },
+                alPrincipal = { if (ruta is Ruta.Temas) ruta = Ruta.Materias else cajonAbierto = true },
                 alBuscar = { buscadorAbierto = true },
             )
 
@@ -85,7 +102,7 @@ fun App(estado: Estado, alAbrirRecurso: (String) -> Unit) {
                     alEntrar = { ruta = Ruta.Temas(it) },
                     alLeer = { slug, tema ->
                         estado.abrirTema(slug, tema)
-                        ruta = Ruta.Leyendo(tema.archivo, tema.clave(slug))
+                        ruta = Ruta.Leyendo(tema.archivo, tema.clave(slug), tema.titulo, slug)
                     },
                     alTocarRueda = { estado.materiaEnPanel = it },
                 )
@@ -96,7 +113,7 @@ fun App(estado: Estado, alAbrirRecurso: (String) -> Unit) {
                         materia = mat,
                         alLeer = { tema ->
                             estado.abrirTema(mat.slug, tema)
-                            ruta = Ruta.Leyendo(tema.archivo, tema.clave(mat.slug))
+                            ruta = Ruta.Leyendo(tema.archivo, tema.clave(mat.slug), tema.titulo, mat.slug)
                         },
                         alAbrirRecurso = alAbrirRecurso,
                     )
@@ -106,9 +123,11 @@ fun App(estado: Estado, alAbrirRecurso: (String) -> Unit) {
             }
         }
 
-        /* --- barra de estado de la sincronización --- */
+        /* --- estado de la sincronización --- */
         AnimatedVisibility(
             visible = estado.paso is Deposito.Paso.Bajando || estado.paso is Deposito.Paso.Falla,
+            enter = slideInVertically { it } + fadeIn(),
+            exit = slideOutVertically { it } + fadeOut(),
             modifier = Modifier.align(Alignment.BottomCenter),
         ) {
             Box(
@@ -118,18 +137,19 @@ fun App(estado: Estado, alAbrirRecurso: (String) -> Unit) {
                     .navigationBarsPadding()
                     .padding(16.dp, 12.dp)
             ) {
-                Text(
-                    textoDelPaso(estado.paso),
-                    fontFamily = Texto, fontSize = 13.sp, color = t.tintaMedia,
-                )
+                Text(textoDelPaso(estado.paso), fontFamily = Texto, fontSize = 13.sp, color = t.tintaMedia)
             }
         }
 
         /* --- botón OK del modo editar --- */
-        if (estado.editando) {
+        AnimatedVisibility(
+            visible = estado.editando,
+            enter = fadeIn() + slideInVertically { it / 2 },
+            exit = fadeOut() + slideOutVertically { it / 2 },
+            modifier = Modifier.align(Alignment.BottomEnd),
+        ) {
             Row(
                 Modifier
-                    .align(Alignment.BottomEnd)
                     .navigationBarsPadding()
                     .padding(18.dp, 22.dp)
                     .clip(RoundedCornerShape(3.dp))
@@ -144,30 +164,55 @@ fun App(estado: Estado, alAbrirRecurso: (String) -> Unit) {
             }
         }
 
-        /* --- cajón --- */
-        if (cajonAbierto) {
+        /* --- cajón lateral --- */
+        AnimatedVisibility(cajonAbierto, enter = fadeIn(tween(SUAVE)), exit = fadeOut(tween(SUAVE))) {
             Velo { cajonAbierto = false }
+        }
+        AnimatedVisibility(
+            visible = cajonAbierto,
+            enter = slideInHorizontally(tween(SUAVE)) { -it },
+            exit = slideOutHorizontally(tween(SUAVE)) { -it },
+        ) {
             Cajon(estado) { cajonAbierto = false }
         }
 
         /* --- panel de color y estilo --- */
-        estado.materiaEnPanel?.let { slug ->
+        val slugPanel = estado.materiaEnPanel
+        var ultimoSlug by remember { mutableStateOf("") }
+        LaunchedEffect(slugPanel) { if (slugPanel != null) ultimoSlug = slugPanel }
+
+        AnimatedVisibility(slugPanel != null, enter = fadeIn(tween(SUAVE)), exit = fadeOut(tween(SUAVE))) {
             Velo { estado.materiaEnPanel = null }
-            Panel(estado, slug) { estado.materiaEnPanel = null }
+        }
+        AnimatedVisibility(
+            visible = slugPanel != null,
+            enter = slideInVertically(tween(SUAVE)) { it },
+            exit = slideOutVertically(tween(SUAVE)) { it },
+            modifier = Modifier.align(Alignment.BottomCenter),
+        ) {
+            if (ultimoSlug.isNotEmpty()) Panel(estado, ultimoSlug) { estado.materiaEnPanel = null }
         }
 
         /* --- buscador --- */
-        if (buscadorAbierto) {
+        AnimatedVisibility(
+            visible = buscadorAbierto,
+            enter = fadeIn(tween(150)) + slideInVertically(tween(SUAVE)) { it / 6 },
+            exit = fadeOut(tween(150)),
+        ) {
             BackHandler { buscadorAbierto = false }
             Buscador(
                 estado = estado,
                 dentroDe = (ruta as? Ruta.Temas)?.slug,
                 alAbrir = { h ->
-                    estado.manifiesto?.tema(h.entrada.materia, h.entrada.tema)?.let { tema ->
-                        estado.abrirTema(h.entrada.materia, tema)
-                    }
+                    val tema = estado.manifiesto?.tema(h.entrada.materia, h.entrada.tema)
+                    if (tema != null) estado.abrirTema(h.entrada.materia, tema)
                     buscadorAbierto = false
-                    ruta = Ruta.Leyendo(h.destino, "${h.entrada.materia}/${h.entrada.tema}")
+                    ruta = Ruta.Leyendo(
+                        h.destino,
+                        "${h.entrada.materia}/${h.entrada.tema}",
+                        tema?.titulo ?: h.tituloTema,
+                        h.entrada.materia,
+                    )
                 },
                 alCerrar = { buscadorAbierto = false },
             )
@@ -177,12 +222,6 @@ fun App(estado: Estado, alAbrirRecurso: (String) -> Unit) {
     if (ruta is Ruta.Temas && !cajonAbierto && !buscadorAbierto && estado.materiaEnPanel == null) {
         BackHandler { ruta = Ruta.Materias }
     }
-}
-
-/** Al salir del lector se vuelve a donde estábamos. */
-private fun volverDe(r: Ruta.Leyendo, actual: Ruta, estado: Estado): Ruta {
-    val materia = r.clave.substringBefore("/")
-    return if (estado.manifiesto?.materia(materia) != null) Ruta.Temas(materia) else Ruta.Materias
 }
 
 @Composable
@@ -198,14 +237,14 @@ private fun BarraSuperior(titulo: String, atras: Boolean, alPrincipal: () -> Uni
             Modifier.weight(1f),
             style = estiloRotulo, color = t.tintaTenue,
             maxLines = 1, overflow = TextOverflow.Ellipsis,
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            textAlign = TextAlign.Center,
         )
         BotonBarra(Icons.Default.Search, alBuscar)
     }
 }
 
 @Composable
-private fun BotonBarra(icono: androidx.compose.ui.graphics.vector.ImageVector, alTocar: () -> Unit) {
+private fun BotonBarra(icono: ImageVector, alTocar: () -> Unit) {
     val t = LocalTinta.current
     Box(
         Modifier.size(44.dp).clip(RoundedCornerShape(50)).clickable(onClick = alTocar),
@@ -215,12 +254,7 @@ private fun BotonBarra(icono: androidx.compose.ui.graphics.vector.ImageVector, a
 
 @Composable
 private fun Velo(alTocar: () -> Unit) {
-    Box(
-        Modifier
-            .fillMaxSize()
-            .background(Color(0x6B1C2836))
-            .clickable(onClick = alTocar)
-    )
+    Box(Modifier.fillMaxSize().background(Color(0x6B1C2836)).clickable(onClick = alTocar))
 }
 
 @Composable
@@ -232,7 +266,7 @@ private fun Cajon(estado: Estado, alCerrar: () -> Unit) {
     Column(
         Modifier
             .fillMaxHeight()
-            .width(296.dp)
+            .width(310.dp)
             .background(t.hoja)
             .statusBarsPadding()
             .navigationBarsPadding(),
@@ -246,19 +280,27 @@ private fun Cajon(estado: Estado, alCerrar: () -> Unit) {
         }
         Box(Modifier.fillMaxWidth().height(1.dp).background(t.linea))
 
-        OpcionCajon(Icons.Default.DarkMode, "Modo oscuro", alTocar = { estado.alternarTema() }) {
+        OpcionCajon(Icons.Default.DarkMode, "Modo oscuro", { estado.alternarTema() }) {
             Switch(
-                checked = estado.oscuro ?: androidx.compose.foundation.isSystemInDarkTheme(),
+                checked = estado.oscuro ?: isSystemInDarkTheme(),
                 onCheckedChange = { estado.alternarTema() },
+                colors = SwitchDefaults.colors(checkedTrackColor = Color(0xFF27AE60)),
             )
         }
-        OpcionCajon(Icons.Outlined.FolderOpen, "Editar carpetas", alTocar = {
-            estado.editando = true; alCerrar()
-        })
-        OpcionCajon(Icons.Default.Refresh, "Buscar actualizaciones", alTocar = {
-            estado.sincronizar(); alCerrar()
-        }) {
+        OpcionCajon(Icons.Outlined.FolderOpen, "Editar carpetas", { estado.editando = true; alCerrar() })
+        OpcionCajon(Icons.Default.Refresh, "Buscar actualizaciones", { estado.sincronizar(); alCerrar() }) {
             Text(textoDelPaso(estado.paso), fontFamily = Texto, fontSize = 11.sp, color = t.tintaTenue)
+        }
+
+        Box(Modifier.fillMaxWidth().height(1.dp).background(t.linea))
+        Column(Modifier.padding(18.dp, 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("TAMAÑO DE LETRA", style = estiloRotulo, color = t.tintaTenue)
+            BarraTamanoLetra(
+                valor = estado.tamanoLetra,
+                alCambiar = estado::fijarTamanoLetra,
+                alRestablecer = estado::restablecerTamanoLetra,
+                conMarco = false,
+            )
         }
 
         Spacer(Modifier.weight(1f))
@@ -274,7 +316,7 @@ private fun Cajon(estado: Estado, alCerrar: () -> Unit) {
 
 @Composable
 private fun OpcionCajon(
-    icono: androidx.compose.ui.graphics.vector.ImageVector,
+    icono: ImageVector,
     texto: String,
     alTocar: () -> Unit,
     accesorio: @Composable (() -> Unit)? = null,
@@ -284,8 +326,8 @@ private fun OpcionCajon(
         Modifier
             .fillMaxWidth()
             .clickable(onClick = alTocar)
-            .padding(18.dp, 14.dp)
-            .defaultMinSize(minHeight = 52.dp),
+            .padding(18.dp, 12.dp)
+            .defaultMinSize(minHeight = 48.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(14.dp),
     ) {
@@ -297,7 +339,7 @@ private fun OpcionCajon(
 
 /** Panel de color y estilo. Los 112 colores en cuadrícula, los 8 estilos aparte. */
 @Composable
-private fun BoxScope.Panel(estado: Estado, slug: String, alCerrar: () -> Unit) {
+private fun Panel(estado: Estado, slug: String, alCerrar: () -> Unit) {
     val t = LocalTinta.current
     var solapa by remember { mutableStateOf(0) }
     val cfg = estado.carpetas[slug]
@@ -306,7 +348,6 @@ private fun BoxScope.Panel(estado: Estado, slug: String, alCerrar: () -> Unit) {
 
     Column(
         Modifier
-            .align(Alignment.BottomCenter)
             .fillMaxWidth()
             .fillMaxHeight(0.72f)
             .clip(RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp))
@@ -316,10 +357,7 @@ private fun BoxScope.Panel(estado: Estado, slug: String, alCerrar: () -> Unit) {
         Box(Modifier.fillMaxWidth().padding(top = 9.dp), contentAlignment = Alignment.Center) {
             Box(Modifier.width(38.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(t.linea))
         }
-        Row(
-            Modifier.fillMaxWidth().padding(16.dp, 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
+        Row(Modifier.fillMaxWidth().padding(16.dp, 6.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(
                 estado.manifiesto?.materia(slug)?.nombre ?: "",
                 Modifier.weight(1f), fontFamily = Texto, fontSize = 13.sp, color = t.tintaTenue,
@@ -329,10 +367,7 @@ private fun BoxScope.Panel(estado: Estado, slug: String, alCerrar: () -> Unit) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
             listOf("Colores", "Estilos").forEachIndexed { i, nombre ->
                 Box(
-                    Modifier
-                        .weight(1f)
-                        .clickable { solapa = i }
-                        .padding(vertical = 10.dp),
+                    Modifier.weight(1f).clickable { solapa = i }.padding(vertical = 10.dp),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
@@ -413,17 +448,16 @@ private fun BoxScope.Panel(estado: Estado, slug: String, alCerrar: () -> Unit) {
                         Box(
                             Modifier
                                 .fillMaxWidth()
-                                .height(78.dp)
                                 .clip(RoundedCornerShape(3.dp))
                                 .background(t.papel)
                                 .padding(8.dp),
-                            contentAlignment = Alignment.Center,
                         ) {
-                            /* miniatura: sin alto mínimo, si no el nombre se corta */
+                            /* miniatura: sin alto mínimo y con el alto que pida
+                               el contenido, si no el "Aa" queda cortado */
                             Carpeta(
                                 nombre = "Aa", etiqueta = "8 temas", descripcion = null,
                                 color = colorDe(colorActual), estilo = e,
-                                alturaMinima = 0.dp,
+                                alturaMinima = 0.dp, compacta = true,
                                 modifier = Modifier.fillMaxWidth(),
                             )
                         }

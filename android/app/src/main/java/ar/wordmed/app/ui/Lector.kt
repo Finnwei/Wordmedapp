@@ -7,17 +7,35 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.webkit.WebViewAssetLoader
-import ar.wordmed.app.datos.Deposito
 import java.io.File
 
 /**
@@ -26,41 +44,97 @@ import java.io.File
  * Se sirve por WebViewAssetLoader y no por file://, para que el origen
  * sea https y el localStorage del cuadernillo —donde guarda el modo
  * claro/oscuro— funcione de verdad.
+ *
+ * La barra de arriba es nativa y no se mueve al scrollear. El botón de
+ * tema que trae el cuadernillo quedaba fuera de cuadro en pantalla chica
+ * y se perdía al bajar, así que el envoltorio lo esconde cuando detecta
+ * que lo está abriendo la app.
  */
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun Lector(
     ruta: String,
-    clave: String,
+    titulo: String,
+    materia: String,
     oscuro: Boolean,
-    deposito: Deposito,
+    tamanoLetra: Int,
+    alCambiarTamano: (Int) -> Unit,
+    alRestablecerTamano: () -> Unit,
+    alAlternarTema: () -> Unit,
     alProgreso: (String, Int, Int) -> Unit,
     alVolver: () -> Unit,
 ) {
-    val ctx = LocalContext.current
-    BackHandler(onBack = alVolver)
-
-    /* Sin esto el cuadernillo arranca debajo del reloj y el botón de
-       tema queda tapado por la barra de estado. */
     val t = LocalTinta.current
-    Box(
+    var panelLetra by remember { mutableStateOf(false) }
+
+    BackHandler { if (panelLetra) panelLetra = false else alVolver() }
+
+    Column(
         Modifier
             .fillMaxSize()
-            /* el mismo papel que el cuadernillo, si no la franja de la
-               barra de estado queda de otro color */
             .background(t.papel)
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
+
+        /* --- barra fija, arriba del nombre de la materia --- */
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = 6.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            BotonVisor(alVolver) {
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack, "Volver",
+                    tint = t.tintaMedia, modifier = Modifier.size(22.dp),
+                )
+            }
+            Column(Modifier.weight(1f).padding(horizontal = 4.dp)) {
+                Text(
+                    materia.uppercase(), style = estiloRotulo, color = t.tintaTenue,
+                    maxLines = 1, overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    titulo, fontFamily = Titulo, fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp, lineHeight = 18.sp, color = t.tinta,
+                    maxLines = 1, overflow = TextOverflow.Ellipsis,
+                )
+            }
+            BotonVisor({ panelLetra = !panelLetra }) {
+                Text(
+                    "Aa", fontFamily = Titulo, fontWeight = FontWeight.Bold,
+                    fontSize = 17.sp, color = if (panelLetra) t.tinta else t.tintaMedia,
+                )
+            }
+            BotonVisor(alAlternarTema) {
+                Icon(
+                    if (oscuro) Icons.Default.LightMode else Icons.Default.DarkMode,
+                    "Cambiar tema", tint = t.tintaMedia, modifier = Modifier.size(21.dp),
+                )
+            }
+        }
+
+        AnimatedVisibility(
+            visible = panelLetra,
+            enter = fadeIn() + expandVertically(),
+            exit = fadeOut() + shrinkVertically(),
+        ) {
+            BarraTamanoLetra(
+                valor = tamanoLetra,
+                alCambiar = alCambiarTamano,
+                alRestablecer = alRestablecerTamano,
+                modifier = Modifier.padding(horizontal = 12.dp).padding(bottom = 6.dp),
+            )
+        }
+
+        Box(Modifier.fillMaxWidth().height(1.dp).background(t.linea))
+
         AndroidView(
             modifier = Modifier.fillMaxSize(),
             factory = { c ->
                 val cargador = WebViewAssetLoader.Builder()
                     .addPathHandler(
                         "/contenido/",
-                        WebViewAssetLoader.InternalStoragePathHandler(
-                            c, File(c.filesDir, "contenido")
-                        )
+                        WebViewAssetLoader.InternalStoragePathHandler(c, File(c.filesDir, "contenido"))
                     )
                     .build()
 
@@ -69,7 +143,19 @@ fun Lector(
                     settings.domStorageEnabled = true
                     settings.allowFileAccess = false
                     settings.allowContentAccess = false
-                    settings.textZoom = 100
+
+                    /* Que se vea como al abrir el archivo a mano en el celular:
+                       el envoltorio le saca el <meta viewport> cuando detecta la
+                       app, así que el WebView maqueta a su ancho por omisión y lo
+                       encoge para que entre. Ese encogido es también el tope de
+                       zoom out, que es lo que se pidió. */
+                    settings.useWideViewPort = true
+                    settings.loadWithOverviewMode = true
+                    settings.setSupportZoom(true)
+                    settings.builtInZoomControls = true
+                    settings.displayZoomControls = false
+
+                    settings.textZoom = tamanoLetra
                     isVerticalScrollBarEnabled = true
 
                     addJavascriptInterface(PuenteLector(alProgreso), "WordmedApp")
@@ -86,30 +172,35 @@ fun Lector(
                         ): Boolean = request.url.host != "appassets.androidplatform.net"
 
                         override fun onPageFinished(view: WebView, url: String) {
-                            view.evaluateJavascript(
-                                "document.documentElement.setAttribute('data-theme','${if (oscuro) "dark" else "light"}');",
-                                null,
-                            )
+                            view.evaluateJavascript(guionTema(oscuro), null)
                         }
                     }
 
                     loadUrl("https://appassets.androidplatform.net/contenido/$ruta")
                 }
             },
-            update = { web ->
-                web.evaluateJavascript(
-                    "document.documentElement.setAttribute('data-theme','${if (oscuro) "dark" else "light"}');",
-                    null,
-                )
+            update = { v ->
+                v.settings.textZoom = tamanoLetra
+                v.evaluateJavascript(guionTema(oscuro), null)
             },
         )
     }
 }
 
+private fun guionTema(oscuro: Boolean) =
+    "document.documentElement.setAttribute('data-theme','${if (oscuro) "dark" else "light"}');"
+
+@Composable
+private fun BotonVisor(alTocar: () -> Unit, contenido: @Composable () -> Unit) {
+    Box(
+        Modifier.size(44.dp).clip(RoundedCornerShape(50)).clickable(onClick = alTocar),
+        contentAlignment = Alignment.Center,
+    ) { contenido() }
+}
+
 /**
  * Lo que el cuadernillo puede llamar desde JavaScript. El puente que va
- * dentro del envoltorio busca justamente `window.WordmedApp`: si existe,
- * esconde su propio botón de volver y reporta el avance por acá.
+ * dentro del envoltorio busca justamente `window.WordmedApp`.
  */
 class PuenteLector(private val alProgreso: (String, Int, Int) -> Unit) {
     @JavascriptInterface

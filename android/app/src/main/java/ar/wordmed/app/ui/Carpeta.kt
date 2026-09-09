@@ -38,6 +38,7 @@ fun Carpeta(
     vacia: Boolean = false,
     espacioRueda: Boolean = false,
     alturaMinima: androidx.compose.ui.unit.Dp = 132.dp,
+    compacta: Boolean = false,
     modifier: Modifier = Modifier,
     alTocar: (() -> Unit)? = null,
     adorno: @Composable (BoxScopeLike.() -> Unit)? = null,
@@ -119,8 +120,14 @@ fun Carpeta(
                 /* En modo editar la rueda ocupa la esquina de arriba, así que el
                    texto empieza más abajo en vez de angostarse y partirse. */
                 .padding(
-                    start = 14.dp, end = 14.dp,
-                    top = if (espacioRueda) 62.dp else 34.dp, bottom = 16.dp,
+                    start = if (compacta) 10.dp else 14.dp,
+                    end = if (compacta) 10.dp else 14.dp,
+                    top = when {
+                        compacta -> 26.dp
+                        espacioRueda -> 62.dp
+                        else -> 34.dp
+                    },
+                    bottom = if (compacta) 10.dp else 16.dp,
                 ),
             verticalArrangement = Arrangement.spacedBy(5.dp),
         ) {
@@ -128,8 +135,12 @@ fun Carpeta(
                 nombre,
                 fontFamily = if (estilo == EstiloCarpeta.FUTURISTA) Dato else Titulo,
                 fontWeight = FontWeight.Bold,
-                fontSize = if (estilo == EstiloCarpeta.FUTURISTA) 15.sp else 19.sp,
-                lineHeight = 22.sp,
+                fontSize = when {
+                    compacta -> 15.sp
+                    estilo == EstiloCarpeta.FUTURISTA -> 15.sp
+                    else -> 19.sp
+                },
+                lineHeight = if (compacta) 18.sp else 22.sp,
                 color = colorNombre,
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis,

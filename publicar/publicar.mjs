@@ -158,6 +158,27 @@ function leerSecciones(cuerpo) {
 
 /* ---------- el envoltorio ---------- */
 
+/* Va en el <head>, antes de que se dibuje nada. Cuando el cuadernillo
+   lo abre la app, dos cosas cambian:
+
+   1. Se saca el <meta viewport>. Sin él el WebView maqueta a su ancho
+      por omisión (~980 px) y lo encoge para que entre, que es lo mismo
+      que se ve al abrir el archivo a mano desde el celular. Con el
+      viewport puesto quedaba a ancho de teléfono.
+   2. Se esconde el botón de tema del cuadernillo: en pantalla chica
+      quedaba fuera de cuadro y se perdía al scrollear. La app pone el
+      suyo en una barra fija. */
+const PUENTE_CABECERA = `
+(function(){
+  if (typeof window.WordmedApp === "undefined") return;
+  var m = document.querySelector('meta[name=viewport]');
+  if (m && m.parentNode) m.parentNode.removeChild(m);
+  var s = document.createElement('style');
+  s.textContent = '.tema{display:none !important}';
+  document.head.appendChild(s);
+})();
+`;
+
 /* Puente entre el cuadernillo y quien lo muestre (web o app):
    guarda dónde quedó la lectura, la retoma al volver, y agrega el
    botón de volver salvo que lo esté abriendo la app —que pone su
@@ -222,6 +243,7 @@ function envolver({ titulo, estilo, cuerpo, clave }) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script>${PUENTE_CABECERA}</script>
 <title>${titulo}</title>
 <link rel="stylesheet" href="../../fuentes/fuentes.css">
 <style>${estilo}</style>

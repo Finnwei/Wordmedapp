@@ -3,21 +3,28 @@ package ar.wordmed.app.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.layout.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import ar.wordmed.app.datos.Deposito
 import ar.wordmed.app.datos.Estado
 import ar.wordmed.app.datos.Materia
@@ -36,7 +43,6 @@ fun PantallaMaterias(
 ) {
     val t = LocalTinta.current
     val materias = estado.materiasOrdenadas()
-    val m = estado.manifiesto
 
     LazyColumn(
         Modifier.fillMaxSize(),
@@ -55,29 +61,82 @@ fun PantallaMaterias(
             item { AvisoEditar() }
         } else {
             recienteDe(estado)?.let { (materia, tema, avance) ->
-                /* sin rótulo arriba: la pestaña de la ficha ya dice "Reciente" */
                 item { FichaReciente(estado, materia, tema, avance) { alLeer(materia.slug, tema) } }
             }
         }
 
         item { Text("MATERIAS", style = estiloRotulo, color = t.tintaTenue) }
 
-        items(materias.chunked(2)) { fila ->
+        /* Una sola celda: la rejilla se arma entera acá para poder arrastrar
+           las carpetas entre filas. Son pocas materias, así que no hace
+           falta que sea perezosa. */
+        item { RejillaMaterias(estado, materias, alEntrar, alTocarRueda) }
+
+        if (estado.manifiesto == null && estado.paso !is Deposito.Paso.Bajando) {
+            item { EstadoVacio(textoDelPaso(estado.paso)) }
+        }
+    }
+}
+
+/**
+ * Las carpetas en dos columnas. En modo editar cada una muestra, arriba
+ * a la derecha, la rueda de color y el agarre para moverla.
+ *
+ * Al empezar a arrastrar se saca una foto de dónde está cada casillero.
+ * Con esa foto se decide sobre cuál está el dedo y, al cambiar de lugar,
+ * se corrige el desplazamiento para que la carpeta no salte.
+ */
+@Composable
+private fun RejillaMaterias(
+    estado: Estado,
+    materias: List<Materia>,
+    alEntrar: (String) -> Unit,
+    alTocarRueda: (String) -> Unit,
+) {
+    val claves = materias.map { it.slug }
+    var orden by remember(claves) { mutableStateOf(claves) }
+    val porSlug = materias.associateBy { it.slug }
+    val lista = orden.mapNotNull { porSlug[it] }
+
+    val casilleros = remember { mutableStateMapOf<Int, Rect>() }
+    var arrastrado by remember { mutableStateOf<String?>(null) }
+    var desplazamiento by remember { mutableStateOf(Offset.Zero) }
+    var foto by remember { mutableStateOf<List<Rect>>(emptyList()) }
+
+    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        lista.chunked(2).forEachIndexed { fila, par ->
             Row(
                 Modifier.height(IntrinsicSize.Min),
                 horizontalArrangement = Arrangement.spacedBy(14.dp),
             ) {
-                for (mat in fila) {
+                par.forEachIndexed { col, mat ->
+                    val indice = fila * 2 + col
+                    val enMovimiento = mat.slug == arrastrado
                     val cfg = estado.carpetas[mat.slug]
                     val color = colorDe(
                         cfg?.color
                             ?: COLOR_POR_DEFECTO[mat.slug]
-                            ?: RUEDA_POR_DEFECTO[materias.indexOf(mat) % RUEDA_POR_DEFECTO.size]
+                            ?: RUEDA_POR_DEFECTO[indice % RUEDA_POR_DEFECTO.size]
                     )
                     val vacia = mat.temas.isEmpty()
                     val bloques = mat.bloques.filterNotNull()
 
-                    Box(Modifier.weight(1f).fillMaxHeight()) {
+                    Box(
+                        Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .onGloballyPositioned { casilleros[indice] = it.boundsInRoot() }
+                            .zIndex(if (enMovimiento) 1f else 0f)
+                            .graphicsLayer {
+                                if (enMovimiento) {
+                                    translationX = desplazamiento.x
+                                    translationY = desplazamiento.y
+                                    scaleX = 1.03f
+                                    scaleY = 1.03f
+                                    rotationZ = -1.6f
+                                }
+                            }
+                    ) {
                         Carpeta(
                             nombre = mat.nombre,
                             etiqueta = if (vacia) "Vacía" else "${mat.temas.size} temas",
@@ -93,21 +152,103 @@ fun PantallaMaterias(
                             modifier = Modifier.fillMaxWidth().fillMaxHeight(),
                             alTocar = if (estado.editando) null else ({ alEntrar(mat.slug) }),
                         )
+
                         if (estado.editando) {
-                            RuedaColor(
-                                Modifier.align(Alignment.TopEnd).padding(top = 29.dp, end = 8.dp)
-                            ) { alTocarRueda(mat.slug) }
+                            Row(
+                                Modifier.align(Alignment.TopEnd).padding(top = 28.dp, end = 7.dp),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                RuedaColor { alTocarRueda(mat.slug) }
+                                Agarre(
+                                    Modifier.pointerInput(orden) {
+                                        detectDragGestures(
+                                            onDragStart = {
+                                                arrastrado = mat.slug
+                                                desplazamiento = Offset.Zero
+                                                foto = lista.indices.map { casilleros[it] ?: Rect.Zero }
+                                            },
+                                            onDrag = { cambio, delta ->
+                                                cambio.consume()
+                                                desplazamiento += delta
+                                                val i = orden.indexOf(arrastrado)
+                                                if (i >= 0 && i < foto.size) {
+                                                    val centro = foto[i].center + desplazamiento
+                                                    val j = foto.indexOfFirst { it.contains(centro) }
+                                                    if (j >= 0 && j != i) {
+                                                        orden = orden.toMutableList()
+                                                            .apply { add(j, removeAt(i)) }
+                                                        desplazamiento -= (foto[j].topLeft - foto[i].topLeft)
+                                                    }
+                                                }
+                                            },
+                                            onDragEnd = {
+                                                estado.reordenar(orden)
+                                                arrastrado = null
+                                                desplazamiento = Offset.Zero
+                                            },
+                                            onDragCancel = {
+                                                arrastrado = null
+                                                desplazamiento = Offset.Zero
+                                            },
+                                        )
+                                    }
+                                )
+                            }
                         }
                     }
                 }
-                if (fila.size == 1) Spacer(Modifier.weight(1f))
+                if (par.size == 1) Spacer(Modifier.weight(1f))
             }
         }
+    }
+}
 
-        if (m == null && estado.paso !is Deposito.Paso.Bajando) {
-            item { EstadoVacio(textoDelPaso(estado.paso)) }
+/** El símbolo del que se agarra la carpeta para moverla de lugar. */
+@Composable
+private fun Agarre(modifier: Modifier = Modifier) {
+    val t = LocalTinta.current
+    Box(
+        modifier
+            .size(30.dp)
+            .clip(RoundedCornerShape(50))
+            .background(t.hoja)
+            .border(1.dp, t.lineaFuerte, RoundedCornerShape(50)),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(2.5.dp)) {
+            repeat(3) {
+                Box(
+                    Modifier
+                        .width(13.dp)
+                        .height(1.5.dp)
+                        .clip(RoundedCornerShape(1.dp))
+                        .background(t.tintaMedia)
+                )
+            }
         }
     }
+}
+
+@Composable
+private fun RuedaColor(alTocar: () -> Unit) {
+    val t = LocalTinta.current
+    Box(
+        Modifier
+            .size(30.dp)
+            .clip(RoundedCornerShape(50))
+            .background(
+                Brush.sweepGradient(
+                    listOf(
+                        Color(0xFFE74C3C), Color(0xFFE67E22), Color(0xFFF1C40F), Color(0xFF2ECC71),
+                        Color(0xFF1ABC9C), Color(0xFF3498DB), Color(0xFF9B59B6), Color(0xFFE91E63),
+                        Color(0xFFE74C3C),
+                    )
+                )
+            )
+            .border(2.dp, t.hoja, RoundedCornerShape(50))
+            .clickable(onClick = alTocar)
+    )
 }
 
 @Composable
@@ -125,30 +266,9 @@ private fun AvisoEditar() {
     ) {
         Column {
             Text("Editar carpetas", fontFamily = Texto, fontWeight = FontWeight(700), fontSize = 13.5.sp, color = t.tinta)
-            Text("Tocá la rueda para elegir color y estilo", fontFamily = Texto, fontSize = 11.5.sp, color = t.tintaTenue)
+            Text("Rueda para el color · agarre para mover", fontFamily = Texto, fontSize = 11.5.sp, color = t.tintaTenue)
         }
     }
-}
-
-@Composable
-private fun RuedaColor(modifier: Modifier, alTocar: () -> Unit) {
-    val t = LocalTinta.current
-    Box(
-        modifier
-            .size(30.dp)
-            .clip(RoundedCornerShape(50))
-            .background(
-                androidx.compose.ui.graphics.Brush.sweepGradient(
-                    listOf(
-                        Color(0xFFE74C3C), Color(0xFFE67E22), Color(0xFFF1C40F), Color(0xFF2ECC71),
-                        Color(0xFF1ABC9C), Color(0xFF3498DB), Color(0xFF9B59B6), Color(0xFFE91E63),
-                        Color(0xFFE74C3C),
-                    )
-                )
-            )
-            .border(2.dp, t.hoja, RoundedCornerShape(50))
-            .clickable(onClick = alTocar)
-    )
 }
 
 @Composable

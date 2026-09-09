@@ -21,6 +21,7 @@ class Estado(app: Application) : AndroidViewModel(app) {
     var vistos by mutableStateOf<Map<String, String>>(emptyMap()); private set
     var carpetas by mutableStateOf<Map<String, Deposito.Carpeta>>(emptyMap()); private set
     var oscuro by mutableStateOf<Boolean?>(null); private set
+    var tamanoLetra by mutableStateOf(Deposito.LETRA_ORIGINAL); private set
 
     var editando by mutableStateOf(false)
     var materiaEnPanel by mutableStateOf<String?>(null)
@@ -31,6 +32,7 @@ class Estado(app: Application) : AndroidViewModel(app) {
     init {
         viewModelScope.launch {
             oscuro = deposito.temaOscuro()
+            tamanoLetra = deposito.tamanoLetra()
             carpetas = deposito.carpetas()
             progreso = deposito.progreso()
             vistos = deposito.vistos()
@@ -64,6 +66,13 @@ class Estado(app: Application) : AndroidViewModel(app) {
         deposito.guardarTema(nuevo)
         oscuro = nuevo
     }
+
+    fun fijarTamanoLetra(v: Int) = viewModelScope.launch {
+        tamanoLetra = v.coerceIn(Deposito.LETRA_MIN, Deposito.LETRA_MAX)
+        deposito.guardarTamanoLetra(tamanoLetra)
+    }
+
+    fun restablecerTamanoLetra() = fijarTamanoLetra(Deposito.LETRA_ORIGINAL)
 
     fun fijarColor(slug: String, color: String) = guardarCarpeta(slug) { it.copy(color = color) }
     fun fijarEstilo(slug: String, estilo: String) = guardarCarpeta(slug) { it.copy(estilo = estilo) }

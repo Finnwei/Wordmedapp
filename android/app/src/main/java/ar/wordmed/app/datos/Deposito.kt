@@ -33,6 +33,7 @@ class Deposito(private val ctx: Context) {
     private val kCarpetas = stringPreferencesKey("carpetas")
     private val kTema = stringPreferencesKey("tema")
     private val kVistos = stringPreferencesKey("vistos")
+    private val kLetra = stringPreferencesKey("letra")
 
     val carpetaContenido: File get() = raiz
 
@@ -230,6 +231,14 @@ class Deposito(private val ctx: Context) {
         escribir(kCarpetas, textoDe(m))
     }
 
+    /* ---------- tamaño de letra ----------
+       Es el textZoom del WebView: 100 es el tamaño original del
+       cuadernillo, y se aplica sin desarmar la maquetación. */
+
+    suspend fun tamanoLetra(): Int = leer(kLetra).toIntOrNull() ?: LETRA_ORIGINAL
+
+    suspend fun guardarTamanoLetra(v: Int) = escribir(kLetra, v.coerceIn(LETRA_MIN, LETRA_MAX).toString())
+
     /* ---------- tema claro / oscuro ---------- */
 
     suspend fun temaOscuro(): Boolean? = when (leer(kTema)) {
@@ -239,4 +248,10 @@ class Deposito(private val ctx: Context) {
     }
 
     suspend fun guardarTema(oscuro: Boolean) = escribir(kTema, if (oscuro) "dark" else "light")
+
+    companion object {
+        const val LETRA_ORIGINAL = 100
+        const val LETRA_MIN = 70
+        const val LETRA_MAX = 200
+    }
 }
