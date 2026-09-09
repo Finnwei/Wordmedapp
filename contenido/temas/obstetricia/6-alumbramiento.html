@@ -1,0 +1,1499 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alumbramiento y Postalumbramiento</title>
+<link rel="stylesheet" href="../../fuentes/fuentes.css">
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-bloque:1.95rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+
+  /* Que la barra de desplazamiento y los controles nativos acompanen al tema */
+  color-scheme: light dark;
+}
+
+/* Eleccion explicita de claro: solo hace falta para el color-scheme, los
+   tokens claros ya son la base sin estampar. */
+:root[data-theme="light"]{ color-scheme: light; }
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* Interruptor de tema claro / oscuro.
+   El estampado `data-theme` en la raíz ya lo respetan los bloques de tokens de
+   arriba; este botón sólo lo pone y lo guarda. Sin elección estampada mandan
+   las preferencias del sistema, que es el comportamiento por defecto. */
+.tema{
+  position:fixed; top:.7rem; right:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.tema:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.tema__icono{ width:1.15rem; height:1.15rem; display:block; }
+
+/* Se muestra el icono del tema al que se va a cambiar, no el actual.
+   Mismo escalonado que los tokens: base clara · sistema oscuro · elección explícita. */
+.tema__sol{ display:none; }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .tema__sol{ display:block; }
+  :root:not([data-theme="light"]) .tema__luna{ display:none; }
+}
+:root[data-theme="dark"] .tema__sol{ display:block; }
+:root[data-theme="dark"] .tema__luna{ display:none; }
+:root[data-theme="light"] .tema__sol{ display:none; }
+:root[data-theme="light"] .tema__luna{ display:block; }
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índices ---------- */
+/* Dos piezas complementarias y deliberadamente redundantes:
+   · .indice        — barra lateral fija, sólo en pantalla ancha, navegación permanente.
+   · .indice-rapido — tarjeta compacta al principio del cuerpo, visible en TODO ancho.
+   La lateral desaparece por debajo de 64rem, que es justo el ancho del panel de
+   Artifacts y del celular; sin la compacta el cuadernillo publicado se queda sin
+   índice. Las dos apuntan a los mismos anclajes y se resaltan juntas al desplazar. */
+
+/* 6.1 · Barra lateral */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+/* Rótulo de bloque intercalado en la lista lateral: no es un enlace, sólo
+   separa grupos de secciones para que 30 entradas no sean una tira plana. */
+.indice__bloque{
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+  margin:.9rem 0 .2rem; padding:0 .55rem;
+}
+.indice__bloque:first-child{ margin-top:0; }
+
+/* 6.2 · Índice compacto (va después de la portada, dentro del cuerpo) */
+.indice-rapido{
+  background:var(--hoja-hund);
+  border:1px solid var(--linea);
+  border-radius:var(--radio);
+  padding:1.1rem 1.2rem 1.2rem;
+}
+.indice-rapido__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .85rem;
+}
+/* auto-fit: una columna en el panel angosto, dos o tres en pantalla ancha */
+.indice-rapido__bloques{
+  list-style:none; margin:0; padding:0;
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(15rem, 1fr));
+  gap:1rem 2rem; align-items:start;
+}
+.ir-bloque{
+  display:block; margin-bottom:.4rem;
+  font-family:var(--f-titulo); font-size:.98rem; font-weight:700; line-height:1.3;
+  color:var(--tinta); text-decoration:none;
+  padding-bottom:.3rem; border-bottom:1px solid var(--linea-fuerte);
+}
+.ir-bloque:hover{ color:var(--cli-t); }
+.ir-secciones{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.05rem; }
+.ir-link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.55rem 1fr; align-items:baseline; gap:.4rem;
+  padding:.2rem .35rem; border-radius:2px;
+  font-size:.86rem; line-height:1.4; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.ir-link > b{
+  font-family:var(--f-dato); font-size:.76rem; font-weight:700;
+  font-variant-numeric:tabular-nums; color:var(--ct); opacity:.85;
+}
+.ir-link:hover{ background:var(--hoja); color:var(--tinta); }
+.ir-link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Título de bloque y ficha de sección ---------- */
+
+/* Anuncia un grupo de secciones. Neutro en color a propósito: los siete colores
+   tienen significado clínico fijo y un bloque agrupa secciones de varios. La
+   regla de abajo lleva el degradado completo de la paleta, igual que la pestaña
+   de repaso y la cabecera de la ficha relámpago.
+   Sin <svg> adentro: el exportador a Word aparea los diagramas con las figuras
+   por contador posicional sobre el HTML crudo (ver exportar_docx.py). */
+.bloque{
+  margin:1.4rem 0 0; padding:0;
+  text-align:center; scroll-margin-top:2.5rem;
+  display:flex; flex-direction:column; align-items:center; gap:.3rem;
+  font-weight:400;
+}
+.bloque:first-child{ margin-top:0; }
+.bloque__rotulo{
+  font-family:var(--f-texto);
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+}
+.bloque__nombre{
+  font-family:var(--f-titulo); font-size:var(--t-bloque); font-weight:700; line-height:1.15;
+  letter-spacing:-.01em; color:var(--tinta); text-wrap:balance; max-width:32ch;
+}
+.bloque::after{
+  content:""; width:7rem; height:2.5px; margin-top:.5rem; border-radius:2px;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+}
+
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.5rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-column:1; grid-row:1; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+/* El icono ocupa la columna 1 y NADA MAS. Todo el resto del contenido se
+   apila en la columna 2, una fila por elemento, sin importar cuantos
+   parrafos haya.
+
+   Sin esta regla la caja solo funciona con un unico <p>: a partir del
+   segundo, la autocolocacion del grid empieza a repartir contenido en la
+   columna del icono, que es `auto` y por lo tanto se ensancha hasta abarcar
+   el parrafo que le toco. La columna `1fr` queda entonces reducida a una
+   tira angosta, el texto se parte en dos columnas desbalanceadas y la caja
+   crece hasta volverse ilegible. */
+.importante > :not(.importante__icono){ grid-column:2; }
+.importante__titulo{
+  grid-row:1;
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante ul, .importante ol{ margin:0; padding-left:1.15rem; }
+.importante li + li{ margin-top:.3rem; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso, .tema{ display:none !important; }
+  /* La lateral no se imprime, pero la compacta sí: en papel es la tabla de
+     contenidos del cuadernillo. */
+  .indice-rapido{ display:block; break-inside:avoid; page-break-inside:avoid; margin-bottom:1.2rem; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .bloque{
+    margin:1.6rem 0 1rem;
+    break-after:avoid; page-break-after:avoid;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+</style>
+<style>
+/* Fuentes de la capa de contenido. Va después del estilo del
+   cuadernillo para pisar las de Windows, que no se pueden
+   redistribuir y no existen en Android. */
+:root{
+  --f-titulo:'Spectral',Georgia,'Times New Roman',serif;
+  --f-texto:'Open Sans',system-ui,-apple-system,sans-serif;
+  --f-dato:'Cascadia Mono','Cascadia Code',ui-monospace,Consolas,monospace;
+}
+/* Botón de volver, espejo del de tema que ya trae el cuadernillo. */
+.volver{
+  position:fixed; top:.7rem; left:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.volver:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.volver__icono{ width:1.15rem; height:1.15rem; display:block; }
+</style>
+</head>
+<body data-clave="obstetricia/6-alumbramiento">
+<script>
+/* Aplica el tema guardado antes de pintar. Va aca arriba a proposito: si
+   esperara al script del final, el documento parpadearia en el tema del
+   sistema antes de corregirse. */
+(function(){
+  try {
+    var guardado = localStorage.getItem('wordmed-tema');
+    if (guardado === 'dark' || guardado === 'light') {
+      document.documentElement.setAttribute('data-theme', guardado);
+    }
+  } catch (e) { /* almacenamiento bloqueado: manda el sistema */ }
+})();
+</script>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<button class="tema" id="tema" type="button" aria-pressed="false" aria-label="Cambiar a modo oscuro">
+  <svg class="tema__icono tema__sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.2"></circle>
+    <path d="M12 2.6v2.1M12 19.3v2.1M5.1 5.1l1.5 1.5M17.4 17.4l1.5 1.5M2.6 12h2.1M19.3 12h2.1M5.1 18.9l1.5-1.5M17.4 6.6l1.5-1.5"></path>
+  </svg>
+  <svg class="tema__icono tema__luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20.4 14.2A8.6 8.6 0 0 1 9.8 3.6a8.6 8.6 0 1 0 10.6 10.6z"></path>
+  </svg>
+</button>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li class="indice__bloque">Bloque A</li>
+      <li><a class="indice__link i-generalidades"  href="#definicion">Definición y lugar en el parto</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#tiempos">Los cuatro tiempos</a></li>
+      <li class="indice__bloque">Bloque B</li>
+      <li><a class="indice__link i-fisiopatologia" href="#motor">El motor del desprendimiento</a></li>
+      <li><a class="indice__link i-importantes"    href="#mecanismos">Schultze y Duncan</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#descenso">Descenso y expulsión</a></li>
+      <li><a class="indice__link i-clinica"        href="#signos">Signos de desprendimiento</a></li>
+      <li class="indice__bloque">Bloque C</li>
+      <li><a class="indice__link i-tratamiento"    href="#conducta">Expectante o activo</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#activo">El manejo activo paso a paso</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#revision">Revisión de placenta y canal</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#pinard">Postalumbramiento: Pinard</a></li>
+      <li><a class="indice__link i-importantes"    href="#complicaciones">Cuando se sale del carril</a></li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Obstetricia · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Alumbramiento y Postalumbramiento</h1>
+      <p class="portada__bajada">Tercer período del parto: cómo se desprende la placenta, cómo se reconoce que ya se desprendió y cómo se conduce el período en que se producen las hemorragias graves.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">11 secciones</span>
+        <span class="etiqueta s-importantes">Schultze · Duncan</span>
+        <span class="etiqueta s-tratamiento">Manejo activo</span>
+        <span class="etiqueta s-fisiopatologia">Globo de Pinard</span>
+      </div>
+    </header>
+
+    <nav class="indice-rapido" aria-label="Contenido del cuadernillo">
+      <p class="indice-rapido__rotulo">Contenido</p>
+      <ol class="indice-rapido__bloques">
+        <li>
+          <a class="ir-bloque" href="#bloque-a">Bloque A · Qué es el alumbramiento</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades"  href="#definicion"><b>01</b> Definición y lugar en el parto</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#tiempos"><b>02</b> Los cuatro tiempos</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-b">Bloque B · Fisiología y semiología</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-fisiopatologia" href="#motor"><b>03</b> El motor del desprendimiento</a></li>
+            <li><a class="ir-link i-importantes"    href="#mecanismos"><b>04</b> Schultze y Duncan</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#descenso"><b>05</b> Descenso y expulsión</a></li>
+            <li><a class="ir-link i-clinica"        href="#signos"><b>06</b> Signos de desprendimiento</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-c">Bloque C · Manejo y postalumbramiento</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-tratamiento"    href="#conducta"><b>07</b> Expectante o activo</a></li>
+            <li><a class="ir-link i-tratamiento"    href="#activo"><b>08</b> El manejo activo paso a paso</a></li>
+            <li><a class="ir-link i-diagnostico"    href="#revision"><b>09</b> Revisión de placenta y canal</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#pinard"><b>10</b> Postalumbramiento: Pinard</a></li>
+            <li><a class="ir-link i-importantes"    href="#complicaciones"><b>11</b> Cuando se sale del carril</a></li>
+          </ul>
+        </li>
+        <li>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-clinica"     href="#repaso"><b>·</b> Repaso activo</a></li>
+            <li><a class="ir-link i-importantes" href="#relampago"><b>⚡</b> Ficha Relámpago</a></li>
+          </ul>
+        </li>
+      </ol>
+    </nav>
+
+    <h2 class="bloque" id="bloque-a">
+      <span class="bloque__rotulo">Bloque A</span>
+      <span class="bloque__nombre">Qué es el alumbramiento</span>
+    </h2>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="definicion">
+      <span class="seccion__pestana"><b>01</b> Base</span>
+      <h2 class="seccion__titulo">Definición y lugar en el parto</h2>
+
+      <p>El <strong>alumbramiento</strong> es el <strong>tercer período del parto</strong>, también llamado <strong>período placentario</strong>. Va desde la <strong>salida completa del feto</strong> hasta la <strong>expulsión de la placenta y las membranas ovulares</strong>.</p>
+
+      <p>Los dos períodos previos —dilatación y expulsivo— están desarrollados en el cuadernillo de <a href="https://claude.ai/code/artifact/ee57fe40-a52d-413c-9238-d1744a5262a1">Trabajo de Parto</a>. Acá se retoma exactamente donde aquel termina: el chico ya nació y el útero todavía tiene adentro la placenta.</p>
+
+      <h3>Por qué este período pesa más de lo que dura</h3>
+      <ul>
+        <li>Dura entre <span class="dato">5 y 30 min</span> —una fracción mínima de un parto— pero concentra <strong>las hemorragias graves</strong> del nacimiento.</li>
+        <li>La <strong>hemorragia posparto</strong> es la principal causa directa de muerte materna en el mundo, y la mayoría de esas muertes son evitables con una conducta correcta en estos minutos.</li>
+        <li>Es el único período del parto en el que la conducta del operador —dar o no dar un uterotónico— <strong>cambia la incidencia de la complicación</strong>, no sólo su detección.</li>
+      </ul>
+
+      <h3>Qué tiene que salir</h3>
+      <ul>
+        <li>La <strong>placenta</strong> completa, con todos sus cotiledones.</li>
+        <li>Las <strong>membranas ovulares</strong> —amnios y corion— íntegras.</li>
+        <li>El resto del <strong>cordón umbilical</strong>.</li>
+      </ul>
+
+      <p class="cita">Fuente: Schwarcz R, Fescina R, Duverges C. Obstetricia, 6.ª ed. · Aller J, Pagés G. Obstetricia Moderna, cap. 12 (citado en el teórico) · OMS, Recomendaciones para la prevención y el tratamiento de la hemorragia posparto.</p>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-fisiopatologia" id="tiempos">
+      <span class="seccion__pestana"><b>02</b> Secuencia</span>
+      <h2 class="seccion__titulo">Los cuatro tiempos</h2>
+
+      <p>El alumbramiento no es un solo hecho sino una <strong>secuencia de cuatro tiempos encadenados</strong>. Vale la pena separarlos porque cada uno tiene su propio signo clínico: si sabés en qué tiempo está la paciente, sabés qué tenés que estar palpando.</p>
+
+      <ol>
+        <li><strong>Desprendimiento de la placenta</strong> — se separa del lecho de inserción por retracción y contracción del útero.</li>
+        <li><strong>Desprendimiento de las membranas ovulares</strong> — la placenta ya suelta arrastra las membranas, que se despegan de la pared.</li>
+        <li><strong>Descenso</strong> — la placenta cae al segmento inferior y a la vagina por su propio peso y por las contracciones.</li>
+        <li><strong>Expulsión</strong> — sale al exterior, espontáneamente o ayudada.</li>
+      </ol>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 352" role="img" aria-label="Los cuatro tiempos del alumbramiento en secuencia vertical, cada uno con el hallazgo clínico que produce: el desprendimiento placentario produce el hematoma retroplacentario, el desprendimiento de membranas las arrastra tras la placenta, el descenso hace bajar la pinza del cordón y la expulsión exterioriza una u otra cara de la placenta.">
+          <defs>
+            <marker id="alu-p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="14" y="8" width="250" height="62" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="32" font-size="13" font-weight="700" fill="currentColor">1 · Desprendimiento</text>
+          <text x="30" y="52" font-size="11.5" fill="currentColor" opacity="0.75">Retracción + contracción uterina</text>
+
+          <rect x="14" y="94" width="250" height="62" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="118" font-size="13" font-weight="700" fill="currentColor">2 · Membranas ovulares</text>
+          <text x="30" y="138" font-size="11.5" fill="currentColor" opacity="0.75">Amnios y corion se despegan</text>
+
+          <rect x="14" y="180" width="250" height="62" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="30" y="204" font-size="13" font-weight="700" fill="currentColor">3 · Descenso</text>
+          <text x="30" y="224" font-size="11.5" fill="currentColor" opacity="0.75">Peso propio + contracciones</text>
+
+          <rect x="14" y="266" width="250" height="62" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="30" y="290" font-size="13" font-weight="700" fill="currentColor">4 · Expulsión</text>
+          <text x="30" y="310" font-size="11.5" fill="currentColor" opacity="0.75">Espontánea o asistida</text>
+
+          <path d="M 139 70 L 139 90" stroke="currentColor" stroke-width="1.6" marker-end="url(#alu-p)"></path>
+          <path d="M 139 156 L 139 176" stroke="currentColor" stroke-width="1.6" marker-end="url(#alu-p)"></path>
+          <path d="M 139 242 L 139 262" stroke="currentColor" stroke-width="1.6" marker-end="url(#alu-p)"></path>
+
+          <rect x="392" y="17" width="294" height="44" rx="3" fill="none" stroke="currentColor" stroke-width="1.2" stroke-opacity="0.5"></rect>
+          <text x="408" y="44" font-size="11.5" fill="currentColor" opacity="0.85">Hematoma retroplacentario</text>
+
+          <rect x="392" y="103" width="294" height="44" rx="3" fill="none" stroke="currentColor" stroke-width="1.2" stroke-opacity="0.5"></rect>
+          <text x="408" y="130" font-size="11.5" fill="currentColor" opacity="0.85">Las membranas siguen a la placenta</text>
+
+          <rect x="392" y="189" width="294" height="44" rx="3" fill="none" stroke="currentColor" stroke-width="1.2" stroke-opacity="0.5"></rect>
+          <text x="408" y="216" font-size="11.5" fill="currentColor" opacity="0.85">Signo de Ahlfeld: la pinza baja</text>
+
+          <rect x="392" y="275" width="294" height="44" rx="3" fill="none" stroke="currentColor" stroke-width="1.2" stroke-opacity="0.5"></rect>
+          <text x="408" y="302" font-size="11.5" fill="currentColor" opacity="0.85">Asoma cara fetal o cara materna</text>
+
+          <path d="M 268 39 L 388 39" stroke="currentColor" stroke-width="1.4" marker-end="url(#alu-p)"></path>
+          <text x="328" y="32" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.7">produce</text>
+
+          <path d="M 268 125 L 388 125" stroke="currentColor" stroke-width="1.4" marker-end="url(#alu-p)"></path>
+          <text x="328" y="118" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.7">produce</text>
+
+          <path d="M 268 211 L 388 211" stroke="currentColor" stroke-width="1.4" marker-end="url(#alu-p)"></path>
+          <text x="328" y="204" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.7">se detecta</text>
+
+          <path d="M 268 297 L 388 297" stroke="currentColor" stroke-width="1.4" marker-end="url(#alu-p)"></path>
+          <text x="328" y="290" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.7">se ve</text>
+        </svg>
+        <figcaption>Cada tiempo tiene su traducción semiológica. Por eso el control del alumbramiento se hace con la mano en el fondo uterino y el ojo en la pinza del cordón, no mirando el reloj solamente.</figcaption>
+      </figure>
+
+      <p>La <strong>duración habitual es de 5 a 15 minutos</strong>, y se acepta hasta <span class="dato">30 min</span> con manejo activo. Más allá de ese límite ya no se habla de alumbramiento normal sino de <strong>retención placentaria</strong> — ver <a href="#complicaciones">sección 11</a>.</p>
+
+      <p class="cita">Fuente: Schwarcz R et al. Obstetricia, 6.ª ed., capítulo del parto normal · OMS, WHO recommendations for the prevention and treatment of postpartum haemorrhage, 2012.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-b">
+      <span class="bloque__rotulo">Bloque B</span>
+      <span class="bloque__nombre">Fisiología y semiología</span>
+    </h2>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-fisiopatologia" id="motor">
+      <span class="seccion__pestana"><b>03</b> Mecanismo</span>
+      <h2 class="seccion__titulo">El motor del desprendimiento</h2>
+
+      <p>La placenta no se despega porque alguien la tire: se despega porque <strong>el útero se achica y ella no puede achicarse con él</strong>. Ese es todo el mecanismo, y el teórico lo resume en dos palabras — <strong>retracción</strong> y <strong>contracción</strong>.</p>
+
+      <h3>Los dos fenómenos, que no son lo mismo</h3>
+      <ul>
+        <li><strong>Retracción uterina:</strong> acortamiento <strong>permanente</strong> de la fibra miometrial. Tras la salida del feto el útero reduce bruscamente su volumen y su superficie interna. No se relaja entre contracciones: cada acortamiento se conserva.</li>
+        <li><strong>Contracción uterina:</strong> fenómeno <strong>intermitente</strong> que se suma a lo anterior y termina de completar el clivaje.</li>
+      </ul>
+
+      <h3>La secuencia, paso a paso</h3>
+      <ol>
+        <li>Sale el feto y el útero <strong>reduce su superficie interna</strong> de forma brusca.</li>
+        <li>La placenta es <strong>prácticamente inextensible</strong>: no puede seguir esa reducción. Se genera una <strong>desproporción entre continente y contenido</strong>.</li>
+        <li>La placenta <strong>se pliega y se arruga</strong> sobre sí misma y empieza a despegarse de su lecho.</li>
+        <li>El clivaje ocurre en la <strong>capa esponjosa de la decidua basal</strong> — el plano natural de separación.</li>
+        <li>Se rompen los vasos útero-placentarios y se forma el <strong>hematoma retroplacentario</strong>, que actúa como cuña y termina de separar la placenta.</li>
+      </ol>
+
+      <p>Que exista un plano de clivaje natural es justamente lo que falla en el <strong>acretismo placentario</strong>: si las vellosidades invadieron el miometrio, no hay capa esponjosa donde separar y la placenta no se desprende por más retracción que haya.</p>
+
+      <p class="cita">Fuente: Schwarcz R et al. Obstetricia, 6.ª ed. · Cunningham FG et al. Williams Obstetrics, cap. Third stage of labor.</p>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-importantes" id="mecanismos">
+      <span class="seccion__pestana"><b>04</b> Clasificación</span>
+      <h2 class="seccion__titulo">Schultze y Duncan: los dos mecanismos</h2>
+
+      <p>El desprendimiento puede empezar por el <strong>centro</strong> de la placenta o por uno de sus <strong>bordes</strong>. Esa sola diferencia decide tres cosas: qué cara asoma primero, cuándo aparece la sangre y cuánta se ve. Los dos mecanismos llevan el apellido <strong>Baudelocque</strong> más el del autor que los describió.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>&nbsp;</th><th>Baudelocque–Schultze</th><th>Baudelocque–Duncan</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Frecuencia</strong></td><td><span class="dato">80 %</span> — el habitual</td><td><span class="dato">20 %</span></td></tr>
+            <tr><td><strong>Dónde empieza</strong></td><td>Por el <strong>centro</strong> de la placenta</td><td>Por un <strong>borde</strong> o margen</td></tr>
+            <tr><td><strong>Hematoma</strong></td><td><strong>Retroplacentario</strong>, queda contenido detrás</td><td>Marginal: la sangre <strong>escurre</strong> por el costado</td></tr>
+            <tr><td><strong>Cara que asoma</strong></td><td><strong>Cara fetal</strong> — lisa, brillante, con el cordón</td><td><strong>Cara materna</strong> — rugosa, con cotiledones</td></tr>
+            <tr><td><strong>Sangrado visible</strong></td><td><strong>Después</strong> de la salida de la placenta</td><td><strong>Antes</strong> de la expulsión</td></tr>
+            <tr><td><strong>Forma de salida</strong></td><td>Como un paraguas que se cierra, invertida</td><td>De costado, deslizándose por un borde</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 418" role="img" aria-label="Comparación de los dos mecanismos de desprendimiento placentario. En Schultze el desprendimiento comienza en el centro de la placenta, el hematoma queda retenido detrás y la placenta sale presentando la cara fetal con el sangrado posterior. En Duncan el desprendimiento comienza en un borde, la sangre escurre por el costado antes de la expulsión y la placenta sale presentando la cara materna.">
+          <text x="175" y="24" font-size="13" font-weight="700" text-anchor="middle" fill="currentColor">Baudelocque–Schultze · 80 %</text>
+          <text x="525" y="24" font-size="13" font-weight="700" text-anchor="middle" fill="currentColor">Baudelocque–Duncan · 20 %</text>
+
+          <ellipse cx="175" cy="152" rx="82" ry="100" fill="none" stroke="currentColor" stroke-width="1.8"></ellipse>
+          <path d="M 153 248 L 159 294 L 191 294 L 197 248" fill="none" stroke="currentColor" stroke-width="1.8"></path>
+          <path d="M 97 122 A 95 95 0 0 1 253 122" fill="none" stroke="var(--c)" stroke-width="13" stroke-opacity="0.85"></path>
+          <ellipse cx="175" cy="68" rx="30" ry="13" fill="var(--c)" fill-opacity="0.35" stroke="var(--c)" stroke-width="1.4"></ellipse>
+          <text x="175" y="50" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.8">hematoma retenido</text>
+          <path d="M 175 90 C 168 150 184 214 175 300" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3"></path>
+          <text x="175" y="196" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.75">sale la cara fetal</text>
+
+          <ellipse cx="525" cy="152" rx="82" ry="100" fill="none" stroke="currentColor" stroke-width="1.8"></ellipse>
+          <path d="M 503 248 L 509 294 L 541 294 L 547 248" fill="none" stroke="currentColor" stroke-width="1.8"></path>
+          <path d="M 447 122 A 95 95 0 0 1 603 122" fill="none" stroke="var(--c)" stroke-width="13" stroke-opacity="0.85"></path>
+          <ellipse cx="452" cy="130" rx="19" ry="12" fill="var(--c)" fill-opacity="0.35" stroke="var(--c)" stroke-width="1.4"></ellipse>
+          <path d="M 452 143 C 462 190 486 232 512 290" fill="none" stroke="var(--c)" stroke-width="3.4" stroke-opacity="0.8"></path>
+          <text x="426" y="126" font-size="10.5" text-anchor="end" fill="currentColor" opacity="0.8">empieza</text>
+          <text x="426" y="140" font-size="10.5" text-anchor="end" fill="currentColor" opacity="0.8">en el borde</text>
+          <path d="M 429 133 L 435 133" stroke="currentColor" stroke-width="1.2" stroke-opacity="0.6"></path>
+          <text x="560" y="196" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.75">sale la cara materna</text>
+
+          <line x1="350" y1="40" x2="350" y2="320" stroke="currentColor" stroke-width="1" stroke-opacity="0.25"></line>
+
+          <text x="175" y="336" font-size="11.5" text-anchor="middle" fill="currentColor">Empieza en el centro</text>
+          <text x="175" y="356" font-size="11.5" text-anchor="middle" fill="currentColor">Hematoma retroplacentario</text>
+          <text x="175" y="376" font-size="11.5" text-anchor="middle" fill="currentColor">Asoma la cara fetal, lisa y brillante</text>
+          <text x="175" y="396" font-size="11.5" font-weight="700" text-anchor="middle" fill="currentColor">Sangra DESPUÉS</text>
+
+          <text x="525" y="336" font-size="11.5" text-anchor="middle" fill="currentColor">Empieza por un borde</text>
+          <text x="525" y="356" font-size="11.5" text-anchor="middle" fill="currentColor">La sangre escurre por el costado</text>
+          <text x="525" y="376" font-size="11.5" text-anchor="middle" fill="currentColor">Asoma la cara materna, con cotiledones</text>
+          <text x="525" y="396" font-size="11.5" font-weight="700" text-anchor="middle" fill="currentColor">Sangra ANTES</text>
+        </svg>
+        <figcaption>El punto donde arranca el despegue determina todo lo demás. Si empieza en el centro, la sangre queda atrapada detrás y sólo se ve al final; si empieza en un borde, tiene por dónde salir y se ve desde el principio.</figcaption>
+      </figure>
+
+      <h3>Cómo no confundirlos nunca más</h3>
+      <p>La regla mnemotécnica clásica es en inglés y funciona: <strong>«Shiny Schultze, Dirty Duncan»</strong>. Schultze muestra la cara <em>brillante</em> —la fetal, lisa, tapizada de amnios—; Duncan muestra la cara <em>sucia</em> —la materna, rugosa, con los cotiledones y los restos de decidua a la vista.</p>
+
+      <p class="cita">Fuente: Aller J, Pagés G. Obstetricia Moderna, cap. 12, pág. 153 (fuente citada en el propio teórico) · Cunningham FG et al. Williams Obstetrics.</p>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-fisiopatologia" id="descenso">
+      <span class="seccion__pestana"><b>05</b> Mecanismo</span>
+      <h2 class="seccion__titulo">Descenso y expulsión</h2>
+
+      <p>Una vez separada, la placenta ya no está sostenida por nada. El tercer y el cuarto tiempo son, casi, un problema de gravedad.</p>
+
+      <h3>Descenso</h3>
+      <ul>
+        <li>La placenta cae al <strong>segmento inferior</strong> y desde ahí a la vagina, empujada por su <strong>propio peso</strong> y por las <strong>contracciones</strong> que siguen.</li>
+        <li>Al bajar <strong>tracciona de las membranas</strong>, que terminan de despegarse de la pared uterina y la siguen como una bolsa que se da vuelta.</li>
+        <li>Es el tiempo que se detecta con el <strong>signo de Ahlfeld</strong>: la pinza colocada en el cordón, a la altura de la vulva, se aleja progresivamente.</li>
+      </ul>
+
+      <h3>Expulsión</h3>
+      <p>Según el mecanismo de desprendimiento, <strong>la placenta se exteriorizará por la cara fetal o por la cara materna, precedida o no de sangrado</strong>. No hay que memorizarlo aparte: se deduce del mecanismo.</p>
+
+      <ul>
+        <li><strong>Schultze:</strong> asoma la <strong>cara fetal</strong>, lisa y brillante, con el cordón saliendo del centro. El hematoma retroplacentario sale <strong>detrás</strong> de la placenta, por eso el sangrado aparece después.</li>
+        <li><strong>Duncan:</strong> asoma la <strong>cara materna</strong>, con los cotiledones a la vista. La sangre ya venía escurriendo antes de que la placenta apareciera.</li>
+      </ul>
+
+      <p>La expulsión puede ser <strong>espontánea</strong> —la paciente puja y sale sola— o <strong>asistida</strong>, con la tracción controlada del cordón que se describe en la <a href="#activo">sección 08</a>. Al asomar, se sostiene la placenta con las dos manos y se la hace <strong>girar sobre su eje</strong> para enrollar las membranas y que salgan enteras: una membrana retenida es una fuente de sangrado y de infección.</p>
+
+      <p class="cita">Fuente: Aller J, Pagés G. Obstetricia Moderna, cap. 12 · Schwarcz R et al. Obstetricia, 6.ª ed.</p>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-clinica" id="signos">
+      <span class="seccion__pestana"><b>06</b> Semiología</span>
+      <h2 class="seccion__titulo">Los signos de desprendimiento</h2>
+
+      <p>Todos estos signos contestan <strong>una sola pregunta</strong>: ¿la placenta ya se soltó del útero o todavía está adherida? La respuesta manda, porque <strong>traccionar del cordón con la placenta aún adherida</strong> es el camino a la inversión uterina y a la rotura del cordón.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Signo</th><th>Cómo se busca</th><th>Qué indica que ya se desprendió</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Schroeder</strong></td>
+              <td>Palpación del fondo uterino</td>
+              <td>El útero <strong>asciende</strong> por encima del ombligo y se <strong>lateraliza a la derecha</strong>; se vuelve más angosto y duro, porque la placenta desprendida ocupa el segmento inferior</td>
+            </tr>
+            <tr>
+              <td><strong>Ahlfeld</strong> <em>(de la pinza)</em></td>
+              <td>Pinza colocada en el cordón a la altura de la vulva</td>
+              <td>La pinza <strong>desciende unos 10 cm</strong>: el cordón se alargó porque la placenta bajó</td>
+            </tr>
+            <tr>
+              <td><strong>Küstner</strong></td>
+              <td>Se presiona con el borde de la mano por encima de la sínfisis púbica, rechazando el útero hacia arriba</td>
+              <td>El cordón <strong>no se retrae</strong>. Si asciende o entra, la placenta <strong>sigue adherida</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Fabre</strong> <em>(del pescador)</em></td>
+              <td>Una mano en el fondo uterino; con la otra se hace <strong>tracción suave del cordón</strong></td>
+              <td>La vibración <strong>no se transmite</strong> al fondo. Si se transmite —como el pescador que siente picar—, la placenta <strong>sigue adherida</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Strassman</strong></td>
+              <td>La maniobra <strong>inversa</strong>: se movilizan o percuten el fondo uterino y se palpa el cordón</td>
+              <td>El movimiento <strong>no se propaga</strong> al cordón. Si se propaga, la placenta <strong>sigue adherida</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Pérdida hemática</strong></td>
+              <td>Observación de la vulva</td>
+              <td>Chorro de sangre oscura que sale de golpe: es el hematoma retroplacentario que se vacía</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Los cinco primeros comparten la misma lógica: <strong>si el útero y el cordón siguen conectados como un cuerpo rígido, la placenta está adherida</strong>. Cuando ya se desprendió, cada uno se mueve por su cuenta.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>El <strong>signo del pescador es el de Fabre</strong>, no el de Strassman. La diapositiva 8 del teórico escribe «signo de Strassman (pescador)», pero <strong>la propia lámina de esa diapositiva los lista por separado</strong>: «Signo de STRASSMAN» y «Signo de FABRE O DEL PESCADOR». Son maniobras <strong>inversas</strong>: en Fabre se tracciona el cordón y se palpa el fondo; en Strassman se moviliza el fondo y se palpa el cordón.</p>
+      </div>
+
+      <p class="cita">Fuente: Aller J, Pagés G. Obstetricia Moderna, cap. 12, pág. 153 · Schwarcz R et al. Obstetricia, 6.ª ed., semiología del alumbramiento.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-c">
+      <span class="bloque__rotulo">Bloque C</span>
+      <span class="bloque__nombre">Manejo y postalumbramiento</span>
+    </h2>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-tratamiento" id="conducta">
+      <span class="seccion__pestana"><b>07</b> Conducta</span>
+      <h2 class="seccion__titulo">Expectante o activo</h2>
+
+      <p>Hay dos formas de conducir el tercer período, y no son equivalentes. La diferencia no es de estilo: el manejo activo <strong>reduce la incidencia de hemorragia posparto</strong> y acorta la duración del período.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>&nbsp;</th><th>Expectante o fisiológico</th><th>Activo</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Qué se hace</strong></td><td>Se espera la expulsión natural de la placenta</td><td>Se interviene con uterotónico y tracción controlada</td></tr>
+            <tr><td><strong>Uterotónico</strong></td><td>No se administra de rutina</td><td><strong>Sí</strong>, inmediatamente tras el nacimiento</td></tr>
+            <tr><td><strong>Tracción del cordón</strong></td><td>No</td><td><strong>Sí</strong>, controlada y con contrapresión suprapúbica</td></tr>
+            <tr><td><strong>Control</strong></td><td>Signos de desprendimiento y pérdida hemática</td><td>Los mismos, más vigilancia del tono uterino</td></tr>
+            <tr><td><strong>Límite de tiempo</strong></td><td>Hasta <span class="dato">60 min</span></td><td>Hasta <span class="dato">30 min</span></td></tr>
+            <tr><td><strong>Riesgo de HPP</strong></td><td>Mayor</td><td><strong>Menor</strong> — es la razón por la que se recomienda</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>El manejo expectante conserva un lugar en partos de bajo riesgo, con la paciente informada y con el equipo preparado para pasar a la conducta activa apenas haga falta. Pero <strong>la recomendación general es el manejo activo para todos los partos</strong>, precisamente porque la hemorragia posparto no avisa: aparece en mujeres sin ningún factor de riesgo.</p>
+
+      <p class="cita">Fuente: OMS, WHO recommendations for the prevention and treatment of postpartum haemorrhage, 2012 · FIGO, Joint statement on the use of uterotonics for the prevention of PPH.</p>
+    </section>
+
+    <!-- ============ 8 ============ -->
+    <section class="seccion s-tratamiento" id="activo">
+      <span class="seccion__pestana"><b>08</b> Conducta</span>
+      <h2 class="seccion__titulo">El manejo activo paso a paso</h2>
+
+      <p>Cuatro maniobras en orden. El orden importa: el uterotónico va <strong>primero</strong>, y la tracción va <strong>después</strong> de que haya signo de desprendimiento, nunca antes.</p>
+
+      <ol>
+        <li><strong>Uterotónico dentro del primer minuto.</strong> <strong>Oxitocina <span class="dato">10 UI</span> IM</strong> (o IV), inmediatamente después del nacimiento y <strong>tras descartar un segundo feto</strong>. Es el uterotónico de elección.</li>
+        <li><strong>Pinzamiento oportuno del cordón.</strong> Entre <span class="dato">1 y 3 min</span> tras el nacimiento, no inmediato: el pinzamiento tardío mejora las reservas de hierro del recién nacido sin aumentar el riesgo materno.</li>
+        <li><strong>Tracción controlada del cordón con contrapresión suprapúbica.</strong> Se espera la contracción y el signo de desprendimiento; se tracciona el cordón <strong>en el eje</strong>, suave y sostenido, mientras la otra mano <strong>empuja el útero hacia arriba</strong> por encima del pubis. Esa contrapresión —maniobra de Brandt-Andrews— es lo que impide la inversión uterina.</li>
+        <li><strong>Vigilancia del tono uterino.</strong> Tras la expulsión se palpa el abdomen para verificar que el útero quedó contraído. Si está blando, ahí sí corresponde masaje y refuerzo uterotónico.</li>
+      </ol>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 452" role="img" aria-label="Árbol del manejo activo del tercer período: tras el nacimiento se descarta un segundo feto, se administra oxitocina diez unidades intramuscular en el primer minuto, se pinza el cordón entre uno y tres minutos, y sólo si hay signo de desprendimiento se realiza tracción controlada del cordón con contrapresión suprapúbica; si no lo hay, se espera la próxima contracción. Finalmente se palpa el tono uterino.">
+          <defs>
+            <marker id="alu-t" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="40" y="8" width="390" height="54" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="58" y="30" font-size="12.5" font-weight="700" fill="currentColor">Nace el recién nacido</text>
+          <text x="58" y="49" font-size="11" fill="currentColor" opacity="0.75">Descartar un segundo feto antes de nada</text>
+
+          <rect x="40" y="88" width="390" height="54" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="58" y="110" font-size="12.5" font-weight="700" fill="currentColor">1 · Oxitocina 10 UI IM</text>
+          <text x="58" y="129" font-size="11" fill="currentColor" opacity="0.75">Dentro del primer minuto</text>
+
+          <rect x="40" y="168" width="390" height="54" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="58" y="190" font-size="12.5" font-weight="700" fill="currentColor">2 · Pinzamiento del cordón</text>
+          <text x="58" y="209" font-size="11" fill="currentColor" opacity="0.75">Oportuno, entre 1 y 3 min</text>
+
+          <rect x="40" y="248" width="390" height="58" rx="3" fill="none" stroke="var(--c)" stroke-width="2" stroke-dasharray="6 4"></rect>
+          <text x="235" y="273" font-size="12.5" font-weight="700" text-anchor="middle" fill="currentColor">¿Hay signo de desprendimiento?</text>
+          <text x="235" y="292" font-size="11" text-anchor="middle" fill="currentColor" opacity="0.75">Schroeder · Ahlfeld · Küstner · Fabre</text>
+
+          <rect x="40" y="332" width="390" height="54" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="58" y="354" font-size="12.5" font-weight="700" fill="currentColor">3 · Tracción controlada del cordón</text>
+          <text x="58" y="373" font-size="11" fill="currentColor" opacity="0.75">Con contrapresión suprapúbica, siempre</text>
+
+          <rect x="40" y="412" width="390" height="34" rx="3" fill="none" stroke="currentColor" stroke-width="1.2" stroke-opacity="0.5"></rect>
+          <text x="58" y="434" font-size="11.5" fill="currentColor" opacity="0.85">4 · Palpar el tono: globo de seguridad</text>
+
+          <path d="M 235 62 L 235 84" stroke="currentColor" stroke-width="1.6" marker-end="url(#alu-t)"></path>
+          <path d="M 235 142 L 235 164" stroke="currentColor" stroke-width="1.6" marker-end="url(#alu-t)"></path>
+          <path d="M 235 222 L 235 244" stroke="currentColor" stroke-width="1.6" marker-end="url(#alu-t)"></path>
+          <path d="M 235 306 L 235 328" stroke="currentColor" stroke-width="1.6" marker-end="url(#alu-t)"></path>
+          <text x="248" y="322" font-size="11" font-weight="700" fill="currentColor">sí</text>
+          <path d="M 235 386 L 235 408" stroke="currentColor" stroke-width="1.6" marker-end="url(#alu-t)"></path>
+
+          <path d="M 430 277 L 466 277" stroke="currentColor" stroke-width="1.6" marker-end="url(#alu-t)"></path>
+          <text x="448" y="269" font-size="11" font-weight="700" text-anchor="middle" fill="currentColor">no</text>
+          <rect x="470" y="248" width="216" height="58" rx="3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-opacity="0.6"></rect>
+          <text x="486" y="272" font-size="11.5" fill="currentColor" opacity="0.85">Esperar la próxima</text>
+          <text x="486" y="291" font-size="11.5" fill="currentColor" opacity="0.85">contracción y recontrolar</text>
+
+          <rect x="470" y="332" width="216" height="54" rx="3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-opacity="0.6"></rect>
+          <text x="486" y="356" font-size="11.5" fill="currentColor" opacity="0.85">Traccionar sin signo</text>
+          <text x="486" y="375" font-size="11.5" font-weight="700" fill="currentColor">inversión uterina</text>
+          <path d="M 466 359 L 434 359" stroke="currentColor" stroke-width="1.4" stroke-dasharray="4 3"></path>
+        </svg>
+        <figcaption>El paso 3 es el único que tiene una compuerta antes. Traccionar del cordón sin signo de desprendimiento y sin contrapresión es el mecanismo directo de la inversión uterina.</figcaption>
+      </figure>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>El teórico lista el <strong>masaje uterino</strong> como componente del manejo activo. La OMS lo bajó de categoría: el <strong>masaje uterino sostenido no se recomienda</strong> como intervención preventiva en la mujer que <strong>ya recibió oxitocina profiláctica</strong> —no reduce el sangrado, incomoda y ocupa a un profesional—. Lo que sí se recomienda en <strong>todas</strong> las puérperas es la <strong>palpación abdominal del tono uterino</strong> para detectar precozmente la atonía. Y la <strong>tracción controlada del cordón</strong> queda reservada a personal entrenado, por el riesgo de inversión uterina.</p>
+      </div>
+
+      <p class="cita">Fuente: OMS, WHO recommendations for the prevention and treatment of postpartum haemorrhage, 2012 · OMS, WHO recommendations: uterotonics for the prevention of postpartum haemorrhage, 2018.</p>
+    </section>
+
+    <!-- ============ 9 ============ -->
+    <section class="seccion s-diagnostico" id="revision">
+      <span class="seccion__pestana"><b>09</b> Control</span>
+      <h2 class="seccion__titulo">Revisión de la placenta y del canal</h2>
+
+      <p>La placenta salió: el alumbramiento no terminó. Falta el paso que define si la paciente va a sangrar en las próximas horas — <strong>revisar lo que salió y revisar por dónde salió</strong>. Un cotiledón que quedó adentro no da síntomas en el momento y sangra después.</p>
+
+      <h3>Cara materna</h3>
+      <ul>
+        <li>Se extiende la placenta y se cuentan los <strong>cotiledones</strong>: tienen que estar <strong>todos, y encastrar entre sí</strong> como un rompecabezas.</li>
+        <li>Una <strong>zona deprimida o desgarrada</strong> o un cotiledón faltante indican <strong>retención de restos</strong> — causa de hemorragia posparto tardía, subinvolución uterina e infección.</li>
+      </ul>
+
+      <h3>Cara fetal y membranas</h3>
+      <ul>
+        <li>Cara fetal <strong>lisa y brillante</strong>, tapizada de amnios, con los vasos radiados desde la inserción del cordón.</li>
+        <li><strong>Amnios y corion completos</strong>: se reconstruye la bolsa para ver que no falte un colgajo.</li>
+        <li>Un <strong>vaso que se interrumpe en el borde</strong> de las membranas hace sospechar un <strong>cotiledón aberrante</strong> retenido.</li>
+      </ul>
+
+      <h3>Cordón umbilical</h3>
+      <ul>
+        <li><strong>Tres vasos</strong>: dos arterias y una vena. La <strong>arteria umbilical única</strong> se asocia a malformaciones y obliga a examinar bien al recién nacido.</li>
+        <li>Tipo de inserción: <strong>central</strong>, excéntrica, <strong>marginal</strong> (en raqueta) o <strong>velamentosa</strong>.</li>
+      </ul>
+
+      <h3>Canal blando</h3>
+      <p>Con la placenta afuera se revisa el <strong>cuello, la vagina y el periné</strong> buscando desgarros. Es la «T» de trauma de la hemorragia posparto, y es la causa que más se pasa por alto: el útero está bien contraído, hay globo de seguridad, y la paciente igual sangra — porque el sangrado viene de un desgarro cervical.</p>
+
+      <p class="cita">Fuente: Schwarcz R et al. Obstetricia, 6.ª ed. · Cunningham FG et al. Williams Obstetrics, examination of the placenta.</p>
+    </section>
+
+    <!-- ============ 10 ============ -->
+    <section class="seccion s-fisiopatologia" id="pinard">
+      <span class="seccion__pestana"><b>10</b> Hemostasia</span>
+      <h2 class="seccion__titulo">Postalumbramiento: globo de seguridad y ligaduras vivientes</h2>
+
+      <p>Cuando la placenta se despega deja un <strong>lecho de inserción con vasos abiertos</strong>, del calibre de los que irrigaban una placenta a término. Si la hemostasia dependiera de la coagulación, la paciente se desangraría antes de que se forme un coágulo. <strong>La hemostasia del alumbramiento es primero mecánica y muscular, y recién después coagulatoria.</strong></p>
+
+      <h3>Ligaduras vivientes de Pinard</h3>
+      <p>El miometrio tiene tres capas: <strong>externa</strong>, <strong>interna</strong> y, entre ellas, la <strong>media o plexiforme</strong>. Las fibras de esa capa media están dispuestas <strong>en forma de 8</strong> rodeando los vasos que atraviesan la pared.</p>
+      <ul>
+        <li>Al contraerse el útero, esas fibras <strong>se cierran sobre los vasos y los estrangulan</strong>.</li>
+        <li>El vaso queda <strong>obliterado</strong> por compresión mecánica: la sangre deja de correr.</li>
+        <li>Se llaman <strong>«ligaduras vivientes»</strong> porque hacen lo que haría un punto de sutura, pero con músculo vivo que se contrae.</li>
+      </ul>
+      <p>De acá se deduce todo el tratamiento de la atonía: <strong>si el útero no se contrae, las ligaduras no se cierran y la paciente sangra</strong>. Por eso el primer gesto ante una hemorragia posparto es lograr que el útero se contraiga.</p>
+
+      <h3>Globo de seguridad de Pinard</h3>
+      <p>Es la <strong>masa globulosa formada por el útero contraído tras la expulsión de la placenta</strong>, y es la traducción palpable de que las ligaduras vivientes están funcionando.</p>
+      <ul>
+        <li>Se palpa <strong>duro, globuloso, bien delimitado</strong>, a la altura del ombligo o por debajo.</li>
+        <li><strong>Su presencia</strong> asegura la oclusión de los vasos y previene la hemorragia posparto.</li>
+        <li><strong>Su ausencia</strong> —útero blando, mal delimitado, que asciende— es el signo de <strong>atonía uterina</strong>, y exige actuar en el acto.</li>
+      </ul>
+
+      <p>La vigilancia continúa durante las <strong>dos primeras horas</strong> tras la expulsión: control periódico del globo, del sangrado, del pulso y la tensión arterial. Es el período en que se manifiestan la mayoría de las hemorragias posparto inmediatas.</p>
+
+      <p class="cita">Fuente: Schwarcz R et al. Obstetricia, 6.ª ed., alumbramiento y puerperio inmediato · Aller J, Pagés G. Obstetricia Moderna, cap. 12.</p>
+    </section>
+
+    <!-- ============ 11 ============ -->
+    <section class="seccion s-importantes" id="complicaciones">
+      <span class="seccion__pestana"><b>11</b> Alerta</span>
+      <h2 class="seccion__titulo">Cuando se sale del carril</h2>
+
+      <p>Dos cosas pueden salir mal en el tercer período, y una lleva a la otra: <strong>que la placenta no salga</strong> y <strong>que la paciente sangre</strong>.</p>
+
+      <h3>Retención placentaria</h3>
+      <ul>
+        <li>Se define como la <strong>ausencia de expulsión de la placenta</strong> pasados <span class="dato">30 min</span> del nacimiento con manejo activo, o <span class="dato">60 min</span> con manejo expectante.</li>
+        <li><strong>Conducta:</strong> asegurar una vía venosa, <strong>vaciar la vejiga</strong> —una vejiga llena impide que el útero se contraiga y descienda la placenta—, reforzar el uterotónico y repetir la tracción controlada con contrapresión.</li>
+        <li>Si no responde: <strong>alumbramiento manual</strong> —extracción digital de la placenta, con analgesia o anestesia adecuada y cobertura antibiótica—. También está indicado ante <strong>hemorragia severa</strong>, sin esperar los 30 minutos.</li>
+      </ul>
+
+      <h3>Sospecha de acretismo</h3>
+      <p>Durante el alumbramiento manual, si <strong>no se encuentra el plano de clivaje</strong> y la placenta no se deja separar, hay que <strong>detenerse</strong>. Es una <strong>placenta acreta</strong>: insistir la fragmenta y desencadena una hemorragia masiva. La conducta pasa a ser quirúrgica.</p>
+
+      <h3>Hemorragia posparto</h3>
+      <ul>
+        <li>Clásicamente, pérdida <span class="dato">≥ 500 mL</span> en parto vaginal o <span class="dato">≥ 1000 mL</span> en cesárea. En la práctica vale más el criterio funcional: <strong>todo sangrado que repercute en la hemodinamia</strong>.</li>
+        <li>Las <strong>4 T</strong> ordenan la búsqueda de la causa, en orden de frecuencia:</li>
+      </ul>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>T</th><th>Causa</th><th>Qué buscar</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Tono</strong></td><td><strong>Atonía uterina</strong> — la más frecuente</td><td>Útero blando, sin globo de seguridad</td></tr>
+            <tr><td><strong>Tejido</strong></td><td>Restos placentarios, acretismo</td><td>Placenta incompleta en la revisión</td></tr>
+            <tr><td><strong>Trauma</strong></td><td>Desgarros del canal, inversión uterina</td><td>Sangra <strong>con</strong> globo de seguridad presente</td></tr>
+            <tr><td><strong>Trombina</strong></td><td>Coagulopatía</td><td>Sangrado en napa, por punciones, sin coágulos</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Dos relojes que no hay que perder de vista. El primero: <strong>a los 30 minutos sin placenta se abandona la espera</strong> y se pasa a conducta activa. El segundo, y más traicionero: <strong>una paciente con globo de seguridad presente que sigue sangrando no tiene atonía</strong> — tiene un desgarro del canal o restos retenidos. Seguir dando uterotónicos ahí es perder tiempo mientras el sangrado continúa.</p>
+      </div>
+
+      <p class="cita">Fuente: OMS, WHO recommendations for the prevention and treatment of postpartum haemorrhage, 2012 · Schwarcz R et al. Obstetricia, 6.ª ed.</p>
+    </section>
+
+    <!-- ============ Repaso activo ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">20 Precisiones</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>¿Qué comprende el tercer período del parto?</summary>
+          <div class="fc__r">Desde la <strong>salida completa del feto</strong> hasta la <strong>expulsión de la placenta y las membranas ovulares</strong>. También se lo llama período placentario.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Por qué el alumbramiento es el período crítico del parto?</summary>
+          <div class="fc__r">Porque en él se producen las <strong>hemorragias graves</strong>. La hemorragia posparto es la principal causa directa de muerte materna, y este período dura apenas 5 a 30 minutos.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Cuáles son los cuatro tiempos del alumbramiento?</summary>
+          <div class="fc__r"><strong>1)</strong> Desprendimiento de la placenta · <strong>2)</strong> Desprendimiento de las membranas ovulares · <strong>3)</strong> Descenso · <strong>4)</strong> Expulsión.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Cuál es el mecanismo que despega la placenta?</summary>
+          <div class="fc__r">La <strong>retracción</strong> (acortamiento permanente de la fibra) y la <strong>contracción</strong> uterina reducen la superficie interna del útero. La placenta es inextensible, no puede seguir esa reducción, se pliega y se despega. Hay <strong>desproporción entre continente y contenido</strong>.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿En qué plano anatómico se separa la placenta?</summary>
+          <div class="fc__r">En la <strong>capa esponjosa de la decidua basal</strong>. Cuando ese plano no existe porque las vellosidades invadieron el miometrio, la placenta no se despega: es el <strong>acretismo</strong>.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué es el hematoma retroplacentario y qué función cumple?</summary>
+          <div class="fc__r">La sangre acumulada detrás de la placenta al romperse los vasos útero-placentarios. Actúa como <strong>cuña</strong> y termina de separarla del lecho.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>Mecanismo de Baudelocque–Schultze: frecuencia, inicio, cara y sangrado</summary>
+          <div class="fc__r"><span class="dato">80 %</span> · empieza en el <strong>centro</strong> · asoma la <strong>cara fetal</strong> (lisa y brillante) · el sangrado aparece <strong>después</strong> de la salida, porque el hematoma queda retenido detrás.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>Mecanismo de Baudelocque–Duncan: frecuencia, inicio, cara y sangrado</summary>
+          <div class="fc__r"><span class="dato">20 %</span> · empieza por un <strong>borde</strong> · asoma la <strong>cara materna</strong> (con cotiledones) · el sangrado aparece <strong>antes</strong> de la expulsión, porque la sangre tiene por dónde escurrir.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Cómo se distingue la cara fetal de la cara materna de la placenta?</summary>
+          <div class="fc__r">La <strong>fetal</strong> es lisa y brillante, tapizada de amnios, con el cordón y los vasos radiados. La <strong>materna</strong> es rugosa, con los cotiledones a la vista. Mnemotecnia: <em>Shiny Schultze, Dirty Duncan</em>.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Cómo se desprenden las membranas ovulares?</summary>
+          <div class="fc__r">Por <strong>tracción de la placenta que desciende</strong>: la arrastra y las despega de la pared uterina. Al asomar la placenta se la hace <strong>girar sobre su eje</strong> para enrollarlas y que salgan enteras.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Signo de Schroeder: ¿qué se palpa?</summary>
+          <div class="fc__r">El útero <strong>asciende por encima del ombligo y se lateraliza a la derecha</strong>, más angosto y duro, porque la placenta desprendida ocupa el segmento inferior.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Signo de Ahlfeld: ¿en qué consiste?</summary>
+          <div class="fc__r">La <strong>pinza colocada en el cordón a la altura de la vulva desciende unos 10 cm</strong>. El cordón se alargó porque la placenta bajó al segmento inferior.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Signo de Küstner: ¿cómo se interpreta?</summary>
+          <div class="fc__r">Se rechaza el útero hacia arriba con el borde de la mano por encima del pubis. Si el <strong>cordón no se retrae</strong>, la placenta ya está desprendida; si <strong>asciende o entra</strong>, sigue adherida.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Cuál es el signo del pescador y por qué se llama así?</summary>
+          <div class="fc__r">El <strong>signo de Fabre</strong>. Una mano en el fondo uterino y con la otra se tracciona suavemente el cordón: si se <strong>transmite la vibración</strong> —como el pescador que siente picar—, la placenta <strong>sigue adherida</strong>. <strong>No es el de Strassman</strong>, aunque el teórico lo escriba así.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿En qué se diferencian Fabre y Strassman?</summary>
+          <div class="fc__r">Son maniobras <strong>inversas</strong>. En <strong>Fabre</strong> se tracciona el cordón y se palpa el fondo uterino. En <strong>Strassman</strong> se moviliza el fondo uterino y se palpa el cordón. En los dos, la transmisión del movimiento significa placenta adherida.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Cuáles son los componentes del manejo activo del tercer período?</summary>
+          <div class="fc__r"><strong>Oxitocina 10 UI IM</strong> en el primer minuto, <strong>pinzamiento oportuno</strong> del cordón (1–3 min) y <strong>tracción controlada del cordón con contrapresión suprapúbica</strong>, más vigilancia del tono. El masaje uterino sostenido ya no se recomienda si recibió oxitocina.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Por qué la contrapresión suprapúbica es obligatoria al traccionar el cordón?</summary>
+          <div class="fc__r">Porque la tracción sin contrapresión —y sin signo de desprendimiento— puede producir <strong>inversión uterina</strong> o rotura del cordón. La mano que empuja el útero hacia arriba lo fija en su lugar (maniobra de Brandt-Andrews).</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Qué se revisa en la placenta una vez expulsada?</summary>
+          <div class="fc__r"><strong>Cotiledones</strong> completos y que encastren · <strong>membranas</strong> íntegras, sin vasos interrumpidos en el borde (cotiledón aberrante) · <strong>cordón con 3 vasos</strong> y su tipo de inserción. Después, el <strong>canal blando</strong> en busca de desgarros.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué son las ligaduras vivientes de Pinard?</summary>
+          <div class="fc__r">Las fibras de la <strong>capa media o plexiforme</strong> del miometrio, dispuestas <strong>en forma de 8</strong> alrededor de los vasos. Al contraerse el útero los <strong>estrangulan</strong> y obliteran: la hemostasia del alumbramiento es <strong>mecánica antes que coagulatoria</strong>.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>La paciente sangra pero el globo de seguridad está presente. ¿Qué pensás?</summary>
+          <div class="fc__r"><strong>No es atonía.</strong> Con el útero bien contraído hay que buscar las otras T: <strong>trauma</strong> (desgarro del canal, inversión), <strong>tejido</strong> (restos retenidos) o <strong>trombina</strong> (coagulopatía). Insistir con uterotónicos ahí es perder tiempo.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Los cuatro tiempos</dt>
+        <dd>Desprendimiento de la placenta → desprendimiento de las membranas → descenso → expulsión. El motor son la <strong>retracción</strong> y la <strong>contracción</strong> uterinas, que crean la desproporción continente-contenido.</dd>
+
+        <dt class="r-gold">Signo de control</dt>
+        <dd><strong>Globo de seguridad de Pinard</strong>: útero duro, globuloso, a la altura del ombligo o por debajo. Es la prueba palpable de que las <strong>ligaduras vivientes</strong> cerraron los vasos del lecho placentario.</dd>
+
+        <dt class="r-tto">Conducta de 1ª línea</dt>
+        <dd><strong>Manejo activo</strong>: oxitocina <strong>10 UI IM</strong> en el primer minuto, pinzamiento oportuno del cordón y <strong>tracción controlada con contrapresión suprapúbica</strong> recién cuando hay signo de desprendimiento.</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd><strong>30 minutos sin placenta</strong> con manejo activo (60 con expectante) = retención placentaria. Y todo sangrado que repercuta en la hemodinamia: buscar la causa por las <strong>4 T</strong> — tono, tejido, trauma, trombina.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir del teórico «Alumbramiento y Postalumbramiento» (Dr. Cristian Fornara, Cátedra de Obstetricia, Universidad de Mendoza — Sede San Rafael), complementado con Schwarcz <em>Obstetricia</em>, Aller &amp; Pagés <em>Obstetricia Moderna</em> y las recomendaciones de la OMS sobre prevención y tratamiento de la hemorragia posparto. Material de estudio: no reemplaza el criterio clínico ni la guía institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+
+  // ---- Tema claro / oscuro ----
+  // Sin eleccion estampada manda el sistema; el boton la estampa y la guarda.
+  var raiz = document.documentElement;
+  var boton = document.getElementById('tema');
+
+  function temaActual(){
+    var estampado = raiz.getAttribute('data-theme');
+    if (estampado) return estampado;
+    return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+
+  if (boton){
+    var rotular = function(){
+      var actual = temaActual();
+      boton.setAttribute('aria-pressed', actual === 'dark' ? 'true' : 'false');
+      boton.setAttribute('aria-label', actual === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+    };
+    boton.addEventListener('click', function(){
+      var nuevo = temaActual() === 'dark' ? 'light' : 'dark';
+      raiz.setAttribute('data-theme', nuevo);
+      try { localStorage.setItem('wordmed-tema', nuevo); } catch (e) { /* sin persistencia */ }
+      rotular();
+    });
+    rotular();
+  }
+
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link, .ir-link'));
+
+  // Devuelve TODOS los enlaces al ancla: la misma seccion figura en el indice
+  // lateral y en el compacto, y los dos tienen que encenderse juntos.
+  function porMeta(hash){
+    return enlaces.filter(function(l){ return l.getAttribute('href') === '#' + hash; });
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var activos = porMeta(e.target.id);
+        if (!activos.length) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          activos.forEach(function(l){ l.setAttribute('aria-current', 'true'); });
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>
+<script>
+(function(){
+  "use strict";
+  var clave = document.body.dataset.clave || "";
+  var enApp = typeof window.WordmedApp !== "undefined";
+  var MEM = "wordmed:progreso";
+
+  function leer(){ try{ return JSON.parse(localStorage.getItem(MEM)) || {}; }catch(e){ return {}; } }
+  function guardar(m){ try{ localStorage.setItem(MEM, JSON.stringify(m)); }catch(e){} }
+
+  function alto(){
+    return Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+  }
+
+  /* retomar donde quedó */
+  if (clave) {
+    var m = leer()[clave];
+    if (m && m.y > 0) {
+      window.addEventListener("load", function(){
+        window.scrollTo(0, Math.min(m.y, alto()));
+      });
+    }
+  }
+
+  /* anotar el avance, sin ahogar el scroll */
+  var pendiente = false;
+  window.addEventListener("scroll", function(){
+    if (pendiente || !clave) return;
+    pendiente = true;
+    requestAnimationFrame(function(){
+      pendiente = false;
+      var y = window.scrollY;
+      var pct = Math.round((y / alto()) * 100);
+      pct = Math.max(0, Math.min(100, pct));
+      var m = leer();
+      m[clave] = { y: y, pct: pct, ts: Date.now() };
+      guardar(m);
+      if (enApp && window.WordmedApp.progreso) window.WordmedApp.progreso(clave, pct, y);
+    });
+  }, { passive: true });
+
+  /* volver: solo cuando vinimos de la cáscara web */
+  if (!enApp && document.referrer && document.referrer.indexOf(location.origin) === 0) {
+    var b = document.createElement("button");
+    b.className = "volver";
+    b.type = "button";
+    b.setAttribute("aria-label", "Volver");
+    b.innerHTML = '<svg class="volver__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg>';
+    b.addEventListener("click", function(){ history.back(); });
+    document.body.appendChild(b);
+  }
+})();
+</script>
+</body>
+</html>

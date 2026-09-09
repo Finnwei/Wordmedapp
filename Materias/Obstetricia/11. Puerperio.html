@@ -1,0 +1,1740 @@
+<title>Puerperio</title>
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-bloque:1.95rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+
+  /* Que la barra de desplazamiento y los controles nativos acompanen al tema */
+  color-scheme: light dark;
+}
+
+/* Eleccion explicita de claro: solo hace falta para el color-scheme, los
+   tokens claros ya son la base sin estampar. */
+:root[data-theme="light"]{ color-scheme: light; }
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* Interruptor de tema claro / oscuro.
+   El estampado `data-theme` en la raíz ya lo respetan los bloques de tokens de
+   arriba; este botón sólo lo pone y lo guarda. Sin elección estampada mandan
+   las preferencias del sistema, que es el comportamiento por defecto. */
+.tema{
+  position:fixed; top:.7rem; right:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.tema:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.tema__icono{ width:1.15rem; height:1.15rem; display:block; }
+
+/* Se muestra el icono del tema al que se va a cambiar, no el actual.
+   Mismo escalonado que los tokens: base clara · sistema oscuro · elección explícita. */
+.tema__sol{ display:none; }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .tema__sol{ display:block; }
+  :root:not([data-theme="light"]) .tema__luna{ display:none; }
+}
+:root[data-theme="dark"] .tema__sol{ display:block; }
+:root[data-theme="dark"] .tema__luna{ display:none; }
+:root[data-theme="light"] .tema__sol{ display:none; }
+:root[data-theme="light"] .tema__luna{ display:block; }
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índices ---------- */
+/* Dos piezas complementarias y deliberadamente redundantes:
+   · .indice        — barra lateral fija, sólo en pantalla ancha, navegación permanente.
+   · .indice-rapido — tarjeta compacta al principio del cuerpo, visible en TODO ancho.
+   La lateral desaparece por debajo de 64rem, que es justo el ancho del panel de
+   Artifacts y del celular; sin la compacta el cuadernillo publicado se queda sin
+   índice. Las dos apuntan a los mismos anclajes y se resaltan juntas al desplazar. */
+
+/* 6.1 · Barra lateral */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+/* Rótulo de bloque intercalado en la lista lateral: no es un enlace, sólo
+   separa grupos de secciones para que 30 entradas no sean una tira plana. */
+.indice__bloque{
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+  margin:.9rem 0 .2rem; padding:0 .55rem;
+}
+.indice__bloque:first-child{ margin-top:0; }
+
+/* 6.2 · Índice compacto (va después de la portada, dentro del cuerpo) */
+.indice-rapido{
+  background:var(--hoja-hund);
+  border:1px solid var(--linea);
+  border-radius:var(--radio);
+  padding:1.1rem 1.2rem 1.2rem;
+}
+.indice-rapido__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .85rem;
+}
+/* auto-fit: una columna en el panel angosto, dos o tres en pantalla ancha */
+.indice-rapido__bloques{
+  list-style:none; margin:0; padding:0;
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(15rem, 1fr));
+  gap:1rem 2rem; align-items:start;
+}
+.ir-bloque{
+  display:block; margin-bottom:.4rem;
+  font-family:var(--f-titulo); font-size:.98rem; font-weight:700; line-height:1.3;
+  color:var(--tinta); text-decoration:none;
+  padding-bottom:.3rem; border-bottom:1px solid var(--linea-fuerte);
+}
+.ir-bloque:hover{ color:var(--cli-t); }
+.ir-secciones{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.05rem; }
+.ir-link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.55rem 1fr; align-items:baseline; gap:.4rem;
+  padding:.2rem .35rem; border-radius:2px;
+  font-size:.86rem; line-height:1.4; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.ir-link > b{
+  font-family:var(--f-dato); font-size:.76rem; font-weight:700;
+  font-variant-numeric:tabular-nums; color:var(--ct); opacity:.85;
+}
+.ir-link:hover{ background:var(--hoja); color:var(--tinta); }
+.ir-link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Título de bloque y ficha de sección ---------- */
+
+/* Anuncia un grupo de secciones. Neutro en color a propósito: los siete colores
+   tienen significado clínico fijo y un bloque agrupa secciones de varios. La
+   regla de abajo lleva el degradado completo de la paleta, igual que la pestaña
+   de repaso y la cabecera de la ficha relámpago.
+   Sin <svg> adentro: el exportador a Word aparea los diagramas con las figuras
+   por contador posicional sobre el HTML crudo (ver exportar_docx.py). */
+.bloque{
+  margin:1.4rem 0 0; padding:0;
+  text-align:center; scroll-margin-top:2.5rem;
+  display:flex; flex-direction:column; align-items:center; gap:.3rem;
+  font-weight:400;
+}
+.bloque:first-child{ margin-top:0; }
+.bloque__rotulo{
+  font-family:var(--f-texto);
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+}
+.bloque__nombre{
+  font-family:var(--f-titulo); font-size:var(--t-bloque); font-weight:700; line-height:1.15;
+  letter-spacing:-.01em; color:var(--tinta); text-wrap:balance; max-width:32ch;
+}
+.bloque::after{
+  content:""; width:7rem; height:2.5px; margin-top:.5rem; border-radius:2px;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+}
+
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.5rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-column:1; grid-row:1; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+/* El icono ocupa la columna 1 y NADA MAS. Todo el resto del contenido se
+   apila en la columna 2, una fila por elemento, sin importar cuantos
+   parrafos haya.
+
+   Sin esta regla la caja solo funciona con un unico <p>: a partir del
+   segundo, la autocolocacion del grid empieza a repartir contenido en la
+   columna del icono, que es `auto` y por lo tanto se ensancha hasta abarcar
+   el parrafo que le toco. La columna `1fr` queda entonces reducida a una
+   tira angosta, el texto se parte en dos columnas desbalanceadas y la caja
+   crece hasta volverse ilegible. */
+.importante > :not(.importante__icono){ grid-column:2; }
+.importante__titulo{
+  grid-row:1;
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante ul, .importante ol{ margin:0; padding-left:1.15rem; }
+.importante li + li{ margin-top:.3rem; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso, .tema{ display:none !important; }
+  /* La lateral no se imprime, pero la compacta sí: en papel es la tabla de
+     contenidos del cuadernillo. */
+  .indice-rapido{ display:block; break-inside:avoid; page-break-inside:avoid; margin-bottom:1.2rem; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .bloque{
+    margin:1.6rem 0 1rem;
+    break-after:avoid; page-break-after:avoid;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+
+<script>
+/* Aplica el tema guardado antes de pintar. Va aca arriba a proposito: si
+   esperara al script del final, el documento parpadearia en el tema del
+   sistema antes de corregirse. */
+(function(){
+  try {
+    var guardado = localStorage.getItem('wordmed-tema');
+    if (guardado === 'dark' || guardado === 'light') {
+      document.documentElement.setAttribute('data-theme', guardado);
+    }
+  } catch (e) { /* almacenamiento bloqueado: manda el sistema */ }
+})();
+</script>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<button class="tema" id="tema" type="button" aria-pressed="false" aria-label="Cambiar a modo oscuro">
+  <svg class="tema__icono tema__sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.2"></circle>
+    <path d="M12 2.6v2.1M12 19.3v2.1M5.1 5.1l1.5 1.5M17.4 17.4l1.5 1.5M2.6 12h2.1M19.3 12h2.1M5.1 18.9l1.5-1.5M17.4 6.6l1.5-1.5"></path>
+  </svg>
+  <svg class="tema__icono tema__luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20.4 14.2A8.6 8.6 0 0 1 9.8 3.6a8.6 8.6 0 1 0 10.6 10.6z"></path>
+  </svg>
+</button>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li class="indice__bloque">Bloque A</li>
+      <li><a class="indice__link i-generalidades"  href="#definicion">Definición</a></li>
+      <li><a class="indice__link i-importantes"    href="#etapas">Las cuatro etapas</a></li>
+      <li class="indice__bloque">Bloque B</li>
+      <li><a class="indice__link i-fisiopatologia" href="#involucion">Involución uterina</a></li>
+      <li><a class="indice__link i-clinica"        href="#loquios">Loquios</a></li>
+      <li class="indice__bloque">Bloque C</li>
+      <li><a class="indice__link i-tratamiento"    href="#inmediato">Puerperio inmediato</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#mediato">Puerperio mediato</a></li>
+      <li><a class="indice__link i-clinica"        href="#alejado">Alejado y tardío</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#examen">El examen puerperal</a></li>
+      <li class="indice__bloque">Bloque D</li>
+      <li><a class="indice__link i-importantes"    href="#alarma">Signos de alarma</a></li>
+      <li><a class="indice__link i-diferenciales"  href="#complicaciones">Complicaciones</a></li>
+      <li><a class="indice__link i-clinica"        href="#mental">Salud mental</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#integral">Atención integral</a></li>
+      <li class="indice__bloque">Cierre</li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Obstetricia · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Puerperio</h1>
+      <p class="portada__bajada">Las seis semanas en que todo lo que el embarazo modificó vuelve atrás — salvo la mama, que recién ahí alcanza su mayor desarrollo. Cuatro etapas, dos relojes que las atraviesan, y una lista de alarmas que solo sirve si se sabe qué anuncia cada una.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">12 secciones</span>
+        <span class="etiqueta s-fisiopatologia">Involución y loquios</span>
+        <span class="etiqueta s-diagnostico">Examen puerperal</span>
+        <span class="etiqueta s-importantes">Signos de alarma</span>
+      </div>
+    </header>
+
+    <nav class="indice-rapido" aria-label="Contenido del cuadernillo">
+      <p class="indice-rapido__rotulo">Contenido</p>
+      <ol class="indice-rapido__bloques">
+        <li>
+          <a class="ir-bloque" href="#bloque-a">Bloque A · Qué es el puerperio</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades"  href="#definicion"><b>01</b> Definición y la excepción mamaria</a></li>
+            <li><a class="ir-link i-importantes"    href="#etapas"><b>02</b> Las cuatro etapas</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-b">Bloque B · Los dos relojes</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-fisiopatologia" href="#involucion"><b>03</b> Involución uterina y entuertos</a></li>
+            <li><a class="ir-link i-clinica"        href="#loquios"><b>04</b> Loquios</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-c">Bloque C · La atención etapa por etapa</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-tratamiento"    href="#inmediato"><b>05</b> Puerperio inmediato</a></li>
+            <li><a class="ir-link i-tratamiento"    href="#mediato"><b>06</b> Puerperio mediato</a></li>
+            <li><a class="ir-link i-clinica"        href="#alejado"><b>07</b> Puerperio alejado y tardío</a></li>
+            <li><a class="ir-link i-diagnostico"    href="#examen"><b>08</b> El examen puerperal completo</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-d">Bloque D · Cuándo algo anda mal</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-importantes"    href="#alarma"><b>09</b> Signos de alarma</a></li>
+            <li><a class="ir-link i-diferenciales"  href="#complicaciones"><b>10</b> Complicaciones del puerperio</a></li>
+            <li><a class="ir-link i-clinica"        href="#mental"><b>11</b> Salud mental del puerperio</a></li>
+            <li><a class="ir-link i-tratamiento"    href="#integral"><b>12</b> Atención integral</a></li>
+          </ul>
+        </li>
+        <li>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-clinica"     href="#repaso"><b>·</b> Repaso activo</a></li>
+            <li><a class="ir-link i-importantes" href="#relampago"><b>⚡</b> Ficha Relámpago</a></li>
+          </ul>
+        </li>
+      </ol>
+    </nav>
+
+    <h2 class="bloque" id="bloque-a">
+      <span class="bloque__rotulo">Bloque A</span>
+      <span class="bloque__nombre">Qué es el puerperio</span>
+    </h2>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="definicion">
+      <span class="seccion__pestana"><b>01</b> Base</span>
+      <h2 class="seccion__titulo">Definición y la excepción mamaria</h2>
+
+      <p>El puerperio es el período que <strong>comienza después del alumbramiento</strong> y se extiende por <strong><span class="dato">6 semanas</span> (42 días)</strong>. Comprende la <strong>regresión paulatina de todas las modificaciones gravídicas</strong> —la <em>involución</em>— hasta restituirlas casi a su estado previo al embarazo.</p>
+
+      <p>Dos precisiones de esa definición que suelen pasarse por alto:</p>
+      <ul>
+        <li><strong>Empieza después del alumbramiento</strong>, no después del nacimiento. El tercer período del parto todavía no es puerperio: está desarrollado en el cuadernillo de <a href="https://claude.ai/code/artifact/0ab662c2-903b-4f15-b9b6-95d186df26e0">Alumbramiento y Postalumbramiento</a>.</li>
+        <li><strong>«Casi» a su estado previo.</strong> La palabra no es de relleno: hay estructuras que no vuelven exactamente a como estaban —el cuello uterino conserva un orificio externo transversal, el periné y el suelo pélvico rara vez recuperan el tono exacto—. La involución es una regresión, no un borrado.</li>
+      </ul>
+
+      <h3>La excepción que ordena todo el capítulo</h3>
+      <p>Hay <strong>un órgano que hace lo contrario que el resto</strong>: mientras el útero, los genitales, el volumen sanguíneo y la piel involucionan, <strong>la glándula mamaria alcanza en el puerperio su mayor desarrollo</strong>, porque recién ahí tiene que responder a la lactancia.</p>
+
+      <p>Esa contradicción aparente es la clave de lectura del cuadernillo entero: el puerperio no es simplemente «deshacer el embarazo». Es <strong>un período con su propia fisiología</strong>, en el que un aparato se apaga y otro se enciende al mismo tiempo, y en el que las hormonas de la lactancia gobiernan cosas aparentemente lejanas — la involución del útero, el retorno de la menstruación y la fertilidad.</p>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-importantes" id="etapas">
+      <span class="seccion__pestana"><b>02</b> Clasificación</span>
+      <h2 class="seccion__titulo">Las cuatro etapas</h2>
+
+      <p>La división no es arbitraria: <strong>cada etapa se define por el riesgo que domina en ella</strong>, y por eso cada una tiene un tipo de control distinto. Retener los cortes temporales es retener el calendario de la vigilancia.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 292" role="img" aria-label="Línea de tiempo del puerperio con sus cuatro etapas: inmediato durante las primeras 24 horas, dominado por la hemostasia y el riesgo de hemorragia; mediato desde las 24 horas hasta el día 10, con la involución genital, los loquios y la bajada de la leche; alejado del día 11 al 42, en que se completa la involución, cesan los loquios y puede retornar la menstruación; y tardío desde el día 43 hasta los 6 meses o un año, ligado a la lactancia prolongada y a la salud mental.">
+          <defs>
+            <marker id="pu1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <line x1="20" y1="52" x2="676" y2="52" stroke="currentColor" stroke-width="2" marker-end="url(#pu1)"></line>
+
+          <line x1="20"  y1="42" x2="20"  y2="62" stroke="currentColor" stroke-width="2"></line>
+          <line x1="176" y1="42" x2="176" y2="62" stroke="currentColor" stroke-width="2"></line>
+          <line x1="352" y1="42" x2="352" y2="62" stroke="currentColor" stroke-width="2"></line>
+          <line x1="528" y1="42" x2="528" y2="62" stroke="currentColor" stroke-width="2"></line>
+
+          <text x="20"  y="32" font-size="11" font-weight="700" text-anchor="middle" fill="currentColor">parto</text>
+          <text x="176" y="32" font-size="11" font-weight="700" text-anchor="middle" fill="currentColor">24 h</text>
+          <text x="352" y="32" font-size="11" font-weight="700" text-anchor="middle" fill="currentColor">día 10</text>
+          <text x="528" y="32" font-size="11" font-weight="700" text-anchor="middle" fill="currentColor">día 42</text>
+          <text x="640" y="32" font-size="11" font-weight="700" text-anchor="middle" fill="currentColor">6 m a 1 año</text>
+
+          <rect x="20"  y="78" width="152" height="104" rx="3" fill="var(--c)" fill-opacity="0.26" stroke="var(--c)" stroke-width="2.4"></rect>
+          <text x="34" y="98"  font-size="11.5" font-weight="700" fill="currentColor">INMEDIATO</text>
+          <text x="34" y="114" font-size="10" fill="currentColor" opacity="0.75">primeras 24 h</text>
+          <text x="34" y="136" font-size="10.5" font-weight="700" fill="currentColor">HEMOSTASIA</text>
+          <text x="34" y="152" font-size="10" fill="currentColor" opacity="0.82">globo de Pinard</text>
+          <text x="34" y="172" font-size="10" fill="currentColor" opacity="0.82">riesgo: hemorragia</text>
+
+          <rect x="196" y="78" width="152" height="104" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.9"></rect>
+          <text x="210" y="98"  font-size="11.5" font-weight="700" fill="currentColor">MEDIATO</text>
+          <text x="210" y="114" font-size="10" fill="currentColor" opacity="0.75">24 h al día 10</text>
+          <text x="210" y="136" font-size="10.5" font-weight="700" fill="currentColor">INVOLUCIÓN</text>
+          <text x="210" y="152" font-size="10" fill="currentColor" opacity="0.82">loquios · bajada de leche</text>
+          <text x="210" y="172" font-size="10" fill="currentColor" opacity="0.82">riesgo: infección</text>
+
+          <rect x="372" y="78" width="152" height="104" rx="3" fill="var(--c)" fill-opacity="0.11" stroke="var(--c)" stroke-width="1.7"></rect>
+          <text x="386" y="98"  font-size="11.5" font-weight="700" fill="currentColor">ALEJADO</text>
+          <text x="386" y="114" font-size="10" fill="currentColor" opacity="0.75">día 11 al 42</text>
+          <text x="386" y="136" font-size="10.5" font-weight="700" fill="currentColor">CIERRE</text>
+          <text x="386" y="152" font-size="10" fill="currentColor" opacity="0.82">cesan loquios · cicatriza</text>
+          <text x="386" y="172" font-size="10" fill="currentColor" opacity="0.82">puede volver la regla</text>
+
+          <rect x="548" y="78" width="138" height="104" rx="3" fill="var(--c)" fill-opacity="0.07" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="562" y="98"  font-size="11.5" font-weight="700" fill="currentColor">TARDÍO</text>
+          <text x="562" y="114" font-size="10" fill="currentColor" opacity="0.75">hasta 6 m o 1 año</text>
+          <text x="562" y="136" font-size="10.5" font-weight="700" fill="currentColor">LACTANCIA</text>
+          <text x="562" y="152" font-size="10" fill="currentColor" opacity="0.82">estabilización hormonal</text>
+          <text x="562" y="172" font-size="10" fill="currentColor" opacity="0.82">riesgo: salud mental</text>
+
+          <rect x="20" y="204" width="508" height="34" rx="3" fill="none" stroke="var(--c)" stroke-width="1.6" stroke-dasharray="6 3"></rect>
+          <text x="34" y="226" font-size="10.5" font-weight="700" fill="currentColor">INVOLUCIÓN UTERINA — del ombligo al intrapélvico hacia el día 12; completa a las 6 semanas</text>
+
+          <rect x="20" y="248" width="480" height="34" rx="3" fill="none" stroke="var(--c)" stroke-width="1.6" stroke-dasharray="6 3"></rect>
+          <text x="34" y="270" font-size="10.5" font-weight="700" fill="currentColor">LOQUIOS — hemáticos, serosanguíneos, serosos y albos, hasta la semana 4 a 6</text>
+        </svg>
+        <figcaption>Las etapas se cortan por el riesgo dominante, pero la involución y los loquios corren por debajo con su propio ritmo y atraviesan varias etapas. Por eso conviene aprenderlos aparte y no repetidos dentro de cada una.</figcaption>
+      </figure>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Etapa</th><th>Cuándo</th><th>Qué ocurre</th><th>Qué se vigila</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Inmediato</strong></td>
+              <td>Primeras <span class="dato">24 h</span></td>
+              <td>Actúan los mecanismos <strong>hemostáticos</strong> uterinos: la contracción del miometrio —<strong>globo de seguridad de Pinard</strong>— detiene el sangrado del lecho placentario</td>
+              <td>Signos vitales, contracción uterina y sangrado vaginal. <strong>Fase crítica</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Mediato</strong></td>
+              <td><span class="dato">24 h</span> a día <span class="dato">10</span></td>
+              <td>Mecanismos <strong>involutivos</strong> del útero y los genitales. Aparecen los <strong>loquios</strong>. Se produce la <strong>bajada de la leche</strong></td>
+              <td>Involución, loquios, mamas, genitales externos, abdomen</td>
+            </tr>
+            <tr>
+              <td><strong>Alejado</strong></td>
+              <td>Día <span class="dato">11</span> al <span class="dato">42</span></td>
+              <td>La involución <strong>llega a su fin</strong>: el útero recupera tamaño y peso. <strong>Cesan los loquios</strong>. Cicatrizan las heridas y retorna el suelo pélvico</td>
+              <td>Cicatrización, retorno de la menstruación, anticoncepción, reinicio de relaciones sexuales</td>
+            </tr>
+            <tr>
+              <td><strong>Tardío</strong></td>
+              <td>Día <span class="dato">43</span> a <span class="dato">6 meses</span> o <span class="dato">1 año</span></td>
+              <td>Ligado a la <strong>lactancia activa y prolongada</strong>. Se completa la estabilización de los sistemas orgánicos y hormonales</td>
+              <td><strong>Bienestar emocional</strong> y adaptación a largo plazo</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Notar que <strong>el puerperio «de 6 semanas» de la definición termina al final del alejado</strong>. El tardío es una prolongación que existe solo porque la lactancia mantiene abierto el cuadro hormonal — y el teórico es explícito en que se define por ella. De ahí que su duración sea elástica: <strong>6 meses o hasta 1 año</strong> según cuánto se amamante.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-b">
+      <span class="bloque__rotulo">Bloque B</span>
+      <span class="bloque__nombre">Los dos relojes</span>
+    </h2>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-fisiopatologia" id="involucion">
+      <span class="seccion__pestana"><b>03</b> Mecanismo</span>
+      <h2 class="seccion__titulo">Involución uterina y entuertos</h2>
+
+      <p>Es el fenómeno más medible del puerperio y el que se controla todos los días, porque <strong>se palpa</strong>. Un útero que no involuciona al ritmo esperado —<em>subinvolución</em>— es el primer aviso de que quedó contenido adentro o de que hay infección.</p>
+
+      <h3>Las cifras</h3>
+      <ul>
+        <li>Durante los <strong>primeros 12 días</strong> el útero tiene <strong>ubicación abdominal</strong>: se palpa por encima del pubis.</li>
+        <li><strong>Día 1:</strong> el fondo está <strong>a nivel del ombligo</strong>, a <span class="dato">12-15 cm</span> de la sínfisis pubiana. El útero pesa alrededor de <span class="dato">1 kg</span> y su tamaño equivale al de una gestación de 20 semanas.</li>
+        <li><strong>Día 6:</strong> a <strong>mitad de distancia</strong> entre el ombligo y el borde superior del pubis.</li>
+        <li><strong>Después del día 12:</strong> se hace <strong>intrapélvico</strong> y <strong>desaparece a la palpación</strong> abdominal.</li>
+        <li><strong>A las 6 semanas</strong> la involución está prácticamente completa y el órgano pesa <span class="dato">menos de 100 g</span>.</li>
+      </ul>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 312" role="img" aria-label="Altura del fondo uterino día por día en el puerperio: el día 1 el fondo está a nivel del ombligo, a doce a quince centímetros de la sínfisis pubiana, y desciende aproximadamente un centímetro por día, de modo que hacia el día 6 se encuentra a mitad de camino entre el ombligo y el pubis y después del día 12 se hace intrapélvico y ya no se palpa.">
+          <defs>
+            <marker id="pu2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <path d="M 96 22 C 62 90 62 200 104 262" fill="none" stroke="currentColor" stroke-width="2.2" stroke-opacity="0.45"></path>
+          <path d="M 264 22 C 298 90 298 200 256 262" fill="none" stroke="currentColor" stroke-width="2.2" stroke-opacity="0.45"></path>
+
+          <circle cx="180" cy="56" r="5" fill="none" stroke="currentColor" stroke-width="2"></circle>
+
+          <line x1="120" y1="246" x2="240" y2="246" stroke="currentColor" stroke-width="3" stroke-opacity="0.7"></line>
+          <text x="180" y="266" font-size="10.5" font-weight="700" text-anchor="middle" fill="currentColor">sínfisis pubiana</text>
+
+          <line x1="180" y1="62" x2="180" y2="240" stroke="currentColor" stroke-width="1.2" stroke-opacity="0.35" stroke-dasharray="3 3"></line>
+
+          <path d="M 128 56 C 128 26 232 26 232 56" fill="none" stroke="var(--c)" stroke-width="3" stroke-opacity="0.95"></path>
+          <path d="M 132 88 C 132 60 228 60 228 88" fill="none" stroke="var(--c)" stroke-width="2.6" stroke-opacity="0.8"></path>
+          <path d="M 137 120 C 137 94 223 94 223 120" fill="none" stroke="var(--c)" stroke-width="2.4" stroke-opacity="0.65"></path>
+          <path d="M 142 152 C 142 128 218 128 218 152" fill="none" stroke="var(--c)" stroke-width="2.2" stroke-opacity="0.5"></path>
+          <path d="M 148 184 C 148 162 212 162 212 184" fill="none" stroke="var(--c)" stroke-width="2" stroke-opacity="0.4"></path>
+          <path d="M 154 216 C 154 196 206 196 206 216" fill="none" stroke="var(--c)" stroke-width="1.8" stroke-opacity="0.3"></path>
+
+          <line x1="234" y1="56"  x2="300" y2="56"  stroke="currentColor" stroke-width="1.1" stroke-opacity="0.5" marker-end="url(#pu2)"></line>
+          <line x1="230" y1="88"  x2="300" y2="88"  stroke="currentColor" stroke-width="1.1" stroke-opacity="0.5" marker-end="url(#pu2)"></line>
+          <line x1="225" y1="120" x2="300" y2="120" stroke="currentColor" stroke-width="1.1" stroke-opacity="0.5" marker-end="url(#pu2)"></line>
+          <line x1="220" y1="152" x2="300" y2="152" stroke="currentColor" stroke-width="1.1" stroke-opacity="0.5" marker-end="url(#pu2)"></line>
+          <line x1="214" y1="184" x2="300" y2="184" stroke="currentColor" stroke-width="1.1" stroke-opacity="0.5" marker-end="url(#pu2)"></line>
+          <line x1="208" y1="216" x2="300" y2="216" stroke="currentColor" stroke-width="1.1" stroke-opacity="0.5" marker-end="url(#pu2)"></line>
+
+          <text x="308" y="52"  font-size="11.5" font-weight="700" fill="currentColor">Día 1 — a nivel del ombligo</text>
+          <text x="308" y="68"  font-size="10.5" fill="currentColor" opacity="0.78">12 a 15 cm de la sínfisis · útero de 1 kg</text>
+
+          <text x="308" y="92"  font-size="11.5" font-weight="700" fill="currentColor">Día 2 a 3</text>
+          <text x="308" y="124" font-size="11.5" font-weight="700" fill="currentColor">Día 4 a 5</text>
+
+          <text x="308" y="148" font-size="11.5" font-weight="700" fill="currentColor">Día 6 — mitad de camino</text>
+          <text x="308" y="164" font-size="10.5" fill="currentColor" opacity="0.78">entre ombligo y borde superior del pubis</text>
+
+          <text x="308" y="188" font-size="11.5" font-weight="700" fill="currentColor">Día 8 a 10</text>
+
+          <text x="308" y="212" font-size="11.5" font-weight="700" fill="currentColor">Día 12 — intrapélvico</text>
+          <text x="308" y="228" font-size="10.5" fill="currentColor" opacity="0.78">ya no se palpa por el abdomen</text>
+
+          <line x1="66" y1="56" x2="66" y2="240" stroke="var(--c)" stroke-width="2.4" marker-end="url(#pu2)"></line>
+          <text x="56" y="140" font-size="11" font-weight="700" text-anchor="end" fill="currentColor">baja</text>
+          <text x="56" y="156" font-size="11" font-weight="700" text-anchor="end" fill="currentColor">~1 cm</text>
+          <text x="56" y="172" font-size="11" font-weight="700" text-anchor="end" fill="currentColor">por día</text>
+
+          <rect x="308" y="246" width="378" height="52" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.28" stroke-width="1.3" stroke-dasharray="5 3"></rect>
+          <text x="322" y="265" font-size="10.5" font-weight="700" fill="currentColor">A las 6 semanas: menos de 100 g</text>
+          <text x="322" y="284" font-size="10.5" fill="currentColor" opacity="0.8">de 1 kg a menos de 100 g — pierde el 90 % de su peso</text>
+        </svg>
+        <figcaption>La regla de cabecera es «un través de dedo por día». Doce centímetros repartidos en los doce días en que el útero es abdominal dan exactamente ese ritmo, y por eso las dos referencias del teórico —ombligo al día 1, intrapélvico al día 12— encajan entre sí.</figcaption>
+      </figure>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>El teórico dice que la involución es <strong>«a razón de 2 cm por día»</strong>, y esa cifra está al doble. La regla clásica es <strong>1 cm por día</strong> —un <strong>través de dedo</strong> por día—, y los propios datos de la diapositiva lo confirman: si el día 1 el fondo está a 12-15 cm y recién <strong>después del día 12</strong> se hace intrapélvico, el descenso no puede ser de 2 cm diarios. Con ese ritmo el útero desaparecería de la palpación alrededor del día 6, que es justo cuando el teórico lo ubica todavía a mitad de camino.</p>
+      </div>
+
+      <h3>Los entuertos</h3>
+      <p>La involución no es pasiva: el útero se achica <strong>porque se contrae</strong>. Esas contracciones puerperales, cuando se hacen dolorosas, son los <strong>entuertos</strong> — el teórico los nombra al pasar en la vigilancia de las primeras 24 horas y conviene saber explicarlos, porque son el motivo de consulta más frecuente de esos días.</p>
+
+      <ul>
+        <li><strong>Son más intensos en las multíparas.</strong> El útero de la primípara tiende a mantenerse contraído de forma sostenida y casi no duele; el de la multípara, con más veces distendido, alterna contracción y relajación, y cada contracción se siente.</li>
+        <li><strong>Se intensifican al amamantar.</strong> La succión libera <strong>oxitocina</strong> por vía refleja, y esa misma oxitocina contrae el útero. Es la razón por la que la paciente refiere cólicos justo mientras da el pecho — y también por la que <strong>la lactancia precoz favorece la retracción uterina</strong> y protege del sangrado.</li>
+        <li>Ceden espontáneamente hacia el <strong>tercer día</strong>. Se manejan con analgesia común.</li>
+      </ul>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-clinica" id="loquios">
+      <span class="seccion__pestana"><b>04</b> Clínica</span>
+      <h2 class="seccion__titulo">Loquios</h2>
+
+      <p>Son la <strong>secreción vaginal del puerperio</strong>. Según el teórico están formados por la <strong>sangre de la herida placentaria</strong> y de las escoriaciones de cuello y vagina, más el <strong>líquido de exudación</strong> de esas mismas lesiones. Dicho de otro modo: son el drenaje de una herida grande que está cicatrizando por dentro, y por eso su evolución sigue la de cualquier herida — primero sangre, después exudado, al final secreción clara.</p>
+
+      <h3>Los cinco parámetros que se estudian</h3>
+      <p>El teórico los enumera y vale respetarlos, porque cada uno detecta una complicación distinta: <strong>duración, aspecto, cantidad, composición y olor</strong>. El más importante en la práctica es el último — <strong>el olor fétido es signo de infección</strong> y no admite espera.</p>
+
+      <h3>La progresión por color</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Tipo</th><th>Cuándo</th><th>Aspecto</th><th>Qué predomina</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Hemáticos</strong> o sanguíneos<br><em>(lochia rubra)</em></td>
+              <td>Desde el parto</td>
+              <td><strong>Sangre pura</strong>, rojo intenso</td>
+              <td>Sangre del lecho placentario</td>
+            </tr>
+            <tr>
+              <td><strong>Serosanguíneos</strong> o serohemáticos<br><em>(lochia serosa)</em></td>
+              <td>Día <span class="dato">3-4</span></td>
+              <td><strong>Rosado</strong></td>
+              <td>La sangre se mezcla con los exudados y aumenta la <strong>leucocitosis</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Serosos</strong></td>
+              <td>Desde el día <span class="dato">7</span></td>
+              <td>Se <strong>aclara</strong>, disminuye en cantidad</td>
+              <td>Secreción de las glándulas del tracto genital; caen los elementos sanguíneos</td>
+            </tr>
+            <tr>
+              <td><strong>Albos</strong> o blancos<br><em>(lochia alba)</em></td>
+              <td>Desde el día <span class="dato">10</span> hasta la semana <span class="dato">4-6</span></td>
+              <td><strong>Blanquecino o amarillento</strong>, escaso</td>
+              <td>Leucocitos, moco cervical y células de descamación</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>El teórico se queda en tres tipos y en «alrededor de 15 días» de duración.</strong> Faltan los <strong>loquios albos</strong>, que van del día 10 hasta la semana 4 a 6, y la duración real de los loquios es de <strong>4 a 6 semanas</strong>, no de 15 días. Esto importa por dos razones prácticas. Primera, porque la propia diapositiva de las etapas ubica el cese de los loquios en el <strong>puerperio alejado (día 11 al 42)</strong> — con 15 días no llegarían nunca hasta ahí. Segunda, porque una mujer que a las tres semanas todavía tiene una secreción blanquecina escasa <strong>está normal</strong>, y decirle lo contrario genera una consulta y una angustia que no hacían falta.</p>
+      </div>
+
+      <p><strong>Lo que sí es anormal</strong> y hay que saber separar de la evolución esperada: que los loquios <strong>vuelvan a ser hemáticos</strong> después de haberse aclarado, que aumenten bruscamente de cantidad, que adquieran <strong>olor fétido</strong>, o que <strong>desaparezcan de golpe</strong> antes de tiempo —esto último sugiere retención dentro de la cavidad, o <em>loquiómetra</em>—. Las tres primeras remiten a la sección <a href="#complicaciones">10</a>.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-c">
+      <span class="bloque__rotulo">Bloque C</span>
+      <span class="bloque__nombre">La atención etapa por etapa</span>
+    </h2>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-tratamiento" id="inmediato">
+      <span class="seccion__pestana"><b>05</b> Conducta</span>
+      <h2 class="seccion__titulo">Puerperio inmediato — las primeras 24 horas</h2>
+
+      <p>Es la etapa de <strong>vigilancia crítica</strong>, y dentro de ella hay una ventana todavía más estrecha.</p>
+
+      <h3>Las primeras 2 horas</h3>
+      <p>Son el <strong>tiempo de mayor riesgo de hemorragia y shock</strong>. El teórico nombra las tres causas: <strong>atonía uterina</strong>, <strong>retención de restos placentarios</strong> y <strong>desgarros cervicouterinos y vaginales</strong> — que son, con otro nombre, las tres primeras de las cuatro T de la hemorragia posparto, desarrolladas en <a href="https://claude.ai/code/artifact/a34aaa38-1b5f-4098-9eaa-8ccb3c51032e">Período Placentario Patológico</a>.</p>
+
+      <p>De ese riesgo se desprende una consecuencia organizativa concreta: <strong>la madre y su recién nacido deben permanecer durante ese tiempo en una sala de recuperación contigua a la sala de partos</strong>. No es una comodidad edilicia — es que si la hemorragia aparece, el quirófano tiene que estar al lado.</p>
+
+      <h3>Lactancia precoz</h3>
+      <p>Se indica desde el primer momento y tiene un efecto que va más allá de la nutrición del recién nacido: <strong>ayuda a la retracción uterina posparto</strong>, por la oxitocina que libera la succión. Es, en los hechos, un uterotónico fisiológico y gratuito. El precio son los <strong>entuertos</strong> de la sección <a href="#involucion">03</a>.</p>
+
+      <h3>Qué se controla, y con qué frecuencia</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Ventana</th><th>Qué se controla</th><th>Qué se está buscando</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Primeras 2 h</strong><br>controles frecuentes</td>
+              <td><strong>FC · TA · temperatura</strong> corporal · <strong>retracción uterina</strong> · <strong>sangrado vaginal</strong></td>
+              <td><strong>Hemorragia y shock.</strong> La retracción se palpa: es el globo de seguridad de Pinard</td>
+            </tr>
+            <tr>
+              <td><strong>Hasta las 24 h</strong><br>se continúa con los controles</td>
+              <td>Signos vitales · <strong>mamas</strong> · <strong>abdomen</strong> · <strong>útero</strong> · <strong>loquios</strong> · genitales externos · <strong>diuresis</strong> · catarsis · movilización</td>
+              <td>Se amplía del sangrado a todo lo demás: lactancia, diástasis de rectos, involución, episiotomía, retención urinaria</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Dos detalles de esa segunda fila que el teórico menciona al pasar y conviene entender:</p>
+      <ul>
+        <li><strong>Mamas: «lactancia, a veces se inhibe».</strong> Hay situaciones en que la lactancia no se instala o se decide inhibirla, y eso también se controla — una mama que se ingurgita sin vaciarse duele y puede terminar en mastitis.</li>
+        <li><strong>Diuresis y movilización no son detalles de enfermería.</strong> La <strong>retención urinaria</strong> posparto es frecuente —anestesia peridural, edema perineal, dolor— y una vejiga llena impide la contracción uterina, o sea que puede causar hemorragia. Y la <strong>movilización precoz</strong> es la principal medida contra la enfermedad tromboembólica, que es de lo que más muere una puérpera después de la hemorragia.</li>
+      </ul>
+
+      <p><strong>El riesgo no está repartido de manera uniforme a lo largo de las 24 horas:</strong> se concentra en las dos primeras, que es cuando se juega la hemostasia del lecho placentario. Por eso en ese lapso la paciente <strong>no se traslada a sala común</strong>. Un útero que se ablanda o un fondo que asciende son hemorragia hasta que se demuestre lo contrario — y conviene recordar que la forma <strong>interna</strong> no se ve por la vulva.</p>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-tratamiento" id="mediato">
+      <span class="seccion__pestana"><b>06</b> Conducta</span>
+      <h2 class="seccion__titulo">Puerperio mediato — del día 1 al 10</h2>
+
+      <p>Es, en palabras del teórico, el período de <strong>máxima involución de los órganos genitales</strong>, de <strong>mayor derrame loquial</strong> y de <strong>instalación de la secreción láctea</strong>. Las tres cosas ocurren a la vez, y las tres son las que se controlan.</p>
+
+      <p>El riesgo dominante cambia: pasada la ventana hemorrágica, lo que se vigila ahora es la <strong>infección</strong> — una herida uterina extensa que drena, más episiotomía o herida de cesárea, más la mama que empieza a funcionar.</p>
+
+      <h3>Qué se controla</h3>
+      <p>Signos vitales, <strong>loquios</strong>, <strong>involución uterina</strong>, <strong>genitales externos</strong> y <strong>abdomen</strong>. Es el examen de la sección <a href="#examen">08</a> aplicado día a día.</p>
+
+      <h3>El calendario: alta y controles</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Momento</th><th>Qué pasa</th><th>Por qué</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>48 h posparto</strong></td>
+              <td><strong>Alta.</strong> No se aconseja antes</td>
+              <td>Cubre la ventana hemorrágica completa y permite verificar que la lactancia se instaló y que la involución arrancó</td>
+            </tr>
+            <tr>
+              <td><strong>Día 10</strong></td>
+              <td>Primer control, <strong>junto con el control del recién nacido</strong></td>
+              <td>Cierra el puerperio mediato: loquios, involución, cicatrización de la episiotomía o la herida</td>
+            </tr>
+            <tr>
+              <td><strong>Día 30</strong></td>
+              <td>Segundo control, <strong>otra vez en concordancia con la cita del RN</strong></td>
+              <td>Dentro del puerperio alejado: anticoncepción, reinicio de relaciones, estado emocional</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Que las citas de la madre se hagan <strong>coincidir con las del recién nacido</strong> no es una comodidad administrativa: es la estrategia que evita que la madre desaparezca del sistema. La consulta del bebé se cumple casi siempre; la de la puérpera, si va sola, se pierde. Es la misma lógica que hace del <strong>puerperio tardío</strong> el período peor cuidado — y el teórico lo señala expresamente en la sección <a href="#alejado">07</a>.</p>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-clinica" id="alejado">
+      <span class="seccion__pestana"><b>07</b> Clínica</span>
+      <h2 class="seccion__titulo">Puerperio alejado y tardío</h2>
+
+      <h3>Alejado — del día 11 al 42</h3>
+      <p>Concluye prácticamente la <strong>involución genital</strong> y se alcanza, en términos generales, el <strong>estado pregravídico</strong>. Es la etapa en que el puerperio deja de ser un problema médico y pasa a ser una transición.</p>
+      <ul>
+        <li><strong>Retorno de la menstruación.</strong> Si <strong>no se ha puesto en práctica la lactancia</strong>, sobreviene la primera menstruación. En la que amamanta se retrasa, y ese retraso es el fundamento del método de la amenorrea de lactancia de la sección <a href="#integral">12</a>.</li>
+        <li><strong>Anticoncepción.</strong> El teórico la ubica acá como «lo más conveniente» — es decir, es el momento de definirla, no de improvisarla.</li>
+        <li><strong>Inicio de relaciones sexuales.</strong> Se difiere hasta que hayan cesado los loquios y la cicatrización esté completa, en general alrededor de las 6 semanas.</li>
+      </ul>
+
+      <h3>Tardío — hasta los 6 meses o 1 año</h3>
+      <p>Existe porque existe la lactancia: se define por ella y dura lo que ella dure. En la mujer que amamanta <strong>la vuelta de la menstruación tiene un término impreciso</strong>, y esa imprecisión es exactamente el problema anticonceptivo del período.</p>
+
+      <p>El teórico cierra con una observación que vale más que su redacción: <strong>la baja calidad de los cuidados ofrecidos en esta etapa reduce las oportunidades de detección temprana y de manejo adecuado de los problemas existentes</strong>. Dicho de otro modo — <strong>es el período huérfano</strong>. La mujer ya tuvo el alta obstétrica, las consultas del sistema son del bebé, y lo que le pase a ella entre el mes y el año casi no tiene quién lo mire. Es precisamente cuando se manifiesta la <strong>depresión posparto</strong> (sección <a href="#mental">11</a>), cuando fallan los anticonceptivos mal elegidos, y cuando aparecen las secuelas del suelo pélvico.</p>
+    </section>
+
+    <!-- ============ 8 ============ -->
+    <section class="seccion s-diagnostico" id="examen">
+      <span class="seccion__pestana"><b>08</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">El examen puerperal completo</h2>
+
+      <p>El teórico lo presenta como una lista de «no olvidar». Ordenada como recorrido y con la pregunta que responde cada punto, deja de ser una lista y se vuelve un instrumento: <strong>cada región del examen está buscando una complicación concreta</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 420" role="img" aria-label="Recorrido ordenado del examen puerperal: signos vitales buscando infección y hemorragia; mucosas y conjuntivas buscando anemia; mamas buscando ingurgitación, grietas y mastitis; abdomen y útero evaluando altura, tono e involución; loquios por cantidad, aspecto y olor; periné, genitales y herida quirúrgica buscando hematoma, dehiscencia e infección; vejiga buscando retención urinaria; intestinos evaluando el tránsito; miembros inferiores buscando trombosis venosa profunda; y estado emocional buscando depresión posparto. Se cierra verificando el grupo Rh y la indicación de inmunoglobulina anti D.">
+          <defs>
+            <marker id="pu3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="14" y="8" width="300" height="28" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="164" y="27" font-size="11.5" font-weight="700" text-anchor="middle" fill="currentColor">QUÉ SE EXAMINA</text>
+          <rect x="330" y="8" width="356" height="28" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.6"></rect>
+          <text x="508" y="27" font-size="11.5" font-weight="700" text-anchor="middle" fill="currentColor">QUÉ SE ESTÁ BUSCANDO</text>
+
+          <line x1="164" y1="44" x2="164" y2="404" stroke="var(--c)" stroke-width="2.2" stroke-opacity="0.35"></line>
+
+          <circle cx="164" cy="58"  r="5.5" fill="var(--c)"></circle>
+          <circle cx="164" cy="94"  r="5.5" fill="var(--c)"></circle>
+          <circle cx="164" cy="130" r="5.5" fill="var(--c)"></circle>
+          <circle cx="164" cy="166" r="5.5" fill="var(--c)"></circle>
+          <circle cx="164" cy="202" r="5.5" fill="var(--c)"></circle>
+          <circle cx="164" cy="238" r="5.5" fill="var(--c)"></circle>
+          <circle cx="164" cy="274" r="5.5" fill="var(--c)"></circle>
+          <circle cx="164" cy="310" r="5.5" fill="var(--c)"></circle>
+          <circle cx="164" cy="346" r="5.5" fill="var(--c)"></circle>
+          <circle cx="164" cy="382" r="5.5" fill="var(--c)"></circle>
+
+          <text x="150" y="62"  font-size="11" font-weight="700" text-anchor="end" fill="currentColor">Signos vitales</text>
+          <text x="150" y="98"  font-size="11" font-weight="700" text-anchor="end" fill="currentColor">Mucosas y conjuntivas</text>
+          <text x="150" y="134" font-size="11" font-weight="700" text-anchor="end" fill="currentColor">Mamas</text>
+          <text x="150" y="170" font-size="11" font-weight="700" text-anchor="end" fill="currentColor">Abdomen y útero</text>
+          <text x="150" y="206" font-size="11" font-weight="700" text-anchor="end" fill="currentColor">Loquios</text>
+          <text x="150" y="242" font-size="11" font-weight="700" text-anchor="end" fill="currentColor">Periné y genitales</text>
+          <text x="150" y="278" font-size="11" font-weight="700" text-anchor="end" fill="currentColor">Herida quirúrgica</text>
+          <text x="150" y="314" font-size="11" font-weight="700" text-anchor="end" fill="currentColor">Vejiga e intestinos</text>
+          <text x="150" y="350" font-size="11" font-weight="700" text-anchor="end" fill="currentColor">Miembros inferiores</text>
+          <text x="150" y="386" font-size="11" font-weight="700" text-anchor="end" fill="currentColor">Estado emocional</text>
+
+          <line x1="172" y1="58"  x2="326" y2="58"  stroke="currentColor" stroke-width="1.1" stroke-opacity="0.45" marker-end="url(#pu3)"></line>
+          <line x1="172" y1="94"  x2="326" y2="94"  stroke="currentColor" stroke-width="1.1" stroke-opacity="0.45" marker-end="url(#pu3)"></line>
+          <line x1="172" y1="130" x2="326" y2="130" stroke="currentColor" stroke-width="1.1" stroke-opacity="0.45" marker-end="url(#pu3)"></line>
+          <line x1="172" y1="166" x2="326" y2="166" stroke="currentColor" stroke-width="1.1" stroke-opacity="0.45" marker-end="url(#pu3)"></line>
+          <line x1="172" y1="202" x2="326" y2="202" stroke="currentColor" stroke-width="1.1" stroke-opacity="0.45" marker-end="url(#pu3)"></line>
+          <line x1="172" y1="238" x2="326" y2="238" stroke="currentColor" stroke-width="1.1" stroke-opacity="0.45" marker-end="url(#pu3)"></line>
+          <line x1="172" y1="274" x2="326" y2="274" stroke="currentColor" stroke-width="1.1" stroke-opacity="0.45" marker-end="url(#pu3)"></line>
+          <line x1="172" y1="310" x2="326" y2="310" stroke="currentColor" stroke-width="1.1" stroke-opacity="0.45" marker-end="url(#pu3)"></line>
+          <line x1="172" y1="346" x2="326" y2="346" stroke="currentColor" stroke-width="1.1" stroke-opacity="0.45" marker-end="url(#pu3)"></line>
+          <line x1="172" y1="382" x2="326" y2="382" stroke="currentColor" stroke-width="1.1" stroke-opacity="0.45" marker-end="url(#pu3)"></line>
+
+          <text x="334" y="62"  font-size="10.5" fill="currentColor" opacity="0.88">Fiebre y taquicardia — INFECCIÓN y HEMORRAGIA</text>
+          <text x="334" y="98"  font-size="10.5" fill="currentColor" opacity="0.88">Coloración, humedad, palidez — ANEMIA</text>
+          <text x="334" y="134" font-size="10.5" fill="currentColor" opacity="0.88">Grietas, dolor, técnica de lactancia — MASTITIS</text>
+          <text x="334" y="170" font-size="10.5" fill="currentColor" opacity="0.88">Altura, tono e involución — SUBINVOLUCIÓN, ATONÍA</text>
+          <text x="334" y="206" font-size="10.5" fill="currentColor" opacity="0.88">Cantidad, aspecto y OLOR — ENDOMETRITIS</text>
+          <text x="334" y="242" font-size="10.5" fill="currentColor" opacity="0.88">Edema, hematomas, episiotomía, dolor — HEMATOMA</text>
+          <text x="334" y="278" font-size="10.5" fill="currentColor" opacity="0.88">En la cesárea: aspecto y signos de infección</text>
+          <text x="334" y="314" font-size="10.5" fill="currentColor" opacity="0.88">Micción espontánea y tránsito — RETENCIÓN URINARIA</text>
+          <text x="334" y="350" font-size="10.5" fill="currentColor" opacity="0.88">Dolor o edema ASIMÉTRICO — TROMBOSIS VENOSA</text>
+          <text x="334" y="386" font-size="10.5" fill="currentColor" opacity="0.88">Vínculo con el RN, ansiedad — DEPRESIÓN POSPARTO</text>
+        </svg>
+        <figcaption>Leído de derecha a izquierda, el examen es la lista de complicaciones del puerperio. Ninguno de los diez puntos está por completitud: cada uno es el tamiz de una entidad concreta de la sección 10.</figcaption>
+      </figure>
+
+      <h3>Dos precisiones del recorrido</h3>
+      <ul>
+        <li><strong>El edema de miembros inferiores tiene que ser asimétrico para preocupar.</strong> El edema bilateral es esperable en el puerperio, por la redistribución de líquidos. Lo que sugiere <strong>trombosis venosa profunda</strong> es que <strong>una sola pierna</strong> esté hinchada, roja, caliente o dolorosa.</li>
+        <li><strong>El estado emocional se pregunta, no se deduce.</strong> Vínculo con el recién nacido, adaptación, ansiedad y signos de depresión posparto forman parte del examen físico del teórico con el mismo rango que la palpación del útero, y se pierden si no se pregunta explícitamente.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>Paciente Rh negativa: inmunoglobulina anti-D dentro de las primeras <span class="dato">72 horas</span>.</strong> El teórico lo pone como último punto de la lista y es de las pocas cosas del puerperio que <strong>no se pueden hacer después</strong>. Si la madre es Rh negativa no sensibilizada y el recién nacido es Rh positivo, la profilaxis previene la enfermedad hemolítica de <strong>los embarazos siguientes</strong>. Pasada la ventana, la oportunidad no vuelve y el daño recae sobre un hijo que todavía no existe. Verificar el grupo y factor de la madre y del recién nacido es parte del examen, no un trámite de laboratorio.</p>
+      </div>
+    </section>
+
+    <h2 class="bloque" id="bloque-d">
+      <span class="bloque__rotulo">Bloque D</span>
+      <span class="bloque__nombre">Cuándo algo anda mal</span>
+    </h2>
+
+    <!-- ============ 9 ============ -->
+    <section class="seccion s-importantes" id="alarma">
+      <span class="seccion__pestana"><b>09</b> Claves</span>
+      <h2 class="seccion__titulo">Signos de alarma</h2>
+
+      <p>Son los <strong>síntomas físicos o emocionales que indican una posible complicación y requieren atención médica urgente</strong>. El teórico los lista sin decir qué anuncia cada uno; puestos con su correlato, dejan de ser una lista para memorizar y pasan a ser un sistema de derivación.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Signo de alarma</th><th>Qué anuncia</th><th>Dónde está</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Loquios de olor fétido</strong></td>
+              <td><strong>Endometritis</strong> — infección puerperal</td>
+              <td>Sección <a href="#complicaciones">10</a></td>
+            </tr>
+            <tr>
+              <td><strong>Hemorragia abundante</strong></td>
+              <td><strong>Hemorragia posparto tardía</strong>: restos retenidos, subinvolución</td>
+              <td>Sección <a href="#complicaciones">10</a></td>
+            </tr>
+            <tr>
+              <td><strong>Temperatura mayor a <span class="dato">38 °C</span></strong></td>
+              <td>Cualquier foco infeccioso: útero, mama, herida, orina</td>
+              <td>Sección <a href="#complicaciones">10</a></td>
+            </tr>
+            <tr>
+              <td><strong>Herida infectada:</strong> dolor intenso, enrojecimiento, calor, inflamación o <strong>salida de pus</strong></td>
+              <td>Infección de episiotomía o de herida de cesárea</td>
+              <td>Sección <a href="#complicaciones">10</a></td>
+            </tr>
+            <tr>
+              <td><strong>Mama enrojecida, caliente, endurecida o dolorosa</strong>, con o sin fiebre</td>
+              <td><strong>Mastitis</strong></td>
+              <td>Sección <a href="#complicaciones">10</a></td>
+            </tr>
+            <tr>
+              <td><strong>Dolor, hinchazón o calor en <em>una sola</em> pierna</strong></td>
+              <td><strong>Trombosis venosa profunda</strong></td>
+              <td>Sección <a href="#complicaciones">10</a></td>
+            </tr>
+            <tr>
+              <td><strong>Cefalea intensa. Mareos</strong></td>
+              <td><strong>Preeclampsia de aparición posparto</strong> — también anemia grave o cefalea pospunción</td>
+              <td>Ver el recuadro de abajo</td>
+            </tr>
+            <tr>
+              <td><strong>Tristeza profunda:</strong> llanto incontrolable, ansiedad severa o <strong>pensamientos que impiden cuidar al bebé</strong></td>
+              <td><strong>Depresión posparto</strong> o <strong>psicosis puerperal</strong></td>
+              <td>Sección <a href="#mental">11</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>El signo que el teórico deja sin explicar</h3>
+      <p><strong>«Cefalea intensa. Mareos»</strong> aparece en la lista sin decir qué anuncia, y es el que puede matar más rápido. En una puérpera, una cefalea intensa obliga a <strong>tomar la presión arterial</strong>: la <strong>preeclampsia y la eclampsia pueden aparecer o persistir después del parto</strong>, hasta unas 6 semanas, y la convulsión puede ser la primera manifestación. No se calma con analgésicos hasta haber descartado hipertensión. Los otros dos diagnósticos a considerar son la <strong>anemia grave</strong> por la hemorragia y, si hubo anestesia peridural o raquídea, la <strong>cefalea pospunción dural</strong>, que característicamente empeora de pie y mejora acostada.</p>
+    </section>
+
+    <!-- ============ 10 ============ -->
+    <section class="seccion s-diferenciales" id="complicaciones">
+      <span class="seccion__pestana"><b>10</b> Diferenciales</span>
+      <h2 class="seccion__titulo">Complicaciones del puerperio</h2>
+
+      <p>La <strong>fiebre</strong> es el signo que más veces trae a una puérpera a la consulta, y el que mejor organiza el diferencial: casi todas las complicaciones infecciosas del puerperio se presentan con ella, y lo que las separa es <strong>dónde está el foco</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 330" role="img" aria-label="Árbol de la fiebre puerperal: ante una temperatura mayor a treinta y ocho grados se busca el foco recorriendo el útero, que doloroso y subinvolucionado con loquios fétidos indica endometritis; la mama, que con una zona roja caliente y en cuña indica mastitis; la herida de episiotomía o cesárea, con dolor, enrojecimiento y pus; la orina, con disuria y dolor lumbar, que indica infección urinaria; y la pierna, con edema asimétrico, que indica trombosis venosa profunda y no es infecciosa.">
+          <defs>
+            <marker id="pu4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="196" y="8" width="308" height="44" rx="3" fill="var(--c)" fill-opacity="0.24" stroke="var(--c)" stroke-width="2.4"></rect>
+          <text x="350" y="28" font-size="12.5" font-weight="700" text-anchor="middle" fill="currentColor">FIEBRE &gt; 38 °C EN EL PUERPERIO</text>
+          <text x="350" y="45" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.8">buscar el foco — nunca observar sin examinar</text>
+
+          <line x1="350" y1="52" x2="350" y2="68" stroke="currentColor" stroke-width="1.6" marker-end="url(#pu4)"></line>
+
+          <rect x="14" y="74" width="130" height="106" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="2.2"></rect>
+          <text x="79" y="94"  font-size="11.5" font-weight="700" text-anchor="middle" fill="currentColor">ÚTERO</text>
+          <text x="26" y="114" font-size="10" fill="currentColor" opacity="0.85">doloroso</text>
+          <text x="26" y="129" font-size="10" fill="currentColor" opacity="0.85">subinvolucionado</text>
+          <text x="26" y="144" font-size="10" fill="currentColor" opacity="0.85">loquios fétidos</text>
+          <text x="26" y="168" font-size="11" font-weight="700" fill="currentColor">ENDOMETRITIS</text>
+
+          <rect x="152" y="74" width="130" height="106" rx="3" fill="var(--c)" fill-opacity="0.11" stroke="var(--c)" stroke-width="1.7"></rect>
+          <text x="217" y="94"  font-size="11.5" font-weight="700" text-anchor="middle" fill="currentColor">MAMA</text>
+          <text x="164" y="114" font-size="10" fill="currentColor" opacity="0.85">zona roja y caliente</text>
+          <text x="164" y="129" font-size="10" fill="currentColor" opacity="0.85">en cuña, unilateral</text>
+          <text x="164" y="144" font-size="10" fill="currentColor" opacity="0.85">dura y dolorosa</text>
+          <text x="164" y="168" font-size="11" font-weight="700" fill="currentColor">MASTITIS</text>
+
+          <rect x="290" y="74" width="130" height="106" rx="3" fill="var(--c)" fill-opacity="0.11" stroke="var(--c)" stroke-width="1.7"></rect>
+          <text x="355" y="94"  font-size="11.5" font-weight="700" text-anchor="middle" fill="currentColor">HERIDA</text>
+          <text x="302" y="114" font-size="10" fill="currentColor" opacity="0.85">episiotomía o</text>
+          <text x="302" y="129" font-size="10" fill="currentColor" opacity="0.85">cesárea</text>
+          <text x="302" y="144" font-size="10" fill="currentColor" opacity="0.85">dolor, pus</text>
+          <text x="302" y="168" font-size="11" font-weight="700" fill="currentColor">INFECCIÓN</text>
+
+          <rect x="428" y="74" width="130" height="106" rx="3" fill="var(--c)" fill-opacity="0.11" stroke="var(--c)" stroke-width="1.7"></rect>
+          <text x="493" y="94"  font-size="11.5" font-weight="700" text-anchor="middle" fill="currentColor">ORINA</text>
+          <text x="440" y="114" font-size="10" fill="currentColor" opacity="0.85">disuria</text>
+          <text x="440" y="129" font-size="10" fill="currentColor" opacity="0.85">dolor lumbar</text>
+          <text x="440" y="144" font-size="10" fill="currentColor" opacity="0.85">sondaje previo</text>
+          <text x="440" y="168" font-size="11" font-weight="700" fill="currentColor">ITU</text>
+
+          <rect x="566" y="74" width="120" height="106" rx="3" fill="none" stroke="var(--c)" stroke-width="1.7" stroke-dasharray="5 3"></rect>
+          <text x="626" y="94"  font-size="11.5" font-weight="700" text-anchor="middle" fill="currentColor">PIERNA</text>
+          <text x="578" y="114" font-size="10" fill="currentColor" opacity="0.85">edema de UNA</text>
+          <text x="578" y="129" font-size="10" fill="currentColor" opacity="0.85">sola pierna</text>
+          <text x="578" y="144" font-size="10" fill="currentColor" opacity="0.85">dolor y calor</text>
+          <text x="578" y="168" font-size="11" font-weight="700" fill="currentColor">TVP</text>
+
+          <line x1="240" y1="68" x2="79"  y2="68"  stroke="currentColor" stroke-width="1.2" stroke-opacity="0.5"></line>
+          <line x1="79"  y1="68" x2="79"  y2="72"  stroke="currentColor" stroke-width="1.2" stroke-opacity="0.5" marker-end="url(#pu4)"></line>
+          <line x1="217" y1="68" x2="217" y2="72"  stroke="currentColor" stroke-width="1.2" stroke-opacity="0.5" marker-end="url(#pu4)"></line>
+          <line x1="355" y1="68" x2="355" y2="72"  stroke="currentColor" stroke-width="1.2" stroke-opacity="0.5" marker-end="url(#pu4)"></line>
+          <line x1="460" y1="68" x2="626" y2="68"  stroke="currentColor" stroke-width="1.2" stroke-opacity="0.5"></line>
+          <line x1="493" y1="68" x2="493" y2="72"  stroke="currentColor" stroke-width="1.2" stroke-opacity="0.5" marker-end="url(#pu4)"></line>
+          <line x1="626" y1="68" x2="626" y2="72"  stroke="currentColor" stroke-width="1.2" stroke-opacity="0.5" marker-end="url(#pu4)"></line>
+
+          <rect x="566" y="192" width="120" height="46" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2" stroke-dasharray="4 3"></rect>
+          <text x="626" y="210" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.8">NO es infecciosa</text>
+          <text x="626" y="226" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.8">pero da febrícula</text>
+
+          <rect x="14" y="256" width="672" height="62" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.28" stroke-width="1.3" stroke-dasharray="5 3"></rect>
+          <text x="30" y="276" font-size="11" font-weight="700" fill="currentColor">Las dos causas de fiebre que NO son infección</text>
+          <text x="30" y="294" font-size="10.5" fill="currentColor" opacity="0.82">La INGURGITACIÓN MAMARIA de la bajada de la leche da febrícula, es bilateral y cede al vaciar la mama.</text>
+          <text x="30" y="310" font-size="10.5" fill="currentColor" opacity="0.82">La TROMBOSIS da fiebre sin foco infeccioso. Ninguna de las dos justifica antibióticos.</text>
+        </svg>
+        <figcaption>El recorrido es el mismo del examen puerperal de la sección 08, leído al revés: primero la fiebre, después la región. Las dos entidades del recuadro inferior son las que hacen perder tiempo, porque simulan infección y no lo son.</figcaption>
+      </figure>
+
+      <h3>Endometritis — la infección puerperal</h3>
+      <ul>
+        <li><strong>Cuadro:</strong> fiebre, <strong>útero doloroso a la palpación y subinvolucionado</strong>, <strong>loquios fétidos</strong>. La tríada es prácticamente diagnóstica.</li>
+        <li><strong>Factor de riesgo dominante: la cesárea.</strong> Le siguen la rotura prematura de membranas prolongada, el trabajo de parto prolongado, los tactos vaginales repetidos y la retención de restos.</li>
+        <li><strong>Conducta:</strong> antibióticos endovenosos de amplio espectro con cobertura para anaerobios. Si hay <strong>restos retenidos</strong>, ningún antibiótico alcanza sin evacuar la cavidad.</li>
+      </ul>
+
+      <h3>Mastitis</h3>
+      <ul>
+        <li><strong>Cuadro:</strong> zona <strong>eritematosa, caliente, endurecida y dolorosa</strong>, típicamente <strong>en cuña y unilateral</strong>, con fiebre y malestar general. El germen habitual es <em>Staphylococcus aureus</em>, que entra por una <strong>grieta del pezón</strong>.</li>
+        <li><strong>No se suspende la lactancia.</strong> Al contrario: la mama tiene que seguir vaciándose, porque la estasis es lo que perpetúa el cuadro. Se agrega antibiótico con cobertura antiestafilocócica.</li>
+        <li><strong>Diferenciales:</strong> la <strong>ingurgitación</strong> es bilateral, sin fiebre alta, y cede al vaciar. El <strong>absceso</strong> se palpa como masa fluctuante y requiere <strong>drenaje</strong>: si la mastitis no mejora en 48-72 h de antibiótico, hay que buscarlo.</li>
+      </ul>
+
+      <h3>Hemorragia posparto tardía</h3>
+      <p>Es la que ocurre <strong>después de las primeras 24 h</strong> y hasta unas 12 semanas. Sus causas son distintas de las de la hemorragia inmediata: <strong>retención de restos placentarios</strong>, <strong>subinvolución del lecho placentario</strong> y <strong>endometritis</strong>. El signo que la anuncia es que los loquios <strong>vuelvan a ser hemáticos</strong> o aumenten bruscamente después de haberse aclarado.</p>
+
+      <h3>Enfermedad tromboembólica</h3>
+      <p>El embarazo y el puerperio son un <strong>estado protrombótico</strong>, y el riesgo es <strong>máximo en el puerperio</strong>, no durante la gestación. Se suman la estasis, el daño endotelial del parto y la hipercoagulabilidad — la tríada de Virchow completa. De ahí que la <strong>movilización precoz</strong> figure entre los controles de las primeras 24 h y que el edema <strong>asimétrico</strong> sea signo de alarma. La complicación temida es el <strong>tromboembolismo pulmonar</strong>, y la disnea súbita en una puérpera es eso hasta que se demuestre lo contrario.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>Toda fiebre mayor a 38 °C en el puerperio obliga a buscar el foco, no a observar.</strong> La puérpera tiene simultáneamente una herida uterina extensa, una herida perineal o abdominal, una mama que se está poniendo en funcionamiento y, muchas veces, un sondaje reciente: cuatro puertas de entrada abiertas al mismo tiempo. Y hay un motivo más: <strong>la fiebre sin foco puede ser trombosis</strong>. Indicar un antipirético y volver a control en 48 horas es la conducta que convierte una endometritis en una sepsis.</p>
+      </div>
+    </section>
+
+    <!-- ============ 11 ============ -->
+    <section class="seccion s-clinica" id="mental">
+      <span class="seccion__pestana"><b>11</b> Clínica</span>
+      <h2 class="seccion__titulo">Salud mental del puerperio</h2>
+
+      <p>El teórico lo incluye dos veces —como signo de alarma y como punto del examen— y no lo desarrolla. Son <strong>tres entidades distintas</strong>, y confundirlas tiene consecuencias opuestas: tratar como enfermedad algo que se resuelve solo, o mandar a casa algo que es una urgencia.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th></th><th>Blues puerperal</th><th>Depresión posparto</th><th>Psicosis puerperal</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Frecuencia</strong></td>
+              <td><strong>Muy frecuente</strong> — la mayoría de las puérperas</td>
+              <td>Alrededor de <strong>1 de cada 8</strong></td>
+              <td><strong>Rara</strong> — del orden de 1 a 2 por mil</td>
+            </tr>
+            <tr>
+              <td><strong>Cuándo aparece</strong></td>
+              <td>Días <span class="dato">2 a 5</span>, con pico hacia el quinto</td>
+              <td>Semanas a meses; puede empezar en el embarazo</td>
+              <td><strong>Brusca</strong>, en las primeras <span class="dato">2 semanas</span></td>
+            </tr>
+            <tr>
+              <td><strong>Cuánto dura</strong></td>
+              <td>Se resuelve <strong>sola</strong> antes de las 2 semanas</td>
+              <td><strong>Más de 2 semanas</strong>; no cede sin tratamiento</td>
+              <td>Cuadro agudo que se agrava en horas</td>
+            </tr>
+            <tr>
+              <td><strong>Qué se ve</strong></td>
+              <td>Labilidad, llanto fácil, irritabilidad, ansiedad leve</td>
+              <td>Tristeza persistente, <strong>anhedonia</strong>, culpa, alteración del sueño más allá de la que impone el bebé</td>
+              <td><strong>Alucinaciones, delirios</strong>, desorganización, confusión, ánimo fluctuante</td>
+            </tr>
+            <tr>
+              <td><strong>¿Puede cuidar al bebé?</strong></td>
+              <td><strong>Sí.</strong> El vínculo está conservado</td>
+              <td>Con dificultad; el vínculo se resiente</td>
+              <td><strong>No.</strong> Riesgo para ella y para el recién nacido</td>
+            </tr>
+            <tr>
+              <td><strong>Conducta</strong></td>
+              <td>Apoyo, contención e información. <strong>Sin fármacos</strong></td>
+              <td><strong>Tratamiento</strong>: psicoterapia y, según gravedad, antidepresivos compatibles con la lactancia</td>
+              <td><strong>URGENCIA PSIQUIÁTRICA</strong>. Internación y no dejarla sola con el bebé</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>La pregunta que las separa</strong> es la que el propio teórico usa al redactar el signo de alarma: <em>«pensamientos negativos que impiden cuidar al bebé»</em>. Esa capacidad —poder ocuparse del recién nacido— es la bisagra clínica. Si está conservada y el cuadro empezó a los tres días, es blues y se acompaña. Si está deteriorada, o el cuadro pasó las dos semanas, ya no lo es.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>La <strong>psicosis puerperal es una urgencia psiquiátrica</strong>, no un cuadro para derivar a consultorio externo. Es rara, aparece de forma <strong>brusca en las primeras dos semanas</strong> —cuando la puérpera ya está en su casa y sin controles— y conlleva <strong>riesgo de suicidio e infanticidio</strong>. Ante alucinaciones, delirios o desorganización del pensamiento en una puérpera: <strong>internación, evaluación psiquiátrica y no dejarla sola con el recién nacido</strong>. La rapidez del comienzo es justamente lo que la distingue de una depresión, y lo que hace que la familia no alcance a interpretarla.</p>
+      </div>
+    </section>
+
+    <!-- ============ 12 ============ -->
+    <section class="seccion s-tratamiento" id="integral">
+      <span class="seccion__pestana"><b>12</b> Conducta</span>
+      <h2 class="seccion__titulo">Atención integral: los cuatro pilares</h2>
+
+      <p>El teórico plantea que, además de prevenir y tratar complicaciones, hace falta <strong>un enfoque integral para cubrir las necesidades de la madre y su hijo</strong>, y enumera cuatro pilares: <strong>lactancia materna, vacunación, nutrición materna y anticoncepción</strong>. Los nombra y no los desarrolla; lo que sigue los completa.</p>
+
+      <h3>1 · Lactancia materna</h3>
+      <p>Recomendada <strong>exclusiva hasta los 6 meses</strong> y luego complementada. En el puerperio inmediato se busca la <strong>puesta al pecho precoz</strong> y la lactancia <strong>a libre demanda</strong>, que es lo que sostiene la producción. La técnica se controla en cada visita: un mal agarre produce <strong>grietas</strong>, y las grietas son la puerta de entrada de la mastitis de la sección <a href="#complicaciones">10</a>.</p>
+
+      <h3>2 · Vacunación</h3>
+      <p>El teórico dice «vacunación del niño». Falta la mitad: <strong>el puerperio es la ventana para vacunar a la madre</strong>, porque está internada, accesible y ya no embarazada — lo que habilita vacunas que durante la gestación estaban contraindicadas.</p>
+      <ul>
+        <li><strong>Triple viral</strong> si la mujer resultó <strong>susceptible a rubéola</strong> en los estudios del embarazo. Es vacuna a virus vivo: no se puede dar embarazada, y por eso el puerperio es <em>el</em> momento. Se recomienda evitar un nuevo embarazo durante el mes siguiente.</li>
+        <li><strong>dTpa</strong> si no se aplicó durante el embarazo, para proteger al recién nacido de la tos convulsa por estrategia de capullo.</li>
+        <li>Completar el <strong>calendario</strong> que hubiera quedado pendiente.</li>
+      </ul>
+
+      <h3>3 · Nutrición materna</h3>
+      <p>Los requerimientos <strong>durante la lactancia son mayores que durante el embarazo</strong>. Se sostienen la <strong>hidratación abundante</strong> y la suplementación con <strong>hierro</strong> —sobre todo si hubo hemorragia o anemia previa— y se continúa el ácido fólico según el esquema institucional.</p>
+
+      <h3>4 · Anticoncepción posparto</h3>
+      <p>Es el pilar que el teórico nombra dos veces sin definir. El problema de fondo es que <strong>la ovulación precede a la primera menstruación</strong>: se puede quedar embarazada antes de menstruar, y por eso «todavía no me vino» no es un método.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Método</th><th>Cuándo se puede usar</th><th>Observación</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>MELA</strong> — método de amenorrea de la lactancia</td>
+              <td>Desde el parto, mientras se cumplan <strong>sus tres criterios</strong></td>
+              <td>Falla del <span class="dato">1-2 %</span> si se cumplen los tres. Al perderse cualquiera, cambiar de método</td>
+            </tr>
+            <tr>
+              <td><strong>Solo progestágeno</strong> — minipíldora, implante, inyectable</td>
+              <td>Desde el posparto, <strong>compatible con la lactancia</strong></td>
+              <td>No contiene estrógenos: no afecta la producción de leche ni suma riesgo trombótico</td>
+            </tr>
+            <tr>
+              <td><strong>DIU</strong></td>
+              <td>Posparto inmediato o diferido a las 4-6 semanas</td>
+              <td>Alta eficacia y larga duración; no interfiere con la lactancia</td>
+            </tr>
+            <tr>
+              <td><strong>Combinados con estrógeno</strong></td>
+              <td><strong>Evitar los primeros 21 días</strong> en toda puérpera; en la que amamanta se difieren más</td>
+              <td>El motivo es el <strong>riesgo tromboembólico</strong> del puerperio, que es el momento de mayor riesgo</td>
+            </tr>
+            <tr>
+              <td><strong>Barrera</strong> — preservativo</td>
+              <td>Desde el reinicio de las relaciones</td>
+              <td>Único que además protege de infecciones de transmisión sexual</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Los <strong>tres criterios del MELA se cumplen juntos o el método no vale</strong>: <strong>lactancia exclusiva o casi exclusiva</strong>, <strong>amenorrea</strong> y <strong>menos de 6 meses posparto</strong>. Es una <em>y</em>, no una <em>o</em>. Con los tres, la falla es del 1-2 %; en cuanto se pierde uno solo —la primera menstruación, una mamadera que reemplaza tomas, o el sexto mes— la protección cae y hay que haber pasado ya a otro método. La conversación sobre cuál se hace <strong>antes</strong> de que eso ocurra, no después.</p>
+      </div>
+
+      <p class="cita">Fuente: Organización Mundial de la Salud, Criterios médicos de elegibilidad para el uso de anticonceptivos y Estrategias para la programación de la planificación familiar posparto.</p>
+    </section>
+
+    <!-- ============ REPASO ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>¿Cuándo empieza y cuánto dura el puerperio?</summary>
+          <div class="fc__r">Empieza <strong>después del alumbramiento</strong> —no después del nacimiento— y dura <strong>6 semanas (42 días)</strong>.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Cuál es el órgano que NO involuciona en el puerperio?</summary>
+          <div class="fc__r">La <strong>glándula mamaria</strong>: mientras todo lo demás regresa a su estado pregravídico, la mama <strong>alcanza en el puerperio su mayor desarrollo</strong> para responder a la lactancia.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>Nombrá las cuatro etapas con sus cortes temporales.</summary>
+          <div class="fc__r"><strong>Inmediato:</strong> primeras 24 h. <strong>Mediato:</strong> 24 h al día 10. <strong>Alejado:</strong> día 11 al 42. <strong>Tardío:</strong> del 43 hasta los 6 meses o 1 año.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Qué riesgo domina cada etapa?</summary>
+          <div class="fc__r"><strong>Inmediato:</strong> hemorragia. <strong>Mediato:</strong> infección. <strong>Alejado:</strong> cierre y anticoncepción. <strong>Tardío:</strong> salud mental y abandono del control.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Por qué el puerperio tardío puede durar hasta 1 año si el puerperio son 6 semanas?</summary>
+          <div class="fc__r">Porque <strong>se define por la lactancia</strong>: dura lo que dure la lactancia activa y prolongada, que mantiene abierto el cuadro hormonal. El puerperio «de 6 semanas» de la definición termina al final del alejado.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿A qué ritmo desciende el fondo uterino, y dónde está el día 1?</summary>
+          <div class="fc__r">Baja <strong>1 cm por día</strong> —un través de dedo—. El día 1 está <strong>a nivel del ombligo</strong>, a 12-15 cm de la sínfisis. El teórico dice 2 cm/día, que está al doble.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Cuándo deja de palparse el útero por el abdomen?</summary>
+          <div class="fc__r"><strong>Después del día 12</strong>, cuando se hace <strong>intrapélvico</strong>. Al día 6 todavía está a mitad de camino entre ombligo y pubis.</div>
+        </details>
+
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué son los entuertos y por qué duelen más al amamantar?</summary>
+          <div class="fc__r">Son las <strong>contracciones uterinas dolorosas</strong> del puerperio. La succión libera <strong>oxitocina</strong> por vía refleja, que contrae el útero. Son más intensos en <strong>multíparas</strong> y ceden hacia el tercer día.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Nombrá los cuatro tipos de loquios en orden.</summary>
+          <div class="fc__r"><strong>Hemáticos</strong> (desde el parto) → <strong>serosanguíneos</strong> (día 3-4, rosados) → <strong>serosos</strong> (desde el día 7, se aclaran) → <strong>albos</strong> (desde el día 10 hasta la semana 4-6). El teórico omite los albos.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Cuánto duran realmente los loquios?</summary>
+          <div class="fc__r"><strong>4 a 6 semanas</strong>, no 15 días como dice el teórico. Coincide con su propia diapositiva, que ubica el cese de los loquios en el puerperio alejado (día 11 al 42).</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Cuáles son los cinco parámetros que se estudian en los loquios?</summary>
+          <div class="fc__r"><strong>Duración, aspecto, cantidad, composición y olor.</strong> El más importante en la práctica es el <strong>olor</strong>: fétido significa infección.</div>
+        </details>
+
+
+        <details class="fc s-tratamiento">
+          <summary>¿Por qué la puérpera permanece 2 horas en sala de recuperación contigua a partos?</summary>
+          <div class="fc__r">Porque son el <strong>tiempo de mayor riesgo de hemorragia y shock</strong> —atonía, restos retenidos y desgarros—. Si aparece la hemorragia, el quirófano tiene que estar al lado.</div>
+        </details>
+
+
+        <details class="fc s-tratamiento">
+          <summary>¿Por qué se indica lactancia precoz en el puerperio inmediato?</summary>
+          <div class="fc__r">Porque la succión libera oxitocina y <strong>favorece la retracción uterina</strong>: es un uterotónico fisiológico. El precio son los entuertos.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Por qué una vejiga llena puede causar hemorragia posparto?</summary>
+          <div class="fc__r">Porque <strong>impide que el útero se contraiga</strong>, y sin contracción no hay hemostasia del lecho placentario. Por eso la diuresis se controla en las primeras 24 h.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Cuándo se da el alta y cuándo son los controles?</summary>
+          <div class="fc__r"><strong>Alta a las 48 h</strong>, no antes. Control al <strong>día 10</strong> y al <strong>día 30</strong>, ambos <strong>en concordancia con la cita del recién nacido</strong> — así la madre no se pierde del sistema.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Cuándo vuelve la menstruación?</summary>
+          <div class="fc__r">Si <strong>no amamanta</strong>, en el puerperio alejado (día 11 al 42). Si <strong>amamanta</strong>, el retorno tiene un <strong>término impreciso</strong>, y esa imprecisión es el problema anticonceptivo del período.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Qué está buscando cada punto del examen puerperal? Nombrá tres.</summary>
+          <div class="fc__r">Útero → <strong>subinvolución y atonía</strong>. Loquios y su olor → <strong>endometritis</strong>. Mama → <strong>mastitis</strong>. Pierna con edema asimétrico → <strong>TVP</strong>. Estado emocional → <strong>depresión posparto</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Por qué el edema de piernas tiene que ser asimétrico para preocupar?</summary>
+          <div class="fc__r">Porque el <strong>edema bilateral es esperable</strong> en el puerperio por redistribución de líquidos. Lo que sugiere <strong>TVP</strong> es que <strong>una sola pierna</strong> esté hinchada, roja, caliente o dolorosa.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Paciente Rh negativa: ¿qué hay que hacer y en qué plazo?</summary>
+          <div class="fc__r"><strong>Inmunoglobulina anti-D dentro de las primeras 72 horas</strong>, si el recién nacido es Rh positivo. Previene la enfermedad hemolítica de <strong>los embarazos siguientes</strong>. Pasada la ventana, no se recupera.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>«Cefalea intensa» en una puérpera: ¿qué hay que descartar primero?</summary>
+          <div class="fc__r"><strong>Preeclampsia o eclampsia de aparición posparto</strong> — pueden aparecer hasta 6 semanas después. Se <strong>toma la presión arterial</strong> antes de dar analgésicos. También considerar anemia grave y cefalea pospunción dural.</div>
+        </details>
+
+        <details class="fc s-diferenciales">
+          <summary>Tríada de la endometritis puerperal.</summary>
+          <div class="fc__r"><strong>Fiebre</strong> + <strong>útero doloroso y subinvolucionado</strong> + <strong>loquios fétidos</strong>. El principal factor de riesgo es la <strong>cesárea</strong>.</div>
+        </details>
+
+        <details class="fc s-diferenciales">
+          <summary>Mastitis: ¿se suspende la lactancia?</summary>
+          <div class="fc__r"><strong>No.</strong> La mama tiene que seguir vaciándose, porque la <strong>estasis perpetúa el cuadro</strong>. Se agrega antibiótico antiestafilocócico. Si no mejora en 48-72 h, buscar <strong>absceso</strong>.</div>
+        </details>
+
+        <details class="fc s-diferenciales">
+          <summary>¿Qué dos causas de fiebre puerperal NO son infección?</summary>
+          <div class="fc__r">La <strong>ingurgitación mamaria</strong> de la bajada de la leche —febrícula, bilateral, cede al vaciar— y la <strong>trombosis</strong>, que da fiebre sin foco. Ninguna justifica antibióticos.</div>
+        </details>
+
+        <details class="fc s-diferenciales">
+          <summary>¿Cuándo es máximo el riesgo tromboembólico: embarazo o puerperio?</summary>
+          <div class="fc__r"><strong>Puerperio.</strong> Se completa la tríada de Virchow: estasis, daño endotelial del parto e hipercoagulabilidad. Por eso la <strong>movilización precoz</strong> figura entre los controles.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Blues, depresión y psicosis: ¿cuál es la pregunta que las separa?</summary>
+          <div class="fc__r"><strong>¿Puede cuidar al bebé?</strong> En el <strong>blues</strong> sí, y se resuelve solo antes de las 2 semanas. En la <strong>depresión</strong> con dificultad, y no cede sin tratamiento. En la <strong>psicosis</strong> no, y es urgencia.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Por qué la psicosis puerperal es una urgencia?</summary>
+          <div class="fc__r">Por el <strong>riesgo de suicidio e infanticidio</strong>. Aparece de forma <strong>brusca en las primeras 2 semanas</strong>, cuando ya está en su casa. Conducta: <strong>internación</strong> y no dejarla sola con el recién nacido.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Los tres criterios del MELA.</summary>
+          <div class="fc__r"><strong>Lactancia exclusiva o casi exclusiva</strong> + <strong>amenorrea</strong> + <strong>menos de 6 meses posparto</strong>. Son una <em>y</em>, no una <em>o</em>. Con los tres, falla 1-2 %; si se pierde uno, hay que cambiar de método.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Por qué no se usan anticonceptivos combinados en el posparto inmediato?</summary>
+          <div class="fc__r">Por el <strong>riesgo tromboembólico</strong>: se evitan los <strong>primeros 21 días</strong> en toda puérpera, y más tiempo en la que amamanta. Los de <strong>solo progestágeno</strong> y el <strong>DIU</strong> sí se pueden usar.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Por qué «todavía no me vino» no es un método anticonceptivo?</summary>
+          <div class="fc__r">Porque <strong>la ovulación precede a la primera menstruación</strong>: se puede quedar embarazada antes de menstruar.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Qué vacunas se aprovecha a dar en el puerperio, y por qué ahí?</summary>
+          <div class="fc__r"><strong>Triple viral</strong> si fue susceptible a rubéola —es a virus vivo, no se puede dar embarazada— y <strong>dTpa</strong> si no se aplicó en el embarazo. El puerperio es la ventana: está internada, accesible y ya no embarazada.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ RELÁMPAGO ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Las cuatro etapas</dt>
+        <dd><strong>Inmediato</strong> 24 h (hemorragia) · <strong>Mediato</strong> al día 10 (infección) · <strong>Alejado</strong> al día 42 (cierre) · <strong>Tardío</strong> hasta 6 m o 1 año (lactancia y salud mental).</dd>
+
+        <dt class="r-gold">Los dos relojes</dt>
+        <dd><strong>Involución:</strong> ombligo el día 1 → <strong>1 cm por día</strong> → intrapélvico al día 12 → menos de 100 g a las 6 semanas. <strong>Loquios:</strong> hemáticos → serosanguíneos (día 3-4) → serosos (día 7) → <strong>albos</strong> (día 10 a semana 4-6).</dd>
+
+        <dt class="r-tto">Lo que no se puede postergar</dt>
+        <dd><strong>2 primeras horas</strong> en recuperación, con control de retracción y sangrado. <strong>Anti-D dentro de las 72 h</strong> si es Rh negativa. <strong>Alta a las 48 h</strong>, controles al día 10 y 30 junto con el bebé.</dd>
+
+        <dt class="r-tto">Anticoncepción</dt>
+        <dd><strong>MELA</strong> solo con sus tres criterios juntos. <strong>Progestágeno solo y DIU</strong> desde el inicio. <strong>Combinados: no los primeros 21 días</strong> por riesgo trombótico.</dd>
+
+        <dt class="r-alerta">Criterios de alerta</dt>
+        <dd><strong>Fiebre &gt; 38 °C</strong> = buscar el foco, nunca observar. <strong>Loquios fétidos</strong> = endometritis. <strong>Una sola pierna hinchada</strong> = TVP. <strong>Cefalea intensa</strong> = tomar la presión, preeclampsia posparto. <strong>Alucinaciones o delirio</strong> = psicosis puerperal, urgencia psiquiátrica.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir del material de la Cátedra de Obstetricia y de las recomendaciones de la Organización Mundial de la Salud. Material de estudio: no reemplaza el criterio clínico ni la guía institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+
+  // ---- Tema claro / oscuro ----
+  // Sin eleccion estampada manda el sistema; el boton la estampa y la guarda.
+  var raiz = document.documentElement;
+  var boton = document.getElementById('tema');
+
+  function temaActual(){
+    var estampado = raiz.getAttribute('data-theme');
+    if (estampado) return estampado;
+    return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+
+  if (boton){
+    var rotular = function(){
+      var actual = temaActual();
+      boton.setAttribute('aria-pressed', actual === 'dark' ? 'true' : 'false');
+      boton.setAttribute('aria-label', actual === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+    };
+    boton.addEventListener('click', function(){
+      var nuevo = temaActual() === 'dark' ? 'light' : 'dark';
+      raiz.setAttribute('data-theme', nuevo);
+      try { localStorage.setItem('wordmed-tema', nuevo); } catch (e) { /* sin persistencia */ }
+      rotular();
+    });
+    rotular();
+  }
+
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link, .ir-link'));
+
+  // Devuelve TODOS los enlaces al ancla: la misma seccion figura en el indice
+  // lateral y en el compacto, y los dos tienen que encenderse juntos.
+  function porMeta(hash){
+    return enlaces.filter(function(l){ return l.getAttribute('href') === '#' + hash; });
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var activos = porMeta(e.target.id);
+        if (!activos.length) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          activos.forEach(function(l){ l.setAttribute('aria-current', 'true'); });
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>

@@ -1,0 +1,2216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Distocias del Parto</title>
+<link rel="stylesheet" href="../../fuentes/fuentes.css">
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-bloque:1.95rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+
+  /* Que la barra de desplazamiento y los controles nativos acompanen al tema */
+  color-scheme: light dark;
+}
+
+/* Eleccion explicita de claro: solo hace falta para el color-scheme, los
+   tokens claros ya son la base sin estampar. */
+:root[data-theme="light"]{ color-scheme: light; }
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* Interruptor de tema claro / oscuro.
+   El estampado `data-theme` en la raíz ya lo respetan los bloques de tokens de
+   arriba; este botón sólo lo pone y lo guarda. Sin elección estampada mandan
+   las preferencias del sistema, que es el comportamiento por defecto. */
+.tema{
+  position:fixed; top:.7rem; right:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.tema:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.tema__icono{ width:1.15rem; height:1.15rem; display:block; }
+
+/* Se muestra el icono del tema al que se va a cambiar, no el actual.
+   Mismo escalonado que los tokens: base clara · sistema oscuro · elección explícita. */
+.tema__sol{ display:none; }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .tema__sol{ display:block; }
+  :root:not([data-theme="light"]) .tema__luna{ display:none; }
+}
+:root[data-theme="dark"] .tema__sol{ display:block; }
+:root[data-theme="dark"] .tema__luna{ display:none; }
+:root[data-theme="light"] .tema__sol{ display:none; }
+:root[data-theme="light"] .tema__luna{ display:block; }
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índices ---------- */
+/* Dos piezas complementarias y deliberadamente redundantes:
+   · .indice        — barra lateral fija, sólo en pantalla ancha, navegación permanente.
+   · .indice-rapido — tarjeta compacta al principio del cuerpo, visible en TODO ancho.
+   La lateral desaparece por debajo de 64rem, que es justo el ancho del panel de
+   Artifacts y del celular; sin la compacta el cuadernillo publicado se queda sin
+   índice. Las dos apuntan a los mismos anclajes y se resaltan juntas al desplazar. */
+
+/* 6.1 · Barra lateral */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+/* Rótulo de bloque intercalado en la lista lateral: no es un enlace, sólo
+   separa grupos de secciones para que 30 entradas no sean una tira plana. */
+.indice__bloque{
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+  margin:.9rem 0 .2rem; padding:0 .55rem;
+}
+.indice__bloque:first-child{ margin-top:0; }
+
+/* 6.2 · Índice compacto (va después de la portada, dentro del cuerpo) */
+.indice-rapido{
+  background:var(--hoja-hund);
+  border:1px solid var(--linea);
+  border-radius:var(--radio);
+  padding:1.1rem 1.2rem 1.2rem;
+}
+.indice-rapido__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .85rem;
+}
+/* auto-fit: una columna en el panel angosto, dos o tres en pantalla ancha */
+.indice-rapido__bloques{
+  list-style:none; margin:0; padding:0;
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(15rem, 1fr));
+  gap:1rem 2rem; align-items:start;
+}
+.ir-bloque{
+  display:block; margin-bottom:.4rem;
+  font-family:var(--f-titulo); font-size:.98rem; font-weight:700; line-height:1.3;
+  color:var(--tinta); text-decoration:none;
+  padding-bottom:.3rem; border-bottom:1px solid var(--linea-fuerte);
+}
+.ir-bloque:hover{ color:var(--cli-t); }
+.ir-secciones{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.05rem; }
+.ir-link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.55rem 1fr; align-items:baseline; gap:.4rem;
+  padding:.2rem .35rem; border-radius:2px;
+  font-size:.86rem; line-height:1.4; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.ir-link > b{
+  font-family:var(--f-dato); font-size:.76rem; font-weight:700;
+  font-variant-numeric:tabular-nums; color:var(--ct); opacity:.85;
+}
+.ir-link:hover{ background:var(--hoja); color:var(--tinta); }
+.ir-link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Título de bloque y ficha de sección ---------- */
+
+/* Anuncia un grupo de secciones. Neutro en color a propósito: los siete colores
+   tienen significado clínico fijo y un bloque agrupa secciones de varios. La
+   regla de abajo lleva el degradado completo de la paleta, igual que la pestaña
+   de repaso y la cabecera de la ficha relámpago.
+   Sin <svg> adentro: el exportador a Word aparea los diagramas con las figuras
+   por contador posicional sobre el HTML crudo (ver exportar_docx.py). */
+.bloque{
+  margin:1.4rem 0 0; padding:0;
+  text-align:center; scroll-margin-top:2.5rem;
+  display:flex; flex-direction:column; align-items:center; gap:.3rem;
+  font-weight:400;
+}
+.bloque:first-child{ margin-top:0; }
+.bloque__rotulo{
+  font-family:var(--f-texto);
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+}
+.bloque__nombre{
+  font-family:var(--f-titulo); font-size:var(--t-bloque); font-weight:700; line-height:1.15;
+  letter-spacing:-.01em; color:var(--tinta); text-wrap:balance; max-width:32ch;
+}
+.bloque::after{
+  content:""; width:7rem; height:2.5px; margin-top:.5rem; border-radius:2px;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+}
+
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.5rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-column:1; grid-row:1; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+/* El icono ocupa la columna 1 y NADA MAS. Todo el resto del contenido se
+   apila en la columna 2, una fila por elemento, sin importar cuantos
+   parrafos haya.
+
+   Sin esta regla la caja solo funciona con un unico <p>: a partir del
+   segundo, la autocolocacion del grid empieza a repartir contenido en la
+   columna del icono, que es `auto` y por lo tanto se ensancha hasta abarcar
+   el parrafo que le toco. La columna `1fr` queda entonces reducida a una
+   tira angosta, el texto se parte en dos columnas desbalanceadas y la caja
+   crece hasta volverse ilegible. */
+.importante > :not(.importante__icono){ grid-column:2; }
+.importante__titulo{
+  grid-row:1;
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante ul, .importante ol{ margin:0; padding-left:1.15rem; }
+.importante li + li{ margin-top:.3rem; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso, .tema{ display:none !important; }
+  /* La lateral no se imprime, pero la compacta sí: en papel es la tabla de
+     contenidos del cuadernillo. */
+  .indice-rapido{ display:block; break-inside:avoid; page-break-inside:avoid; margin-bottom:1.2rem; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .bloque{
+    margin:1.6rem 0 1rem;
+    break-after:avoid; page-break-after:avoid;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+<style>
+/* Fuentes de la capa de contenido. Va después del estilo del
+   cuadernillo para pisar las de Windows, que no se pueden
+   redistribuir y no existen en Android. */
+:root{
+  --f-titulo:'Spectral',Georgia,'Times New Roman',serif;
+  --f-texto:'Open Sans',system-ui,-apple-system,sans-serif;
+  --f-dato:'Cascadia Mono','Cascadia Code',ui-monospace,Consolas,monospace;
+}
+/* Botón de volver, espejo del de tema que ya trae el cuadernillo. */
+.volver{
+  position:fixed; top:.7rem; left:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.volver:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.volver__icono{ width:1.15rem; height:1.15rem; display:block; }
+</style>
+</head>
+<body data-clave="obstetricia/8-distocias-del-parto">
+<script>
+/* Aplica el tema guardado antes de pintar. Va aca arriba a proposito: si
+   esperara al script del final, el documento parpadearia en el tema del
+   sistema antes de corregirse. */
+(function(){
+  try {
+    var guardado = localStorage.getItem('wordmed-tema');
+    if (guardado === 'dark' || guardado === 'light') {
+      document.documentElement.setAttribute('data-theme', guardado);
+    }
+  } catch (e) { /* almacenamiento bloqueado: manda el sistema */ }
+})();
+</script>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<button class="tema" id="tema" type="button" aria-pressed="false" aria-label="Cambiar a modo oscuro">
+  <svg class="tema__icono tema__sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.2"></circle>
+    <path d="M12 2.6v2.1M12 19.3v2.1M5.1 5.1l1.5 1.5M17.4 17.4l1.5 1.5M2.6 12h2.1M19.3 12h2.1M5.1 18.9l1.5-1.5M17.4 6.6l1.5-1.5"></path>
+  </svg>
+  <svg class="tema__icono tema__luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20.4 14.2A8.6 8.6 0 0 1 9.8 3.6a8.6 8.6 0 1 0 10.6 10.6z"></path>
+  </svg>
+</button>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li class="indice__bloque">Bloque A</li>
+      <li><a class="indice__link i-generalidades"  href="#definicion">Definición y las cinco causas</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#progreso">Cuándo el parto no progresa</a></li>
+      <li class="indice__bloque">Bloque B</li>
+      <li><a class="indice__link i-fisiopatologia" href="#oseas">Distocias óseas</a></li>
+      <li><a class="indice__link i-importantes"    href="#pelvis">Tipos de pelvis estrecha</a></li>
+      <li><a class="indice__link i-clinica"        href="#movil">Fetales, partes blandas y ovulares</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#dcp">Desproporción y prueba de parto</a></li>
+      <li class="indice__bloque">Bloque C</li>
+      <li><a class="indice__link i-fisiopatologia" href="#contraccion">La contracción normal</a></li>
+      <li><a class="indice__link i-importantes"    href="#clasificacion">Clasificación de las dinámicas</a></li>
+      <li><a class="indice__link i-clinica"        href="#hipodinamias">Hipodinamias</a></li>
+      <li><a class="indice__link i-clinica"        href="#hiperdinamias">Hiperdinamias</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#disdinamias">Disdinamias y triple gradiente</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#tto-dinamica">Tratamiento de las dinámicas</a></li>
+      <li class="indice__bloque">Bloque D</li>
+      <li><a class="indice__link i-generalidades"  href="#hombros">Distocia de hombros</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#escalonado">El parto escalonado</a></li>
+      <li><a class="indice__link i-clinica"        href="#tortuga">Reconocerla</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#maniobras">Las maniobras y su orden</a></li>
+      <li><a class="indice__link i-importantes"    href="#consecuencias">Consecuencias y el mito</a></li>
+      <li class="indice__bloque">Cierre</li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Obstetricia · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Distocias del Parto</h1>
+      <p class="portada__bajada">Toda dificultad para el progreso normal del parto, ordenada por lo que falla: el canal, el móvil, el continente o el motor. Cierra con la distocia de hombros, la única que se resuelve con la cabeza afuera y dos minutos de plazo.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">17 secciones</span>
+        <span class="etiqueta s-fisiopatologia">Triple gradiente</span>
+        <span class="etiqueta s-tratamiento">Algoritmo de hombros</span>
+        <span class="etiqueta s-importantes">Los cuatro «no»</span>
+      </div>
+    </header>
+
+    <nav class="indice-rapido" aria-label="Contenido del cuadernillo">
+      <p class="indice-rapido__rotulo">Contenido</p>
+      <ol class="indice-rapido__bloques">
+        <li>
+          <a class="ir-bloque" href="#bloque-a">Bloque A · Qué es una distocia</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades"  href="#definicion"><b>01</b> Definición y las cinco causas</a></li>
+            <li><a class="ir-link i-diagnostico"    href="#progreso"><b>02</b> Cuándo se dice que el parto no progresa</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-b">Bloque B · El canal y el móvil</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-fisiopatologia" href="#oseas"><b>03</b> Distocias óseas: dónde y cuánto se estrecha</a></li>
+            <li><a class="ir-link i-importantes"    href="#pelvis"><b>04</b> Tipos de pelvis estrecha</a></li>
+            <li><a class="ir-link i-clinica"        href="#movil"><b>05</b> Fetales, de partes blandas y ovulares</a></li>
+            <li><a class="ir-link i-tratamiento"    href="#dcp"><b>06</b> Desproporción y prueba de trabajo de parto</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-c">Bloque C · Distocias dinámicas</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-fisiopatologia" href="#contraccion"><b>07</b> La contracción normal: los cuatro parámetros</a></li>
+            <li><a class="ir-link i-importantes"    href="#clasificacion"><b>08</b> Cómo se clasifican</a></li>
+            <li><a class="ir-link i-clinica"        href="#hipodinamias"><b>09</b> Hipodinamias</a></li>
+            <li><a class="ir-link i-clinica"        href="#hiperdinamias"><b>10</b> Hiperdinamias</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#disdinamias"><b>11</b> Disdinamias y el triple gradiente</a></li>
+            <li><a class="ir-link i-tratamiento"    href="#tto-dinamica"><b>12</b> Tratamiento</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-d">Bloque D · Distocia de hombros</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades"  href="#hombros"><b>13</b> Qué es y por qué es imprevisible</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#escalonado"><b>14</b> El parto escalonado de los hombros</a></li>
+            <li><a class="ir-link i-clinica"        href="#tortuga"><b>15</b> Reconocerla: la tortuga y los cuatro «no»</a></li>
+            <li><a class="ir-link i-tratamiento"    href="#maniobras"><b>16</b> Las maniobras y su orden</a></li>
+            <li><a class="ir-link i-importantes"    href="#consecuencias"><b>17</b> Consecuencias y el mito de la tracción</a></li>
+          </ul>
+        </li>
+        <li>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-clinica"     href="#repaso"><b>·</b> Repaso activo</a></li>
+            <li><a class="ir-link i-importantes" href="#relampago"><b>⚡</b> Ficha Relámpago</a></li>
+          </ul>
+        </li>
+      </ol>
+    </nav>
+
+    <h2 class="bloque" id="bloque-a">
+      <span class="bloque__rotulo">Bloque A</span>
+      <span class="bloque__nombre">Qué es una distocia</span>
+    </h2>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="definicion">
+      <span class="seccion__pestana"><b>01</b> Base</span>
+      <h2 class="seccion__titulo">Definición y las cinco causas</h2>
+
+      <p><em>Distocia</em> viene de <em>dys-</em> (dificultad) y <em>tokos</em> (parto): su opuesto es la <strong>eutocia</strong>, el parto que transcurre sin ayuda. La cátedra la define como <strong>«una dificultad para el progreso normal del parto»</strong>. Es una definición deliberadamente amplia: no nombra una enfermedad sino un resultado, y por eso lo único que la vuelve útil es preguntarse <strong>qué elemento del parto falló</strong>.</p>
+
+      <h3>Los tres elementos y las cinco causas</h3>
+      <p>El parto necesita un <strong>motor</strong> que empuje, un <strong>móvil</strong> que sea empujado y un <strong>canal</strong> por donde pase. Las cinco categorías del teórico se ordenan sobre ese esqueleto, más un cuarto elemento que suele olvidarse: el <strong>continente</strong> —membranas, cordón, placenta y líquido— que puede obstruir sin que ninguno de los otros tres esté enfermo.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Elemento</th><th>Distocia</th><th>Origen del problema</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Canal</strong> — parte dura</td>
+              <td><strong>Distocia ósea</strong></td>
+              <td>Huesos de la pelvis</td>
+            </tr>
+            <tr>
+              <td><strong>Canal</strong> — parte blanda</td>
+              <td><strong>Distocia de partes blandas</strong></td>
+              <td>Útero, cuello, vagina y vulva</td>
+            </tr>
+            <tr>
+              <td><strong>Móvil</strong></td>
+              <td><strong>Distocia fetal</strong></td>
+              <td>El feto: tamaño, actitud o forma</td>
+            </tr>
+            <tr>
+              <td><strong>Continente</strong></td>
+              <td><strong>Distocia ovular</strong></td>
+              <td>Membranas, cordón, placenta y líquido</td>
+            </tr>
+            <tr>
+              <td><strong>Motor</strong></td>
+              <td><strong>Distocia dinámica</strong></td>
+              <td>La contractilidad uterina</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 330" role="img" aria-label="Árbol de las cinco distocias organizado por elemento del parto: el canal se divide en distocia ósea y de partes blandas, el móvil da la distocia fetal, el continente la distocia ovular y el motor la distocia dinámica, con un ejemplo característico de cada una.">
+          <defs>
+            <marker id="d1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="14" y="130" width="132" height="62" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2.4"></rect>
+          <text x="80" y="156" font-size="13.5" font-weight="700" text-anchor="middle" fill="currentColor">DISTOCIA</text>
+          <text x="80" y="176" font-size="11" text-anchor="middle" fill="currentColor" opacity="0.75">el parto no progresa</text>
+
+          <line x1="146" y1="161" x2="196" y2="42"  stroke="currentColor" stroke-width="1.4" marker-end="url(#d1)"></line>
+          <line x1="146" y1="161" x2="196" y2="102" stroke="currentColor" stroke-width="1.4" marker-end="url(#d1)"></line>
+          <line x1="146" y1="161" x2="196" y2="161" stroke="currentColor" stroke-width="1.4" marker-end="url(#d1)"></line>
+          <line x1="146" y1="161" x2="196" y2="220" stroke="currentColor" stroke-width="1.4" marker-end="url(#d1)"></line>
+          <line x1="146" y1="161" x2="196" y2="280" stroke="currentColor" stroke-width="1.4" marker-end="url(#d1)"></line>
+
+          <rect x="202" y="16" width="128" height="52" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="216" y="38" font-size="11" font-weight="700" fill="currentColor">CANAL duro</text>
+          <text x="216" y="56" font-size="11" fill="currentColor" opacity="0.75">Distocia ósea</text>
+
+          <rect x="202" y="76" width="128" height="52" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="216" y="98" font-size="11" font-weight="700" fill="currentColor">CANAL blando</text>
+          <text x="216" y="116" font-size="11" fill="currentColor" opacity="0.75">Partes blandas</text>
+
+          <rect x="202" y="135" width="128" height="52" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="216" y="157" font-size="11" font-weight="700" fill="currentColor">MÓVIL</text>
+          <text x="216" y="175" font-size="11" fill="currentColor" opacity="0.75">Distocia fetal</text>
+
+          <rect x="202" y="194" width="128" height="52" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="216" y="216" font-size="11" font-weight="700" fill="currentColor">CONTINENTE</text>
+          <text x="216" y="234" font-size="11" fill="currentColor" opacity="0.75">Distocia ovular</text>
+
+          <rect x="202" y="253" width="128" height="52" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="216" y="275" font-size="11" font-weight="700" fill="currentColor">MOTOR</text>
+          <text x="216" y="293" font-size="11" fill="currentColor" opacity="0.75">Distocia dinámica</text>
+
+          <line x1="330" y1="42"  x2="382" y2="42"  stroke="currentColor" stroke-width="1.2" stroke-opacity="0.55" marker-end="url(#d1)"></line>
+          <line x1="330" y1="102" x2="382" y2="102" stroke="currentColor" stroke-width="1.2" stroke-opacity="0.55" marker-end="url(#d1)"></line>
+          <line x1="330" y1="161" x2="382" y2="161" stroke="currentColor" stroke-width="1.2" stroke-opacity="0.55" marker-end="url(#d1)"></line>
+          <line x1="330" y1="220" x2="382" y2="220" stroke="currentColor" stroke-width="1.2" stroke-opacity="0.55" marker-end="url(#d1)"></line>
+          <line x1="330" y1="280" x2="382" y2="280" stroke="currentColor" stroke-width="1.2" stroke-opacity="0.55" marker-end="url(#d1)"></line>
+
+          <text x="392" y="34" font-size="11" font-weight="700" fill="currentColor">Pelvis estrecha</text>
+          <text x="392" y="52" font-size="10.5" fill="currentColor" opacity="0.7">plana, antropoide, de Naegele</text>
+
+          <text x="392" y="94" font-size="11" font-weight="700" fill="currentColor">Mioma del segmento</text>
+          <text x="392" y="112" font-size="10.5" fill="currentColor" opacity="0.7">tabiques, atresias, sinequias</text>
+
+          <text x="392" y="153" font-size="11" font-weight="700" fill="currentColor">Macrosomía</text>
+          <text x="392" y="171" font-size="10.5" fill="currentColor" opacity="0.7">presentación de frente o cara, hidrocefalia</text>
+
+          <text x="392" y="212" font-size="11" font-weight="700" fill="currentColor">Procidencia de cordón</text>
+          <text x="392" y="230" font-size="10.5" fill="currentColor" opacity="0.7">placenta previa oclusiva, polihidramnios</text>
+
+          <text x="392" y="272" font-size="11" font-weight="700" fill="currentColor">Hipodinamia</text>
+          <text x="392" y="290" font-size="10.5" fill="currentColor" opacity="0.7">hiperdinamia, incoordinación</text>
+        </svg>
+        <figcaption>Las cinco causas del teórico reordenadas por el elemento que falla. Las dos primeras son el mismo canal —una parte dura y otra blanda—, y esa distinción decide la conducta: la ósea no se modifica, la blanda a veces sí.</figcaption>
+      </figure>
+
+      <p>Esta clasificación es <strong>anatómica, no cronológica</strong>: una distocia ósea existe desde antes del embarazo y una dinámica aparece durante el trabajo de parto. Pero clínicamente se presentan del mismo modo —el parto se detiene— y por eso el diagnóstico diferencial siempre empieza por la misma pregunta: <strong>¿es que el motor no empuja, o es que hay algo que no deja pasar?</strong> De esa respuesta depende que se administre oxitocina o que se indique cesárea, y equivocarse tiene consecuencias opuestas.</p>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-diagnostico" id="progreso">
+      <span class="seccion__pestana"><b>02</b> Criterios</span>
+      <h2 class="seccion__titulo">Cuándo se dice que el parto no progresa</h2>
+
+      <p>El teórico define la distocia como «dificultad para el progreso normal del parto» y no vuelve a decir <strong>cuánto es poco</strong>. Sin ese número la definición no se puede aplicar: todo parto es lento mientras se lo mira. Los criterios vigentes son los de la guía conjunta de ACOG y SMFM.</p>
+
+      <h3>Dónde empieza la fase activa</h3>
+      <p>El cambio más importante de la última década: <strong>la fase activa comienza a los <span class="dato">6 cm</span></strong>, no a los 4. Por debajo de esa dilatación el parto es normalmente lento y errático, y una fase latente prolongada <strong>no es por sí sola indicación de cesárea</strong>. Diagnosticar «detención» a los 4 cm es diagnosticar una fase latente.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Situación</th><th>Criterio</th><th>Requisito previo</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Detención de la fase activa</strong><br>con dinámica adecuada</td>
+              <td>Sin modificación cervical durante <span class="dato">≥ 4 h</span></td>
+              <td><span class="dato">≥ 6 cm</span> de dilatación <strong>y</strong> membranas rotas</td>
+            </tr>
+            <tr>
+              <td><strong>Detención de la fase activa</strong><br>con dinámica inadecuada</td>
+              <td>Sin modificación cervical durante <span class="dato">≥ 6 h</span> pese a oxitocina</td>
+              <td><span class="dato">≥ 6 cm</span> de dilatación <strong>y</strong> membranas rotas</td>
+            </tr>
+            <tr>
+              <td><strong>Expulsivo prolongado</strong> — nulípara</td>
+              <td>Pujos durante <span class="dato">&gt; 3 h</span></td>
+              <td>Sumar <span class="dato">1 h</span> si hay analgesia peridural</td>
+            </tr>
+            <tr>
+              <td><strong>Expulsivo prolongado</strong> — multípara</td>
+              <td>Pujos durante <span class="dato">&gt; 2 h</span></td>
+              <td>Sumar <span class="dato">1 h</span> si hay analgesia peridural</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Los dos primeros renglones son el punto donde este cuadernillo se cierra sobre sí mismo: <strong>la definición de detención exige saber si la dinámica era adecuada o no</strong>, y eso se mide con los parámetros de la sección <a href="#contraccion">07</a>. Un parto detenido con dinámica pobre es una hipodinamia hasta que se demuestre lo contrario; uno detenido con dinámica excelente obliga a buscar el obstáculo.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Antes de los <strong>6 cm no se diagnostica detención</strong>, y el tiempo mínimo antes de indicar una cesárea por esta causa es de <strong>4 horas con dinámica adecuada</strong>. Las cesáreas indicadas por «falta de progresión» antes de esos umbrales son la principal causa evitable de primera cesárea, y la primera cesárea condiciona todos los partos siguientes.</p>
+      </div>
+
+      <p class="cita">Fuente: ACOG Clinical Practice Guideline No. 8: First and Second Stage Labor Management. Obstet Gynecol 2024, avalada por la Society for Maternal-Fetal Medicine.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-b">
+      <span class="bloque__rotulo">Bloque B</span>
+      <span class="bloque__nombre">El canal y el móvil</span>
+    </h2>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-fisiopatologia" id="oseas">
+      <span class="seccion__pestana"><b>03</b> Mecanismo</span>
+      <h2 class="seccion__titulo">Distocias óseas: dónde y cuánto se estrecha</h2>
+
+      <p>Son <strong>alteraciones estructurales de la pelvis</strong> por reducción de los diámetros del estrecho superior, la excavación o el estrecho inferior, de origen <strong>congénito o adquirido</strong> —el raquitismo es el ejemplo clásico de las adquiridas—. Es la única distocia que <strong>no se modifica</strong>: no hay maniobra ni fármaco que agrande una pelvis.</p>
+
+      <p>Lo que importa no es que la pelvis sea «chica» en general, sino <strong>a qué altura</strong> se estrecha, porque cada nivel traba un tiempo distinto del mecanismo de parto: el estrecho superior impide el <strong>encaje</strong>, la excavación impide el <strong>descenso y la rotación</strong>, y el estrecho inferior impide el <strong>desprendimiento</strong>. Los valores normales de cada diámetro están desarrollados en el cuadernillo de <a href="https://claude.ai/code/artifact/e93cad39-7d89-4fab-84e9-3b9dbfd1741b">Pelvis Ósea y Periné</a>.</p>
+
+      <h3>Los umbrales de estenosis</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Nivel</th><th>Diámetro</th><th>Se considera estrecho</th><th>Tiempo del parto que traba</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Estrecho superior</strong></td>
+              <td>Promonto-subpúbico (PSP)</td>
+              <td><span class="dato">≤ 10 cm</span></td>
+              <td>Encaje de la presentación</td>
+            </tr>
+            <tr>
+              <td><strong>Estrecho superior</strong></td>
+              <td>Transverso</td>
+              <td><span class="dato">≤ 12 cm</span></td>
+              <td>Orientación y encaje</td>
+            </tr>
+            <tr>
+              <td><strong>Excavación</strong> (estrecho medio)</td>
+              <td>Biciático o interespinoso (BC)</td>
+              <td><span class="dato">≤ 9,5 cm</span></td>
+              <td>Descenso y rotación interna</td>
+            </tr>
+            <tr>
+              <td><strong>Estrecho inferior</strong></td>
+              <td>Biisquiático (BIQ)</td>
+              <td><span class="dato">≤ 9,5 cm</span></td>
+              <td>Desprendimiento del polo cefálico</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>Una precisión sobre los conjugados,</strong> porque los nombres se confunden y el examen los mezcla. El <strong>promonto-subpúbico</strong> —también llamado <em>conjugado diagonal</em>— es el único que se puede tocar: se mide con los dedos en el tacto, desde el promontorio hasta el borde inferior de la sínfisis. El que realmente atraviesa el feto es el <strong>promonto-retropúbico</strong> o <em>conjugado obstétrico</em>, que va hasta la cara posterior del pubis y mide alrededor de <span class="dato">1,5 cm menos</span>. No se mide: se calcula restándole esa diferencia al que sí se tocó.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 300" role="img" aria-label="Corte sagital esquemático de la pelvis con los tres niveles de estrechamiento: estrecho superior con el promonto-subpúbico y el transverso, excavación con el biciático y estrecho inferior con el biisquiático, indicando para cada uno la cifra que define estenosis y el tiempo del parto que bloquea.">
+          <defs>
+            <marker id="d2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <text x="140" y="20" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">La pelvis en tres pisos</text>
+
+          <path d="M 60 44 C 40 110 46 190 96 254" fill="none" stroke="currentColor" stroke-width="2.6" stroke-opacity="0.55"></path>
+          <path d="M 224 44 C 244 110 238 190 188 254" fill="none" stroke="currentColor" stroke-width="2.6" stroke-opacity="0.55"></path>
+
+          <line x1="60" y1="54" x2="224" y2="54" stroke="var(--c)" stroke-width="3.4"></line>
+          <circle cx="60" cy="54" r="3.6" fill="var(--c)"></circle>
+          <circle cx="224" cy="54" r="3.6" fill="var(--c)"></circle>
+          <text x="142" y="44" font-size="11" font-weight="700" text-anchor="middle" fill="currentColor">estrecho superior</text>
+
+          <line x1="52" y1="150" x2="232" y2="150" stroke="var(--c)" stroke-width="3.4" stroke-opacity="0.75"></line>
+          <circle cx="52" cy="150" r="3.6" fill="var(--c)"></circle>
+          <circle cx="232" cy="150" r="3.6" fill="var(--c)"></circle>
+          <text x="142" y="141" font-size="11" font-weight="700" text-anchor="middle" fill="currentColor">excavación</text>
+
+          <line x1="96" y1="246" x2="188" y2="246" stroke="var(--c)" stroke-width="3.4" stroke-opacity="0.55"></line>
+          <circle cx="96" cy="246" r="3.6" fill="var(--c)"></circle>
+          <circle cx="188" cy="246" r="3.6" fill="var(--c)"></circle>
+          <text x="142" y="272" font-size="11" font-weight="700" text-anchor="middle" fill="currentColor">estrecho inferior</text>
+
+          <line x1="236" y1="54"  x2="300" y2="54"  stroke="currentColor" stroke-width="1.3" stroke-opacity="0.6" marker-end="url(#d2)"></line>
+          <line x1="244" y1="150" x2="300" y2="150" stroke="currentColor" stroke-width="1.3" stroke-opacity="0.6" marker-end="url(#d2)"></line>
+          <line x1="200" y1="246" x2="300" y2="246" stroke="currentColor" stroke-width="1.3" stroke-opacity="0.6" marker-end="url(#d2)"></line>
+
+          <rect x="306" y="18" width="382" height="76" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.6"></rect>
+          <text x="322" y="40" font-size="12" font-weight="700" fill="currentColor">Promonto-subpúbico 10 cm o menos</text>
+          <text x="322" y="58" font-size="12" font-weight="700" fill="currentColor">Transverso 12 cm o menos</text>
+          <text x="322" y="80" font-size="11" fill="currentColor" opacity="0.75">traba el ENCAJE — la presentación no entra</text>
+
+          <rect x="306" y="114" width="382" height="66" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.6"></rect>
+          <text x="322" y="136" font-size="12" font-weight="700" fill="currentColor">Biciático 9,5 cm o menos</text>
+          <text x="322" y="158" font-size="11" fill="currentColor" opacity="0.75">traba el DESCENSO y la ROTACIÓN — entra pero</text>
+          <text x="322" y="174" font-size="11" fill="currentColor" opacity="0.75">no gira; es el nivel de las espinas ciáticas</text>
+
+          <rect x="306" y="200" width="382" height="66" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.6"></rect>
+          <text x="322" y="222" font-size="12" font-weight="700" fill="currentColor">Biisquiático 9,5 cm o menos</text>
+          <text x="322" y="244" font-size="11" fill="currentColor" opacity="0.75">traba el DESPRENDIMIENTO — llega abajo</text>
+          <text x="322" y="260" font-size="11" fill="currentColor" opacity="0.75">pero no sale; es la pelvis infundibuliforme</text>
+        </svg>
+        <figcaption>Cada piso bloquea un tiempo distinto del mecanismo de parto, y esa es la utilidad clínica de la cifra: un feto que no encaja tiene un problema de estrecho superior, uno que desciende pero no rota lo tiene en la excavación.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-importantes" id="pelvis">
+      <span class="seccion__pestana"><b>04</b> Clasificación</span>
+      <h2 class="seccion__titulo">Tipos de pelvis estrecha</h2>
+
+      <p>El criterio que las separa es la <strong>simetría</strong>: si las dos hemipelvis están igualmente modificadas o si una difiere de la otra. Se considera <strong>asimétrica</strong> cuando hay una diferencia <span class="dato">&gt; 1 cm</span> entre un diámetro oblicuo y el otro.</p>
+
+      <h3>Pelvis asimétricas</h3>
+      <p>Son casi siempre <strong>adquiridas y secundarias a una asimetría de la columna o del miembro inferior</strong>: la pelvis se deforma porque recibe cargas desiguales durante el crecimiento. Etiologías: <strong>escoliosis</strong>, secuela de <strong>poliomielitis</strong> y defectos congénitos como la <strong>luxación congénita de cadera</strong>.</p>
+
+      <h3>Pelvis simétricas</h3>
+      <p>Las dos hemipelvis presentan la misma modificación. El defecto está en el desarrollo del hueso o en la mineralización, no en la carga.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Pelvis</th><th>Simetría</th><th>Qué está alterado</th><th>Consecuencia mecánica</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Oblicua de Naegele</strong></td>
+              <td>Asimétrica</td>
+              <td>Falta o hay sinostosis de <strong>un</strong> ala sacra</td>
+              <td>Un oblicuo se acorta; la pelvis queda torcida</td>
+            </tr>
+            <tr>
+              <td><strong>Transversalmente estrecha de Robert</strong></td>
+              <td><strong>Simétrica</strong></td>
+              <td>Faltan <strong>ambas</strong> alas sacras</td>
+              <td>Estrechamiento transverso severo en todos los niveles</td>
+            </tr>
+            <tr>
+              <td><strong>Plana</strong></td>
+              <td>Simétrica</td>
+              <td>Acortamiento anteroposterior del estrecho superior</td>
+              <td>No encaja; el transverso está conservado</td>
+            </tr>
+            <tr>
+              <td><strong>Antropoide</strong> o infundibuliforme</td>
+              <td>Simétrica</td>
+              <td>Estrechamiento transverso con anteroposterior largo</td>
+              <td>Favorece las variedades posteriores y el occípito-sacro</td>
+            </tr>
+            <tr>
+              <td><strong>Acondroplásica</strong><br>(«pelvis de enanas»)</td>
+              <td>Simétrica</td>
+              <td>Plana <strong>y</strong> generalmente estrecha: todos los diámetros reducidos</td>
+              <td>Desproporción absoluta — cesárea electiva</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>El teórico agrupa la <strong>pelvis de Robert junto a la de Naegele entre las asimétricas</strong>. Son opuestas justamente en eso: <strong>Naegele</strong> es asimétrica porque le falta <strong>un</strong> ala sacra, y <strong>Robert</strong> es <strong>simétrica</strong> porque le faltan <strong>las dos</strong>. La regla para no confundirlas: <em>Naegele, una; Robert, las dos.</em> Robert es la pelvis simétricamente más estrecha que existe y prácticamente siempre obliga a cesárea.</p>
+      </div>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-clinica" id="movil">
+      <span class="seccion__pestana"><b>05</b> Clínica</span>
+      <h2 class="seccion__titulo">Distocias fetales, de partes blandas y ovulares</h2>
+
+      <p>Las tres comparten estructura: <strong>algo ocupa el canal o no cabe en él</strong>, sin que la pelvis ni la contracción tengan nada malo. Se agrupan acá porque el razonamiento es el mismo en las tres — identificar el obstáculo y decidir si se puede remover.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Distocia fetal — el móvil</th><th>De partes blandas — el canal blando</th><th>Ovular — el continente</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Presentaciones anormales:</strong> hombro (situación transversa), cara, frente, podálica</td>
+              <td><strong>Tumores miomatosos</strong> del tercio inferior del útero</td>
+              <td><strong>Procidencia y procúbito de cordón</strong> sin dilatación completa</td>
+            </tr>
+            <tr>
+              <td><strong>Macrosomía fetal</strong></td>
+              <td>Tumores de ovario enclavados en el Douglas</td>
+              <td><strong>Brevedad de cordón</strong></td>
+            </tr>
+            <tr>
+              <td>Monstruosidades: <strong>siameses</strong></td>
+              <td>Sinequias y estenosis cicatrizales cervicales</td>
+              <td><strong>Placenta previa oclusiva total</strong></td>
+            </tr>
+            <tr>
+              <td>Malformaciones: <strong>hidrocefalia</strong>, mielomeningocele, anencefalia</td>
+              <td><strong>Conglutinación</strong> del orificio externo del cuello</td>
+              <td><strong>Desprendimiento</strong> de placenta normoinserta</td>
+            </tr>
+            <tr>
+              <td>Ascitis masiva</td>
+              <td>Bridas y tabiques de útero y vagina</td>
+              <td>Oligoamnios y polihidramnios <em>(relativos)</em></td>
+            </tr>
+            <tr>
+              <td>Grandes tumores de <strong>hígado, riñón o bazo</strong></td>
+              <td>Atresia vulvar o vaginal, malformaciones uterinas</td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Tres precisiones que el listado no hace</h3>
+      <ul>
+        <li><strong>Procúbito no es procidencia.</strong> En el <strong>procúbito</strong> el cordón está por delante de la presentación con las <strong>membranas íntegras</strong>; en la <strong>procidencia</strong> las membranas están <strong>rotas</strong> y el cordón queda expuesto a la compresión directa. La segunda es una emergencia con indicación de cesárea inmediata; la primera obliga a evitar la amniotomía.</li>
+        <li><strong>La hidrocefalia es la distocia fetal que más engaña.</strong> Un polo cefálico enorme puede no encajar nunca con un cuerpo de tamaño normal, y el diagnóstico es ecográfico, no de tacto.</li>
+        <li><strong>El oligoamnios y el polihidramnios son distocias <em>relativas</em>,</strong> como aclara el teórico: no obstruyen por sí mismos. El polihidramnios distiende la fibra y produce hipodinamia —enlaza con la sección <a href="#hipodinamias">09</a>—; el oligoamnios favorece la compresión del cordón y las presentaciones anómalas.</li>
+      </ul>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-tratamiento" id="dcp">
+      <span class="seccion__pestana"><b>06</b> Conducta</span>
+      <h2 class="seccion__titulo">Desproporción cefalopélvica y prueba de trabajo de parto</h2>
+
+      <p>La <strong>desproporción cefalopélvica (DCP)</strong> es la falta de relación entre el tamaño de la presentación y el del canal. Une los dos bloques anteriores: puede venir de una pelvis estrecha, de un feto grande, o —lo más habitual— de una <strong>pelvis límite con un feto en el extremo alto de lo normal</strong>, donde ninguno de los dos es patológico por separado.</p>
+
+      <h3>Por qué no se diagnostica antes del parto</h3>
+      <p>No existe medida anteparto que la prediga con fiabilidad. La <strong>pelvimetría radiológica no se usa de rutina</strong>: aumenta las cesáreas sin mejorar los resultados perinatales, porque el diámetro medido en una radiografía no contempla el moldeamiento del cráneo, la movilidad de las articulaciones pélvicas ni la eficacia de la dinámica. La DCP es, en la práctica, un <strong>diagnóstico retrospectivo</strong>: se confirma cuando un parto bien conducido no progresa.</p>
+
+      <h3>La prueba de trabajo de parto</h3>
+      <p>Es el método para establecerla. Consiste en <strong>dar a la pelvis la oportunidad de demostrar que sirve</strong>, bajo condiciones controladas y con un límite de tiempo definido de antemano.</p>
+
+      <ul>
+        <li><strong>Condiciones:</strong> feto único en presentación cefálica, membranas rotas, dinámica adecuada —espontánea o corregida con oxitocina—, dilatación en fase activa y monitoreo continuo de la frecuencia cardíaca fetal.</li>
+        <li><strong>Qué se observa:</strong> progresión de la dilatación <em>y</em> del descenso de la presentación. Que uno avance sin el otro no alcanza.</li>
+        <li><strong>Cuándo termina:</strong> con los criterios de la sección <a href="#progreso">02</a>. Si se cumplen los tiempos de detención con dinámica adecuada, la prueba fracasó y la conducta es la <strong>cesárea</strong>.</li>
+      </ul>
+
+      <h3>Signos indirectos de desproporción</h3>
+      <p>Aparecen antes de que se cumpla el tiempo y obligan a reevaluar:</p>
+      <ul>
+        <li><strong>Falta de encaje</strong> pese a dinámica adecuada y buena dilatación.</li>
+        <li><strong>Moldeamiento cefálico marcado</strong> y <strong>bolsa serosanguínea</strong> voluminosa: la cabeza se deforma porque está forzando un paso que no cede.</li>
+        <li><strong>Edema del cuello uterino</strong>, que queda atrapado entre la presentación y el pubis.</li>
+        <li><strong>Ascenso del anillo de Bandl</strong>, el límite entre el cuerpo y el segmento inferior. Cuando se hace visible y palpable acompañado de un segmento adelgazado y doloroso, es <strong>signo de inminencia de rotura uterina</strong> y ya no admite espera: es de las pocas situaciones del parto donde la conducta no tolera ni una hora más de observación. No confundirlo con los anillos de contracción de las distocias dinámicas — la diferencia está en la sección <a href="#disdinamias">11</a>.</li>
+      </ul>
+    </section>
+
+    <h2 class="bloque" id="bloque-c">
+      <span class="bloque__rotulo">Bloque C</span>
+      <span class="bloque__nombre">Distocias dinámicas</span>
+    </h2>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-fisiopatologia" id="contraccion">
+      <span class="seccion__pestana"><b>07</b> Mecanismo</span>
+      <h2 class="seccion__titulo">La contracción normal: los cuatro parámetros</h2>
+
+      <p>Las distocias dinámicas son las producidas por una <strong>actividad uterina defectuosa, ineficaz o inapropiada</strong> para conseguir la dilatación cervical o el descenso de la presentación, y que en ocasiones deterioran el bienestar fetal. Toda la clasificación que sigue consiste en decir <strong>cuál de estos cuatro números se salió de rango</strong>, así que conviene tenerlos antes que a los nombres.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Parámetro</th><th>Qué mide</th><th>Valor normal en trabajo de parto</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Frecuencia</strong></td>
+              <td>Contracciones en 10 minutos</td>
+              <td><span class="dato">3 a 5</span> cada 10 min</td>
+            </tr>
+            <tr>
+              <td><strong>Intensidad</strong></td>
+              <td>Presión máxima alcanzada sobre el tono basal</td>
+              <td><span class="dato">30 a 50 mmHg</span></td>
+            </tr>
+            <tr>
+              <td><strong>Duración</strong></td>
+              <td>Tiempo desde el inicio hasta el fin de la contracción</td>
+              <td><span class="dato">30 a 90 s</span></td>
+            </tr>
+            <tr>
+              <td><strong>Tono basal</strong></td>
+              <td>Presión intrauterina <em>entre</em> contracciones</td>
+              <td><span class="dato">8 a 12 mmHg</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Cómo se resume en un solo número</h3>
+      <p>La <strong>actividad uterina</strong> se expresa en <strong>unidades Montevideo</strong>, la medida que introdujo la escuela de Caldeyro-Barcia: se multiplica la <strong>intensidad promedio</strong> de las contracciones por la <strong>cantidad que hubo en 10 minutos</strong>. Una dinámica de trabajo de parto establecido ronda las <span class="dato">200 a 250 UM</span>, y ese es el umbral que suele usarse para llamar «adecuada» a la dinámica en los criterios de detención de la sección <a href="#progreso">02</a>. Sin este número, la frase «cuatro horas con dinámica adecuada» no se puede aplicar.</p>
+
+      <h3>Una franja que queda sin nombre</h3>
+      <p>Conviene notarlo porque el examen lo aprovecha: la intensidad normal se define como <strong>30-50 mmHg</strong> pero la hiposistolia como <strong>menos de 20 mmHg</strong>, de modo que entre 20 y 30 <strong>no hay etiqueta</strong>. Con la frecuencia no pasa —lo normal es 3-5, la bradisistolia &lt; 3 y la taquisistolia &gt; 5, sin hueco—. La lectura correcta es que <strong>los umbrales patológicos son más exigentes que los límites de la normalidad</strong>: una intensidad de 25 mmHg es subóptima pero todavía no se llama hiposistolia. Al responder, usar el umbral patológico, no el borde del rango normal.</p>
+    </section>
+
+    <!-- ============ 8 ============ -->
+    <section class="seccion s-importantes" id="clasificacion">
+      <span class="seccion__pestana"><b>08</b> Clasificación</span>
+      <h2 class="seccion__titulo">Cómo se clasifican las distocias dinámicas</h2>
+
+      <p>Hay <strong>dos maneras de ordenarlas</strong> y los dos teóricos usan una cada uno, lo que explica que parezcan listas distintas. No lo son: son el mismo conjunto visto desde dos ángulos.</p>
+
+      <h3>Eje 1 — por la sinergia funcional</h3>
+      <p>Es la clasificación clásica y la que ordena el resto del bloque. Pregunta si <strong>el útero sigue contrayéndose como una unidad coordinada</strong> o si perdió esa coordinación.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 272" role="img" aria-label="Mapa de las distocias dinámicas en dos ramas: con sinergia funcional conservada se dividen en hipodinamia primaria o secundaria e hiperdinamia con taquisistolia hipertonía o tétanos; con disociación de la sinergia funcional aparecen el síndrome de Schickelé o distocia cervical, la hipertonía del segmento inferior y la incoordinación por ondas localizadas.">
+          <defs>
+            <marker id="d3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="266" y="8" width="168" height="46" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2.4"></rect>
+          <text x="350" y="28" font-size="12.5" font-weight="700" text-anchor="middle" fill="currentColor">DISTOCIA DINÁMICA</text>
+          <text x="350" y="45" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.75">el motor falla</text>
+
+          <line x1="330" y1="54" x2="180" y2="88" stroke="currentColor" stroke-width="1.5" marker-end="url(#d3)"></line>
+          <line x1="370" y1="54" x2="520" y2="88" stroke="currentColor" stroke-width="1.5" marker-end="url(#d3)"></line>
+
+          <rect x="42" y="94" width="278" height="40" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="181" y="112" font-size="11.5" font-weight="700" text-anchor="middle" fill="currentColor">SINERGIA CONSERVADA</text>
+          <text x="181" y="127" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.75">el útero coordina, pero con fuerza equivocada</text>
+
+          <rect x="382" y="94" width="278" height="40" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="521" y="112" font-size="11.5" font-weight="700" text-anchor="middle" fill="currentColor">SINERGIA DISOCIADA</text>
+          <text x="521" y="127" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.75">el útero perdió la coordinación</text>
+
+          <line x1="120" y1="134" x2="120" y2="156" stroke="currentColor" stroke-width="1.3" marker-end="url(#d3)"></line>
+          <line x1="242" y1="134" x2="242" y2="156" stroke="currentColor" stroke-width="1.3" marker-end="url(#d3)"></line>
+          <line x1="521" y1="134" x2="521" y2="156" stroke="currentColor" stroke-width="1.3" marker-end="url(#d3)"></line>
+
+          <rect x="42" y="162" width="140" height="94" rx="3" fill="none" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="56" y="182" font-size="11.5" font-weight="700" fill="currentColor">HIPODINAMIA</text>
+          <text x="56" y="202" font-size="10.5" fill="currentColor" opacity="0.8">poca fuerza</text>
+          <text x="56" y="222" font-size="10.5" fill="currentColor" opacity="0.8">Primaria</text>
+          <text x="56" y="240" font-size="10.5" fill="currentColor" opacity="0.8">Secundaria</text>
+
+          <rect x="192" y="162" width="140" height="94" rx="3" fill="none" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="206" y="182" font-size="11.5" font-weight="700" fill="currentColor">HIPERDINAMIA</text>
+          <text x="206" y="202" font-size="10.5" fill="currentColor" opacity="0.8">Taquisistolia</text>
+          <text x="206" y="220" font-size="10.5" fill="currentColor" opacity="0.8">Hipertonía</text>
+          <text x="206" y="238" font-size="10.5" fill="currentColor" opacity="0.8">Tétanos uterino</text>
+
+          <rect x="382" y="162" width="278" height="94" rx="3" fill="none" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="398" y="182" font-size="11.5" font-weight="700" fill="currentColor">DISDINAMIAS</text>
+          <text x="398" y="202" font-size="10.5" fill="currentColor" opacity="0.8">Síndrome de Schickelé — distocia cervical</text>
+          <text x="398" y="220" font-size="10.5" fill="currentColor" opacity="0.8">Hipertonía del segmento inferior</text>
+          <text x="398" y="238" font-size="10.5" fill="currentColor" opacity="0.8">Incoordinación — ondas localizadas</text>
+        </svg>
+        <figcaption>La rama izquierda responde a subir o bajar la actividad. La derecha no: estimular un útero incoordinado lo empeora, porque el problema no es cuánta fuerza hace sino en qué orden la hace.</figcaption>
+      </figure>
+
+      <h3>Eje 2 — por el parámetro alterado</h3>
+      <p>Es la nomenclatura que se usa para escribir en la historia clínica: nombra directamente el número que se salió de rango.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Parámetro</th><th>Por exceso</th><th>Por defecto</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Frecuencia</strong></td>
+              <td><strong>Polisistolia o taquisistolia</strong><br><span class="dato">&gt; 5</span> contracciones en 10 min</td>
+              <td><strong>Bradisistolia</strong><br><span class="dato">&lt; 3</span> contracciones en 10 min</td>
+            </tr>
+            <tr>
+              <td><strong>Intensidad</strong></td>
+              <td><strong>Hipersistolia</strong><br><span class="dato">&gt; 50 mmHg</span></td>
+              <td><strong>Hiposistolia</strong><br><span class="dato">&lt; 20 mmHg</span></td>
+            </tr>
+            <tr>
+              <td><strong>Tono basal</strong></td>
+              <td><strong>Hipertonía</strong> <span class="dato">&gt; 12 mmHg</span><br>leve 13-20 · moderada 20-30 · severa &gt; 30</td>
+              <td><strong>Hipotonía</strong><br><span class="dato">&lt; 8 mmHg</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>La <strong>coordinación</strong> no entra en esa tabla porque no es un número que sube o baja, sino un patrón que se rompe. Sus cuatro alteraciones se nombran aparte:</p>
+      <ul>
+        <li><strong>Incoordinación de 1.º grado:</strong> 2 marcapasos. <strong>De 2.º grado:</strong> 3 o más.</li>
+        <li><strong>Inversión del gradiente:</strong> contracciones más intensas, duraderas y precoces en el segmento inferior.</li>
+        <li><strong>Anillos de contracción:</strong> contracciones anulares en zonas aisladas del útero.</li>
+        <li><strong>Distocia cervical pasiva:</strong> ausencia de dilatación pese a dinámica presente.</li>
+      </ul>
+    </section>
+
+    <!-- ============ 9 ============ -->
+    <section class="seccion s-clinica" id="hipodinamias">
+      <span class="seccion__pestana"><b>09</b> Clínica</span>
+      <h2 class="seccion__titulo">Hipodinamias</h2>
+
+      <p>Disminución de la <strong>frecuencia, la intensidad o la duración</strong> de las contracciones. La distinción entre primaria y secundaria no es académica: <strong>cambian de significado clínico por completo</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th></th><th>Hipodinamia primaria</th><th>Hipodinamia secundaria</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Qué falla</strong></td>
+              <td>Disminución de la <strong>contractilidad y la excitabilidad</strong> del miometrio: la fibra nunca pudo</td>
+              <td><strong>Fatiga</strong> de la fibra muscular: pudo y se agotó</td>
+            </tr>
+            <tr>
+              <td><strong>Cuándo aparece</strong></td>
+              <td>Desde el inicio; <strong>nunca se alcanza la normosistolia</strong>. Se mantiene una hiposistolia propia de la fase prodrómica</td>
+              <td>En <strong>fase activa</strong>, después de superados los 4 cm, con dinámica previa normal</td>
+            </tr>
+            <tr>
+              <td><strong>Consecuencia clínica</strong></td>
+              <td>Se retrasa el <strong>inicio</strong> del parto</td>
+              <td>Aumenta la <strong>duración</strong> del parto ya iniciado</td>
+            </tr>
+            <tr>
+              <td><strong>Qué hay que sospechar</strong></td>
+              <td>Un problema propio del músculo o de su estímulo</td>
+              <td><strong>Un obstáculo</strong> — es la clave de esta sección</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Causas de la hipodinamia primaria</h3>
+      <ul>
+        <li><strong>Alteraciones del músculo:</strong> malformaciones uterinas (útero bicorne), <strong>miomas</strong> y adenomiosis.</li>
+        <li><strong>Alteraciones de la fibra por edad o paridad:</strong> primíparas añosas y <strong>grandes multíparas</strong>.</li>
+        <li><strong>Sobredistensión</strong> de la fibra: gestación múltiple, polihidramnios. Una fibra estirada más allá de su longitud óptima genera menos tensión.</li>
+        <li><strong>Iatrogenia:</strong> inducción inadecuada, espasmolisis y <strong>analgesia precoz</strong>.</li>
+      </ul>
+
+      <p>La <strong>hipodinamia secundaria merece una lectura distinta</strong>, y el teórico lo dice explícitamente: <em>«suelen poner de manifiesto un obstáculo al mecanismo normal del parto»</em>. Un útero que venía contrayéndose bien y se agota estuvo empujando contra algo. Antes de estimularlo con oxitocina hay que <strong>descartar desproporción</strong> (sección <a href="#dcp">06</a>): estimular un útero fatigado que lucha contra un obstáculo insalvable es el camino a la rotura uterina.</p>
+    </section>
+
+    <!-- ============ 10 ============ -->
+    <section class="seccion s-clinica" id="hiperdinamias">
+      <span class="seccion__pestana"><b>10</b> Clínica</span>
+      <h2 class="seccion__titulo">Hiperdinamias</h2>
+
+      <p>Trastornos por <strong>exceso</strong> de actividad uterina. La paradoja que hay que retener: <strong>muchas veces prolongan el parto en vez de acortarlo</strong>, porque la dinámica es excesiva pero inefectiva — y además el útero no se relaja lo suficiente entre contracciones para que la placenta recupere su flujo.</p>
+
+      <h3>Primaria y secundaria</h3>
+      <ul>
+        <li><strong>Primaria:</strong> hiperfunción de los mediadores bioquímicos del miometrio (hipersistolia), o aumento de la excitabilidad de la fibra por <strong>sobredistensión</strong> — embarazo múltiple, polihidramnios. Las mismas causas que pueden dar hipodinamia: la sobredistensión primero excita y después agota.</li>
+        <li><strong>Secundaria:</strong> casi siempre por <strong>obstáculo mecánico</strong>, que origina una <em>dinámica de lucha</em> con la que el útero intenta vencerlo; o por <strong>dosis inadecuadas de oxitocina o prostaglandinas</strong>. Es, junto a la hipodinamia secundaria, la otra cara del mismo obstáculo.</li>
+      </ul>
+
+      <h3>Las dos formas clínicas: la hipertonía es la que decide</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th></th><th>Hiperdinamia SIN hipertonía</th><th>Hiperdinamia CON hipertonía</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Eficacia</strong></td>
+              <td>Conserva gran efectividad</td>
+              <td>La actividad contráctil eficaz <strong>está alterada</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Evolución típica</strong></td>
+              <td><strong>Parto precipitado</strong> — progresa muy rápido</td>
+              <td>Parto que se enlentece o se detiene</td>
+            </tr>
+            <tr>
+              <td><strong>Riesgo fetal</strong></td>
+              <td>Hipoxia por contracciones muy frecuentes</td>
+              <td>Pérdida de bienestar fetal por <strong>caída mantenida del flujo en el espacio intervelloso</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Riesgo materno</strong></td>
+              <td>Desgarros del canal blando, desprendimiento placentario, <strong>hipotonía y hemorragia posparto</strong></td>
+              <td>Desprendimiento placentario y <strong>rotura uterina</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>La frase del teórico que conviene memorizar tal cual, porque enlaza este cuadernillo con el del período placentario: <em>«El útero que se contrae con una gran fuerza antes del parto, probablemente sea hipotónico después de él, presentando como consecuencia hemorragia que parte de la zona de implantación de la placenta».</em> Un parto precipitado es un factor de riesgo de <strong>atonía posparto</strong>.</p>
+    </section>
+
+    <!-- ============ 11 ============ -->
+    <section class="seccion s-fisiopatologia" id="disdinamias">
+      <span class="seccion__pestana"><b>11</b> Mecanismo</span>
+      <h2 class="seccion__titulo">Disdinamias y el triple gradiente</h2>
+
+      <p>Son alteraciones de la <strong>coordinación y la regularidad</strong> de la contracción: la fuerza puede ser normal, pero se aplica en el orden equivocado. Para entenderlas hay que tener primero el patrón normal que rompen.</p>
+
+      <h3>El triple gradiente descendente</h3>
+      <p>La onda contráctil <strong>nace en el ángulo tubárico</strong> —donde está el marcapasos— y baja hasta el cuello. En ese recorrido cumple tres gradientes simultáneos, y de ahí el nombre: en el fondo uterino las contracciones son <strong>más intensas, más duraderas y comienzan antes</strong> que en las porciones inferiores.</p>
+
+      <p>Ese patrón <strong>solo existe en el útero maduro</strong> y es el resultado de un lento trabajo de preparación para el parto. Durante el embarazo la onda puede originarse en cualquier punto y propagarse en cualquier dirección, sin que eso sea patológico.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 340" role="img" aria-label="Comparación entre el triple gradiente descendente normal, donde la onda nace en el ángulo tubárico y la contracción es más intensa duradera y precoz en el fondo uterino, y su inversión, donde la onda nace en el segmento inferior y la contracción es más fuerte abajo, de modo que el cuello es empujado hacia arriba y el parto no progresa.">
+          <defs>
+            <marker id="d4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <text x="176" y="22" font-size="12.5" font-weight="700" text-anchor="middle" fill="currentColor">NORMAL — gradiente descendente</text>
+          <text x="524" y="22" font-size="12.5" font-weight="700" text-anchor="middle" fill="currentColor">INVERTIDO</text>
+
+          <path d="M 106 52 C 62 92 62 200 116 262 L 236 262 C 290 200 290 92 246 52 C 210 34 142 34 106 52 Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-opacity="0.6"></path>
+          <path d="M 116 262 L 132 300 L 220 300 L 236 262" fill="none" stroke="currentColor" stroke-width="2.2" stroke-opacity="0.6"></path>
+
+          <circle cx="238" cy="60" r="6.5" fill="var(--c)"></circle>
+          <text x="260" y="52" font-size="10.5" font-weight="700" fill="currentColor">marcapasos</text>
+          <text x="260" y="66" font-size="10.5" fill="currentColor" opacity="0.75">ángulo tubárico</text>
+
+          <rect x="126" y="76" width="100" height="20" rx="2" fill="var(--c)" fill-opacity="0.42"></rect>
+          <rect x="141" y="140" width="70" height="17" rx="2" fill="var(--c)" fill-opacity="0.26"></rect>
+          <rect x="154" y="200" width="44" height="14" rx="2" fill="var(--c)" fill-opacity="0.14"></rect>
+
+          <text x="176" y="91" font-size="10" font-weight="700" text-anchor="middle" fill="currentColor">1.º y más fuerte</text>
+          <text x="176" y="153" font-size="10" text-anchor="middle" fill="currentColor">2.º</text>
+          <text x="176" y="211" font-size="10" text-anchor="middle" fill="currentColor">3.º y más débil</text>
+
+          <line x1="96" y1="86" x2="96" y2="206" stroke="currentColor" stroke-width="1.6" marker-end="url(#d4)"></line>
+          <text x="88" y="150" font-size="10.5" text-anchor="end" fill="currentColor" opacity="0.8">la onda</text>
+          <text x="88" y="164" font-size="10.5" text-anchor="end" fill="currentColor" opacity="0.8">baja</text>
+
+          <line x1="176" y1="306" x2="176" y2="326" stroke="var(--c)" stroke-width="2.6" marker-end="url(#d4)"></line>
+          <text x="188" y="322" font-size="10.5" font-weight="700" fill="currentColor">el cuello se abre y el feto desciende</text>
+
+          <path d="M 454 52 C 410 92 410 200 464 262 L 584 262 C 638 200 638 92 594 52 C 558 34 490 34 454 52 Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-opacity="0.6"></path>
+          <path d="M 464 262 L 480 300 L 568 300 L 584 262" fill="none" stroke="currentColor" stroke-width="2.2" stroke-opacity="0.6"></path>
+
+          <circle cx="524" cy="272" r="6.5" fill="var(--c)"></circle>
+          <text x="540" y="277" font-size="10.5" font-weight="700" fill="currentColor">marcapasos ectópico</text>
+
+          <rect x="474" y="198" width="100" height="20" rx="2" fill="var(--c)" fill-opacity="0.42"></rect>
+          <rect x="489" y="140" width="70" height="17" rx="2" fill="var(--c)" fill-opacity="0.26"></rect>
+          <rect x="502" y="80" width="44" height="14" rx="2" fill="var(--c)" fill-opacity="0.14"></rect>
+
+          <text x="524" y="213" font-size="10" font-weight="700" text-anchor="middle" fill="currentColor">1.º y más fuerte</text>
+          <text x="524" y="153" font-size="10" text-anchor="middle" fill="currentColor">2.º</text>
+          <text x="524" y="91" font-size="10" text-anchor="middle" fill="currentColor">3.º y más débil</text>
+
+          <line x1="444" y1="206" x2="444" y2="86" stroke="currentColor" stroke-width="1.6" marker-end="url(#d4)"></line>
+          <text x="436" y="150" font-size="10.5" text-anchor="end" fill="currentColor" opacity="0.8">la onda</text>
+          <text x="436" y="164" font-size="10.5" text-anchor="end" fill="currentColor" opacity="0.8">sube</text>
+
+          <line x1="524" y1="326" x2="524" y2="308" stroke="var(--c)" stroke-width="2.6" marker-end="url(#d4)"></line>
+          <text x="538" y="322" font-size="10.5" font-weight="700" fill="currentColor">el cuello es traccionado hacia arriba</text>
+        </svg>
+        <figcaption>Invertido el gradiente, la contracción más fuerte ocurre abajo: en vez de empujar el feto hacia el cuello, tracciona el cuello hacia el cuerpo. El parto no avanza ni en dilatación ni en descenso por más intensa que sea la dinámica.</figcaption>
+      </figure>
+
+      <h3>Las formas de disdinamia</h3>
+      <ul>
+        <li><strong>Ondas anormales generalizadas — inversión del triple gradiente.</strong> La contracción se origina en las porciones inferiores y es <strong>más fuerte, más precoz y más duradera en el segmento inferior</strong> que en el fondo. Puede ser <strong>total o parcial</strong>. En la total el parto no progresa ni en dilatación ni en descenso, con riesgo de dinámica de lucha, hipertonía, sufrimiento fetal y <strong>rotura uterina</strong>.</li>
+        <li><strong>Ondas anormales localizadas — incoordinación uterina.</strong> Aparecen <strong>dos ondas a la vez</strong> o separadas por un intervalo muy breve. De <strong>1.º grado</strong> cuando hay 2 marcapasos, de <strong>2.º grado</strong> con 3 o más.</li>
+        <li><strong>Anillos de contracción.</strong> Contracturas de una zona circular del útero; se consideran variantes de las ondas localizadas.</li>
+        <li><strong>Síndrome de Schickelé o distocia cervical.</strong> El cuello no dilata pese a una dinámica presente y suficiente — el obstáculo es el cuello mismo.</li>
+        <li><strong>Hipertonía del segmento inferior.</strong> El segmento, que debería ser pasivo y distensible, se contrae y se opone al descenso.</li>
+      </ul>
+
+      <h3>Cómo se diagnostican</h3>
+      <p>El diagnóstico es <strong>clínico</strong>: ausencia de progresión del parto y, a veces, la percepción bimanual de que la contracción se propaga en dirección inversa —maniobra difícil y poco reproducible—. La descripción original del triple gradiente la hizo <strong>Caldeyro-Barcia</strong> hace décadas con electrodos intramurales, una técnica <strong>sin uso clínico actual</strong>. En la práctica se infiere: dinámica presente y aparentemente buena, parto que no avanza, obstáculo descartado.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>No confundir los <strong>anillos de contracción</strong> con el <strong>anillo de retracción de Bandl</strong>. Los primeros son <strong>patología dinámica</strong>: contracturas circulares en zonas aisladas, que pueden aparecer en cualquier punto del útero. El de Bandl es una <strong>estructura anatómica normal</strong> —el límite entre cuerpo y segmento inferior— que se vuelve visible y palpable cuando el cuerpo se retrae contra un obstáculo, y entonces significa <strong>rotura uterina inminente</strong>. Uno se trata sedando el útero; el otro exige cesárea inmediata.</p>
+      </div>
+    </section>
+
+    <!-- ============ 12 ============ -->
+    <section class="seccion s-tratamiento" id="tto-dinamica">
+      <span class="seccion__pestana"><b>12</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Tratamiento de las distocias dinámicas</h2>
+
+      <p>Hay <strong>una sola regla que precede a todas las demás</strong>, y vale para las tres formas: <strong>descartar el obstáculo mecánico antes de tocar la dinámica</strong>. Estimular un útero que lucha contra una desproporción no acelera el parto: lo lleva a la rotura.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 336" role="img" aria-label="Árbol de decisión del tratamiento de las distocias dinámicas: primero descartar obstáculo mecánico, luego según el tipo aplicar medidas generales con amniotomía y oxitocina en la hipodinamia, decúbito lateral izquierdo con suspensión de uteroestimuladores y uteroinhibidores en la hiperdinamia, o sedación uterina seguida de reestimulación progresiva en la disdinamia, con la cesárea como salida común ante el fracaso.">
+          <defs>
+            <marker id="d5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="176" y="8" width="348" height="42" rx="3" fill="var(--c)" fill-opacity="0.24" stroke="var(--c)" stroke-width="2.4"></rect>
+          <text x="350" y="27" font-size="12.5" font-weight="700" text-anchor="middle" fill="currentColor">PASO 0 — ¿Hay obstáculo mecánico?</text>
+          <text x="350" y="43" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.8">desproporción, presentación anómala, tumor previo</text>
+
+          <line x1="524" y1="29" x2="566" y2="29" stroke="currentColor" stroke-width="1.5" marker-end="url(#d5)"></line>
+          <text x="545" y="20" font-size="10.5" font-weight="700" text-anchor="middle" fill="currentColor">SÍ</text>
+          <text x="574" y="26" font-size="11.5" font-weight="700" fill="currentColor">CESÁREA</text>
+          <text x="574" y="41" font-size="10" fill="currentColor" opacity="0.72">no estimular</text>
+
+          <line x1="350" y1="50" x2="350" y2="72" stroke="currentColor" stroke-width="1.5" marker-end="url(#d5)"></line>
+          <text x="360" y="66" font-size="10.5" font-weight="700" fill="currentColor">NO</text>
+
+          <rect x="176" y="78" width="348" height="34" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.6"></rect>
+          <text x="350" y="99" font-size="11.5" font-weight="700" text-anchor="middle" fill="currentColor">Medidas generales en todos los casos</text>
+
+          <line x1="240" y1="112" x2="120" y2="142" stroke="currentColor" stroke-width="1.4" marker-end="url(#d5)"></line>
+          <line x1="350" y1="112" x2="350" y2="142" stroke="currentColor" stroke-width="1.4" marker-end="url(#d5)"></line>
+          <line x1="460" y1="112" x2="580" y2="142" stroke="currentColor" stroke-width="1.4" marker-end="url(#d5)"></line>
+
+          <rect x="14" y="148" width="212" height="122" rx="3" fill="none" stroke="var(--c)" stroke-width="1.6"></rect>
+          <text x="30" y="168" font-size="11.5" font-weight="700" fill="currentColor">HIPODINAMIA</text>
+          <text x="30" y="189" font-size="10.5" fill="currentColor" opacity="0.82">Hidratación y aporte energético</text>
+          <text x="30" y="206" font-size="10.5" fill="currentColor" opacity="0.82">Decúbito lateral o posición erecta</text>
+          <text x="30" y="223" font-size="10.5" font-weight="700" fill="currentColor">Amniotomía</text>
+          <text x="30" y="240" font-size="10.5" font-weight="700" fill="currentColor">Oxitocina en bomba de infusión</text>
+          <text x="30" y="257" font-size="10.5" fill="currentColor" opacity="0.82">5 UI en 500 ml — arrancar a 2 mU/min</text>
+
+          <rect x="244" y="148" width="212" height="122" rx="3" fill="none" stroke="var(--c)" stroke-width="1.6"></rect>
+          <text x="260" y="168" font-size="11.5" font-weight="700" fill="currentColor">HIPERDINAMIA</text>
+          <text x="260" y="189" font-size="10.5" font-weight="700" fill="currentColor">Decúbito lateral izquierdo</text>
+          <text x="260" y="206" font-size="10.5" fill="currentColor" opacity="0.82">espacia y baja el tono basal</text>
+          <text x="260" y="223" font-size="10.5" font-weight="700" fill="currentColor">SUSPENDER uteroestimuladores</text>
+          <text x="260" y="240" font-size="10.5" fill="currentColor" opacity="0.82">oxitocina, prostaglandinas</text>
+          <text x="260" y="257" font-size="10.5" font-weight="700" fill="currentColor">Uteroinhibidor si no alcanza</text>
+
+          <rect x="474" y="148" width="212" height="122" rx="3" fill="none" stroke="var(--c)" stroke-width="1.6"></rect>
+          <text x="490" y="168" font-size="11.5" font-weight="700" fill="currentColor">DISDINAMIA</text>
+          <text x="490" y="189" font-size="10.5" fill="currentColor" opacity="0.82">Amniorrexis artificial y DLI</text>
+          <text x="490" y="206" font-size="10.5" font-weight="700" fill="currentColor">SEDAR el útero primero</text>
+          <text x="490" y="223" font-size="10.5" fill="currentColor" opacity="0.82">uteroinhibidor: apaga los</text>
+          <text x="490" y="239" font-size="10.5" fill="currentColor" opacity="0.82">marcapasos ectópicos</text>
+          <text x="490" y="257" font-size="10.5" font-weight="700" fill="currentColor">Reestimular progresivamente</text>
+
+          <line x1="120" y1="270" x2="120" y2="281" stroke="currentColor" stroke-width="1.4"></line>
+          <line x1="580" y1="270" x2="580" y2="281" stroke="currentColor" stroke-width="1.4"></line>
+          <line x1="120" y1="281" x2="580" y2="281" stroke="currentColor" stroke-width="1.4"></line>
+          <line x1="350" y1="281" x2="350" y2="296" stroke="currentColor" stroke-width="1.6" marker-end="url(#d5)"></line>
+          <text x="362" y="295" font-size="10.5" font-weight="700" fill="currentColor">si fracasa</text>
+
+          <rect x="248" y="300" width="204" height="30" rx="3" fill="var(--c)" fill-opacity="0.24" stroke="var(--c)" stroke-width="2.2"></rect>
+          <text x="350" y="320" font-size="12.5" font-weight="700" text-anchor="middle" fill="currentColor">CESÁREA</text>
+        </svg>
+        <figcaption>El paso 0 es el que más se saltea y el único que no se puede saltear. Nótese que la disdinamia es la única rama donde primero se <em>apaga</em> el útero y recién después se lo estimula: no se puede coordinar un músculo que ya está contrayéndose mal.</figcaption>
+      </figure>
+
+      <h3>Medidas generales</h3>
+      <ul>
+        <li><strong>Evitar el agotamiento materno:</strong> buena hidratación y aporte energético por vía intravenosa.</li>
+        <li><strong>Sedación moderada y oportuna</strong>, y apoyo psicológico del personal.</li>
+        <li><strong>Vaciamiento vesical y rectal</strong> en casos individualizados.</li>
+        <li><strong>Decúbito lateral</strong> o posición erecta si las condiciones fetomaternas lo permiten.</li>
+      </ul>
+
+      <h3>Amniotomía</h3>
+      <p>Medida muy eficaz para aumentar <strong>tanto la frecuencia como la intensidad</strong>. Es la primera herramienta que se usa antes de recurrir a fármacos, y también contribuye a coordinar la dinámica en las disdinamias.</p>
+
+      <h3>Oxitocina</h3>
+      <p>En perfusión intravenosa continua. Esquema del teórico: <strong>5 UI de oxitocina en 500 ml de solución glucosada al 5 %</strong>, comenzando a <span class="dato">2 mU/min</span> y aumentando hasta alcanzar una dinámica útil. <strong>Siempre con bomba de infusión.</strong> La respuesta es <strong>variable e impredecible</strong> entre mujeres: no hay dosis estándar, se titula contra la dinámica obtenida.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>Dos datos del teórico quedaron viejos.</strong> Primero: dice que el <strong>misoprostol</strong> (prostaglandina E1) «aún no está aprobado» en obstetricia — hoy tiene indicación obstétrica reconocida por la OMS para maduración cervical y para prevención y tratamiento de la hemorragia posparto. Lo que <strong>sigue vigente</strong> de esa diapositiva es la advertencia: el misoprostol tiene alta incidencia de <strong>hiperestimulación uterina</strong>, y esa es exactamente la razón por la que aparece en este capítulo. Segundo: propone <strong>ritodrina</strong> como betaadrenérgico uteroinhibidor; la ritodrina <strong>ya no se usa</strong> por sus efectos adversos cardiovasculares. Para frenar una taquisistolia con compromiso fetal, el uteroinhibidor de rescate habitual es la <strong>terbutalina subcutánea</strong>, junto con suspender la oxitocina y colocar a la paciente en decúbito lateral izquierdo.</p>
+      </div>
+
+      <p class="cita">Fuente: Leathersich SJ et al. Acute tocolysis for uterine tachysystole or suspected fetal distress. Cochrane Database of Systematic Reviews, 2018. La FDA desaconseja la terbutalina inyectable para la tocólisis prolongada del parto pretérmino; su uso agudo en la reanimación intrauterina es una indicación distinta.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-d">
+      <span class="bloque__rotulo">Bloque D</span>
+      <span class="bloque__nombre">Distocia de hombros</span>
+    </h2>
+
+    <!-- ============ 13 ============ -->
+    <section class="seccion s-generalidades" id="hombros">
+      <span class="seccion__pestana"><b>13</b> Base</span>
+      <h2 class="seccion__titulo">Distocia de hombros: qué es y por qué es imprevisible</h2>
+
+      <p>Se define como la <strong>falta del paso espontáneo de los hombros a través de la pelvis una vez extraída la cabeza fetal</strong>. Es distinta de todas las anteriores en un punto que lo cambia todo: <strong>ocurre cuando el parto parecía terminado</strong>, con la cabeza afuera, sin margen para trasladar, consultar ni indicar una cesárea.</p>
+
+      <h3>Frecuencia</h3>
+      <ul>
+        <li>Entre <span class="dato">0,13 %</span> y <span class="dato">4 %</span> de todos los partos vaginales según la serie. La <em>Obstetricia de Williams</em> cita <span class="dato">0,6 a 1,4 %</span>.</li>
+        <li>Aumenta con el <strong>peso fetal</strong>, pero <strong>casi la mitad de los casos ocurre en recién nacidos de menos de 4000 g</strong>. Nocon y cols. (1993) describieron una distocia de hombros en un neonato de <span class="dato">2260 g</span>.</li>
+      </ul>
+
+      <h3>Factores de riesgo</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Durante el embarazo</th><th>Durante el parto</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Diabetes</strong> — el feto de madre diabética distribuye el peso en tronco y hombros, no en la cabeza</td>
+              <td><strong>Período expulsivo prolongado</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Embarazo prolongado</strong> — el riesgo crece con la edad gestacional, sobre todo pasado el término</td>
+              <td><strong>Parto instrumental</strong> con fórceps o ventosa, más aún si el expulsivo ya venía prolongado</td>
+            </tr>
+            <tr>
+              <td><strong>Obesidad materna</strong> y <strong>aumento excesivo de peso</strong> durante la gestación</td>
+              <td>El teórico cifra el riesgo del parto instrumental en <strong>28 veces mayor</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Por qué conocer los factores de riesgo no sirve para prevenirla</h3>
+      <p>Ésta es la conclusión más importante de la sección y la que el teórico repite tres veces:</p>
+      <ul>
+        <li>Los factores de riesgo tienen asociación estadística <strong>pero no valor predictivo individual</strong>: identificar de antemano el caso concreto es imposible.</li>
+        <li>Weeks y cols. (1995) concluyeron que predecir la macrosomía y actuar en consecuencia produce <strong>un aumento marcado de cesáreas sin reducción significativa</strong> de la incidencia de distocia de hombros ni de lesión fetal.</li>
+        <li>Por lo tanto la conducta no es predecirla sino <strong>estar preparado</strong>: la prevención real consiste en tener las maniobras aprendidas y ensayadas <em>antes</em> de necesitarlas.</li>
+      </ul>
+
+      <p class="cita">Fuente: Cunningham FG et al. Williams Obstetricia; Nocon JJ et al. Am J Obstet Gynecol 1993; Weeks JW et al. Am J Obstet Gynecol 1995, citados en el material de cátedra.</p>
+    </section>
+
+    <!-- ============ 14 ============ -->
+    <section class="seccion s-fisiopatologia" id="escalonado">
+      <span class="seccion__pestana"><b>14</b> Mecanismo</span>
+      <h2 class="seccion__titulo">El parto escalonado de los hombros</h2>
+
+      <p>Entender este mecanismo es lo que separa una maniobra correcta de una que produce una parálisis braquial. Los hombros <strong>no son un bloque rígido</strong>: son móviles en sentido anteroposterior y superoinferior, individualmente <strong>mucho menores que la cabeza</strong> y fácilmente compresibles. Su tamaño solo está limitado por la fijación ósea del acromion al manubrio de la clavícula y por las inserciones del húmero y el omóplato — músculos que se estiran y <strong>raíces nerviosas que se seccionan por tracción</strong>.</p>
+
+      <h3>El recorrido normal</h3>
+      <p>Cuando las dimensiones se incrementan, los hombros deben cumplir un recorrido inexorable y <strong>escalonado, no simultáneo</strong>:</p>
+      <ol>
+        <li>El <strong>hombro posterior</strong> se desliza oblicuamente en la entrada pélvica y <strong>pasa a descansar en el sacro o en la escotadura sacrociática</strong>, durante la extensión final de la cabeza.</li>
+        <li>El <strong>hombro anterior</strong> permanece fuera de la pelvis verdadera, o se desliza hacia el agujero obturador <strong>después</strong> de que el posterior haya penetrado.</li>
+      </ol>
+
+      <p>El elemento decisivo es que <strong>el parto de los hombros es secuencial y no simultáneo</strong>. Los dos juntos formarían un <strong>«diámetro imposible»</strong> para la entrada pélvica. Y hay una razón anatómica de por qué el <strong>posterior debe entrar primero</strong>: la altura de la pelvis anterior es de <span class="dato">4 cm</span> mientras que la posterior mide <span class="dato">12 cm</span>. El hombro posterior es el que tiene más camino por recorrer y el que está sometido al máximo de tracción respecto de la cabeza y el cuello.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 306" role="img" aria-label="Comparación entre el descenso escalonado normal, en el que el hombro posterior entra primero al sacro mientras el anterior espera afuera, y la impactación, en la que el hombro anterior queda en cuña contra el pubis y la tracción de la cabeza aleja aún más al hombro posterior de la entrada pélvica en lugar de introducirlo.">
+          <defs>
+            <marker id="d6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <text x="172" y="20" font-size="12.5" font-weight="700" text-anchor="middle" fill="currentColor">NORMAL — escalonado</text>
+          <text x="528" y="20" font-size="12.5" font-weight="700" text-anchor="middle" fill="currentColor">IMPACTADO</text>
+
+          <path d="M 66 76 L 66 116" stroke="currentColor" stroke-width="4" stroke-opacity="0.7"></path>
+          <text x="58" y="70" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.8">pubis</text>
+          <text x="58" y="132" font-size="9.5" text-anchor="middle" fill="currentColor" opacity="0.65">4 cm</text>
+
+          <path d="M 278 60 L 278 180" stroke="currentColor" stroke-width="4" stroke-opacity="0.7"></path>
+          <text x="290" y="56" font-size="10" fill="currentColor" opacity="0.8">sacro</text>
+          <text x="290" y="196" font-size="9.5" fill="currentColor" opacity="0.65">12 cm</text>
+
+          <path d="M 66 116 C 110 172 232 190 278 180" fill="none" stroke="currentColor" stroke-width="1.6" stroke-opacity="0.4" stroke-dasharray="4 3"></path>
+
+          <circle cx="150" cy="228" r="30" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.8"></circle>
+          <text x="150" y="232" font-size="10" text-anchor="middle" fill="currentColor">cabeza</text>
+
+          <circle cx="240" cy="150" r="17" fill="var(--c)" fill-opacity="0.40" stroke="var(--c)" stroke-width="2.2"></circle>
+          <text x="240" y="154" font-size="9" text-anchor="middle" font-weight="700" fill="currentColor">POST</text>
+          <text x="240" y="122" font-size="9.5" text-anchor="middle" font-weight="700" fill="currentColor">1.º entra</text>
+
+          <circle cx="76" cy="164" r="17" fill="none" stroke="var(--c)" stroke-width="1.6" stroke-dasharray="3 2"></circle>
+          <text x="76" y="168" font-size="9" text-anchor="middle" fill="currentColor">ANT</text>
+          <text x="76" y="196" font-size="9.5" text-anchor="middle" fill="currentColor" opacity="0.8">2.º, espera</text>
+
+          <line x1="150" y1="264" x2="150" y2="292" stroke="var(--c)" stroke-width="2.4" marker-end="url(#d6)"></line>
+          <text x="162" y="288" font-size="10.5" font-weight="700" fill="currentColor">nace</text>
+
+          <path d="M 422 76 L 422 116" stroke="currentColor" stroke-width="4" stroke-opacity="0.7"></path>
+          <path d="M 634 60 L 634 180" stroke="currentColor" stroke-width="4" stroke-opacity="0.7"></path>
+          <path d="M 422 116 C 466 172 588 190 634 180" fill="none" stroke="currentColor" stroke-width="1.6" stroke-opacity="0.4" stroke-dasharray="4 3"></path>
+
+          <circle cx="432" cy="112" r="17" fill="var(--c)" fill-opacity="0.40" stroke="var(--c)" stroke-width="2.4"></circle>
+          <text x="432" y="116" font-size="9" text-anchor="middle" font-weight="700" fill="currentColor">ANT</text>
+          <text x="404" y="92" font-size="9.5" text-anchor="end" font-weight="700" fill="currentColor">en cuña</text>
+          <text x="404" y="105" font-size="9.5" text-anchor="end" fill="currentColor" opacity="0.8">contra el pubis</text>
+
+          <circle cx="668" cy="120" r="17" fill="none" stroke="var(--c)" stroke-width="2" stroke-dasharray="3 2"></circle>
+          <text x="668" y="124" font-size="9" text-anchor="middle" fill="currentColor">POST</text>
+          <text x="668" y="94" font-size="9.5" font-weight="700" text-anchor="middle" fill="currentColor">no entró</text>
+
+          <circle cx="506" cy="228" r="30" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.8"></circle>
+          <text x="506" y="232" font-size="10" text-anchor="middle" fill="currentColor">cabeza</text>
+
+          <line x1="506" y1="266" x2="506" y2="296" stroke="currentColor" stroke-width="2.8" marker-end="url(#d6)"></line>
+          <text x="518" y="284" font-size="10.5" font-weight="700" fill="currentColor">si se TRACCIONA</text>
+          <text x="518" y="298" font-size="10" fill="currentColor" opacity="0.8">el posterior se aleja más</text>
+
+          <path d="M 656 136 C 640 172 606 194 560 206" fill="none" stroke="currentColor" stroke-width="1.8" stroke-dasharray="5 3" marker-end="url(#d6)"></path>
+          <text x="640" y="230" font-size="9.5" text-anchor="middle" fill="currentColor" opacity="0.8">se aleja del</text>
+          <text x="640" y="243" font-size="9.5" text-anchor="middle" fill="currentColor" opacity="0.8">estrecho superior</text>
+        </svg>
+        <figcaption>La pelvis anterior mide 4 cm y la posterior 12: el hombro posterior tiene mucho más recorrido y por eso debe entrar primero. Traccionando de la cabeza se lo arrastra en sentido contrario al que necesita, mientras el anterior queda todavía más impactado contra el pubis.</figcaption>
+      </figure>
+
+      <p><strong>Por qué la tracción empeora la situación.</strong> Con el anterior colocado en cuña contra el pubis, cualquier tracción <strong>impacta adicionalmente al posterior</strong> y aplica fuerzas que tienden a impedir —no a promover— su paso al interior de la pelvis. Toda tracción adicional <strong>estira las raíces cervicales del plexo braquial</strong> del miembro superior posterior, y el resultado es la <strong>parálisis de Erb</strong>.</p>
+
+      <p>Los tiempos completos del mecanismo de parto, incluida la rotación externa que acomoda los hombros, están desarrollados en el cuadernillo de <a href="https://claude.ai/code/artifact/ee57fe40-a52d-413c-9238-d1744a5262a1">Trabajo de Parto</a>.</p>
+    </section>
+
+    <!-- ============ 15 ============ -->
+    <section class="seccion s-clinica" id="tortuga">
+      <span class="seccion__pestana"><b>15</b> Clínica</span>
+      <h2 class="seccion__titulo">Reconocerla: la tortuga y los cuatro «no»</h2>
+
+      <h3>El signo cardinal</h3>
+      <p><strong>Signo de la tortuga:</strong> la cabeza fetal que ya se había desprendido <strong>retrocede y permanece retraída comprimiendo el periné</strong>. Lo causa la tracción en sentido inverso ejercida por el hombro posterior, que no logró atravesar la entrada pélvica; el cuello queda literalmente estirado desde la entrada hasta la salida de la pelvis, lo que el teórico llama <em>signo del cuello de cisne</em>.</p>
+
+      <p>La cabeza está afuera, pero <strong>el feto no puede respirar</strong> por la compresión que el canal de parto ejerce sobre su tórax. Desde ese momento el reloj corre, y el profesional tiene <strong>un par de minutos</strong> para decidir y ejecutar.</p>
+
+      <h3>Los cuatro primeros pasos, en orden</h3>
+      <ol>
+        <li><strong>Reconocer inmediatamente</strong> que se originó la distocia.</li>
+        <li><strong>Anotar la hora.</strong> No es burocracia: el intervalo cabeza-hombros determina el riesgo de asfixia y la conducta posterior, y es el dato central de toda revisión del caso.</li>
+        <li><strong>NO traccionar de la cabeza.</strong></li>
+        <li><strong>NO presionar el fondo uterino.</strong></li>
+      </ol>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>Los cuatro «no» de la distocia de hombros.</strong> Los tres primeros son las tres reacciones instintivas de todos los presentes, y las tres empeoran la impactación: <strong>no traccionar</strong> de la cabeza hacia abajo y afuera —tendencia del asistente ansioso—; <strong>no presionar el fondo uterino</strong> —tendencia de los colaboradores—; <strong>no pujar</strong> —tendencia de la parturienta—. El cuarto es <strong>no perder la cuenta del tiempo</strong>. Toda la fuerza aplicada desde arriba impacta más el hombro anterior contra el pubis; la única presión útil es la <strong>suprapúbica</strong>, y va dirigida hacia atrás y lateralmente, no hacia abajo.</p>
+      </div>
+    </section>
+
+    <!-- ============ 16 ============ -->
+    <section class="seccion s-tratamiento" id="maniobras">
+      <span class="seccion__pestana"><b>16</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Las maniobras y su orden</h2>
+
+      <p>Ninguna maniobra tiene por sí sola mayor eficacia o menor riesgo que otra: lo que salva es <strong>ejecutar una secuencia aprendida sin improvisar</strong>. El orden que sigue es el de ACOG, el Royal College británico y el programa ALSO, y va de lo menos a lo más invasivo.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 396" role="img" aria-label="Algoritmo de la distocia de hombros en cinco escalones: pedir ayuda anotar la hora y suspender los pujos; maniobra de McRoberts que resuelve el cuarenta y dos por ciento; agregar presión suprapúbica que eleva la resolución al cincuenta y cuatro por ciento; maniobras internas de rotación y desprendimiento del brazo posterior; posición de Gaskin en cuatro apoyos; y finalmente las maniobras heroicas con la de Zavanelli como último recurso seguida de cesárea.">
+          <defs>
+            <marker id="d7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="14" y="8" width="500" height="46" rx="3" fill="var(--c)" fill-opacity="0.24" stroke="var(--c)" stroke-width="2.4"></rect>
+          <text x="30" y="28" font-size="12" font-weight="700" fill="currentColor">0 · PEDIR AYUDA — anotar la hora — dejar de pujar</text>
+          <text x="30" y="46" font-size="10.5" fill="currentColor" opacity="0.8">no traccionar la cabeza · no presionar el fondo uterino</text>
+
+          <rect x="14" y="70" width="500" height="46" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="30" y="90" font-size="12" font-weight="700" fill="currentColor">1 · McROBERTS — hiperflexión y abducción de los muslos</text>
+          <text x="30" y="108" font-size="10.5" fill="currentColor" opacity="0.8">asciende el pubis y rechaza el promontorio: agranda el anteroposterior</text>
+          <rect x="524" y="70" width="162" height="46" rx="3" fill="none" stroke="var(--c)" stroke-width="1.4"></rect>
+          <text x="605" y="98" font-size="13" font-weight="700" text-anchor="middle" fill="currentColor">resuelve 42 %</text>
+
+          <rect x="14" y="132" width="500" height="46" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="30" y="152" font-size="12" font-weight="700" fill="currentColor">2 · + PRESIÓN SUPRAPÚBICA lateral y posterior</text>
+          <text x="30" y="170" font-size="10.5" fill="currentColor" opacity="0.8">un asistente empuja el hombro anterior retenido en el borde del pubis</text>
+          <rect x="524" y="132" width="162" height="46" rx="3" fill="none" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="605" y="160" font-size="13" font-weight="700" text-anchor="middle" fill="currentColor">acumulado 54 %</text>
+
+          <rect x="14" y="194" width="500" height="62" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.6"></rect>
+          <text x="30" y="214" font-size="12" font-weight="700" fill="currentColor">3 · MANIOBRAS INTERNAS</text>
+          <text x="30" y="232" font-size="10.5" fill="currentColor" opacity="0.82">Rotación: Rubin y Woods invertida — presión en la cara posterior del hombro</text>
+          <text x="30" y="248" font-size="10.5" fill="currentColor" opacity="0.82">Desprendimiento del BRAZO POSTERIOR — barrer el antebrazo por el tórax</text>
+
+          <rect x="14" y="272" width="500" height="42" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.6"></rect>
+          <text x="30" y="292" font-size="12" font-weight="700" fill="currentColor">4 · GASKIN — pasar a cuatro apoyos</text>
+          <text x="30" y="308" font-size="10.5" fill="currentColor" opacity="0.82">cambia la geometría pélvica y libera el sacro</text>
+
+          <rect x="14" y="330" width="500" height="56" rx="3" fill="var(--c)" fill-opacity="0.26" stroke="var(--c)" stroke-width="2.6"></rect>
+          <text x="30" y="350" font-size="12" font-weight="700" fill="currentColor">5 · HEROICAS — solo si todo lo anterior falló</text>
+          <text x="30" y="368" font-size="10.5" fill="currentColor" opacity="0.85">ZAVANELLI: reponer la cabeza en la pelvis y hacer cesárea</text>
+          <text x="30" y="382" font-size="10.5" fill="currentColor" opacity="0.85">Sinfisiotomía · cleidotomía</text>
+
+          <line x1="264" y1="54" x2="264" y2="66" stroke="currentColor" stroke-width="1.5" marker-end="url(#d7)"></line>
+          <line x1="264" y1="116" x2="264" y2="128" stroke="currentColor" stroke-width="1.5" marker-end="url(#d7)"></line>
+          <line x1="264" y1="178" x2="264" y2="190" stroke="currentColor" stroke-width="1.5" marker-end="url(#d7)"></line>
+          <line x1="264" y1="256" x2="264" y2="268" stroke="currentColor" stroke-width="1.5" marker-end="url(#d7)"></line>
+          <line x1="264" y1="314" x2="264" y2="326" stroke="currentColor" stroke-width="1.5" marker-end="url(#d7)"></line>
+
+          <path d="M 524 300 C 566 300 566 236 524 226" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#d7)"></path>
+          <text x="574" y="268" font-size="10.5" font-weight="700" fill="currentColor">repetir la</text>
+          <text x="574" y="282" font-size="10.5" font-weight="700" fill="currentColor">secuencia antes</text>
+          <text x="574" y="296" font-size="10.5" font-weight="700" fill="currentColor">de escalar</text>
+        </svg>
+        <figcaption>La episiotomía puede ampliarse en cualquier punto de la secuencia: no resuelve la distocia —que es ósea, no de partes blandas— pero da espacio para las maniobras internas. Antes de pasar a las heroicas, la secuencia completa se repite.</figcaption>
+      </figure>
+
+      <h3>HELPERR — la nemotecnia que ordena la secuencia</h3>
+      <p>Fue diseñada exactamente para esta situación: recordar el orden con la cabeza afuera y dos minutos de plazo.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Letra</th><th>En inglés</th><th>Qué se hace</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>H</strong></td><td><em>Help</em></td><td>Pedir ayuda y anotar la hora</td></tr>
+            <tr><td><strong>E</strong></td><td><em>Evaluate for episiotomy</em></td><td>Evaluar ampliar la episiotomía — para las maniobras internas, no para resolverla</td></tr>
+            <tr><td><strong>L</strong></td><td><em>Legs</em></td><td><strong>McRoberts:</strong> hiperflexionar y abducir los muslos contra el abdomen</td></tr>
+            <tr><td><strong>P</strong></td><td><em>Pressure</em></td><td><strong>Presión suprapúbica</strong> lateral y posterior — nunca en el fondo uterino</td></tr>
+            <tr><td><strong>E</strong></td><td><em>Enter</em></td><td>Maniobras internas de rotación: Rubin y Woods invertida</td></tr>
+            <tr><td><strong>R</strong></td><td><em>Remove the posterior arm</em></td><td>Desprender el brazo posterior</td></tr>
+            <tr><td><strong>R</strong></td><td><em>Roll the patient</em></td><td>Posición de Gaskin, en cuatro apoyos</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Cómo se ejecutan las dos internas</h3>
+      <ul>
+        <li><strong>Woods invertida:</strong> la presión debe hacerse en la <strong>cara posterior del hombro anterior</strong>, para facilitar la rotación del hombro posterior en el sentido de las agujas del reloj. Se trata de <em>atornillar</em> los hombros hacia un diámetro oblicuo, no de empujarlos hacia abajo.</li>
+        <li><strong>Desprendimiento del brazo posterior:</strong> alcanzar la muñeca fetal ejerciendo presión con el dedo índice sobre la articulación del <strong>codo</strong>, y desplazar el antebrazo hacia la cara anterior del tórax. Al liberar el hombro posterior queda espacio para que se desprenda el anterior.</li>
+      </ul>
+
+      <h3>McRoberts: por qué funciona</h3>
+      <p>Se liberan las piernas, se separan y se <strong>flexionan contra el abdomen</strong>. Eso hace <strong>ascender el pubis y rechaza hacia atrás el promontorio</strong>, con lo que aumenta el diámetro anteroposterior de la pelvis y se facilita el ingreso del hombro anterior. Un asistente ejerce simultáneamente <strong>presión suprapúbica lateral y posterior</strong>, para desplazar el hombro anterior retenido en el borde superior del pubis. Recién entonces se aplica <strong>tracción moderada y constante de la cabeza en sentido posteroinferior durante 30 segundos</strong> — moderada y constante, no brusca ni sostenida indefinidamente.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>Dos diferencias con el teórico, y una es de seguridad.</strong></p>
+        <p><strong>Primera, el nombre:</strong> el teórico escribe «maniobra de <strong>Roberts</strong>» en toda la diapositiva. Se llama <strong>McRoberts</strong>. La confusión no es inocente en este cuadernillo, porque tres secciones antes aparece la <em>pelvis de Robert</em> (sección <a href="#pelvis">04</a>), que no tiene ninguna relación.</p>
+        <p><strong>Segunda, el orden:</strong> el teórico propone explorar si el hombro posterior está en la cavidad sacra y, <strong>si no está</strong> —lo que llama «distocia bilateral»— ir directamente a <strong>Zavanelli</strong>. Eso saltea varios escalones. Las guías indican <strong>McRoberts con presión suprapúbica primero en todos los casos</strong>, y reservan Zavanelli como <strong>último recurso</strong> tras agotar y repetir las maniobras internas. Reponer una cabeza dentro de la pelvis es un procedimiento excepcional, no un segundo paso.</p>
+      </div>
+
+      <p class="cita">Fuente: American College of Obstetricians and Gynecologists, Practice Bulletin sobre distocia de hombros; Royal College of Obstetricians and Gynaecologists, Green-top Guideline No. 42; programa Advanced Life Support in Obstetrics (ALSO), del que proviene la nemotecnia HELPERR.</p>
+    </section>
+
+    <!-- ============ 17 ============ -->
+    <section class="seccion s-importantes" id="consecuencias">
+      <span class="seccion__pestana"><b>17</b> Claves</span>
+      <h2 class="seccion__titulo">Consecuencias y el mito de la tracción</h2>
+
+      <h3>El reloj</h3>
+      <ul>
+        <li>Cuanto <strong>más largo el intervalo entre la salida de la cabeza y la de los hombros</strong>, mayor el riesgo de asfixia fetal.</li>
+        <li>Ouzounian y cols. encontraron que un intervalo <strong>mayor de 7 minutos</strong> resulta muy peligroso por el daño cerebral que puede producir.</li>
+        <li>Pasados los <span class="dato">10 minutos</span> puede sobrevenir <strong>asfixia con lesiones corticales y cognitivas, incluida la muerte fetal</strong>.</li>
+      </ul>
+
+      <h3>Lesiones</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Lesión</th><th>Mecanismo</th><th>Pronóstico</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Parálisis braquial</strong> del miembro posterior — parálisis de <strong>Erb</strong></td>
+              <td>Estiramiento de las raíces cervicales del plexo</td>
+              <td>En general <strong>transitoria</strong>, sin alteración cognitiva a largo plazo</td>
+            </tr>
+            <tr>
+              <td><strong>Fractura de clavícula o de húmero</strong></td>
+              <td>Fuerzas aplicadas sobre el hombro impactado</td>
+              <td>Consolida bien; a veces es el precio aceptable de resolver la distocia</td>
+            </tr>
+            <tr>
+              <td><strong>Asfixia perinatal</strong></td>
+              <td>Compresión torácica y del cordón con la cabeza afuera</td>
+              <td>La grave: lesión cortical, secuelas cognitivas, muerte</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>La lesión es permanente en menos del <span class="dato">5 %</span></strong> de los recién nacidos con peso inferior a 4500 g.</p>
+
+      <h3>El mito de la tracción</h3>
+      <p>Durante décadas se asumió que toda parálisis braquial era consecuencia de un exceso de tracción del obstetra. Ese mito <strong>va desapareciendo</strong>, y conviene saber por qué:</p>
+      <ul>
+        <li>Una revisión con datos de 14 artículos encontró que <strong>algo más de la mitad</strong> de todos los casos de parálisis braquial correspondían a <strong>partos vaginales sin complicaciones</strong>.</li>
+        <li>Se describieron parálisis braquiales en fetos en presentación cefálica nacidos por <strong>cesárea atraumática</strong>.</li>
+        <li>Jennet y cols. (1992) aportaron evidencia de que la alteración del plexo braquial <strong>puede ocurrir antes del trabajo de parto</strong>.</li>
+        <li>La etiología se considera hoy <strong>multifactorial</strong>: resulta de hechos anteriores al nacimiento, de la impactación del hombro y de las fuerzas inherentes al proceso normal del parto — incluido el encaje del brazo posterior fetal contra el promontorio sacro.</li>
+      </ul>
+
+      <p>Esto <strong>no autoriza a traccionar</strong>: la tracción excesiva sigue produciendo lesiones y sigue siendo evitable. Lo que cambia es que la presencia de una parálisis braquial <strong>no prueba por sí sola que hubo mala praxis</strong>, y que la documentación cuidadosa del episodio —hora de la cabeza, hora de los hombros, maniobras aplicadas en orden y quién estuvo presente— es parte del acto médico.</p>
+
+      <p class="cita">Fuente: Jennet RJ et al. Am J Obstet Gynecol 1992; Ouzounian JG et al.; editorial «New insights into shoulder dystocia and brachial plexus palsy», Obstetrical and Gynecological Survey 2002, citados en el material de cátedra.</p>
+    </section>
+
+    <!-- ============ REPASO ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>¿Cuáles son las cinco causas de distocia y sobre qué elemento del parto actúa cada una?</summary>
+          <div class="fc__r"><strong>Ósea</strong> (canal duro), <strong>de partes blandas</strong> (canal blando), <strong>fetal</strong> (móvil), <strong>ovular</strong> (continente: membranas, cordón, placenta, líquido) y <strong>dinámica</strong> (motor).</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿A qué dilatación empieza la fase activa según ACOG?</summary>
+          <div class="fc__r">A los <strong>6 cm</strong>, no a los 4. Por debajo de 6 cm no se diagnostica detención, y una fase latente prolongada no es por sí sola indicación de cesárea.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Definí detención de la fase activa.</summary>
+          <div class="fc__r">Dilatación <strong>≥ 6 cm</strong> con <strong>membranas rotas</strong> y sin modificación cervical durante <strong>≥ 4 h con dinámica adecuada</strong>, o <strong>≥ 6 h con dinámica inadecuada</strong> bajo oxitocina.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Cuánto puede durar el expulsivo antes de llamarlo prolongado?</summary>
+          <div class="fc__r"><strong>3 h en nulípara</strong> y <strong>2 h en multípara</strong>, sumando <strong>1 h más</strong> si hay analgesia peridural.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué tiempo del parto traba cada nivel de estrechez pélvica?</summary>
+          <div class="fc__r">El <strong>estrecho superior</strong> impide el <strong>encaje</strong>; la <strong>excavación</strong> impide el <strong>descenso y la rotación</strong>; el <strong>estrecho inferior</strong> impide el <strong>desprendimiento</strong>.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Cuáles son los cuatro umbrales de estenosis pélvica?</summary>
+          <div class="fc__r">Promonto-subpúbico <strong>≤ 10 cm</strong> y transverso <strong>≤ 12 cm</strong> en el estrecho superior; <strong>biciático ≤ 9,5 cm</strong> en la excavación; <strong>biisquiático ≤ 9,5 cm</strong> en el estrecho inferior.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué conjugado se mide con los dedos y cuál es el que atraviesa el feto?</summary>
+          <div class="fc__r">Se mide el <strong>promonto-subpúbico</strong> o conjugado <strong>diagonal</strong>; el que atraviesa el feto es el <strong>promonto-retropúbico</strong> u <strong>obstétrico</strong>, unos <strong>1,5 cm menor</strong>, que se calcula restando.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>Naegele y Robert: ¿cuál es asimétrica y por qué?</summary>
+          <div class="fc__r"><strong>Naegele es la asimétrica</strong> porque le falta <strong>un</strong> ala sacra. <strong>Robert es simétrica</strong> porque le faltan <strong>las dos</strong>. Regla: <em>Naegele, una; Robert, las dos.</em> El teórico las agrupa mal.</div>
+        </details>
+
+
+        <details class="fc s-clinica">
+          <summary>¿Qué diferencia el procúbito de la procidencia de cordón?</summary>
+          <div class="fc__r">El <strong>procúbito</strong> es con <strong>membranas íntegras</strong>; la <strong>procidencia</strong>, con <strong>membranas rotas</strong> y el cordón expuesto a compresión directa — emergencia con cesárea inmediata.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Por qué la DCP es un diagnóstico retrospectivo?</summary>
+          <div class="fc__r">Porque no hay medida anteparto que la prediga: la <strong>pelvimetría radiológica no se usa de rutina</strong> —aumenta cesáreas sin mejorar resultados— y no contempla el moldeamiento ni la eficacia de la dinámica. Se confirma cuando un parto bien conducido no progresa.</div>
+        </details>
+
+
+        <details class="fc s-fisiopatologia">
+          <summary>Los cuatro parámetros de la contracción normal y sus valores.</summary>
+          <div class="fc__r"><strong>Frecuencia</strong> 3-5 cada 10 min · <strong>Intensidad</strong> 30-50 mmHg · <strong>Duración</strong> 30-90 s · <strong>Tono basal</strong> 8-12 mmHg.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué son las unidades Montevideo y para qué sirven acá?</summary>
+          <div class="fc__r"><strong>Intensidad promedio × número de contracciones en 10 min.</strong> Una dinámica establecida ronda las <strong>200-250 UM</strong>; es el umbral que define «dinámica adecuada» en los criterios de detención.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>Nombrá los umbrales de taquisistolia, hipersistolia, hipertonía e hipotonía.</summary>
+          <div class="fc__r">Taquisistolia <strong>&gt; 5</strong> en 10 min · Hipersistolia <strong>&gt; 50 mmHg</strong> · Hipertonía <strong>&gt; 12 mmHg</strong> (leve 13-20, moderada 20-30, severa &gt; 30) · Hipotonía <strong>&lt; 8 mmHg</strong>.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Cómo se dividen las distocias dinámicas según la sinergia funcional?</summary>
+          <div class="fc__r">Con <strong>sinergia conservada</strong>: hipodinamias e hiperdinamias. Con <strong>sinergia disociada</strong>: síndrome de Schickelé (distocia cervical), hipertonía del segmento inferior e incoordinación por ondas localizadas.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué hay que sospechar ante una hipodinamia secundaria?</summary>
+          <div class="fc__r"><strong>Un obstáculo.</strong> Un útero que venía bien y se agotó estuvo empujando contra algo: hay que descartar desproporción <strong>antes</strong> de dar oxitocina, o se va a la rotura uterina.</div>
+        </details>
+
+
+        <details class="fc s-clinica">
+          <summary>¿Qué riesgo posparto tiene una hiperdinamia sin hipertonía?</summary>
+          <div class="fc__r"><strong>Atonía y hemorragia posparto.</strong> «El útero que se contrae con gran fuerza antes del parto probablemente sea hipotónico después de él.» También: desgarros del canal y desprendimiento placentario.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué es el triple gradiente descendente?</summary>
+          <div class="fc__r">La onda nace en el <strong>ángulo tubárico</strong> y baja; en el <strong>fondo</strong> las contracciones son <strong>más intensas, más duraderas y más precoces</strong> que abajo. Solo existe en el útero maduro.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Por qué no progresa el parto con inversión del triple gradiente?</summary>
+          <div class="fc__r">Porque la contracción más fuerte ocurre en el <strong>segmento inferior</strong>: en vez de empujar el feto hacia el cuello, <strong>tracciona el cuello hacia arriba</strong>. No avanza ni la dilatación ni el descenso, con riesgo de hipertonía y rotura.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>Anillo de contracción vs. anillo de Bandl.</summary>
+          <div class="fc__r">El <strong>de contracción</strong> es patología dinámica: contractura circular en zona aislada, se trata sedando el útero. El <strong>de Bandl</strong> es anatomía normal que se hace visible por retracción contra un obstáculo: significa <strong>rotura inminente</strong> y exige cesárea.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Cuál es el paso 0 del tratamiento de toda distocia dinámica?</summary>
+          <div class="fc__r"><strong>Descartar el obstáculo mecánico</strong> antes de tocar la dinámica. Estimular un útero que lucha contra una desproporción lo lleva a la rotura.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Por qué en la disdinamia primero se seda el útero?</summary>
+          <div class="fc__r">Porque el problema no es <em>cuánta</em> fuerza hace sino <strong>en qué orden</strong>. Hay que <strong>apagar los marcapasos ectópicos</strong> con un uteroinhibidor y recién después reestimular de forma progresiva.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Qué dos datos del teórico sobre fármacos quedaron viejos?</summary>
+          <div class="fc__r">Que el <strong>misoprostol</strong> «no está aprobado» —hoy la OMS lo recomienda para maduración cervical y hemorragia posparto, aunque sigue vigente su riesgo de hiperestimulación— y la <strong>ritodrina</strong> como uteroinhibidor, ya en desuso; hoy se usa <strong>terbutalina</strong> subcutánea.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Por qué los factores de riesgo no sirven para prevenir la distocia de hombros?</summary>
+          <div class="fc__r">Tienen asociación estadística pero <strong>ningún valor predictivo individual</strong>. Casi <strong>la mitad de los casos pesa menos de 4000 g</strong>, y predecir macrosomía solo aumenta las cesáreas sin reducir la distocia ni la lesión.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué hombro debe entrar primero a la pelvis y por qué?</summary>
+          <div class="fc__r">El <strong>posterior</strong>, porque la pelvis anterior mide <strong>4 cm</strong> y la posterior <strong>12 cm</strong>: tiene más recorrido. El parto de los hombros es <strong>escalonado, no simultáneo</strong> — juntos formarían un «diámetro imposible».</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué es el signo de la tortuga?</summary>
+          <div class="fc__r">La cabeza ya desprendida <strong>retrocede y queda retraída contra el periné</strong>, traccionada en sentido inverso por el hombro posterior que no atravesó la entrada pélvica.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Los cuatro «no» de la distocia de hombros.</summary>
+          <div class="fc__r"><strong>No traccionar</strong> la cabeza · <strong>no presionar el fondo uterino</strong> · <strong>no pujar</strong> · <strong>no perder la cuenta del tiempo</strong>. La única presión útil es la <strong>suprapúbica</strong>, dirigida lateral y posteriormente.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Cuál es la primera maniobra y cuánto resuelve?</summary>
+          <div class="fc__r"><strong>McRoberts</strong> —hiperflexión y abducción de los muslos— resuelve hasta el <strong>42 %</strong> sola, y hasta el <strong>54 %</strong> combinada con <strong>presión suprapúbica</strong>.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Desarrollá HELPERR.</summary>
+          <div class="fc__r"><strong>H</strong>elp · <strong>E</strong>valuate for episiotomy · <strong>L</strong>egs (McRoberts) · <strong>P</strong>ressure (suprapúbica) · <strong>E</strong>nter (rotación interna) · <strong>R</strong>emove the posterior arm · <strong>R</strong>oll the patient (Gaskin).</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Cuándo se usa la maniobra de Zavanelli?</summary>
+          <div class="fc__r">Como <strong>último recurso</strong>, tras agotar y <strong>repetir</strong> toda la secuencia. Consiste en <strong>reponer la cabeza dentro de la pelvis</strong> y hacer cesárea. El teórico la propone varios escalones antes de tiempo.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Por qué una parálisis braquial no prueba mala praxis?</summary>
+          <div class="fc__r">Porque <strong>más de la mitad</strong> ocurre en partos vaginales <strong>sin complicaciones</strong>, se describieron casos en <strong>cesáreas atraumáticas</strong> y puede establecerse <strong>antes del trabajo de parto</strong>. La etiología es <strong>multifactorial</strong>.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ RELÁMPAGO ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Las cinco causas</dt>
+        <dd>Ósea · partes blandas · fetal · ovular · dinámica. Ordenadas por elemento: <strong>canal duro, canal blando, móvil, continente y motor</strong>.</dd>
+
+        <dt class="r-gold">Cuándo el parto no progresa</dt>
+        <dd>Fase activa desde <strong>6 cm</strong>. Detención: <strong>≥ 4 h con dinámica adecuada</strong> o <strong>≥ 6 h con inadecuada</strong>, con membranas rotas. Expulsivo prolongado: <strong>3 h nulípara, 2 h multípara</strong> (+1 h con peridural).</dd>
+
+        <dt class="r-tto">Distocia dinámica — el paso 0</dt>
+        <dd><strong>Descartar obstáculo mecánico antes de estimular.</strong> Hipodinamia: amniotomía + oxitocina en bomba. Hiperdinamia: DLI + suspender uteroestimuladores. Disdinamia: <strong>sedar primero</strong>, reestimular después.</dd>
+
+        <dt class="r-tto">Distocia de hombros — el orden</dt>
+        <dd><strong>HELPERR.</strong> McRoberts + presión suprapúbica resuelven el <strong>54 %</strong>. Después rotación interna y brazo posterior, luego Gaskin. <strong>Zavanelli último.</strong></dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd><strong>Anillo de Bandl ascendido</strong> = rotura uterina inminente, cesárea sin demora. Y en la distocia de hombros, <strong>el reloj</strong>: pasados los <strong>7 a 10 minutos</strong> aparece el daño neurológico. No traccionar, no presionar el fondo, no pujar.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir del material de la Cátedra de Obstetricia (Dr. Miguel Blanco) y de las guías de ACOG, RCOG y ALSO. Material de estudio: no reemplaza el criterio clínico ni la guía institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+
+  // ---- Tema claro / oscuro ----
+  // Sin eleccion estampada manda el sistema; el boton la estampa y la guarda.
+  var raiz = document.documentElement;
+  var boton = document.getElementById('tema');
+
+  function temaActual(){
+    var estampado = raiz.getAttribute('data-theme');
+    if (estampado) return estampado;
+    return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+
+  if (boton){
+    var rotular = function(){
+      var actual = temaActual();
+      boton.setAttribute('aria-pressed', actual === 'dark' ? 'true' : 'false');
+      boton.setAttribute('aria-label', actual === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+    };
+    boton.addEventListener('click', function(){
+      var nuevo = temaActual() === 'dark' ? 'light' : 'dark';
+      raiz.setAttribute('data-theme', nuevo);
+      try { localStorage.setItem('wordmed-tema', nuevo); } catch (e) { /* sin persistencia */ }
+      rotular();
+    });
+    rotular();
+  }
+
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link, .ir-link'));
+
+  // Devuelve TODOS los enlaces al ancla: la misma seccion figura en el indice
+  // lateral y en el compacto, y los dos tienen que encenderse juntos.
+  function porMeta(hash){
+    return enlaces.filter(function(l){ return l.getAttribute('href') === '#' + hash; });
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var activos = porMeta(e.target.id);
+        if (!activos.length) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          activos.forEach(function(l){ l.setAttribute('aria-current', 'true'); });
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>
+<script>
+(function(){
+  "use strict";
+  var clave = document.body.dataset.clave || "";
+  var enApp = typeof window.WordmedApp !== "undefined";
+  var MEM = "wordmed:progreso";
+
+  function leer(){ try{ return JSON.parse(localStorage.getItem(MEM)) || {}; }catch(e){ return {}; } }
+  function guardar(m){ try{ localStorage.setItem(MEM, JSON.stringify(m)); }catch(e){} }
+
+  function alto(){
+    return Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+  }
+
+  /* retomar donde quedó */
+  if (clave) {
+    var m = leer()[clave];
+    if (m && m.y > 0) {
+      window.addEventListener("load", function(){
+        window.scrollTo(0, Math.min(m.y, alto()));
+      });
+    }
+  }
+
+  /* anotar el avance, sin ahogar el scroll */
+  var pendiente = false;
+  window.addEventListener("scroll", function(){
+    if (pendiente || !clave) return;
+    pendiente = true;
+    requestAnimationFrame(function(){
+      pendiente = false;
+      var y = window.scrollY;
+      var pct = Math.round((y / alto()) * 100);
+      pct = Math.max(0, Math.min(100, pct));
+      var m = leer();
+      m[clave] = { y: y, pct: pct, ts: Date.now() };
+      guardar(m);
+      if (enApp && window.WordmedApp.progreso) window.WordmedApp.progreso(clave, pct, y);
+    });
+  }, { passive: true });
+
+  /* volver: solo cuando vinimos de la cáscara web */
+  if (!enApp && document.referrer && document.referrer.indexOf(location.origin) === 0) {
+    var b = document.createElement("button");
+    b.className = "volver";
+    b.type = "button";
+    b.setAttribute("aria-label", "Volver");
+    b.innerHTML = '<svg class="volver__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg>';
+    b.addEventListener("click", function(){ history.back(); });
+    document.body.appendChild(b);
+  }
+})();
+</script>
+</body>
+</html>

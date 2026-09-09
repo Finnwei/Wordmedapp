@@ -50,11 +50,19 @@
   --t-guia:  1.19rem;
   --t-h3:    1.32rem;
   --t-h2:    1.66rem;
+  --t-bloque:1.95rem;
   --t-h1:    2.5rem;
 
   --ancho: 68ch;
   --radio: 3px;
+
+  /* Que la barra de desplazamiento y los controles nativos acompanen al tema */
+  color-scheme: light dark;
 }
+
+/* Eleccion explicita de claro: solo hace falta para el color-scheme, los
+   tokens claros ya son la base sin estampar. */
+:root[data-theme="light"]{ color-scheme: light; }
 
 /* ---------- 2. TOKENS: tema oscuro ---------- */
 /* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
@@ -77,6 +85,7 @@
 }
 /* Elección explícita de oscuro (gana sobre un SO en claro) */
 :root[data-theme="dark"]{
+  color-scheme: dark;
   --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
   --linea:#2D343D; --linea-fuerte:#414A56;
   --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
@@ -123,6 +132,37 @@ em,i{ font-style:italic; }
   transition:width .12s linear;
 }
 
+/* Interruptor de tema claro / oscuro.
+   El estampado `data-theme` en la raíz ya lo respetan los bloques de tokens de
+   arriba; este botón sólo lo pone y lo guarda. Sin elección estampada mandan
+   las preferencias del sistema, que es el comportamiento por defecto. */
+.tema{
+  position:fixed; top:.7rem; right:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.tema:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.tema__icono{ width:1.15rem; height:1.15rem; display:block; }
+
+/* Se muestra el icono del tema al que se va a cambiar, no el actual.
+   Mismo escalonado que los tokens: base clara · sistema oscuro · elección explícita. */
+.tema__sol{ display:none; }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .tema__sol{ display:block; }
+  :root:not([data-theme="light"]) .tema__luna{ display:none; }
+}
+:root[data-theme="dark"] .tema__sol{ display:block; }
+:root[data-theme="dark"] .tema__luna{ display:none; }
+:root[data-theme="light"] .tema__sol{ display:none; }
+:root[data-theme="light"] .tema__luna{ display:block; }
+
 /* ---------- 4. Estructura de página ---------- */
 .marco{
   display:grid;
@@ -168,7 +208,15 @@ em,i{ font-style:italic; }
   border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
 }
 
-/* ---------- 6. Índice lateral ---------- */
+/* ---------- 6. Índices ---------- */
+/* Dos piezas complementarias y deliberadamente redundantes:
+   · .indice        — barra lateral fija, sólo en pantalla ancha, navegación permanente.
+   · .indice-rapido — tarjeta compacta al principio del cuerpo, visible en TODO ancho.
+   La lateral desaparece por debajo de 64rem, que es justo el ancho del panel de
+   Artifacts y del celular; sin la compacta el cuadernillo publicado se queda sin
+   índice. Las dos apuntan a los mismos anclajes y se resaltan juntas al desplazar. */
+
+/* 6.1 · Barra lateral */
 .indice{ display:none; }
 @media (min-width:64rem){
   .indice{
@@ -203,6 +251,59 @@ em,i{ font-style:italic; }
 }
 .indice__link[aria-current="true"]::before{ background:var(--c); }
 
+/* Rótulo de bloque intercalado en la lista lateral: no es un enlace, sólo
+   separa grupos de secciones para que 30 entradas no sean una tira plana. */
+.indice__bloque{
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+  margin:.9rem 0 .2rem; padding:0 .55rem;
+}
+.indice__bloque:first-child{ margin-top:0; }
+
+/* 6.2 · Índice compacto (va después de la portada, dentro del cuerpo) */
+.indice-rapido{
+  background:var(--hoja-hund);
+  border:1px solid var(--linea);
+  border-radius:var(--radio);
+  padding:1.1rem 1.2rem 1.2rem;
+}
+.indice-rapido__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .85rem;
+}
+/* auto-fit: una columna en el panel angosto, dos o tres en pantalla ancha */
+.indice-rapido__bloques{
+  list-style:none; margin:0; padding:0;
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(15rem, 1fr));
+  gap:1rem 2rem; align-items:start;
+}
+.ir-bloque{
+  display:block; margin-bottom:.4rem;
+  font-family:var(--f-titulo); font-size:.98rem; font-weight:700; line-height:1.3;
+  color:var(--tinta); text-decoration:none;
+  padding-bottom:.3rem; border-bottom:1px solid var(--linea-fuerte);
+}
+.ir-bloque:hover{ color:var(--cli-t); }
+.ir-secciones{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.05rem; }
+.ir-link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.55rem 1fr; align-items:baseline; gap:.4rem;
+  padding:.2rem .35rem; border-radius:2px;
+  font-size:.86rem; line-height:1.4; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.ir-link > b{
+  font-family:var(--f-dato); font-size:.76rem; font-weight:700;
+  font-variant-numeric:tabular-nums; color:var(--ct); opacity:.85;
+}
+.ir-link:hover{ background:var(--hoja); color:var(--tinta); }
+.ir-link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+
 .i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
 .i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
 .i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
@@ -211,7 +312,35 @@ em,i{ font-style:italic; }
 .i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
 .i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
 
-/* ---------- 7. Ficha de sección ---------- */
+/* ---------- 7. Título de bloque y ficha de sección ---------- */
+
+/* Anuncia un grupo de secciones. Neutro en color a propósito: los siete colores
+   tienen significado clínico fijo y un bloque agrupa secciones de varios. La
+   regla de abajo lleva el degradado completo de la paleta, igual que la pestaña
+   de repaso y la cabecera de la ficha relámpago.
+   Sin <svg> adentro: el exportador a Word aparea los diagramas con las figuras
+   por contador posicional sobre el HTML crudo (ver exportar_docx.py). */
+.bloque{
+  margin:1.4rem 0 0; padding:0;
+  text-align:center; scroll-margin-top:2.5rem;
+  display:flex; flex-direction:column; align-items:center; gap:.3rem;
+  font-weight:400;
+}
+.bloque:first-child{ margin-top:0; }
+.bloque__rotulo{
+  font-family:var(--f-texto);
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+}
+.bloque__nombre{
+  font-family:var(--f-titulo); font-size:var(--t-bloque); font-weight:700; line-height:1.15;
+  letter-spacing:-.01em; color:var(--tinta); text-wrap:balance; max-width:32ch;
+}
+.bloque::after{
+  content:""; width:7rem; height:2.5px; margin-top:.5rem; border-radius:2px;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+}
+
 .seccion{
   --c:var(--ddx-c); --ct:var(--ddx-t);
   position:relative;
@@ -293,7 +422,7 @@ em,i{ font-style:italic; }
 /* ---------- 9. Caja ¡Importante! ---------- */
 .importante{
   --c:var(--imp-c); --ct:var(--imp-t);
-  display:grid; grid-template-columns:auto 1fr; gap:.35rem .8rem;
+  display:grid; grid-template-columns:auto 1fr; gap:.5rem .8rem;
   margin:.35rem 0;
   padding:.95rem 1.1rem;
   background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
@@ -302,14 +431,28 @@ em,i{ font-style:italic; }
   border-radius:var(--radio);
 }
 .importante__icono{
-  grid-row:1/3; width:1.3rem; height:1.3rem; flex:none;
+  grid-column:1; grid-row:1; width:1.3rem; height:1.3rem; flex:none;
   color:var(--imp-c); transform:translateY(.15rem);
 }
+/* El icono ocupa la columna 1 y NADA MAS. Todo el resto del contenido se
+   apila en la columna 2, una fila por elemento, sin importar cuantos
+   parrafos haya.
+
+   Sin esta regla la caja solo funciona con un unico <p>: a partir del
+   segundo, la autocolocacion del grid empieza a repartir contenido en la
+   columna del icono, que es `auto` y por lo tanto se ensancha hasta abarcar
+   el parrafo que le toco. La columna `1fr` queda entonces reducida a una
+   tira angosta, el texto se parte en dos columnas desbalanceadas y la caja
+   crece hasta volverse ilegible. */
+.importante > :not(.importante__icono){ grid-column:2; }
 .importante__titulo{
+  grid-row:1;
   font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
   color:var(--imp-t); margin:0;
 }
 .importante p{ margin:0; text-wrap:pretty; }
+.importante ul, .importante ol{ margin:0; padding-left:1.15rem; }
+.importante li + li{ margin-top:.3rem; }
 .importante strong{ color:var(--imp-t); }
 
 /* ---------- 10. Cita de fuente ---------- */
@@ -448,9 +591,17 @@ em,i{ font-style:italic; }
     --sombra:none; --tinte:10%; --tinte-fuerte:16%;
   }
   body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
-  .indice, .progreso{ display:none !important; }
+  .indice, .progreso, .tema{ display:none !important; }
+  /* La lateral no se imprime, pero la compacta sí: en papel es la tabla de
+     contenidos del cuadernillo. */
+  .indice-rapido{ display:block; break-inside:avoid; page-break-inside:avoid; margin-bottom:1.2rem; }
   .marco{ display:block; max-width:none; padding:0; }
   .cuerpo{ display:block; }
+  .bloque{
+    margin:1.6rem 0 1rem;
+    break-after:avoid; page-break-after:avoid;
+    break-inside:avoid; page-break-inside:avoid;
+  }
   .seccion{
     box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
     break-inside:avoid; page-break-inside:avoid;
@@ -463,7 +614,6 @@ em,i{ font-style:italic; }
   a{ color:inherit; text-decoration:none; }
   *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
 }
-
 </style>
 <style>
 /* Fuentes de la capa de contenido. Va después del estilo del
@@ -492,18 +642,44 @@ em,i{ font-style:italic; }
 </style>
 </head>
 <body data-clave="psiquiatria/4-esquizofrenia">
+<script>
+/* Aplica el tema guardado antes de pintar. Va aca arriba a proposito: si
+   esperara al script del final, el documento parpadearia en el tema del
+   sistema antes de corregirse. */
+(function(){
+  try {
+    var guardado = localStorage.getItem('wordmed-tema');
+    if (guardado === 'dark' || guardado === 'light') {
+      document.documentElement.setAttribute('data-theme', guardado);
+    }
+  } catch (e) { /* almacenamiento bloqueado: manda el sistema */ }
+})();
+</script>
+
 <div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<button class="tema" id="tema" type="button" aria-pressed="false" aria-label="Cambiar a modo oscuro">
+  <svg class="tema__icono tema__sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.2"></circle>
+    <path d="M12 2.6v2.1M12 19.3v2.1M5.1 5.1l1.5 1.5M17.4 17.4l1.5 1.5M2.6 12h2.1M19.3 12h2.1M5.1 18.9l1.5-1.5M17.4 6.6l1.5-1.5"></path>
+  </svg>
+  <svg class="tema__icono tema__luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20.4 14.2A8.6 8.6 0 0 1 9.8 3.6a8.6 8.6 0 1 0 10.6 10.6z"></path>
+  </svg>
+</button>
 
 <div class="marco">
 
   <nav class="indice" aria-label="Índice del cuadernillo">
     <p class="indice__rotulo">Cuadernillo</p>
     <ul class="indice__lista">
+      <li class="indice__bloque">Bloque A</li>
       <li><a class="indice__link i-generalidades"  href="#definicion">Qué es la esquizofrenia</a></li>
       <li><a class="indice__link i-generalidades"  href="#historia">Historia del concepto</a></li>
       <li><a class="indice__link i-fisiopatologia" href="#teoricos">Los teóricos</a></li>
       <li><a class="indice__link i-clinica"        href="#epidemiologia">Epidemiología</a></li>
       <li><a class="indice__link i-importantes"    href="#mortalidad">Mortalidad y suicidio</a></li>
+      <li class="indice__bloque">Bloque B</li>
       <li><a class="indice__link i-fisiopatologia" href="#social">Determinantes sociales</a></li>
       <li><a class="indice__link i-fisiopatologia" href="#diatesis">Diátesis-estrés</a></li>
       <li><a class="indice__link i-fisiopatologia" href="#dopamina">Hipótesis dopaminérgica</a></li>
@@ -512,16 +688,19 @@ em,i{ font-style:italic; }
       <li><a class="indice__link i-diagnostico"    href="#complementarios">Estudios complementarios</a></li>
       <li><a class="indice__link i-fisiopatologia" href="#genetica">Genética e inmunología</a></li>
       <li><a class="indice__link i-diferenciales"  href="#psicosocial">Modelos psicosociales</a></li>
+      <li class="indice__bloque">Bloque C</li>
       <li><a class="indice__link i-clinica"        href="#prodromo">Pródromo</a></li>
       <li><a class="indice__link i-clinica"        href="#positivos">Síntomas positivos</a></li>
       <li><a class="indice__link i-clinica"        href="#negativos">Síntomas negativos</a></li>
       <li><a class="indice__link i-diagnostico"    href="#criterios">Criterios diagnósticos</a></li>
       <li><a class="indice__link i-importantes"    href="#subtipos">Subtipos clásicos</a></li>
       <li><a class="indice__link i-diferenciales"  href="#diferenciales">Diagnósticos diferenciales</a></li>
+      <li class="indice__bloque">Bloque D</li>
       <li><a class="indice__link i-tratamiento"    href="#farmacologico">Tratamiento farmacológico</a></li>
       <li><a class="indice__link i-tratamiento"    href="#clozapina">Refractariedad y clozapina</a></li>
       <li><a class="indice__link i-tratamiento"    href="#psicosociales">Intervenciones psicosociales</a></li>
       <li><a class="indice__link i-clinica"        href="#pronostico">Curso y pronóstico</a></li>
+      <li class="indice__bloque">Cierre</li>
       <li><a class="indice__link i-diferenciales"  href="#precisiones">Precisiones al material</a></li>
       <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
       <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
@@ -542,7 +721,70 @@ em,i{ font-style:italic; }
       </div>
     </header>
 
+    <nav class="indice-rapido" aria-label="Contenido del cuadernillo">
+      <p class="indice-rapido__rotulo">Contenido</p>
+      <ol class="indice-rapido__bloques">
+        <li>
+          <a class="ir-bloque" href="#bloque-a">Bloque A · Marco general</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades" href="#definicion"><b>01</b> Qué es la esquizofrenia</a></li>
+            <li><a class="ir-link i-generalidades" href="#historia"><b>02</b> Historia del concepto</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#teoricos"><b>03</b> Los teóricos</a></li>
+            <li><a class="ir-link i-clinica" href="#epidemiologia"><b>04</b> Epidemiología</a></li>
+            <li><a class="ir-link i-importantes" href="#mortalidad"><b>05</b> Mortalidad y suicidio</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-b">Bloque B · Fisiopatología</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-fisiopatologia" href="#social"><b>06</b> Determinantes sociales</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#diatesis"><b>07</b> Diátesis-estrés</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#dopamina"><b>08</b> Hipótesis dopaminérgica</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#neurotransmisores"><b>09</b> Otros neurotransmisores</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#neuropatologia"><b>10</b> Neuropatología</a></li>
+            <li><a class="ir-link i-diagnostico" href="#complementarios"><b>11</b> Estudios complementarios</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#genetica"><b>12</b> Genética e inmunología</a></li>
+            <li><a class="ir-link i-diferenciales" href="#psicosocial"><b>13</b> Modelos psicosociales</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-c">Bloque C · Cuadro clínico y diagnóstico</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-clinica" href="#prodromo"><b>14</b> Pródromo</a></li>
+            <li><a class="ir-link i-clinica" href="#positivos"><b>15</b> Síntomas positivos</a></li>
+            <li><a class="ir-link i-clinica" href="#negativos"><b>16</b> Síntomas negativos</a></li>
+            <li><a class="ir-link i-diagnostico" href="#criterios"><b>17</b> Criterios diagnósticos</a></li>
+            <li><a class="ir-link i-importantes" href="#subtipos"><b>18</b> Subtipos clásicos</a></li>
+            <li><a class="ir-link i-diferenciales" href="#diferenciales"><b>19</b> Diagnósticos diferenciales</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-d">Bloque D · Tratamiento y evolución</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-tratamiento" href="#farmacologico"><b>20</b> Tratamiento farmacológico</a></li>
+            <li><a class="ir-link i-tratamiento" href="#clozapina"><b>21</b> Refractariedad y clozapina</a></li>
+            <li><a class="ir-link i-tratamiento" href="#psicosociales"><b>22</b> Intervenciones psicosociales</a></li>
+            <li><a class="ir-link i-clinica" href="#pronostico"><b>23</b> Curso y pronóstico</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-e">Cierre · Precisiones y repaso</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-diferenciales" href="#precisiones"><b>24</b> Precisiones al material</a></li>
+            <li><a class="ir-link i-clinica" href="#repaso"><b>·</b> Repaso activo</a></li>
+            <li><a class="ir-link i-importantes" href="#relampago"><b>⚡</b> Ficha Relámpago</a></li>
+          </ul>
+        </li>
+      </ol>
+    </nav>
+
+
     <!-- ============ 1 ============ -->
+    <h2 class="bloque" id="bloque-a">
+      <span class="bloque__rotulo">Bloque A</span>
+      <span class="bloque__nombre">Marco general</span>
+    </h2>
+
     <section class="seccion s-generalidades" id="definicion">
       <span class="seccion__pestana"><b>01</b> Base</span>
       <h2 class="seccion__titulo">Qué es la esquizofrenia</h2>
@@ -799,6 +1041,11 @@ em,i{ font-style:italic; }
     </section>
 
     <!-- ============ 6 ============ -->
+    <h2 class="bloque" id="bloque-b">
+      <span class="bloque__rotulo">Bloque B</span>
+      <span class="bloque__nombre">Fisiopatología</span>
+    </h2>
+
     <section class="seccion s-fisiopatologia" id="social">
       <span class="seccion__pestana"><b>06</b> Contexto</span>
       <h2 class="seccion__titulo">Determinantes sociales</h2>
@@ -1221,6 +1468,11 @@ em,i{ font-style:italic; }
     </section>
 
     <!-- ============ 14 ============ -->
+    <h2 class="bloque" id="bloque-c">
+      <span class="bloque__rotulo">Bloque C</span>
+      <span class="bloque__nombre">Cuadro clínico y diagnóstico</span>
+    </h2>
+
     <section class="seccion s-clinica" id="prodromo">
       <span class="seccion__pestana"><b>14</b> Clínica</span>
       <h2 class="seccion__titulo">Pródromo y signos premórbidos</h2>
@@ -1625,6 +1877,11 @@ em,i{ font-style:italic; }
     </section>
 
     <!-- ============ 20 ============ -->
+    <h2 class="bloque" id="bloque-d">
+      <span class="bloque__rotulo">Bloque D</span>
+      <span class="bloque__nombre">Tratamiento y evolución</span>
+    </h2>
+
     <section class="seccion s-tratamiento" id="farmacologico">
       <span class="seccion__pestana"><b>20</b> Tratamiento</span>
       <h2 class="seccion__titulo">Tratamiento farmacológico</h2>
@@ -1903,6 +2160,11 @@ em,i{ font-style:italic; }
     </section>
 
     <!-- ============ 24 ============ -->
+    <h2 class="bloque" id="bloque-e">
+      <span class="bloque__rotulo">Cierre</span>
+      <span class="bloque__nombre">Precisiones y repaso</span>
+    </h2>
+
     <section class="seccion s-diferenciales" id="precisiones">
       <span class="seccion__pestana"><b>24</b> Precisiones</span>
       <h2 class="seccion__titulo">Precisiones al material de cátedra</h2>
@@ -2157,15 +2419,41 @@ em,i{ font-style:italic; }
 
 <script>
 (function(){
+
+  // ---- Tema claro / oscuro ----
+  // Sin eleccion estampada manda el sistema; el boton la estampa y la guarda.
+  var raiz = document.documentElement;
+  var boton = document.getElementById('tema');
+
+  function temaActual(){
+    var estampado = raiz.getAttribute('data-theme');
+    if (estampado) return estampado;
+    return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+
+  if (boton){
+    var rotular = function(){
+      var actual = temaActual();
+      boton.setAttribute('aria-pressed', actual === 'dark' ? 'true' : 'false');
+      boton.setAttribute('aria-label', actual === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+    };
+    boton.addEventListener('click', function(){
+      var nuevo = temaActual() === 'dark' ? 'light' : 'dark';
+      raiz.setAttribute('data-theme', nuevo);
+      try { localStorage.setItem('wordmed-tema', nuevo); } catch (e) { /* sin persistencia */ }
+      rotular();
+    });
+    rotular();
+  }
+
   var barra = document.getElementById('barra');
   var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
-  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link, .ir-link'));
 
+  // Devuelve TODOS los enlaces al ancla: la misma seccion figura en el indice
+  // lateral y en el compacto, y los dos tienen que encenderse juntos.
   function porMeta(hash){
-    for (var i = 0; i < enlaces.length; i++){
-      if (enlaces[i].getAttribute('href') === '#' + hash) return enlaces[i];
-    }
-    return null;
+    return enlaces.filter(function(l){ return l.getAttribute('href') === '#' + hash; });
   }
 
   function alDesplazar(){
@@ -2179,11 +2467,11 @@ em,i{ font-style:italic; }
   if ('IntersectionObserver' in window){
     var observador = new IntersectionObserver(function(entradas){
       entradas.forEach(function(e){
-        var enlace = porMeta(e.target.id);
-        if (!enlace) return;
+        var activos = porMeta(e.target.id);
+        if (!activos.length) return;
         if (e.isIntersecting) {
           enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
-          enlace.setAttribute('aria-current', 'true');
+          activos.forEach(function(l){ l.setAttribute('aria-current', 'true'); });
         }
       });
     }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });

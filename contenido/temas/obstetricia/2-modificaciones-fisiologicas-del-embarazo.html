@@ -1,0 +1,1633 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Modificaciones del Embarazo</title>
+<link rel="stylesheet" href="../../fuentes/fuentes.css">
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-bloque:1.95rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+
+  /* Que la barra de desplazamiento y los controles nativos acompanen al tema */
+  color-scheme: light dark;
+}
+
+/* Eleccion explicita de claro: solo hace falta para el color-scheme, los
+   tokens claros ya son la base sin estampar. */
+:root[data-theme="light"]{ color-scheme: light; }
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* Interruptor de tema claro / oscuro.
+   El estampado `data-theme` en la raíz ya lo respetan los bloques de tokens de
+   arriba; este botón sólo lo pone y lo guarda. Sin elección estampada mandan
+   las preferencias del sistema, que es el comportamiento por defecto. */
+.tema{
+  position:fixed; top:.7rem; right:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.tema:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.tema__icono{ width:1.15rem; height:1.15rem; display:block; }
+
+/* Se muestra el icono del tema al que se va a cambiar, no el actual.
+   Mismo escalonado que los tokens: base clara · sistema oscuro · elección explícita. */
+.tema__sol{ display:none; }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .tema__sol{ display:block; }
+  :root:not([data-theme="light"]) .tema__luna{ display:none; }
+}
+:root[data-theme="dark"] .tema__sol{ display:block; }
+:root[data-theme="dark"] .tema__luna{ display:none; }
+:root[data-theme="light"] .tema__sol{ display:none; }
+:root[data-theme="light"] .tema__luna{ display:block; }
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índices ---------- */
+/* Dos piezas complementarias y deliberadamente redundantes:
+   · .indice        — barra lateral fija, sólo en pantalla ancha, navegación permanente.
+   · .indice-rapido — tarjeta compacta al principio del cuerpo, visible en TODO ancho.
+   La lateral desaparece por debajo de 64rem, que es justo el ancho del panel de
+   Artifacts y del celular; sin la compacta el cuadernillo publicado se queda sin
+   índice. Las dos apuntan a los mismos anclajes y se resaltan juntas al desplazar. */
+
+/* 6.1 · Barra lateral */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+/* Rótulo de bloque intercalado en la lista lateral: no es un enlace, sólo
+   separa grupos de secciones para que 30 entradas no sean una tira plana. */
+.indice__bloque{
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+  margin:.9rem 0 .2rem; padding:0 .55rem;
+}
+.indice__bloque:first-child{ margin-top:0; }
+
+/* 6.2 · Índice compacto (va después de la portada, dentro del cuerpo) */
+.indice-rapido{
+  background:var(--hoja-hund);
+  border:1px solid var(--linea);
+  border-radius:var(--radio);
+  padding:1.1rem 1.2rem 1.2rem;
+}
+.indice-rapido__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .85rem;
+}
+/* auto-fit: una columna en el panel angosto, dos o tres en pantalla ancha */
+.indice-rapido__bloques{
+  list-style:none; margin:0; padding:0;
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(15rem, 1fr));
+  gap:1rem 2rem; align-items:start;
+}
+.ir-bloque{
+  display:block; margin-bottom:.4rem;
+  font-family:var(--f-titulo); font-size:.98rem; font-weight:700; line-height:1.3;
+  color:var(--tinta); text-decoration:none;
+  padding-bottom:.3rem; border-bottom:1px solid var(--linea-fuerte);
+}
+.ir-bloque:hover{ color:var(--cli-t); }
+.ir-secciones{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.05rem; }
+.ir-link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.55rem 1fr; align-items:baseline; gap:.4rem;
+  padding:.2rem .35rem; border-radius:2px;
+  font-size:.86rem; line-height:1.4; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.ir-link > b{
+  font-family:var(--f-dato); font-size:.76rem; font-weight:700;
+  font-variant-numeric:tabular-nums; color:var(--ct); opacity:.85;
+}
+.ir-link:hover{ background:var(--hoja); color:var(--tinta); }
+.ir-link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Título de bloque y ficha de sección ---------- */
+
+/* Anuncia un grupo de secciones. Neutro en color a propósito: los siete colores
+   tienen significado clínico fijo y un bloque agrupa secciones de varios. La
+   regla de abajo lleva el degradado completo de la paleta, igual que la pestaña
+   de repaso y la cabecera de la ficha relámpago.
+   Sin <svg> adentro: el exportador a Word aparea los diagramas con las figuras
+   por contador posicional sobre el HTML crudo (ver exportar_docx.py). */
+.bloque{
+  margin:1.4rem 0 0; padding:0;
+  text-align:center; scroll-margin-top:2.5rem;
+  display:flex; flex-direction:column; align-items:center; gap:.3rem;
+  font-weight:400;
+}
+.bloque:first-child{ margin-top:0; }
+.bloque__rotulo{
+  font-family:var(--f-texto);
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+}
+.bloque__nombre{
+  font-family:var(--f-titulo); font-size:var(--t-bloque); font-weight:700; line-height:1.15;
+  letter-spacing:-.01em; color:var(--tinta); text-wrap:balance; max-width:32ch;
+}
+.bloque::after{
+  content:""; width:7rem; height:2.5px; margin-top:.5rem; border-radius:2px;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+}
+
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.5rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-column:1; grid-row:1; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+/* El icono ocupa la columna 1 y NADA MAS. Todo el resto del contenido se
+   apila en la columna 2, una fila por elemento, sin importar cuantos
+   parrafos haya.
+
+   Sin esta regla la caja solo funciona con un unico <p>: a partir del
+   segundo, la autocolocacion del grid empieza a repartir contenido en la
+   columna del icono, que es `auto` y por lo tanto se ensancha hasta abarcar
+   el parrafo que le toco. La columna `1fr` queda entonces reducida a una
+   tira angosta, el texto se parte en dos columnas desbalanceadas y la caja
+   crece hasta volverse ilegible. */
+.importante > :not(.importante__icono){ grid-column:2; }
+.importante__titulo{
+  grid-row:1;
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante ul, .importante ol{ margin:0; padding-left:1.15rem; }
+.importante li + li{ margin-top:.3rem; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso, .tema{ display:none !important; }
+  /* La lateral no se imprime, pero la compacta sí: en papel es la tabla de
+     contenidos del cuadernillo. */
+  .indice-rapido{ display:block; break-inside:avoid; page-break-inside:avoid; margin-bottom:1.2rem; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .bloque{
+    margin:1.6rem 0 1rem;
+    break-after:avoid; page-break-after:avoid;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+</style>
+<style>
+/* Fuentes de la capa de contenido. Va después del estilo del
+   cuadernillo para pisar las de Windows, que no se pueden
+   redistribuir y no existen en Android. */
+:root{
+  --f-titulo:'Spectral',Georgia,'Times New Roman',serif;
+  --f-texto:'Open Sans',system-ui,-apple-system,sans-serif;
+  --f-dato:'Cascadia Mono','Cascadia Code',ui-monospace,Consolas,monospace;
+}
+/* Botón de volver, espejo del de tema que ya trae el cuadernillo. */
+.volver{
+  position:fixed; top:.7rem; left:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.volver:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.volver__icono{ width:1.15rem; height:1.15rem; display:block; }
+</style>
+</head>
+<body data-clave="obstetricia/2-modificaciones-fisiologicas-del-embarazo">
+<script>
+/* Aplica el tema guardado antes de pintar. Va aca arriba a proposito: si
+   esperara al script del final, el documento parpadearia en el tema del
+   sistema antes de corregirse. */
+(function(){
+  try {
+    var guardado = localStorage.getItem('wordmed-tema');
+    if (guardado === 'dark' || guardado === 'light') {
+      document.documentElement.setAttribute('data-theme', guardado);
+    }
+  } catch (e) { /* almacenamiento bloqueado: manda el sistema */ }
+})();
+</script>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<button class="tema" id="tema" type="button" aria-pressed="false" aria-label="Cambiar a modo oscuro">
+  <svg class="tema__icono tema__sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.2"></circle>
+    <path d="M12 2.6v2.1M12 19.3v2.1M5.1 5.1l1.5 1.5M17.4 17.4l1.5 1.5M2.6 12h2.1M19.3 12h2.1M5.1 18.9l1.5-1.5M17.4 6.6l1.5-1.5"></path>
+  </svg>
+  <svg class="tema__icono tema__luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20.4 14.2A8.6 8.6 0 0 1 9.8 3.6a8.6 8.6 0 1 0 10.6 10.6z"></path>
+  </svg>
+</button>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li><a class="indice__link i-generalidades"  href="#generales">Generales</a></li>
+      <li><a class="indice__link i-clinica"        href="#sangre">Sangre &amp; Bioquímica</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#cardio">Cardiovascular &amp; Respiratorio</a></li>
+      <li><a class="indice__link i-diferenciales"  href="#urinario">Urinario &amp; Digestivo</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#endocrino">Endocrino</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#locales">Modificaciones Locales</a></li>
+      <li><a class="indice__link i-importantes"    href="#diagnostico">Diagnóstico de Embarazo</a></li>
+      <li><a class="indice__link i-diferenciales"  href="#sintesis">Síntesis: Sube y Baja</a></li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Obstetricia · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Modificaciones del Embarazo</h1>
+      <p class="portada__bajada">Todo lo que cambia en una embarazada sin que nada esté enfermo. Y los valores de laboratorio que dejan de significar lo que significaban.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">8 secciones</span>
+        <span class="etiqueta s-clinica">Anemia fisiológica</span>
+        <span class="etiqueta s-tratamiento">Pseudodisnea</span>
+        <span class="etiqueta s-importantes">Signos de embarazo</span>
+      </div>
+    </header>
+
+    <nav class="indice-rapido" aria-label="Contenido del cuadernillo">
+      <p class="indice-rapido__rotulo">Contenido</p>
+      <ol class="indice-rapido__bloques">
+        <li>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades" href="#generales"><b>01</b> Generales</a></li>
+            <li><a class="ir-link i-clinica" href="#sangre"><b>02</b> Sangre &amp; Bioquímica</a></li>
+            <li><a class="ir-link i-tratamiento" href="#cardio"><b>03</b> Cardiovascular &amp; Respiratorio</a></li>
+            <li><a class="ir-link i-diferenciales" href="#urinario"><b>04</b> Urinario &amp; Digestivo</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#endocrino"><b>05</b> Endocrino</a></li>
+            <li><a class="ir-link i-diagnostico" href="#locales"><b>06</b> Modificaciones Locales</a></li>
+            <li><a class="ir-link i-importantes" href="#diagnostico"><b>07</b> Diagnóstico de Embarazo</a></li>
+            <li><a class="ir-link i-diferenciales" href="#sintesis"><b>08</b> Síntesis: Sube y Baja</a></li>
+            <li><a class="ir-link i-clinica" href="#repaso"><b>·</b> Repaso activo</a></li>
+            <li><a class="ir-link i-importantes" href="#relampago"><b>⚡</b> Ficha Relámpago</a></li>
+          </ul>
+        </li>
+      </ol>
+    </nav>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="generales">
+      <span class="seccion__pestana"><b>01</b> Generales</span>
+      <h2 class="seccion__titulo">Modificaciones Generales</h2>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante! — Por qué se estudia este tema</p>
+        <p>Conocer los cambios anatomofisiológicos que sufre el organismo de una mujer gestante es fundamental para <strong>evitar confundir lo normal con lo patológico</strong>, e incurrir en la <strong>derivación indiscriminada</strong> de la paciente.</p>
+        <p>Todo el cuadernillo se lee con esa clave: no son curiosidades, son los <strong>valores y hallazgos que en una embarazada NO hay que estudiar</strong>.</p>
+      </div>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Aspecto</th><th>Modificación</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Actitud y marcha</strong></td>
+              <td>Al modificarse el <strong>centro de gravedad</strong>, la cabeza y el tronco se proyectan <strong>hacia atrás</strong>, estableciendo una <strong>LORDOSIS LUMBOSACRA DE COMPENSACIÓN</strong>, llamada el <strong>«orgullo de la embarazada»</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Peso corporal</strong></td>
+              <td>Aumento normal de <strong><span class="dato">11 kg</span></strong> — un <strong>20 % más del peso habitual</strong>.<br><strong>Causas</strong>: crecimiento del <strong>feto, la placenta y el líquido amniótico</strong>; crecimiento del <strong>útero y las mamas</strong>; <strong>aumento del LEC</strong>, con una retención de agua promedio de <strong><span class="dato">6.000 mL</span></strong></td>
+            </tr>
+            <tr>
+              <td><strong>Temperatura</strong></td>
+              <td>En el <strong>primer trimestre AUMENTA entre <span class="dato">0,3 y 0,6 °C</span></strong>, para luego permanecer en <strong>valores preovulatorios</strong> en los trimestres siguientes</td>
+            </tr>
+            <tr>
+              <td><strong>Piel</strong></td>
+              <td><strong>1.</strong> <strong>Pigmentación acentuada de los tegumentos</strong>: cara (<strong>cloasma</strong>), pechos, cicatrices, <strong>línea media abdominal</strong> y genitales externos<br><strong>2.</strong> Aparición de <strong>estrías</strong><br><strong>3.</strong> <strong>Acumulación de tejido graso</strong> en el tejido celular subcutáneo</td>
+            </tr>
+            <tr>
+              <td><strong>Músculos</strong></td>
+              <td><strong>Hipertrofia e hiperplasia</strong> en <strong>dorso y abdomen</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Profundización sobre la temperatura: el ascenso del primer trimestre es el <strong>efecto termogénico de la progesterona</strong> producida por el <strong>cuerpo lúteo</strong>. Cuando la placenta toma el relevo hacia las semanas 7 a 9 —el <strong>cambio luteoplacentario</strong>, ver la sección 05—, la curva térmica se estabiliza. Es la misma progesterona que produce el ascenso térmico de la segunda fase del ciclo menstrual, sostenido en el tiempo. Fuente: Cunningham FG et al., <em>Williams Obstetricia</em>, 26.ª ed.</p>
+
+      <h3>El aumento de peso hoy</h3>
+      <p>La cifra de <strong>11 kg</strong> es la del material. La recomendación vigente <strong>no es un número único</strong>, sino un rango que <strong>depende del índice de masa corporal previo al embarazo</strong>:</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>IMC pregestacional</th><th>Aumento total recomendado</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Bajo peso</strong> — &lt; 18,5</td><td><span class="dato">12,5 – 18 kg</span></td></tr>
+            <tr><td><strong>Normal</strong> — 18,5 a 24,9</td><td><strong><span class="dato">11,5 – 16 kg</span></strong></td></tr>
+            <tr><td><strong>Sobrepeso</strong> — 25 a 29,9</td><td><span class="dato">7 – 11,5 kg</span></td></tr>
+            <tr><td><strong>Obesidad</strong> — ≥ 30</td><td><span class="dato">5 – 9 kg</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">La cifra de cátedra —11 kg, 20 % del peso habitual— <strong>coincide con el rango del IMC normal</strong>, así que no la contradice: la precisa. Fuente: Institute of Medicine, <em>Weight Gain During Pregnancy: Reexamining the Guidelines</em>, 2009.</p>
+
+      <p class="cita">Nota sobre el material: las diapositivas <strong>3 y 4 están duplicadas</strong> — el bloque de temperatura y piel aparece dos veces, idéntico. Es un error de armado, no de contenido.</p>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-clinica" id="sangre">
+      <span class="seccion__pestana"><b>02</b> Sangre</span>
+      <h2 class="seccion__titulo">Sangre &amp; Bioquímica</h2>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 280" role="img" aria-label="Comparación del volumen sanguíneo entre la mujer no embarazada y la embarazada. En la no embarazada el plasma y los glóbulos rojos guardan una proporción que da un hematocrito normal. En el embarazo el volumen plasmático aumenta entre cuarenta y sesenta por ciento mientras que el volumen globular aumenta sólo entre veinte y cincuenta por ciento. Como el plasma aumenta más que los glóbulos, se produce hemodilución: el hematocrito y la hemoglobina descienden aunque la volemia total esté aumentada. Es la llamada anemia fisiológica del embarazo.">
+          <text x="400" y="26" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">VOLUMEN SANGUÍNEO EN EL EMBARAZO</text>
+
+          <text x="140" y="92" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="end">NO embarazada</text>
+          <rect x="150" y="64" width="216" height="46" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="258" y="82" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">PLASMA</text>
+          <text x="258" y="100" font-size="10.5" fill="currentColor" text-anchor="middle">2.400 mL</text>
+          <rect x="366" y="64" width="144" height="46" fill="var(--c)" fill-opacity="0.44" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="438" y="82" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">GLÓBULOS</text>
+          <text x="438" y="100" font-size="10.5" fill="currentColor" text-anchor="middle">1.600 mL</text>
+          <text x="510" y="128" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="end">Hto ≈ 40 %</text>
+
+          <text x="140" y="168" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="end">EMBARAZADA</text>
+          <rect x="150" y="140" width="324" height="46" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="312" y="158" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">PLASMA</text>
+          <text x="312" y="176" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">↑ 40 – 60 %</text>
+          <rect x="474" y="140" width="180" height="46" fill="var(--c)" fill-opacity="0.44" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="564" y="158" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">GLÓBULOS</text>
+          <text x="564" y="176" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">↑ 20 – 50 %</text>
+          <text x="654" y="204" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="end">Hto ≈ 35 %</text>
+
+          <rect x="150" y="218" width="504" height="52" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.8" stroke-dasharray="6 4"></rect>
+          <text x="402" y="240" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">el PLASMA aumenta MÁS que los GLÓBULOS</text>
+          <text x="402" y="260" font-size="10.5" fill="currentColor" text-anchor="middle">→ hemodilución: ↓ hematocrito y ↓ hemoglobina, con VOLEMIA TOTAL aumentada</text>
+        </svg>
+        <figcaption>Es la <strong>anemia fisiológica del embarazo</strong>, y el nombre engaña: <strong>no falta hierro ni faltan glóbulos</strong> — de hecho la masa globular <strong>aumentó</strong>. Lo que pasa es que el plasma aumentó <strong>más</strong>. Por eso un hematocrito de 34 % en el segundo trimestre <strong>no se estudia</strong>, y por eso la hemodilución <strong>mejora la perfusión placentaria</strong> al bajar la viscosidad de la sangre.</figcaption>
+      </figure>
+
+      <h3>Hemograma y coagulación</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Parámetro</th><th>Cambio</th><th>Detalle</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Volemia</strong></td><td><strong>↑</strong></td><td>Aumento global del volumen sanguíneo</td></tr>
+            <tr><td><strong>Volumen plasmático</strong></td><td><strong>↑</strong></td><td><strong><span class="dato">40 – 60 %</span></strong></td></tr>
+            <tr><td><strong>Volumen globular</strong></td><td><strong>↑</strong></td><td><strong><span class="dato">20 – 50 %</span></strong> — aumenta <strong>menos</strong> que el plasma</td></tr>
+            <tr><td><strong>Hematocrito</strong></td><td><strong>↓</strong></td><td>Por <strong>hemodilución</strong></td></tr>
+            <tr><td><strong>Concentración de Hb</strong></td><td><strong>↓</strong></td><td>Por <strong>hemodilución</strong></td></tr>
+            <tr><td><strong>Leucocitos</strong></td><td><strong>↑</strong></td><td><strong>Leucocitosis de <span class="dato">9.000 a 16.000/mm³</span></strong>, con <strong>predominio de PMN</strong>. <strong>Causa desconocida</strong></td></tr>
+            <tr><td><strong>Plaquetas</strong></td><td><strong>↓</strong></td><td>Descenso fisiológico. El material lo consigna como <strong>«≥ 100.000»</strong> — <em>ver nota</em></td></tr>
+            <tr><td><strong>Factores procoagulantes</strong></td><td><strong>↑</strong></td><td rowspan="2"><strong>HIPERCOAGULABILIDAD SANGUÍNEA</strong><br><strong>Perdura hasta 6 semanas posparto</strong></td></tr>
+            <tr><td><strong>Inhibidores de la coagulación</strong></td><td><strong>↓</strong></td></tr>
+            <tr><td><strong>VSG</strong></td><td><strong>↑</strong></td><td><strong>Puede llegar a <span class="dato">80 mm</span></strong></td></tr>
+            <tr><td><strong>Lípidos</strong></td><td><strong>↑</strong></td><td>Progresivamente</td></tr>
+            <tr><td><strong>Glucemia en ayunas</strong></td><td><strong>↓</strong></td><td>A medida que el embarazo evoluciona, porque <strong>los niveles de insulina aumentan</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Nota metodológica sobre las flechas: en el archivo original <strong>no son caracteres de texto sino autoformas dibujadas</strong> junto a cada parámetro, de modo que <strong>no aparecen al extraer el texto</strong>. Se recuperaron <strong>leyendo la posición de cada flecha en la diapositiva</strong> y emparejándola con su renglón, no por inferencia fisiológica. Si alguna no coincide con lo que dice el docente, conviene avisarlo.</p>
+
+      <p class="cita">Corrección sobre la redacción del material: <strong>«Trombocitopenia: ≥ 100.000 plaquetas»</strong> está expresado al revés. La <strong>trombocitopenia es un DESCENSO</strong> del recuento; lo que el número indica es el <strong>umbral por encima del cual ese descenso se considera fisiológico</strong> —la <strong>trombocitopenia gestacional</strong>, que aparece en el tercer trimestre, es leve y no requiere estudio—. Un recuento <strong>por debajo de 100.000 sí obliga a investigar</strong>: púrpura trombocitopénica inmune, preeclampsia con criterios de gravedad, síndrome HELLP.</p>
+
+      <h3>Bioquímica</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Parámetro</th><th>Cambio</th><th>Valor y motivo</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Fosfatasa alcalina</strong></td><td><strong>↑</strong></td><td>Progresivamente, <strong>hasta DUPLICAR</strong> los valores de la mujer no embarazada</td></tr>
+            <tr><td><strong>Ácido úrico</strong></td><td><strong>↓</strong></td><td>Alcanza <strong><span class="dato">2,6 – 3,0 mg/dL</span></strong></td></tr>
+            <tr><td><strong>Urea</strong></td><td><strong>↓</strong></td><td><strong><span class="dato">7 – 8 mg/dL</span></strong>. Por aumento del <strong>metabolismo, la hidratación y la función renal</strong></td></tr>
+            <tr><td><strong>Creatinina</strong></td><td><strong>↓</strong></td><td>Por el aumento del filtrado</td></tr>
+            <tr><td><strong>Clearance de creatinina</strong></td><td><strong>↑</strong></td><td>Por el <strong>aumento de la filtración glomerular</strong>. En el <strong>tercer trimestre es un 50 % mayor</strong> que en la no embarazada</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante! — Los valores que dejan de servir</p>
+        <p>Es la aplicación práctica de toda la sección:</p>
+        <p><strong>La VSG no sirve.</strong> Puede llegar a 80 mm en una embarazada sana: <strong>pierde todo valor diagnóstico</strong> para investigar inflamación. Si hace falta un reactante, se usa la <strong>PCR</strong>, que casi no se modifica.</p>
+        <p><strong>Una creatinina «normal» puede ser patológica.</strong> Como el clearance sube un 50 %, la creatinina de una embarazada sana es <strong>más baja</strong> que la de una no embarazada. Un valor en el límite alto del rango habitual, en una embarazada, <strong>ya significa deterioro renal</strong>.</p>
+        <p><strong>El ácido úrico bajo es lo esperable</strong> — y por eso <strong>su ASCENSO es un marcador de preeclampsia</strong>.</p>
+        <p><strong>Una FAL duplicada no es hepatopatía</strong>: buena parte proviene de la <strong>placenta</strong>.</p>
+      </div>
+
+      <p class="cita">Sobre la VSG, ver también el cuadernillo de Laboratorio Inmunológico, donde figura entre los <strong>reactantes de fase aguda</strong> y se enumeran las situaciones no inflamatorias que la elevan — el embarazo entre ellas.</p>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-tratamiento" id="cardio">
+      <span class="seccion__pestana"><b>03</b> Cardio-respiratorio</span>
+      <h2 class="seccion__titulo">Cardiovascular &amp; Respiratorio</h2>
+
+      <h3>Cardiovascular</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Parámetro</th><th>Cambio</th><th>Detalle</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Gasto cardíaco</strong></td><td><strong>↑</strong></td><td>Aumenta a expensas de sus dos componentes</td></tr>
+            <tr><td><strong>Volumen minuto</strong></td><td><strong>↑</strong></td><td>FC × volumen sistólico, <strong>hasta <span class="dato">6 L/min</span></strong></td></tr>
+            <tr><td><strong>Frecuencia cardíaca</strong></td><td><strong>↑</strong></td><td><strong><span class="dato">15 – 20 lpm</span></strong></td></tr>
+            <tr><td><strong>Volumen sistólico</strong></td><td><strong>↑</strong></td><td>—</td></tr>
+            <tr><td><strong>Tensión arterial</strong></td><td><strong>↓</strong></td><td><strong>Primera mitad: disminuye <span class="dato">5 – 10 mmHg</span></strong><br><strong>Al término: vuelve al valor pregrávido</strong></td></tr>
+            <tr><td><strong>Presión venosa</strong></td><td><strong>↑</strong></td><td><strong>Por debajo del útero</strong>, produciendo <strong>várices</strong> y <strong>hemorroides</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>El corazón</h3>
+      <ul>
+        <li><strong>Aumenta la sombra cardíaca</strong>, pero <strong>NO se hipertrofian las fibras cardíacas</strong>.</li>
+        <li>Se <strong>desplaza hacia arriba y adelante</strong> por la <strong>elevación del diafragma</strong>. <strong>No produce alteraciones orgánicas ni insuficiencia funcional.</strong></li>
+        <li>A la auscultación aparecen <strong>SOPLOS FUNCIONALES</strong>, por dos motivos:
+          <ul>
+            <li><strong>Acodadura de los grandes vasos de la base</strong> al desplazarse.</li>
+            <li><strong>Aumento de la turbulencia de la sangre</strong>, por <strong>disminución de la viscosidad</strong>.</li>
+          </ul>
+        </li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante! — El parto y el posparto inmediato</p>
+        <p><strong>Durante el trabajo de parto el gasto cardíaco aumenta un 50 %</strong> por efecto de las contracciones, que producen una <strong>auténtica autotransfusión</strong> a la circulación materna de <strong>300 a 500 mL</strong> con cada una.</p>
+        <p><strong>En el posparto inmediato el gasto cardíaco alcanza su valor MÁXIMO</strong>, por el <strong>cierre de la circulación uteroplacentaria</strong>.</p>
+        <p>Por eso, en una paciente <strong>cardiópata</strong>, el momento de mayor riesgo <strong>no es el embarazo ni el parto: es el posparto inmediato</strong>.</p>
+      </div>
+
+      <p class="cita">Profundización sobre la caída de la tensión arterial. Se debe a la <strong>vasodilatación periférica</strong> mediada por <strong>progesterona, relaxina, óxido nítrico y prostaciclina</strong>, que reduce la resistencia vascular sistémica más de lo que la aumenta el gasto cardíaco. Tiene <strong>dos consecuencias prácticas</strong>. Primera: una <strong>hipertensión crónica puede quedar ENMASCARADA</strong> en la primera mitad y «aparecer» en el tercer trimestre, simulando una hipertensión gestacional. Segunda: en decúbito supino el útero comprime la vena cava y reduce el retorno venoso — es el <strong>síndrome de hipotensión supina</strong>, que se corrige con el <strong>decúbito lateral izquierdo</strong>. Fuente: Cunningham FG et al., <em>Williams Obstetricia</em>, 26.ª ed.</p>
+
+      <p class="cita">Sobre los soplos funcionales: son <strong>sistólicos, suaves, de baja intensidad y sin irradiación</strong>, y aparecen en la mayoría de las embarazadas. <strong>No requieren estudio.</strong> Sí lo requieren, en cambio, los <strong>soplos diastólicos</strong>, los <strong>sistólicos intensos</strong> o los que se acompañan de <strong>síntomas</strong> — ésos nunca son funcionales.</p>
+
+      <h3>Respiratorio</h3>
+      <p>El <strong>mayor requerimiento de oxígeno por parte del feto</strong> genera cambios respiratorios.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Estructura</th><th>Modificación</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Fosas nasales</strong></td><td><strong>Edematosas y congestivas</strong> por <strong>estímulos estrogénicos</strong>. Producen en el <strong>30 % de las embarazadas</strong> una <strong>rinitis y congestión nasal</strong></td></tr>
+            <tr><td><strong>Epistaxis</strong></td><td>Por <strong>congestión vascular</strong> o por la presencia de un <strong>angiofibroma</strong> —un tipo de pólipo— que <strong>desaparece luego del parto</strong></td></tr>
+            <tr><td><strong>Caja torácica</strong></td><td>Aumenta su <strong>circunferencia unos <span class="dato">5 cm</span></strong>, lo que ocasiona una <strong>elevación del ángulo costodiafragmático</strong> y eleva el <strong>diafragma unos <span class="dato">4 cm</span></strong></td></tr>
+            <tr><td><strong>Capacidad funcional y volumen residual</strong></td><td><strong>DISMINUYEN</strong> por la elevación del diafragma</td></tr>
+            <tr><td><strong>Frecuencia respiratoria</strong></td><td>Se <strong>mantiene en valores normales</strong> hasta casi el final de la gestación, donde está <strong>levemente aumentada</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 414" role="img" aria-label="Cascada de los cambios respiratorios del embarazo. El útero grávido eleva el diafragma unos cuatro centímetros y aumenta la circunferencia de la caja torácica unos cinco. Esto disminuye la capacidad funcional residual y el volumen residual. Al mismo tiempo aumenta la ventilación, aunque la frecuencia respiratoria se mantiene normal casi hasta el final. El resultado es un descenso de la presión parcial de dióxido de carbono, que produce una alcalosis respiratoria. Esta alcalosis se compensa por vía renal, con aumento de la excreción urinaria de bicarbonato, y además es la responsable de la pseudodisnea o disnea fisiológica del embarazo.">
+          <defs>
+            <marker id="pta-resp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="140" y="14" width="420" height="44" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="350" y="34" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">ÚTERO GRÁVIDO</text>
+          <text x="350" y="52" font-size="10.5" fill="currentColor" text-anchor="middle">eleva el diafragma 4 cm · caja torácica +5 cm</text>
+
+          <polyline points="350,58 350,80" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-resp)"></polyline>
+
+          <rect x="140" y="84" width="420" height="44" rx="3" fill="var(--c)" fill-opacity="0.20" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="350" y="104" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">↓ CAPACIDAD FUNCIONAL RESIDUAL</text>
+          <text x="350" y="122" font-size="10.5" fill="currentColor" text-anchor="middle">y ↓ volumen residual</text>
+
+          <polyline points="350,128 350,150" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-resp)"></polyline>
+
+          <rect x="140" y="154" width="420" height="44" rx="3" fill="var(--c)" fill-opacity="0.24" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="350" y="174" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">↑ VENTILACIÓN</text>
+          <text x="350" y="192" font-size="10.5" fill="currentColor" text-anchor="middle">la FR se mantiene normal casi hasta el final</text>
+
+          <polyline points="350,198 350,220" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-resp)"></polyline>
+
+          <rect x="270" y="224" width="160" height="32" rx="3" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="350" y="245" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">↓ PCO2</text>
+
+          <polyline points="350,256 350,278" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-resp)"></polyline>
+
+          <rect x="200" y="282" width="300" height="36" rx="3" fill="var(--c)" fill-opacity="0.42" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="350" y="306" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">ALCALOSIS RESPIRATORIA</text>
+
+          <polyline points="350,318 350,332" fill="none" stroke="currentColor" stroke-width="1.6"></polyline>
+          <polyline points="200,332 500,332" fill="none" stroke="currentColor" stroke-width="1.6"></polyline>
+          <polyline points="200,332 200,342" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-resp)"></polyline>
+          <polyline points="500,332 500,342" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pta-resp)"></polyline>
+
+          <rect x="60" y="346" width="280" height="58" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="200" y="368" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">COMPENSACIÓN RENAL</text>
+          <text x="200" y="390" font-size="10.5" fill="currentColor" text-anchor="middle">↑ excreción de bicarbonato</text>
+
+          <rect x="360" y="346" width="280" height="58" rx="3" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="500" y="366" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">PSEUDODISNEA</text>
+          <text x="500" y="384" font-size="10.5" fill="currentColor" text-anchor="middle">o disnea fisiológica</text>
+          <text x="500" y="400" font-size="10.5" fill="currentColor" text-anchor="middle">sensación consciente de respirar</text>
+        </svg>
+        <figcaption>La <strong>pseudodisnea es el ejemplo perfecto</strong> del objetivo de todo el cuadernillo: una embarazada que refiere <strong>falta de aire</strong> en reposo, con examen y saturación normales, <strong>no tiene una enfermedad respiratoria</strong>. Tiene la <strong>sensación consciente de respirar</strong> que produce la baja PCO2. Reconocerla evita una derivación y un estudio innecesarios.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-diferenciales" id="urinario">
+      <span class="seccion__pestana"><b>04</b> Urinario &amp; digestivo</span>
+      <h2 class="seccion__titulo">Urinario &amp; Digestivo</h2>
+
+      <h3>Riñón y vías urinarias</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Estructura</th><th>Modificación</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Riñón</strong></td>
+              <td><strong>Aumenta el flujo sanguíneo y el flujo plasmático renal</strong>, por el aumento del volumen plasmático total<br><strong>Aumenta la velocidad de filtrado glomerular hasta <span class="dato">140 mL/min</span></strong><br><strong>Aumenta la fracción de filtración</strong> progresivamente<br>La función renal <strong>varía según la posición</strong> que adopte la embarazada</td>
+            </tr>
+            <tr>
+              <td><strong>Uréteres</strong></td>
+              <td><strong>Dilatación</strong> —por efecto de la <strong>PROGESTERONA</strong>—, <strong>acodadura</strong> y <strong>desplazamiento lateral</strong> por encima del estrecho superior<br><strong>En la semana 19 la dilatación es más acentuada en el URÉTER DERECHO</strong>, ya que el <strong>izquierdo está protegido por el sigmoides</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Vejiga</strong></td>
+              <td><strong>Elongación y ensanchamiento de la base del trígono</strong><br><strong>Meatos ureterales muy separados</strong>, edematosos y congestivos<br>El <strong>piso vesical posee una acentuada saculación</strong> que da lugar a <strong>orina residual</strong><br><strong>Polaquiuria</strong> e <strong>incontinencia de orina</strong><br><strong>Reflujo vesicoureteral</strong><br><strong>Disminución del peristaltismo ureteral</strong> — favorece el <strong>ascenso de gérmenes</strong><br><strong>Diuresis</strong>: disminuye durante el día y <strong>aumenta por la noche</strong><br><strong>Es frecuente la BACTERIURIA ASINTOMÁTICA</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante! — La bacteriuria asintomática SÍ se trata</p>
+        <p>Es la única situación en que una bacteriuria sin síntomas <strong>se busca activamente y se trata</strong>. El motivo está en la misma tabla: la <strong>dilatación ureteral</strong>, la <strong>disminución del peristaltismo</strong>, el <strong>reflujo vesicoureteral</strong> y la <strong>orina residual</strong> convierten una colonización banal en un <strong>camino abierto hacia el riñón</strong>.</p>
+        <p><strong>Sin tratar, entre el 20 y el 40 % evoluciona a pielonefritis aguda</strong>, que a su vez se asocia a <strong>parto pretérmino y bajo peso al nacer</strong>. Por eso se realiza <strong>urocultivo de tamizaje</strong> en el control prenatal.</p>
+      </div>
+
+      <p class="cita">Profundización sobre por qué el uréter DERECHO: además de la <strong>protección que el sigmoides ejerce sobre el izquierdo</strong>, el útero grávido presenta una <strong>dextrorrotación fisiológica</strong> que lo hace comprimir preferentemente el uréter derecho contra el estrecho superior. Es la razón por la que la <strong>pielonefritis del embarazo es predominantemente derecha</strong>. Ver también el cuadernillo de Infecciones del Tracto Urinario. Fuente: Cunningham FG et al., <em>Williams Obstetricia</em>, 26.ª ed.</p>
+
+      <h3>Aparato digestivo</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Estructura</th><th>Modificación</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Encías</strong></td><td><strong>Hiperémicas e inflamadas.</strong> El material lo atribuye a <strong>hipovitaminosis C</strong> — <em>ver nota</em></td></tr>
+            <tr><td><strong>Dientes</strong></td><td><strong>Odontalgias y caries.</strong> El material lo atribuye al <strong>metabolismo alterado del calcio</strong> — <em>ver nota</em></td></tr>
+            <tr><td><strong>Esófago</strong></td><td><strong>Acortado.</strong> <strong>Insuficiencia del píloro y del cardias</strong> → <strong>REFLUJO GASTROESOFÁGICO</strong></td></tr>
+            <tr><td><strong>Estómago</strong></td><td><strong>Dilatación del cardias y del píloro</strong>, con <strong>atonía</strong></td></tr>
+            <tr><td><strong>Intestino</strong></td><td><strong>Rechazado hacia la izquierda y hacia arriba.</strong> <strong>Constipación</strong></td></tr>
+            <tr><td><strong>Apéndice</strong></td><td><strong>Se desplaza</strong> — <em>ver desarrollo debajo</em></td></tr>
+            <tr><td><strong>Apetito</strong></td><td>Puede estar <strong>aumentado o disminuido</strong></td></tr>
+            <tr><td><strong>Náuseas y vómitos</strong></td><td>Sobre todo <strong>matutinos</strong> — las <strong>pituitas</strong></td></tr>
+            <tr><td><strong>Sialorrea</strong></td><td>Puede ser <strong>de gran intensidad</strong></td></tr>
+            <tr><td><strong>Hígado</strong></td><td>En la <strong>segunda mitad</strong> está <strong>rechazado hacia el diafragma</strong> y con <strong>rotación hacia la derecha</strong>. Presenta <strong>sobreactividad funcional</strong>. El <strong>metabolismo de la bilirrubina está alterado</strong>, tanto en la <strong>conjugación</strong> como en la <strong>excreción</strong></td></tr>
+            <tr><td><strong>Vesícula biliar</strong></td><td><strong>Atonía y distensión</strong>, <strong>espasmo del esfínter de Oddi</strong>, lo que <strong>dificulta la salida de bilis</strong> y favorece la <strong>LITIASIS VESICULAR</strong></td></tr>
+            <tr><td><strong>Páncreas</strong></td><td><strong>Aumenta el desarrollo de los islotes de Langerhans</strong>, con <strong>hipersecreción de insulina</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Corrección sobre las <strong>encías</strong>: la <strong>gingivitis del embarazo</strong> no se debe a hipovitaminosis C sino a la acción de los <strong>estrógenos y la progesterona</strong> sobre el epitelio gingival y el tejido conectivo, que <strong>exageran la respuesta inflamatoria vascular frente a la placa bacteriana</strong>. El tratamiento es <strong>higiene y control odontológico</strong>, no vitamina C.</p>
+
+      <p class="cita">Corrección sobre las <strong>caries</strong>: la idea de que el feto «saca calcio de los dientes de la madre» es un <strong>mito clásico y está desmentida</strong>. El <strong>esmalte dental no participa en la homeostasis del calcio</strong> — es un tejido acelular y no intercambia calcio con el plasma; el que se moviliza para el feto proviene del <strong>hueso</strong>. El aumento de caries en el embarazo se explica por la <strong>exposición al ácido gástrico en los vómitos</strong>, los <strong>cambios en la dieta</strong> y la <strong>menor higiene por náuseas al cepillarse</strong>. Se conserva el texto original y se señala aquí.</p>
+
+      <h3>El apéndice</h3>
+      <p>El material lo <strong>nombra dos veces sin desarrollarlo</strong>. Lo que corresponde señalar:</p>
+      <p>A medida que el útero crece, el <strong>ciego y el apéndice se desplazan hacia ARRIBA y hacia AFUERA</strong>. Hacia el término, el apéndice puede alcanzar la <strong>altura de la cresta ilíaca o incluso del hipocondrio derecho</strong>.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante! — La apendicitis del embarazo</p>
+        <p>El desplazamiento tiene <strong>tres consecuencias</strong> que hacen de la apendicitis la <strong>urgencia quirúrgica no obstétrica más frecuente del embarazo</strong> y también <strong>la que más se diagnostica tarde</strong>:</p>
+        <p><strong>1.</strong> El <strong>punto de máximo dolor se desplaza hacia arriba</strong>: el punto de McBurney <strong>deja de ser confiable</strong>.<br>
+        <strong>2.</strong> El <strong>útero interpone entre el apéndice y el peritoneo parietal</strong>, de modo que la <strong>defensa y el rebote pueden faltar</strong>.<br>
+        <strong>3.</strong> La <strong>leucocitosis fisiológica</strong> —de 9.000 a 16.000— <strong>quita valor al hemograma</strong>.</p>
+        <p>El resultado es una <strong>demora diagnóstica</strong> con mayor tasa de <strong>perforación</strong>, y por eso el umbral para estudiar un dolor abdominal en una embarazada debe ser <strong>bajo</strong>.</p>
+      </div>
+
+      <h3>Órganos de los sentidos</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Sentido</th><th>Modificación</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Vista</strong></td><td>Es <strong>infrecuente que sufra alteraciones</strong>: hipersecreción lagrimal, disminución de la presión ocular</td></tr>
+            <tr><td><strong>Audición</strong></td><td><strong>Disminución de la agudeza auditiva</strong> por <strong>esclerosis del tímpano y depósito de calcio</strong></td></tr>
+            <tr><td><strong>Gusto</strong></td><td>Se <strong>altera la sensibilidad gustativa</strong> — los <strong>antojos</strong> de la embarazada</td></tr>
+            <tr><td><strong>Olfato</strong></td><td><strong>Hipersensibilidad de rechazo</strong> a determinados olores; <strong>hiposmia</strong> por <strong>congestión y edema de la mucosa</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-fisiopatologia" id="endocrino">
+      <span class="seccion__pestana"><b>05</b> Endocrino</span>
+      <h2 class="seccion__titulo">Sistema Endocrino</h2>
+
+      <p>La <strong>placenta participa activamente en la producción y secreción de hormonas</strong>.</p>
+
+      <h3>Lactógeno placentario (hPL)</h3>
+      <p>En los primeros meses, junto con la <strong>β-hCG</strong>, produce <strong>seis acciones</strong>:</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Acción</th><th>Consecuencia</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Acción luteotrófica</strong></td><td>Mantiene el <strong>cuerpo lúteo</strong></td></tr>
+            <tr><td><strong>Efecto inmunosupresor</strong></td><td>Contribuye a la <strong>tolerancia materna al feto</strong></td></tr>
+            <tr><td><strong>Disminuye la utilización materna de glucosa</strong></td><td>Para <strong>asegurar la nutrición del feto en períodos de ayuno</strong></td></tr>
+            <tr><td><strong>Acción ANTIINSULÍNICA</strong></td><td>Ver el desarrollo debajo</td></tr>
+            <tr><td><strong>Aumenta la movilización de lípidos</strong></td><td>La madre pasa a usar <strong>ácidos grasos</strong> como combustible</td></tr>
+            <tr><td><strong>Su concentración es directamente proporcional a la masa placentaria</strong></td><td>Sirve como <strong>índice de función placentaria</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Profundización: la <strong>acción antiinsulínica del hPL</strong> es la clave de dos cosas. Primero, del <strong>sentido fisiológico</strong> de todo el conjunto: el hPL <strong>desvía glucosa hacia el feto</strong> haciendo que la madre se vuelva <strong>resistente a la insulina</strong> y use grasas. Segundo, de la <strong>diabetes gestacional</strong>: como la producción de hPL crece con la placenta, la <strong>resistencia insulínica es máxima en el segundo y tercer trimestre</strong> — y por eso el tamizaje con la prueba de tolerancia oral a la glucosa se hace entre las <strong>semanas 24 y 28</strong>. La mujer que no logra aumentar su secreción de insulina lo suficiente <strong>desarrolla diabetes gestacional</strong>. Fuente: Cunningham FG et al., <em>Williams Obstetricia</em>, 26.ª ed.</p>
+
+      <h3>Gonadotrofina coriónica humana (hCG)</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Aspecto</th><th>Detalle</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Qué es</strong></td><td>Una <strong>glicoproteína</strong> producida <strong>primero por el trofoblasto</strong> y luego por el <strong>sinciciotrofoblasto</strong></td></tr>
+            <tr><td><strong>Función</strong></td><td><strong>Estimula la esteroidogénesis por el cuerpo lúteo</strong>, que como resultado produce <strong>prostaglandinas</strong></td></tr>
+            <tr><td><strong>Subunidad ALFA</strong></td><td>Común a otras glicoproteínas — <em>ver nota</em></td></tr>
+            <tr><td><strong>Subunidad BETA</strong></td><td><strong>Principal marcador de embarazo</strong> o de alteración de éste.<br>Alcanza su <strong>concentración máxima a los 2 meses</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Tirotrofina coriónica</h3>
+      <p>Producida por la placenta, <strong>tiene propiedades similares a la tirotrofina hipofisaria</strong>. <strong>Estimula la tiroides</strong>, aumentando su <strong>volumen</strong> y la <strong>concentración de hormonas tiroideas</strong> durante el embarazo.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante! — Por qué la hCG estimula la tiroides</p>
+        <p>La <strong>subunidad ALFA de la hCG es idéntica a la de la TSH</strong> —y también a la de la FSH y la LH—. Lo que diferencia a cada hormona es la <strong>subunidad beta</strong>, y de ahí que sea ésa la que se dosa para diagnosticar embarazo.</p>
+        <p>Esa <strong>homología estructural</strong> hace que la hCG, en concentraciones altas, <strong>se una al receptor de TSH y lo active</strong>. La consecuencia es un cuadro reconocible: hacia las <strong>8 a 10 semanas</strong>, cuando la hCG alcanza su pico, puede aparecer una <strong>TSH baja con T4 libre en el límite alto</strong>. Es la <strong>tirotoxicosis gestacional transitoria</strong>, se asocia a la <strong>hiperemesis gravídica</strong>, es <strong>autolimitada</strong> y <strong>no se trata con antitiroideos</strong>.</p>
+      </div>
+
+      <p class="cita">Nota terminológica: la denominación <strong>«tirotrofina coriónica»</strong> corresponde a una entidad postulada históricamente como hormona independiente. La bibliografía actual atribuye la <strong>acción tirotrófica a la propia hCG</strong>, por la homología descrita arriba. El fenómeno que la diapositiva describe es correcto; lo que cambió es a qué molécula se lo adjudica.</p>
+
+      <p class="cita">Nota sobre la frase <strong>«esta hormona a partir de la 8.ª semana la produce la placenta»</strong>: la hCG es producida por el <strong>sinciciotrofoblasto desde el inicio de la implantación</strong>, no desde la semana 8. Lo que ocurre entre las <strong>semanas 7 y 9</strong> es el <strong>cambio luteoplacentario</strong>: la placenta <strong>toma el relevo de la PROGESTERONA</strong> que hasta entonces producía el cuerpo lúteo. Es probablemente eso lo que la diapositiva quiere expresar, y explica también por qué la temperatura basal se estabiliza en ese momento (ver sección 01).</p>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-diagnostico" id="locales">
+      <span class="seccion__pestana"><b>06</b> Locales</span>
+      <h2 class="seccion__titulo">Modificaciones Locales</h2>
+
+      <p>Son las modificaciones <strong>anatómicas y funcionales que competen al aparato genital femenino</strong>. Los <strong>tres procesos que predominan</strong> son:</p>
+      <ul>
+        <li><strong>HIPERTROFIA</strong> — las células aumentan de tamaño.</li>
+        <li><strong>HIPERPLASIA</strong> — aumentan en número.</li>
+        <li><strong>CONGESTIÓN Y EDEMA.</strong></li>
+      </ul>
+
+      <h3>El útero en números</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Parámetro</th><th>Fuera del embarazo</th><th>Al término</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Volumen</strong></td><td>—</td><td><strong>Aumenta <span class="dato">24 veces</span></strong>, por <strong>desenrollamiento de las fibras espiraladas</strong></td></tr>
+            <tr><td><strong>Capacidad</strong></td><td>—</td><td><strong>Aumenta <span class="dato">500 veces</span></strong> — llega a <strong><span class="dato">4 a 5 litros</span></strong></td></tr>
+            <tr><td><strong>Peso</strong></td><td><span class="dato">60 g</span></td><td><strong><span class="dato">1 kg</span></strong></td></tr>
+            <tr><td><strong>Diámetros</strong></td><td>—</td><td>Longitudinal <span class="dato">32 – 35 cm</span><br>Anteroposterior <span class="dato">23 – 24 cm</span><br>Transverso <span class="dato">24 – 26 cm</span></td></tr>
+            <tr><td><strong>Volumen del plexo venoso de la pared</strong></td><td>—</td><td>Se eleva a <strong><span class="dato">1 litro</span></strong></td></tr>
+            <tr><td><strong>Forma</strong></td><td><strong>Piriforme</strong></td><td><strong>Asimétrico</strong> — la <strong>prominencia de PISKACEK</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>Funcionalmente</strong>, el útero grávido: <strong>aumenta su elasticidad</strong>, su <strong>sensibilidad es casi nula</strong>, y <strong>aumenta su irritabilidad</strong> tanto a agentes físicos como químicos.</p>
+
+      <h3>Segmento inferior y cuello</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Estructura</th><th>Detalle</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>SEGMENTO INFERIOR</strong></td>
+              <td>Es la <strong>zona intermedia entre el cuerpo y el cuello</strong>, que antes de constituirse correspondía al <strong>istmo</strong>.<br><strong>Empieza a formarse entre las semanas 14 y 16.</strong><br><strong>Formación</strong>: en su musculatura <strong>desaparece la capa media espiralada</strong>, lo que produce <strong>adelgazamiento</strong>.<br><strong>FUNCIÓN: participa en la dilatación del cuello mediante las contracciones</strong></td>
+            </tr>
+            <tr>
+              <td><strong>CUELLO UTERINO</strong></td>
+              <td><strong>Aspecto</strong>: rosado o <strong>cianótico</strong><br><strong>Situación</strong>: varía<br><strong>Longitud</strong>: llega a <span class="dato">3 – 5 cm</span><br><strong>OCI cerrado</strong><br><strong>OCE</strong>: <strong>cerrado en la primípara</strong>, <strong>entreabierto en la multípara</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">El <strong>segmento inferior</strong> es el mismo que en el cuadernillo de Mecanismo de Parto aparece como <strong>segmento PASIVO</strong>: el que se distiende mientras el segmento activo se retrae. Su <strong>adelgazamiento fisiológico</strong> —por la desaparición de la capa media espiralada— es también lo que lo vuelve <strong>el sitio de rotura uterina</strong> y el lugar donde se realiza la <strong>histerotomía segmentaria transversa</strong> de la cesárea.</p>
+
+      <h3>Resto del aparato genital y mamas</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Estructura</th><th>Modificación</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>MAMAS</strong></td>
+              <td><strong>Hipertrofia</strong><br><strong>Disminuye su consistencia</strong><br>Aparece una <strong>sutil red venosa</strong><br><strong>Tubérculos de Montgomery o de Morgagni</strong> — interpretados como <strong>glándulas mamarias accesorias</strong><br><strong>Funcionalmente</strong>: <strong>secreción de calostro hasta el 3.º y 4.º día del puerperio</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Pared abdominal</strong></td>
+              <td><strong>Aumento de espesor</strong> por <strong>sobrecarga adiposa e hipertrofia</strong><br><strong>Distensión de los tegumentos</strong><br><strong>Flacidez en las multíparas</strong><br><strong>Hundimiento del ombligo</strong> al principio</td>
+            </tr>
+            <tr>
+              <td><strong>Ovarios y trompas</strong></td>
+              <td><strong>Hipertrofia</strong> por <strong>mayor irrigación</strong>.<br>En uno de los ovarios se hace aparente el <strong>crecimiento del cuerpo lúteo, hasta la semana 17</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Ligamentos</strong></td>
+              <td><strong>Uterosacros y redondos</strong>: <strong>se hipertrofian y se alargan</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Vulva</strong></td>
+              <td><strong>Hipertrofia de labios mayores y menores.</strong> Presencia de <strong>várices</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Vagina</strong></td>
+              <td><strong>Aumenta su elasticidad</strong> y la <strong>producción de ácido láctico</strong><br><strong>Químicas</strong>: aumenta la <strong>secreción vaginal</strong> —flujo blanquecino— y el <strong>pH desciende entre 4 y 3,8</strong><br><strong>Bacteriológicas</strong>: presencia de gérmenes que abarcan toda su extensión. La <strong>región de separación entre la zona de gérmenes y la estéril se denomina TAPÓN MUCOSO</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Periné</strong></td>
+              <td><strong>Pigmentación de la piel</strong><br><strong>Hiperplasia del tejido elástico</strong> y <strong>relajación de los músculos de la pelvis</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">El descenso del <strong>pH vaginal a 3,8 – 4</strong> por el aumento del <strong>ácido láctico</strong> es un mecanismo de <strong>defensa</strong>: dificulta la colonización bacteriana ascendente. La contracara es que ese mismo medio ácido y rico en glucógeno <strong>favorece la candidiasis</strong>, que por eso es más frecuente en el embarazo.</p>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-importantes" id="diagnostico">
+      <span class="seccion__pestana"><b>07</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">Diagnóstico de Embarazo</h2>
+
+      <p>Se debe <strong>pensar en embarazo en toda mujer con ciclos regulares que presenta un atraso</strong> en la aparición de su menstruación, o ante <strong>cualquier cambio de las características habituales del sangrado</strong> —en cantidad, tiempo de aparición o duración—.</p>
+      <p>El diagnóstico se basa en los <strong>clásicos signos de PRESUNCIÓN, PROBABILIDAD y CERTEZA</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 300" role="img" aria-label="Los tres grupos de signos de embarazo ordenados por grado de certeza creciente. Los signos de presunción son manifestaciones subjetivas y objetivas: sialorrea, vómitos, cambios del apetito y del gusto, aversión a ciertos olores, irritabilidad y labilidad emocional, mareos y lipotimias, somnolencia y desgano, polaquiuria y turgencia mamaria. Los signos de probabilidad son la amenorrea y las modificaciones uterinas que se reconocen por tacto vaginal combinado con palpación externa: útero más globuloso, fondos de saco vaginales convexos que constituyen el signo de Noble-Budin, y consistencia disminuida o reblandecimiento. Los signos de certeza son la determinación de la subunidad beta de la gonadotrofina coriónica, la ecografía transvaginal desde las cinco a seis semanas y la transabdominal no antes de las siete, y la auscultación de latidos fetales.">
+          <defs>
+            <marker id="pta-sig" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="14" y="14" width="212" height="52" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="120" y="36" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">PRESUNCIÓN</text>
+          <text x="120" y="56" font-size="10.5" fill="currentColor" text-anchor="middle">subjetivos y objetivos</text>
+          <rect x="14" y="66" width="212" height="180" rx="3" fill="var(--c)" fill-opacity="0.06" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="26" y="88" font-size="10.5" fill="currentColor">· sialorrea</text>
+          <text x="26" y="106" font-size="10.5" fill="currentColor">· vómitos</text>
+          <text x="26" y="124" font-size="10.5" fill="currentColor">· cambios del apetito</text>
+          <text x="26" y="142" font-size="10.5" fill="currentColor">· aversión a los olores</text>
+          <text x="26" y="160" font-size="10.5" fill="currentColor">· irritabilidad, tristeza</text>
+          <text x="26" y="178" font-size="10.5" fill="currentColor">· mareos y lipotimias</text>
+          <text x="26" y="196" font-size="10.5" fill="currentColor">· somnolencia, desgano</text>
+          <text x="26" y="214" font-size="10.5" fill="currentColor">· polaquiuria</text>
+          <text x="26" y="232" font-size="10.5" fill="currentColor">· turgencia mamaria</text>
+
+          <rect x="244" y="14" width="212" height="52" rx="3" fill="var(--c)" fill-opacity="0.28" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="350" y="36" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">PROBABILIDAD</text>
+          <text x="350" y="56" font-size="10.5" fill="currentColor" text-anchor="middle">orientan fuertemente</text>
+          <rect x="244" y="66" width="212" height="180" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="256" y="88" font-size="10.5" font-weight="700" fill="currentColor">· AMENORREA</text>
+          <text x="256" y="124" font-size="10.5" fill="currentColor">Modificaciones uterinas</text>
+          <text x="256" y="142" font-size="10.5" fill="currentColor">al tacto combinado:</text>
+          <text x="256" y="166" font-size="10.5" fill="currentColor">· útero más globuloso</text>
+          <text x="256" y="184" font-size="10.5" fill="currentColor">· fondos de saco convexos</text>
+          <text x="256" y="202" font-size="10.5" font-weight="700" fill="currentColor">  → signo de NOBLE-BUDIN</text>
+          <text x="256" y="226" font-size="10.5" fill="currentColor">· consistencia disminuida</text>
+          <text x="256" y="242" font-size="10.5" fill="currentColor">  (reblandecimiento)</text>
+
+          <rect x="474" y="14" width="212" height="52" rx="3" fill="var(--c)" fill-opacity="0.44" stroke="var(--c)" stroke-width="2.5"></rect>
+          <text x="580" y="36" font-size="12" font-weight="700" fill="currentColor" text-anchor="middle">CERTEZA</text>
+          <text x="580" y="56" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">confirman</text>
+          <rect x="474" y="66" width="212" height="180" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="486" y="88" font-size="10.5" font-weight="700" fill="currentColor">· β-hCG</text>
+          <text x="486" y="106" font-size="10.5" fill="currentColor">  por métodos inmunológicos</text>
+          <text x="486" y="142" font-size="10.5" font-weight="700" fill="currentColor">· ECOGRAFÍA</text>
+          <text x="486" y="160" font-size="10.5" fill="currentColor">  transvaginal: 5 – 6 sem</text>
+          <text x="486" y="178" font-size="10.5" fill="currentColor">  transabdominal: ≥ 7 sem</text>
+          <text x="486" y="214" font-size="10.5" font-weight="700" fill="currentColor">· Auscultación de</text>
+          <text x="486" y="232" font-size="10.5" font-weight="700" fill="currentColor">  LATIDOS FETALES</text>
+
+          <polyline points="20,270 680,270" fill="none" stroke="currentColor" stroke-width="1.8" marker-end="url(#pta-sig)"></polyline>
+          <text x="350" y="292" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">aumenta la certeza diagnóstica</text>
+        </svg>
+        <figcaption>La escala no es de <strong>frecuencia</strong> sino de <strong>peso probatorio</strong>. Los de <strong>presunción</strong> los tiene también una mujer no embarazada; los de <strong>probabilidad</strong> orientan pero admiten otras causas —una amenorrea puede tener muchos motivos—; sólo los de <strong>certeza</strong> demuestran la presencia del producto de la concepción. En la práctica actual, la <strong>β-hCG y la ecografía</strong> resuelven casi siempre en el primer nivel de consulta.</figcaption>
+      </figure>
+
+      <h3>Signos de presunción</h3>
+      <p>Se trata de <strong>manifestaciones subjetivas y objetivas</strong>: <strong>sialorrea, vómitos, modificaciones del apetito y del gusto, aversión a ciertos olores, irritabilidad, preocupación, tristeza, ciclos alternados de alegría y melancolía, mareos, lipotimias, somnolencia, desgano, polaquiuria</strong> y <strong>modificaciones en las mamas</strong> (turgencia).</p>
+
+      <h3>Signos de probabilidad</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Signo</th><th>Detalle</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>AMENORREA</strong></td><td>Ante <strong>cualquier mujer en edad fértil, sana y con períodos regulares</strong> que presente un atraso, <strong>debe pensarse que está embarazada</strong>. Es un hecho importante que <strong>orienta en la mayoría de los casos</strong></td></tr>
+            <tr><td><strong>Modificaciones uterinas</strong></td><td>El <strong>tacto por vía vaginal combinado con la palpación externa</strong> permite reconocer los <strong>signos más seguros</strong>:<br>· La <strong>forma del útero se hace más globulosa</strong><br>· Los <strong>fondos de saco vaginales se hacen CONVEXOS</strong> — <strong>signo de NOBLE-BUDIN</strong><br>· Su <strong>consistencia disminuye</strong> — <strong>reblandecimiento</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Signos de certeza</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Método</th><th>Detalle</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Bioquímico</strong></td><td>Determinación del <strong>dosaje de la subunidad BETA de la gonadotrofina coriónica (hCG)</strong> por <strong>métodos inmunológicos</strong></td></tr>
+            <tr><td><strong>Ecografía transabdominal</strong></td><td>Debe realizarse preferentemente <strong>no antes de la 7.ª semana</strong> de amenorrea</td></tr>
+            <tr><td><strong>Ecografía transvaginal</strong></td><td><strong>Desde la 5.ª a 6.ª semana</strong>, preferentemente cuando sea necesario <strong>diagnosticar el sitio de implantación</strong> — para <strong>descartar embarazo ectópico</strong></td></tr>
+            <tr><td><strong>Examen y palpación</strong></td><td><strong>Auscultación de latidos fetales</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Profundización sobre la combinación de los dos métodos de certeza. La <strong>β-hCG cuantitativa</strong> y la ecografía se leen <strong>juntas</strong>: existe una <strong>zona discriminatoria</strong> —habitualmente entre <strong>1.500 y 3.500 mUI/mL</strong>— por encima de la cual un <strong>saco gestacional intrauterino DEBERÍA verse</strong> por vía transvaginal. Si la β-hCG supera ese umbral y <strong>no se ve saco intrauterino</strong>, hay que sospechar un <strong>embarazo ectópico</strong> o una gestación no viable. Es exactamente el escenario que la diapositiva menciona al indicar la vía transvaginal «para descartar embarazo ectópico». Fuente: Cunningham FG et al., <em>Williams Obstetricia</em>, 26.ª ed.</p>
+    </section>
+
+    <!-- ============ 8 ============ -->
+    <section class="seccion s-diferenciales" id="sintesis">
+      <span class="seccion__pestana"><b>08</b> Síntesis</span>
+      <h2 class="seccion__titulo">Síntesis: Qué Sube y Qué Baja</h2>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 380" role="img" aria-label="Mapa de síntesis de los parámetros que aumentan y disminuyen en el embarazo, agrupados por sistema. Aumentan: en sangre, la volemia y el volumen plasmático entre cuarenta y sesenta por ciento, el volumen globular entre veinte y cincuenta por ciento, los leucocitos entre nueve mil y dieciséis mil con predominio de polimorfonucleares, los factores procoagulantes, la eritrosedimentación hasta ochenta milímetros, los lípidos y la fosfatasa alcalina. En riñón y corazón, el filtrado glomerular hasta ciento cuarenta mililitros por minuto, el clearance de creatinina un cincuenta por ciento, el gasto cardíaco y el volumen minuto hasta seis litros por minuto, la frecuencia cardíaca quince a veinte latidos, el volumen sistólico y la presión venosa. En respiratorio, la circunferencia torácica cinco centímetros y la ventilación. Disminuyen: en sangre, el hematocrito y la hemoglobina, las plaquetas, los inhibidores de la coagulación, la glucemia en ayunas, el ácido úrico, la urea y la creatinina. En cardiovascular, la tensión arterial cinco a diez milímetros de mercurio en la primera mitad. En respiratorio, la presión parcial de dióxido de carbono, la capacidad funcional residual y el volumen residual.">
+          <rect x="14" y="14" width="330" height="34" rx="3" fill="var(--c)" fill-opacity="0.34" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="179" y="37" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">↑ AUMENTAN</text>
+          <rect x="14" y="52" width="330" height="294" rx="3" fill="var(--c)" fill-opacity="0.06" stroke="var(--c)" stroke-width="1.5"></rect>
+
+          <text x="26" y="76" font-size="11" font-weight="700" fill="currentColor" opacity="0.85">SANGRE</text>
+          <text x="26" y="98" font-size="10.5" fill="currentColor">· Volemia y volumen plasmático (40 – 60 %)</text>
+          <text x="26" y="116" font-size="10.5" fill="currentColor">· Volumen globular (20 – 50 %)</text>
+          <text x="26" y="134" font-size="10.5" fill="currentColor">· Leucocitos: 9.000 – 16.000, PMN</text>
+          <text x="26" y="152" font-size="10.5" fill="currentColor">· Factores procoagulantes</text>
+          <text x="26" y="170" font-size="10.5" fill="currentColor">· VSG (hasta 80 mm) · Lípidos · FAL</text>
+
+          <text x="26" y="200" font-size="11" font-weight="700" fill="currentColor" opacity="0.85">RIÑÓN Y CORAZÓN</text>
+          <text x="26" y="222" font-size="10.5" fill="currentColor">· Filtrado glomerular: 140 mL/min</text>
+          <text x="26" y="240" font-size="10.5" fill="currentColor">· Clearance de creatinina: +50 %</text>
+          <text x="26" y="258" font-size="10.5" fill="currentColor">· Gasto cardíaco y volumen minuto (6 L/min)</text>
+          <text x="26" y="276" font-size="10.5" fill="currentColor">· FC +15 – 20 lpm · Volumen sistólico</text>
+          <text x="26" y="294" font-size="10.5" fill="currentColor">· Presión venosa por debajo del útero</text>
+
+          <text x="26" y="322" font-size="11" font-weight="700" fill="currentColor" opacity="0.85">RESPIRATORIO</text>
+          <text x="26" y="340" font-size="10.5" fill="currentColor">· Circunferencia torácica +5 cm · Ventilación</text>
+
+          <rect x="356" y="14" width="330" height="34" rx="3" fill="var(--c)" fill-opacity="0.34" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="521" y="37" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">↓ DISMINUYEN</text>
+          <rect x="356" y="52" width="330" height="294" rx="3" fill="var(--c)" fill-opacity="0.06" stroke="var(--c)" stroke-width="1.5"></rect>
+
+          <text x="368" y="76" font-size="11" font-weight="700" fill="currentColor" opacity="0.85">SANGRE</text>
+          <text x="368" y="98" font-size="10.5" fill="currentColor">· Hematocrito y hemoglobina</text>
+          <text x="368" y="116" font-size="10.5" fill="currentColor">· Plaquetas (fisiológico si ≥ 100.000)</text>
+          <text x="368" y="134" font-size="10.5" fill="currentColor">· Inhibidores de la coagulación</text>
+          <text x="368" y="152" font-size="10.5" fill="currentColor">· Glucemia en ayunas</text>
+          <text x="368" y="170" font-size="10.5" fill="currentColor">· Ácido úrico · Urea · Creatinina</text>
+
+          <text x="368" y="200" font-size="11" font-weight="700" fill="currentColor" opacity="0.85">CARDIOVASCULAR</text>
+          <text x="368" y="222" font-size="10.5" fill="currentColor">· Tensión arterial: 5 – 10 mmHg</text>
+          <text x="368" y="240" font-size="10.5" fill="currentColor">  en la 1.ª mitad; al término vuelve</text>
+          <text x="368" y="258" font-size="10.5" fill="currentColor">  al valor pregrávido</text>
+
+          <text x="368" y="322" font-size="11" font-weight="700" fill="currentColor" opacity="0.85">RESPIRATORIO</text>
+          <text x="368" y="340" font-size="10.5" fill="currentColor">· PCO2 · Capacidad y volumen residual</text>
+
+          <text x="350" y="368" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">el peso sube 11 kg · la temperatura sube 0,3 – 0,6 °C sólo en el 1.er trimestre</text>
+        </svg>
+        <figcaption>El patrón que ordena casi toda la columna izquierda es el <strong>aumento de volumen</strong> — de sangre, de flujo, de trabajo cardíaco—. Y el que ordena la derecha son sus <strong>dos consecuencias</strong>: la <strong>dilución</strong> —hematocrito, hemoglobina— y el <strong>mayor aclaramiento renal</strong> —ácido úrico, urea, creatinina—. Casi nada baja «por sí mismo»: bajan porque algo subió.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ============ Repaso ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso</span>
+      <h2 class="seccion__titulo">Repaso Activo</h2>
+      <p>Respondé antes de abrir cada tarjeta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary class="fc__p">¿Por qué se estudia este tema, según el propio material?</summary>
+          <div class="fc__r">Para <strong>evitar confundir lo normal con lo patológico</strong> e incurrir en la <strong>derivación indiscriminada</strong> de la paciente. Es la clave de lectura de todo el cuadernillo.</div>
+        </details>
+        <details class="fc s-generalidades">
+          <summary class="fc__p">¿Qué es el «orgullo de la embarazada»?</summary>
+          <div class="fc__r">La <strong>lordosis lumbosacra de compensación</strong>. Al modificarse el <strong>centro de gravedad</strong>, la cabeza y el tronco se proyectan <strong>hacia atrás</strong>.</div>
+        </details>
+        <details class="fc s-generalidades">
+          <summary class="fc__p">¿Por qué la temperatura sube sólo en el primer trimestre?</summary>
+          <div class="fc__r">Sube <strong>0,3 a 0,6 °C</strong> por el efecto <strong>termogénico de la progesterona del cuerpo lúteo</strong>. Cuando la <strong>placenta toma el relevo</strong> hacia las semanas 7 a 9, la curva se estabiliza en <strong>valores preovulatorios</strong>.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary class="fc__p">¿Por qué se llama «anemia fisiológica» si no falta nada?</summary>
+          <div class="fc__r">Porque el <strong>volumen plasmático sube 40 – 60 %</strong> y el <strong>volumen globular sólo 20 – 50 %</strong>. La <strong>masa de glóbulos AUMENTÓ</strong>, pero el plasma aumentó más: es <strong>hemodilución</strong>. Bajan el hematocrito y la hemoglobina con la <strong>volemia total aumentada</strong>.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary class="fc__p">Valores hematológicos normales en el embarazo que asustan</summary>
+          <div class="fc__r"><strong>Leucocitosis de 9.000 a 16.000</strong> con predominio de PMN, de <strong>causa desconocida</strong>. <strong>VSG hasta 80 mm.</strong> <strong>Plaquetas descendidas</strong>, fisiológico si <strong>≥ 100.000</strong>. <strong>FAL duplicada.</strong> Ninguno se estudia.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary class="fc__p">¿Por qué una creatinina «normal» puede ser patológica en una embarazada?</summary>
+          <div class="fc__r">Porque el <strong>clearance de creatinina sube un 50 %</strong> en el tercer trimestre y el <strong>filtrado llega a 140 mL/min</strong>. La creatinina de una embarazada sana es <strong>más baja</strong>; un valor en el límite alto del rango habitual <strong>ya indica deterioro renal</strong>.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary class="fc__p">¿Por qué importa que el ácido úrico esté bajo?</summary>
+          <div class="fc__r">Porque <strong>2,6 – 3,0 mg/dL es lo esperable</strong> en el embarazo — y por eso su <strong>ASCENSO es un marcador de preeclampsia</strong>.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary class="fc__p">¿Cuándo es el momento de mayor riesgo cardiovascular del embarazo?</summary>
+          <div class="fc__r">El <strong>POSPARTO INMEDIATO</strong>: el gasto cardíaco alcanza su <strong>valor máximo</strong> por el <strong>cierre de la circulación uteroplacentaria</strong>. Durante el trabajo de parto ya había subido un <strong>50 %</strong>, por la <strong>autotransfusión de 300 a 500 mL</strong> con cada contracción.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary class="fc__p">¿Por qué aparecen soplos en el embarazo y cuáles no hay que estudiar?</summary>
+          <div class="fc__r">Por <strong>acodadura de los grandes vasos</strong> al desplazarse el corazón y por <strong>aumento de la turbulencia</strong> al bajar la viscosidad. Los <strong>funcionales son sistólicos, suaves y sin irradiación</strong>. Sí hay que estudiar los <strong>diastólicos</strong>, los <strong>sistólicos intensos</strong> y los <strong>sintomáticos</strong>.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary class="fc__p">La cascada respiratoria completa</summary>
+          <div class="fc__r">El útero <strong>eleva el diafragma 4 cm</strong> y la caja torácica gana <strong>5 cm</strong> → <strong>↓ capacidad funcional y volumen residual</strong> → <strong>↑ ventilación</strong> con FR normal → <strong>↓ PCO2</strong> → <strong>ALCALOSIS RESPIRATORIA</strong>, compensada por el riñón con <strong>↑ excreción de bicarbonato</strong>, y responsable de la <strong>PSEUDODISNEA</strong>.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary class="fc__p">¿Qué es la pseudodisnea y por qué importa reconocerla?</summary>
+          <div class="fc__r">La <strong>sensación consciente de respirar</strong> que produce la <strong>baja PCO2</strong>. Una embarazada con falta de aire, examen normal y saturación normal <strong>no tiene enfermedad respiratoria</strong>. Reconocerla evita estudios y derivaciones innecesarias.</div>
+        </details>
+        <details class="fc s-diferenciales">
+          <summary class="fc__p">¿Por qué se dilata más el uréter derecho?</summary>
+          <div class="fc__r">Porque el <strong>izquierdo está protegido por el sigmoides</strong>, y además el útero grávido tiene una <strong>dextrorrotación fisiológica</strong> que comprime el derecho contra el estrecho superior. La dilatación se acentúa <strong>en la semana 19</strong> y se debe a la <strong>progesterona</strong>. Por eso la <strong>pielonefritis del embarazo es predominantemente derecha</strong>.</div>
+        </details>
+        <details class="fc s-diferenciales">
+          <summary class="fc__p">¿Por qué la bacteriuria asintomática se trata en el embarazo?</summary>
+          <div class="fc__r">Porque la <strong>dilatación ureteral</strong>, el <strong>menor peristaltismo</strong>, el <strong>reflujo vesicoureteral</strong> y la <strong>orina residual</strong> abren el camino al riñón. Sin tratar, <strong>20 a 40 % evoluciona a pielonefritis</strong>, asociada a <strong>parto pretérmino y bajo peso</strong>. Se hace <strong>urocultivo de tamizaje</strong>.</div>
+        </details>
+        <details class="fc s-diferenciales">
+          <summary class="fc__p">¿Por qué la apendicitis del embarazo se diagnostica tarde?</summary>
+          <div class="fc__r">Porque el <strong>apéndice asciende y se lateraliza</strong>, así que el <strong>punto de McBurney deja de ser confiable</strong>; el <strong>útero se interpone</strong> y pueden <strong>faltar la defensa y el rebote</strong>; y la <strong>leucocitosis fisiológica</strong> quita valor al hemograma.</div>
+        </details>
+        <details class="fc s-diferenciales">
+          <summary class="fc__p">Dos atribuciones del material que están mal, y cuál es la correcta</summary>
+          <div class="fc__r">Las <strong>encías</strong> no se inflaman por hipovitaminosis C sino por acción de <strong>estrógenos y progesterona</strong>, que exageran la respuesta a la placa. Las <strong>caries</strong> no se deben a que el feto «saque calcio de los dientes» —el <strong>esmalte no participa en la homeostasis del calcio</strong>— sino a <strong>vómitos, dieta e higiene</strong>.</div>
+        </details>
+        <details class="fc s-fisiopatologia">
+          <summary class="fc__p">Las seis acciones del lactógeno placentario</summary>
+          <div class="fc__r"><strong>Luteotrófica</strong>, <strong>inmunosupresora</strong>, <strong>disminuye la utilización materna de glucosa</strong>, <strong>antiinsulínica</strong>, <strong>aumenta la movilización de lípidos</strong>, y su <strong>concentración es proporcional a la masa placentaria</strong>.</div>
+        </details>
+        <details class="fc s-fisiopatologia">
+          <summary class="fc__p">¿Qué relación hay entre el hPL y la diabetes gestacional?</summary>
+          <div class="fc__r">Su <strong>acción antiinsulínica</strong> desvía glucosa al feto haciendo a la madre <strong>resistente a la insulina</strong>. Como el hPL crece con la placenta, la resistencia es <strong>máxima en el 2.º y 3.er trimestre</strong> — de ahí el tamizaje entre las <strong>semanas 24 y 28</strong>.</div>
+        </details>
+        <details class="fc s-fisiopatologia">
+          <summary class="fc__p">¿Por qué la hCG estimula la tiroides?</summary>
+          <div class="fc__r">Porque su <strong>subunidad ALFA es idéntica a la de la TSH</strong> —y a la de FSH y LH—. En concentraciones altas <strong>activa el receptor de TSH</strong>. Hacia las <strong>8 a 10 semanas</strong> puede dar <strong>TSH baja con T4 libre alta</strong>: la <strong>tirotoxicosis gestacional transitoria</strong>, asociada a hiperemesis, <strong>autolimitada</strong> y que <strong>no se trata con antitiroideos</strong>.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary class="fc__p">El útero al término, en números</summary>
+          <div class="fc__r"><strong>Volumen ×24</strong> por desenrollamiento de las fibras espiraladas. <strong>Capacidad ×500</strong>, hasta <strong>4 – 5 litros</strong>. <strong>Peso de 60 g a 1 kg.</strong> Diámetros <strong>32 – 35 / 23 – 24 / 24 – 26 cm</strong>. De <strong>piriforme</strong> pasa a <strong>asimétrico</strong>: la <strong>prominencia de Piskacek</strong>.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary class="fc__p">¿Qué es el segmento inferior y cuándo se forma?</summary>
+          <div class="fc__r">La <strong>zona entre el cuerpo y el cuello</strong>, que antes correspondía al <strong>istmo</strong>. Se forma entre las <strong>semanas 14 y 16</strong>, al <strong>desaparecer la capa media espiralada</strong> de su musculatura, lo que produce <strong>adelgazamiento</strong>. <strong>Participa en la dilatación del cuello mediante las contracciones.</strong></div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary class="fc__p">Modificaciones de la vagina y qué es el tapón mucoso</summary>
+          <div class="fc__r">Aumenta la <strong>elasticidad</strong> y el <strong>ácido láctico</strong>; el <strong>pH baja a 3,8 – 4</strong> y aumenta la secreción. La <strong>región de separación entre la zona con gérmenes y la estéril</strong> se denomina <strong>TAPÓN MUCOSO</strong>.</div>
+        </details>
+        <details class="fc s-importantes">
+          <summary class="fc__p">Los tres grupos de signos de embarazo</summary>
+          <div class="fc__r"><strong>PRESUNCIÓN</strong>: subjetivos y objetivos —sialorrea, vómitos, cambios del gusto, polaquiuria, turgencia mamaria—. <strong>PROBABILIDAD</strong>: <strong>amenorrea</strong> y <strong>modificaciones uterinas</strong>. <strong>CERTEZA</strong>: <strong>β-hCG</strong>, <strong>ecografía</strong> y <strong>auscultación de latidos</strong>.</div>
+        </details>
+        <details class="fc s-importantes">
+          <summary class="fc__p">¿Qué es el signo de Noble-Budin?</summary>
+          <div class="fc__r">Que los <strong>fondos de saco vaginales se hacen CONVEXOS</strong> al tacto, por el crecimiento globuloso del útero. Es un <strong>signo de PROBABILIDAD</strong>, junto con el <strong>reblandecimiento</strong> y la forma más globulosa.</div>
+        </details>
+        <details class="fc s-importantes">
+          <summary class="fc__p">¿Desde cuándo se ve el embarazo por ecografía?</summary>
+          <div class="fc__r"><strong>Transvaginal: desde la 5.ª – 6.ª semana</strong>, y es la que se usa para <strong>descartar embarazo ectópico</strong>. <strong>Transabdominal: no antes de la 7.ª semana</strong> de amenorrea.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Concepto clave</dt>
+        <dd>Casi todo lo que <strong>sube</strong> es <strong>volumen</strong> —sangre, flujo renal, trabajo cardíaco— y casi todo lo que <strong>baja</strong> es <strong>consecuencia de eso</strong>: <strong>dilución</strong> (hematocrito, hemoglobina) o <strong>mayor aclaramiento renal</strong> (ácido úrico, urea, creatinina). <strong>Nada baja por sí mismo: baja porque algo subió.</strong></dd>
+
+        <dt class="r-gold">Los números</dt>
+        <dd><strong>Plasma ↑ 40 – 60 %</strong> · <strong>globular ↑ 20 – 50 %</strong> → anemia fisiológica. <strong>Leucocitos 9.000 – 16.000</strong> · <strong>VSG hasta 80 mm</strong> · <strong>plaquetas fisiológicas si ≥ 100.000</strong> · <strong>FAL duplicada</strong> · <strong>ácido úrico 2,6 – 3,0</strong> · <strong>urea 7 – 8</strong>. <strong>FG 140 mL/min</strong>, <strong>clearance +50 %</strong>. <strong>Volumen minuto 6 L/min</strong>, <strong>FC +15 – 20 lpm</strong>, <strong>TA ↓ 5 – 10 mmHg en la 1.ª mitad</strong>. <strong>Diafragma +4 cm</strong>, <strong>tórax +5 cm</strong>. <strong>Peso 11 kg</strong>, <strong>temperatura +0,3 – 0,6 °C sólo en el 1.er trimestre</strong>.</dd>
+
+        <dt class="r-tto">Lo que NO hay que estudiar</dt>
+        <dd><strong>VSG alta</strong> — pierde valor, usar PCR. <strong>Leucocitosis hasta 16.000.</strong> <strong>FAL duplicada</strong> — es placentaria. <strong>Soplo sistólico suave sin irradiación.</strong> <strong>Hematocrito de 34 %</strong> en el 2.º trimestre. <strong>Disnea con examen y saturación normales</strong> — es <strong>pseudodisnea</strong>. Y al revés: una <strong>creatinina «normal» ya es patológica</strong>, y un <strong>ácido úrico que sube</strong> orienta a preeclampsia.</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd><strong>Bacteriuria asintomática: se busca y se trata</strong> — sin tratar, 20 – 40 % hace pielonefritis, con parto pretérmino. <strong>Posparto inmediato</strong>: pico de gasto cardíaco, el momento crítico en la cardiópata. <strong>Apendicitis</strong>: McBurney no sirve, la defensa puede faltar y el hemograma engaña — <strong>umbral bajo para estudiar</strong>. <strong>Plaquetas &lt; 100.000</strong>: investigar. <strong>HTA crónica enmascarada</strong> por la caída fisiológica de la TA en la primera mitad.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir del material «Modificaciones anatómicas y fisiológicas del embarazo» de la Cátedra de Obstetricia, Sede San Rafael. Complementado con Williams Obstetricia y las guías del Institute of Medicine sobre aumento de peso gestacional. Las flechas de ascenso y descenso del material original son autoformas dibujadas y se recuperaron por su posición en cada diapositiva. Material de estudio: no reemplaza el criterio clínico ni la guía institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+
+  // ---- Tema claro / oscuro ----
+  // Sin eleccion estampada manda el sistema; el boton la estampa y la guarda.
+  var raiz = document.documentElement;
+  var boton = document.getElementById('tema');
+
+  function temaActual(){
+    var estampado = raiz.getAttribute('data-theme');
+    if (estampado) return estampado;
+    return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+
+  if (boton){
+    var rotular = function(){
+      var actual = temaActual();
+      boton.setAttribute('aria-pressed', actual === 'dark' ? 'true' : 'false');
+      boton.setAttribute('aria-label', actual === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+    };
+    boton.addEventListener('click', function(){
+      var nuevo = temaActual() === 'dark' ? 'light' : 'dark';
+      raiz.setAttribute('data-theme', nuevo);
+      try { localStorage.setItem('wordmed-tema', nuevo); } catch (e) { /* sin persistencia */ }
+      rotular();
+    });
+    rotular();
+  }
+
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link, .ir-link'));
+
+  // Devuelve TODOS los enlaces al ancla: la misma seccion figura en el indice
+  // lateral y en el compacto, y los dos tienen que encenderse juntos.
+  function porMeta(hash){
+    return enlaces.filter(function(l){ return l.getAttribute('href') === '#' + hash; });
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var activos = porMeta(e.target.id);
+        if (!activos.length) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          activos.forEach(function(l){ l.setAttribute('aria-current', 'true'); });
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>
+<script>
+(function(){
+  "use strict";
+  var clave = document.body.dataset.clave || "";
+  var enApp = typeof window.WordmedApp !== "undefined";
+  var MEM = "wordmed:progreso";
+
+  function leer(){ try{ return JSON.parse(localStorage.getItem(MEM)) || {}; }catch(e){ return {}; } }
+  function guardar(m){ try{ localStorage.setItem(MEM, JSON.stringify(m)); }catch(e){} }
+
+  function alto(){
+    return Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+  }
+
+  /* retomar donde quedó */
+  if (clave) {
+    var m = leer()[clave];
+    if (m && m.y > 0) {
+      window.addEventListener("load", function(){
+        window.scrollTo(0, Math.min(m.y, alto()));
+      });
+    }
+  }
+
+  /* anotar el avance, sin ahogar el scroll */
+  var pendiente = false;
+  window.addEventListener("scroll", function(){
+    if (pendiente || !clave) return;
+    pendiente = true;
+    requestAnimationFrame(function(){
+      pendiente = false;
+      var y = window.scrollY;
+      var pct = Math.round((y / alto()) * 100);
+      pct = Math.max(0, Math.min(100, pct));
+      var m = leer();
+      m[clave] = { y: y, pct: pct, ts: Date.now() };
+      guardar(m);
+      if (enApp && window.WordmedApp.progreso) window.WordmedApp.progreso(clave, pct, y);
+    });
+  }, { passive: true });
+
+  /* volver: solo cuando vinimos de la cáscara web */
+  if (!enApp && document.referrer && document.referrer.indexOf(location.origin) === 0) {
+    var b = document.createElement("button");
+    b.className = "volver";
+    b.type = "button";
+    b.setAttribute("aria-label", "Volver");
+    b.innerHTML = '<svg class="volver__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg>';
+    b.addEventListener("click", function(){ history.back(); });
+    document.body.appendChild(b);
+  }
+})();
+</script>
+</body>
+</html>

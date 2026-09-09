@@ -1,0 +1,2018 @@
+<title>Trabajo de Parto</title>
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-bloque:1.95rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+
+  /* Que la barra de desplazamiento y los controles nativos acompanen al tema */
+  color-scheme: light dark;
+}
+
+/* Eleccion explicita de claro: solo hace falta para el color-scheme, los
+   tokens claros ya son la base sin estampar. */
+:root[data-theme="light"]{ color-scheme: light; }
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* Interruptor de tema claro / oscuro.
+   El estampado `data-theme` en la raíz ya lo respetan los bloques de tokens de
+   arriba; este botón sólo lo pone y lo guarda. Sin elección estampada mandan
+   las preferencias del sistema, que es el comportamiento por defecto. */
+.tema{
+  position:fixed; top:.7rem; right:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.tema:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.tema__icono{ width:1.15rem; height:1.15rem; display:block; }
+
+/* Se muestra el icono del tema al que se va a cambiar, no el actual.
+   Mismo escalonado que los tokens: base clara · sistema oscuro · elección explícita. */
+.tema__sol{ display:none; }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .tema__sol{ display:block; }
+  :root:not([data-theme="light"]) .tema__luna{ display:none; }
+}
+:root[data-theme="dark"] .tema__sol{ display:block; }
+:root[data-theme="dark"] .tema__luna{ display:none; }
+:root[data-theme="light"] .tema__sol{ display:none; }
+:root[data-theme="light"] .tema__luna{ display:block; }
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índices ---------- */
+/* Dos piezas complementarias y deliberadamente redundantes:
+   · .indice        — barra lateral fija, sólo en pantalla ancha, navegación permanente.
+   · .indice-rapido — tarjeta compacta al principio del cuerpo, visible en TODO ancho.
+   La lateral desaparece por debajo de 64rem, que es justo el ancho del panel de
+   Artifacts y del celular; sin la compacta el cuadernillo publicado se queda sin
+   índice. Las dos apuntan a los mismos anclajes y se resaltan juntas al desplazar. */
+
+/* 6.1 · Barra lateral */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+/* Rótulo de bloque intercalado en la lista lateral: no es un enlace, sólo
+   separa grupos de secciones para que 30 entradas no sean una tira plana. */
+.indice__bloque{
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+  margin:.9rem 0 .2rem; padding:0 .55rem;
+}
+.indice__bloque:first-child{ margin-top:0; }
+
+/* 6.2 · Índice compacto (va después de la portada, dentro del cuerpo) */
+.indice-rapido{
+  background:var(--hoja-hund);
+  border:1px solid var(--linea);
+  border-radius:var(--radio);
+  padding:1.1rem 1.2rem 1.2rem;
+}
+.indice-rapido__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .85rem;
+}
+/* auto-fit: una columna en el panel angosto, dos o tres en pantalla ancha */
+.indice-rapido__bloques{
+  list-style:none; margin:0; padding:0;
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(15rem, 1fr));
+  gap:1rem 2rem; align-items:start;
+}
+.ir-bloque{
+  display:block; margin-bottom:.4rem;
+  font-family:var(--f-titulo); font-size:.98rem; font-weight:700; line-height:1.3;
+  color:var(--tinta); text-decoration:none;
+  padding-bottom:.3rem; border-bottom:1px solid var(--linea-fuerte);
+}
+.ir-bloque:hover{ color:var(--cli-t); }
+.ir-secciones{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.05rem; }
+.ir-link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.55rem 1fr; align-items:baseline; gap:.4rem;
+  padding:.2rem .35rem; border-radius:2px;
+  font-size:.86rem; line-height:1.4; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.ir-link > b{
+  font-family:var(--f-dato); font-size:.76rem; font-weight:700;
+  font-variant-numeric:tabular-nums; color:var(--ct); opacity:.85;
+}
+.ir-link:hover{ background:var(--hoja); color:var(--tinta); }
+.ir-link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Título de bloque y ficha de sección ---------- */
+
+/* Anuncia un grupo de secciones. Neutro en color a propósito: los siete colores
+   tienen significado clínico fijo y un bloque agrupa secciones de varios. La
+   regla de abajo lleva el degradado completo de la paleta, igual que la pestaña
+   de repaso y la cabecera de la ficha relámpago.
+   Sin <svg> adentro: el exportador a Word aparea los diagramas con las figuras
+   por contador posicional sobre el HTML crudo (ver exportar_docx.py). */
+.bloque{
+  margin:1.4rem 0 0; padding:0;
+  text-align:center; scroll-margin-top:2.5rem;
+  display:flex; flex-direction:column; align-items:center; gap:.3rem;
+  font-weight:400;
+}
+.bloque:first-child{ margin-top:0; }
+.bloque__rotulo{
+  font-family:var(--f-texto);
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+}
+.bloque__nombre{
+  font-family:var(--f-titulo); font-size:var(--t-bloque); font-weight:700; line-height:1.15;
+  letter-spacing:-.01em; color:var(--tinta); text-wrap:balance; max-width:32ch;
+}
+.bloque::after{
+  content:""; width:7rem; height:2.5px; margin-top:.5rem; border-radius:2px;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+}
+
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.5rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-column:1; grid-row:1; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+/* El icono ocupa la columna 1 y NADA MAS. Todo el resto del contenido se
+   apila en la columna 2, una fila por elemento, sin importar cuantos
+   parrafos haya.
+
+   Sin esta regla la caja solo funciona con un unico <p>: a partir del
+   segundo, la autocolocacion del grid empieza a repartir contenido en la
+   columna del icono, que es `auto` y por lo tanto se ensancha hasta abarcar
+   el parrafo que le toco. La columna `1fr` queda entonces reducida a una
+   tira angosta, el texto se parte en dos columnas desbalanceadas y la caja
+   crece hasta volverse ilegible. */
+.importante > :not(.importante__icono){ grid-column:2; }
+.importante__titulo{
+  grid-row:1;
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante ul, .importante ol{ margin:0; padding-left:1.15rem; }
+.importante li + li{ margin-top:.3rem; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso, .tema{ display:none !important; }
+  /* La lateral no se imprime, pero la compacta sí: en papel es la tabla de
+     contenidos del cuadernillo. */
+  .indice-rapido{ display:block; break-inside:avoid; page-break-inside:avoid; margin-bottom:1.2rem; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .bloque{
+    margin:1.6rem 0 1rem;
+    break-after:avoid; page-break-after:avoid;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+</style>
+
+<script>
+/* Aplica el tema guardado antes de pintar. Va aca arriba a proposito: si
+   esperara al script del final, el documento parpadearia en el tema del
+   sistema antes de corregirse. */
+(function(){
+  try {
+    var guardado = localStorage.getItem('wordmed-tema');
+    if (guardado === 'dark' || guardado === 'light') {
+      document.documentElement.setAttribute('data-theme', guardado);
+    }
+  } catch (e) { /* almacenamiento bloqueado: manda el sistema */ }
+})();
+</script>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<button class="tema" id="tema" type="button" aria-pressed="false" aria-label="Cambiar a modo oscuro">
+  <svg class="tema__icono tema__sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.2"></circle>
+    <path d="M12 2.6v2.1M12 19.3v2.1M5.1 5.1l1.5 1.5M17.4 17.4l1.5 1.5M2.6 12h2.1M19.3 12h2.1M5.1 18.9l1.5-1.5M17.4 6.6l1.5-1.5"></path>
+  </svg>
+  <svg class="tema__icono tema__luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20.4 14.2A8.6 8.6 0 0 1 9.8 3.6a8.6 8.6 0 1 0 10.6 10.6z"></path>
+  </svg>
+</button>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li class="indice__bloque">Bloque A</li>
+      <li><a class="indice__link i-generalidades"  href="#inicio">Inicio del Parto</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#factores">Los Factores del Inicio</a></li>
+      <li><a class="indice__link i-clinica"        href="#diagnostico">Diagnóstico</a></li>
+      <li><a class="indice__link i-diferenciales"  href="#ingreso">Ingreso de la Paciente</a></li>
+      <li class="indice__bloque">Bloque B</li>
+      <li><a class="indice__link i-diagnostico"    href="#periodos">Períodos &amp; Fases</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#contraccion">La Contracción</a></li>
+      <li><a class="indice__link i-clinica"        href="#control">Control &amp; Partograma</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#feto">El Feto</a></li>
+      <li class="indice__bloque">Bloque C</li>
+      <li><a class="indice__link i-diagnostico"    href="#expulsivo">Expulsivo &amp; Mecanismo</a></li>
+      <li><a class="indice__link i-importantes"    href="#alumbramiento">Alumbramiento</a></li>
+      <li class="indice__bloque">Cierre</li>
+      <li><a class="indice__link i-diferenciales"  href="#glosario">Glosario</a></li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Obstetricia · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Trabajo de Parto</h1>
+      <p class="portada__bajada">Por qué empieza, cómo se diagnostica, cómo se controla y cómo termina. Fusión de los materiales de mecanismo y de control del trabajo de parto en un solo recorrido.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">11 secciones</span>
+        <span class="etiqueta s-tratamiento">Triple gradiente</span>
+        <span class="etiqueta s-clinica">Partograma</span>
+        <span class="etiqueta s-importantes">Alumbramiento activo</span>
+      </div>
+    </header>
+
+    <nav class="indice-rapido" aria-label="Contenido del cuadernillo">
+      <p class="indice-rapido__rotulo">Contenido</p>
+      <ol class="indice-rapido__bloques">
+        <li>
+          <a class="ir-bloque" href="#bloque-a">Bloque A · El comienzo del trabajo de parto</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades" href="#inicio"><b>01</b> Inicio del Parto</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#factores"><b>02</b> Los Factores del Inicio</a></li>
+            <li><a class="ir-link i-clinica" href="#diagnostico"><b>03</b> Diagnóstico</a></li>
+            <li><a class="ir-link i-diferenciales" href="#ingreso"><b>04</b> Ingreso de la Paciente</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-b">Bloque B · El parto en marcha</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-diagnostico" href="#periodos"><b>05</b> Períodos &amp; Fases</a></li>
+            <li><a class="ir-link i-tratamiento" href="#contraccion"><b>06</b> La Contracción</a></li>
+            <li><a class="ir-link i-clinica" href="#control"><b>07</b> Control &amp; Partograma</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#feto"><b>08</b> El Feto</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-c">Bloque C · Expulsivo y alumbramiento</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-diagnostico" href="#expulsivo"><b>09</b> Expulsivo &amp; Mecanismo</a></li>
+            <li><a class="ir-link i-importantes" href="#alumbramiento"><b>10</b> Alumbramiento</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-d">Cierre · Glosario y repaso</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-diferenciales" href="#glosario"><b>11</b> Glosario</a></li>
+            <li><a class="ir-link i-clinica" href="#repaso"><b>·</b> Repaso activo</a></li>
+            <li><a class="ir-link i-importantes" href="#relampago"><b>⚡</b> Ficha Relámpago</a></li>
+          </ul>
+        </li>
+      </ol>
+    </nav>
+
+
+    <!-- ============ 1 ============ -->
+    <h2 class="bloque" id="bloque-a">
+      <span class="bloque__rotulo">Bloque A</span>
+      <span class="bloque__nombre">El comienzo del trabajo de parto</span>
+    </h2>
+
+    <section class="seccion s-generalidades" id="inicio">
+      <span class="seccion__pestana"><b>01</b> Inicio</span>
+      <h2 class="seccion__titulo">Inicio del Parto</h2>
+
+      <p>El <strong>trabajo de parto</strong> es el <strong>conjunto de contracciones uterinas que producen el borramiento y la dilatación del cuello uterino</strong>. Estos fenómenos fisiológicos tienen por objeto la <strong>expulsión de un feto viable desde el útero hacia el exterior a través de los genitales maternos</strong>.</p>
+
+      <h3>Características según la OMS</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Criterio</th><th>Qué significa</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Comienzo espontáneo</strong></td><td>Inicio <strong>de forma natural</strong>, <strong>sin medicamentos ni inducción</strong></td></tr>
+            <tr><td><strong>Bajo riesgo</strong></td><td>Proceso <strong>seguro tanto al inicio como durante todo el desarrollo</strong> del parto</td></tr>
+            <tr><td><strong>Presentación cefálica</strong></td><td>—</td></tr>
+            <tr><td><strong>Embarazo de término</strong></td><td>Entre <strong><span class="dato">37 y 42 semanas</span></strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Los cuatro definen el <strong>parto normal o de bajo riesgo</strong>, que es el único que admite el manejo expectante descrito en este cuadernillo. Si <strong>falta cualquiera</strong>, el parto deja de ser normal. El criterio de <strong>«bajo riesgo durante todo el desarrollo»</strong> importa especialmente: un parto que empezó normal <strong>puede dejar de serlo en cualquier momento</strong>. Y el de <strong>«comienzo espontáneo»</strong> significa exactamente que la cascada de la sección 02 <strong>se disparó sola</strong>.</p>
+
+      <h3>Por qué empieza el parto</h3>
+      <p>Son <strong>innumerables las teorías propuestas</strong>. <strong>No parece probable que se deba a un solo factor</strong>, sino a la <strong>acción conjunta y coordinada de varios sistemas</strong>: <strong>placenta, feto y útero</strong>, sin que se conozcan con exactitud ni su mecanismo de acción ni la manera en que se coordinan.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante! — La distinción que ordena todo</p>
+        <p>Algunos factores actúan <strong>preparando las condiciones necesarias</strong> para el inicio del parto: son las <strong>UTEROTROPINAS</strong>.</p>
+        <p>Otros <strong>desencadenan directamente la contracción miometrial</strong>: son las <strong>UTEROTONINAS</strong>.</p>
+        <p><strong>Preparar y disparar no son lo mismo</strong>, y confundirlas es el error conceptual más frecuente del tema.</p>
+      </div>
+
+      <h3>Cuándo se considera que el parto comenzó</h3>
+      <p>Desde el <strong>punto de vista biológico es difícil de determinar</strong>. Desde el <strong>punto de vista clínico</strong>, se considera comenzado cuando se cumplen <strong>tres condiciones a la vez</strong>:</p>
+      <ul>
+        <li><strong>Actividad uterina regular</strong>: <strong>2 a 3 contracciones de intensidad moderada cada 10 minutos</strong>.</li>
+        <li><strong>Dilatación del cérvix de 2 a 3 cm.</strong></li>
+        <li><strong>Cuello maduro</strong>, con <strong>test de Bishop elevado</strong> — al menos <strong>blando, centrado y borrado más del 50 %</strong>.</li>
+      </ul>
+
+      <h3>Condiciones favorables para el inicio</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Condición</th><th>Detalle</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Madurez cervical</strong></td><td><strong>Longitud menor de 2 cm</strong><br><strong>Reblandecimiento</strong> (consistencia)<br><strong>Posición intermedia</strong> del cuello<br><strong>Dilatación de 2 a 3 cm</strong></td></tr>
+            <tr><td><strong>Presentación</strong></td><td><strong>Cabeza insinuada en la pelvis</strong> o <strong>apoyando en el cuello</strong></td></tr>
+            <tr><td><strong>Buena dinámica uterina</strong></td><td><strong>Frecuencia: 3 contracciones en 10 minutos</strong><br><strong>Intensidad: <span class="dato">25 – 50 mmHg</span></strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>El test de Bishop</h3>
+      <p>El material lo nombra pero <strong>no lo desarrolla</strong>. Es el puntaje que traduce «cuello maduro» a un número, y cada parámetro puntúa de 0 a 3:</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Parámetro</th><th>0</th><th>1</th><th>2</th><th>3</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Dilatación</strong> (cm)</td><td>Cerrado</td><td>1 – 2</td><td>3 – 4</td><td>≥ 5</td></tr>
+            <tr><td><strong>Borramiento</strong> (%)</td><td>0 – 30</td><td>40 – 50</td><td>60 – 70</td><td>≥ 80</td></tr>
+            <tr><td><strong>Consistencia</strong></td><td>Dura</td><td>Media</td><td><strong>Blanda</strong></td><td>—</td></tr>
+            <tr><td><strong>Posición</strong></td><td>Posterior</td><td>Intermedia</td><td><strong>Anterior</strong></td><td>—</td></tr>
+            <tr><td><strong>Altura de la presentación</strong><br><em>estación de DeLee</em></td><td>−3</td><td>−2</td><td>−1 / 0</td><td>+1 / +2</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">El puntaje va de <strong>0 a 13</strong>. Un Bishop <strong>≥ 6 – 8</strong> es <strong>cuello favorable</strong> y predice una inducción exitosa; <strong>≤ 5</strong> es <strong>desfavorable</strong> e indica <strong>maduración cervical previa</strong> —prostaglandinas o métodos mecánicos— antes de la oxitocina. El parámetro de altura usa las <strong>estaciones de DeLee</strong>, desarrolladas en el cuadernillo de Pelvis Ósea y Periné. Fuente: Cunningham FG et al., <em>Williams Obstetricia</em>, 26.ª ed.</p>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-fisiopatologia" id="factores">
+      <span class="seccion__pestana"><b>02</b> Factores</span>
+      <h2 class="seccion__titulo">Los Factores del Inicio</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Grupo</th><th>Qué hacen</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>MIOMETRIALES</strong></td>
+              <td><strong>Aumento de receptores de oxitocina</strong> y de <strong>uniones GAP</strong>, potenciado por los <strong>estrógenos</strong>.<br><strong>Irritabilidad uterina</strong> y <strong>capacidad de respuesta a uterotoninas</strong>.<br>Aumento del <strong>calcio</strong>, la <strong>endotelina</strong>, el <strong>PAF</strong> y las <strong>prostaglandinas</strong>.<br>→ <strong>Formación del segmento inferior</strong></td>
+            </tr>
+            <tr>
+              <td><strong>CERVICALES</strong></td>
+              <td>El cuello debe <strong>acortarse, aumentar su flexibilidad y dilatarse</strong>.<br>La aplicación cervical directa de <strong>PGE2 y PGF2α</strong> induce el ablandamiento por <strong>modificación del colágeno</strong></td>
+            </tr>
+            <tr>
+              <td><strong>UTEROTRÓFICOS</strong></td>
+              <td><strong>Estrógenos</strong>: <strong>hipertrofia de las células miometriales</strong> · aumentan la <strong>síntesis de proteínas contráctiles</strong> · aumentan la <strong>excitabilidad</strong> por mayor <strong>calcio libre intracelular</strong> · aumentan la <strong>velocidad de propagación</strong> · aumentan el <strong>número de receptores de oxitocina</strong></td>
+            </tr>
+            <tr>
+              <td><strong>OVULARES</strong></td>
+              <td><strong>Membranas fetales y decidua</strong> elaboran moléculas implicadas en el trabajo de parto: el <strong>«sistema paracrino de comunicación materno-fetal»</strong>. <strong>Mediadores de la inflamación</strong> en el líquido amniótico → <strong>prostaglandinas</strong></td>
+            </tr>
+            <tr>
+              <td><strong>UTEROTÓNICOS</strong></td>
+              <td><strong>Prostaglandinas</strong>, <strong>endotelina</strong> y <strong>PAF</strong> — ver el desarrollo debajo</td>
+            </tr>
+            <tr>
+              <td><strong>FETALES</strong></td>
+              <td>Se cree que el feto, <strong>tras una maduración suficiente de sus órganos</strong>, <strong>brinda la señal</strong>. <strong>En el feto humano esa señal no se ha descubierto todavía.</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Corrección sobre el material: la diapositiva de <strong>factores uterotróficos</strong> atribuye a los estrógenos, en la misma línea, que <strong>aumentan</strong> los receptores de oxitocina y que <strong>inhiben</strong> la síntesis de uniones gap y de receptores de oxitocina. Son <strong>efectos opuestos en la misma hormona</strong>. La acción <strong>inhibitoria corresponde a la PROGESTERONA</strong>, que mantiene el <strong>bloqueo progesterónico</strong> y el útero quiescente durante el embarazo. El parto se inicia cuando ese bloqueo se levanta por <strong>retirada funcional</strong> y los estrógenos quedan sin oposición. Fuente: Cunningham FG et al., <em>Williams Obstetricia</em>, 26.ª ed.</p>
+
+      <h3>Las prostaglandinas: la teoría más atractiva</h3>
+      <p>Hay <strong>niveles elevados de PGE2 y PGF2α en líquido amniótico, sangre y orina maternas al final del embarazo</strong>, y se postula que <strong>podrían ser la clave del inicio del parto</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Paso</th><th>Detalle</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>1. Origen</strong></td><td>Se sintetizan a partir del <strong>ácido araquidónico</strong>, almacenado como <strong>glicerofosfolípidos</strong></td></tr>
+            <tr><td><strong>2. Movilización</strong></td><td>Por la enzima <strong>FOSFOLIPASA A2</strong></td></tr>
+            <tr><td><strong>3. Lugar de síntesis</strong></td><td><strong>Amnios y corion</strong>: sólo <strong>PGE2</strong><br><strong>Decidua</strong>: <strong>ambas</strong> (PGE2 y PGF2α)</td></tr>
+            <tr><td><strong>4. El disparador</strong></td><td>La <strong>rotura de los lisosomas deciduales</strong> liberaría la fosfolipasa A2</td></tr>
+            <tr><td><strong>5. Qué rompe los lisosomas</strong></td><td><strong>Infección amniótica</strong> · <strong>Hemorragia</strong> · <strong>Sobredistensión uterina</strong> · <strong>Rotura de membranas</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">La lista del paso 5 explica por qué la <strong>corioamnionitis, el desprendimiento placentario, el polihidramnios, el embarazo múltiple y la rotura prematura de membranas</strong> son causas de <strong>parto pretérmino</strong>: todas convergen en <strong>liberar fosfolipasa A2</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Otros uterotónicos</th><th>Detalle</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Endotelina</strong></td><td>Uterotónico con receptores miometriales</td></tr>
+            <tr><td><strong>PAF</strong> — factor activador plaquetario</td><td><strong>Potente uterotónico</strong> con receptores en el miometrio. Probablemente <strong>producido por los leucocitos</strong> como consecuencia del <strong>proceso inflamatorio obligado de la dilatación cervical</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-clinica" id="diagnostico">
+      <span class="seccion__pestana"><b>03</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">Diagnóstico de Trabajo de Parto</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Pilar</th><th>Qué se busca</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1. CONTRACCIONES UTERINAS</strong></td>
+              <td><strong>Regulares, dolorosas, de intensidad progresiva</strong><br><strong>Frecuencia: <span class="dato">2 a 5 en 10 minutos</span></strong><br><strong>Duración: <span class="dato">30 – 60 segundos</span></strong><br><strong>NO ceden con reposo ni hidratación</strong></td>
+            </tr>
+            <tr>
+              <td><strong>2. MODIFICACIONES CERVICALES</strong></td>
+              <td><strong>Borramiento progresivo</strong><br><strong>Dilatación ≥ <span class="dato">4 – 5 cm</span></strong> — inicio de la fase activa según protocolos actuales<br><strong>Consistencia y posición</strong> del cuello se modifican</td>
+            </tr>
+            <tr>
+              <td><strong>3. DESCENSO Y PRESENTACIÓN FETAL</strong></td>
+              <td><strong>Progresión del descenso</strong> en la pelvis<br>Evaluación mediante <strong>tacto vaginal</strong> y <strong>maniobras de Leopold</strong> — ver la sección 08</td>
+            </tr>
+            <tr>
+              <td><strong>4. SIGNOS ACOMPAÑANTES</strong></td>
+              <td><strong>Rotura espontánea de membranas</strong> — puede preceder o acompañar<br><strong>Expulsión del TAPÓN MUCOSO</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante! — Trabajo de parto verdadero contra falso</p>
+        <p>El criterio está en la última línea del primer pilar: las contracciones del trabajo de parto <strong>NO ceden con reposo ni hidratación</strong>.</p>
+        <p>Las <strong>prodrómicas o de Braxton Hicks</strong> son <strong>irregulares</strong>, de <strong>intensidad que no progresa</strong>, más en el <strong>hipogastrio</strong> que en el dorso, <strong>ceden con el reposo, la hidratación y el cambio de posición</strong>, y sobre todo <strong>NO producen modificaciones cervicales</strong>.</p>
+        <p>Ése es el punto: <strong>sin modificación del cuello no hay trabajo de parto</strong>, por más dolorosas y frecuentes que sean las contracciones.</p>
+      </div>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-diferenciales" id="ingreso">
+      <span class="seccion__pestana"><b>04</b> Ingreso</span>
+      <h2 class="seccion__titulo">Ingreso de la Paciente</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Ítem</th><th>Detalle</th><th>Para qué</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Cálculo de la EG</strong></td><td>Edad gestacional</td><td>Define si el parto es <strong>de término</strong></td></tr>
+            <tr><td><strong>Control obstétrico</strong></td><td><strong>FCF · TU · DU · MAF · Tacto vaginal · AU</strong></td><td>Establece el <strong>punto de partida</strong> de todos los controles</td></tr>
+            <tr><td><strong>Signos vitales maternos</strong></td><td>—</td><td>Estado materno basal</td></tr>
+            <tr><td><strong>HCPB</strong></td><td>Historia Clínica Perinatal Base</td><td>Registro estandarizado</td></tr>
+            <tr><td><strong>Laboratorio de menos de 30 días</strong></td><td><strong>Serologías</strong>: toxoplasmosis, Chagas, VDRL, HIV, HBsAg<br><strong>SGB</strong></td><td><strong>Transmisión vertical</strong>: cada una define una conducta distinta</td></tr>
+            <tr><td><strong>Grupo y factor Rh</strong></td><td>—</td><td>Sangre disponible y <strong>profilaxis anti-D</strong></td></tr>
+            <tr><td><strong>ECG</strong></td><td>—</td><td>Evaluación previa a una eventual anestesia</td></tr>
+            <tr><td><strong>Última ecografía</strong></td><td>—</td><td>Presentación, peso estimado, líquido y <strong>ubicación placentaria</strong></td></tr>
+            <tr><td><strong>Estudios toxicológicos en orina</strong></td><td>—</td><td>Según protocolo institucional</td></tr>
+            <tr><td><strong>Confección del PARTOGRAMA</strong></td><td>—</td><td>Ver la sección 07</td></tr>
+            <tr><td><strong>Identificación y Certificado de Nacido Vivo</strong></td><td>—</td><td>Trámite legal obligatorio</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante! — Por qué el SGB figura en la lista</p>
+        <p>El <strong>estreptococo del grupo B</strong> coloniza el tracto genital de una proporción de embarazadas <strong>sin producirles síntomas</strong>. El problema es el <strong>recién nacido</strong>: la colonización al pasar por el canal de parto puede producir una <strong>sepsis neonatal precoz</strong>, grave y de alta mortalidad.</p>
+        <p>Si es <strong>positivo</strong>, corresponde <strong>profilaxis antibiótica INTRAPARTO</strong> —penicilina endovenosa—, que sólo sirve si se administra <strong>durante el trabajo de parto</strong>. Es información que se necesita <strong>al ingreso, no después</strong>.</p>
+      </div>
+
+      <p class="cita">La lógica de las serologías es siempre la misma: <strong>identificar antes del parto lo que puede transmitirse durante el parto</strong>. <strong>VDRL</strong> y <strong>HIV</strong> definen tratamiento materno y conducta perinatal; el <strong>HBsAg</strong> positivo indica <strong>vacuna e inmunoglobulina al recién nacido</strong> en las primeras horas; <strong>Chagas</strong> y <strong>toxoplasmosis</strong> definen el seguimiento del niño.</p>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <h2 class="bloque" id="bloque-b">
+      <span class="bloque__rotulo">Bloque B</span>
+      <span class="bloque__nombre">El parto en marcha</span>
+    </h2>
+
+    <section class="seccion s-diagnostico" id="periodos">
+      <span class="seccion__pestana"><b>05</b> Períodos</span>
+      <h2 class="seccion__titulo">Períodos, Fases &amp; Duraciones</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Etapa</th><th>Nombre</th><th>Desde → hasta</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>PRIMERA</strong></td><td><strong>Período DILATANTE</strong></td><td>Consta de <strong>fase latente</strong> y <strong>fase activa</strong></td></tr>
+            <tr><td><strong>SEGUNDA</strong></td><td><strong>Período EXPULSIVO</strong></td><td>De la <strong>dilatación completa</strong> al <strong>nacimiento</strong></td></tr>
+            <tr><td><strong>TERCERA</strong></td><td><strong>Período del ALUMBRAMIENTO</strong></td><td>Del <strong>nacimiento</strong> a la <strong>expulsión de placenta y membranas</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>En el período dilatante tienen que producirse <strong>DOS cambios, no uno</strong>: la <strong>dilatación</strong> y el <strong>descenso</strong> progresivos de la presentación. Y no ocurren al mismo tiempo:</p>
+        <p><strong>En la fase aceleratoria predomina la DILATACIÓN.</strong><br><strong>En la fase desaceleratoria ocurre el DESCENSO.</strong></p>
+        <p>Por eso una desaceleración de la curva cerca del final <strong>no es necesariamente una detención</strong>: puede ser el momento en que el trabajo cambia de tarea.</p>
+      </div>
+
+      <h3>Fase latente</h3>
+      <p>Su <strong>inicio es difícil de determinar</strong>: es un <strong>diagnóstico retrospectivo</strong>, que se hace al comenzar la fase siguiente. Las contracciones son <strong>poco intensas, irregulares y escasas</strong>, y provocan <strong>poca dilatación</strong>. Se producen <strong>tres modificaciones cervicales</strong>:</p>
+      <ul>
+        <li><strong>Borramiento</strong>: acortamiento del conducto cervical.</li>
+        <li><strong>Centrado</strong>: el cuello pasa <strong>de posterior a intermedio y anterior</strong>.</li>
+        <li><strong>Ablandamiento</strong> de la consistencia.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante! — Borramiento y dilatación no van juntos en las dos</p>
+        <p><strong>En la NULÍPARA el borramiento PRECEDE a la dilatación</strong>: primero se acorta el cuello por completo y recién después empieza a abrirse.</p>
+        <p><strong>En la MULTÍPARA ambos ocurren SIMULTÁNEAMENTE.</strong></p>
+        <p>De ahí que la fase latente sea <strong>mucho más larga en la primeriza</strong>, y que un cuello «con 3 cm pero sin borrar» sea un hallazgo esperable en la multípara y no en la nulípara.</p>
+      </div>
+
+      <h3>Fase activa</h3>
+      <p><strong>El comienzo del parto clínico coincide con el inicio de la fase activa.</strong> Las contracciones se hacen <strong>regulares, cada 2 a 3 minutos y más intensas</strong>, con <strong>progreso de la dilatación</strong> y <strong>descenso progresivo</strong> de la presentación.</p>
+
+      <h3>Duraciones</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Etapa</th><th>Parámetro</th><th>Nulípara</th><th>Multípara</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Fase latente</strong></td><td>Duración máxima</td><td><strong><span class="dato">Hasta 20 h</span></strong></td><td><strong><span class="dato">Hasta 14 h</span></strong></td></tr>
+            <tr><td rowspan="2"><strong>Fase activa</strong></td><td><strong>Dilatación</strong></td><td><strong><span class="dato">1,2 cm/h</span></strong> (6 h)</td><td><strong><span class="dato">1,5 cm/h</span></strong> (4 h)</td></tr>
+            <tr><td><strong>Descenso</strong></td><td><strong><span class="dato">1 cm/h</span></strong></td><td><strong><span class="dato">2 cm/h</span></strong></td></tr>
+            <tr><td><strong>Alumbramiento</strong></td><td>Duración</td><td><strong><span class="dato">45 minutos</span></strong></td><td><strong><span class="dato">30 minutos</span></strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 300" role="img" aria-label="Curva de dilatación cervical contra el tiempo, comparando nulípara y multípara. Ambas comienzan con una fase latente de pendiente lenta hasta alcanzar los tres centímetros: la multípara la completa alrededor de las cinco horas y la nulípara alrededor de las ocho. A partir de allí comienza la fase activa, con una pendiente mucho más pronunciada: la nulípara dilata a un coma dos centímetros por hora y la multípara a uno coma cinco, de modo que la multípara alcanza la dilatación completa cerca de las diez horas y la nulípara cerca de las catorce.">
+          <rect x="70" y="190" width="590" height="60" fill="var(--c)" fill-opacity="0.06" stroke="none"></rect>
+          <rect x="70" y="50" width="590" height="140" fill="var(--c)" fill-opacity="0.13" stroke="none"></rect>
+
+          <text x="70" y="36" font-size="10.5" fill="currentColor" opacity="0.75">dilatación (cm)</text>
+          <text x="100" y="72" font-size="11" font-weight="700" fill="currentColor">FASE ACTIVA</text>
+          <text x="100" y="222" font-size="11" font-weight="700" fill="currentColor">FASE LATENTE</text>
+
+          <polyline points="70,190 660,190" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3" opacity="0.4"></polyline>
+          <polyline points="70,50 660,50" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3" opacity="0.4"></polyline>
+
+          <path d="M 70,250 C 180,246 290,224 365,190 C 400,172 430,140 470,110 C 510,82 545,62 580,50" fill="none" stroke="currentColor" stroke-width="2.5"></path>
+          <path d="M 70,250 C 130,246 200,222 254,190 C 285,170 315,136 350,108 C 380,84 405,62 427,50" fill="none" stroke="currentColor" stroke-width="2.5" stroke-dasharray="7 4"></path>
+
+          <text x="588" y="52" font-size="11" font-weight="700" fill="currentColor">NULÍPARA</text>
+          <text x="435" y="44" font-size="11" font-weight="700" fill="currentColor">MULTÍPARA</text>
+
+          <polyline points="70,50 70,250" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+          <polyline points="70,250 660,250" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+
+          <text x="64" y="254" font-size="10.5" fill="currentColor" text-anchor="end">0</text>
+          <text x="64" y="214" font-size="10.5" fill="currentColor" text-anchor="end">2</text>
+          <text x="64" y="194" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="end">3</text>
+          <text x="64" y="134" font-size="10.5" fill="currentColor" text-anchor="end">6</text>
+          <text x="64" y="94" font-size="10.5" fill="currentColor" text-anchor="end">8</text>
+          <text x="64" y="54" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="end">10</text>
+
+          <polyline points="70,250 70,256" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+          <polyline points="144,250 144,256" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+          <polyline points="218,250 218,256" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+          <polyline points="291,250 291,256" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+          <polyline points="365,250 365,256" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+          <polyline points="439,250 439,256" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+          <polyline points="513,250 513,256" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+          <polyline points="586,250 586,256" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+          <polyline points="660,250 660,256" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+          <text x="70"  y="272" font-size="10.5" fill="currentColor" text-anchor="middle">0</text>
+          <text x="144" y="272" font-size="10.5" fill="currentColor" text-anchor="middle">2</text>
+          <text x="218" y="272" font-size="10.5" fill="currentColor" text-anchor="middle">4</text>
+          <text x="291" y="272" font-size="10.5" fill="currentColor" text-anchor="middle">6</text>
+          <text x="365" y="272" font-size="10.5" fill="currentColor" text-anchor="middle">8</text>
+          <text x="439" y="272" font-size="10.5" fill="currentColor" text-anchor="middle">10</text>
+          <text x="513" y="272" font-size="10.5" fill="currentColor" text-anchor="middle">12</text>
+          <text x="586" y="272" font-size="10.5" fill="currentColor" text-anchor="middle">14</text>
+          <text x="660" y="272" font-size="10.5" fill="currentColor" text-anchor="middle">16</text>
+          <text x="365" y="292" font-size="10.5" fill="currentColor" text-anchor="middle" opacity="0.75">horas</text>
+        </svg>
+        <figcaption>Las dos curvas tienen la <strong>misma forma</strong> y difieren sólo en <strong>cuánto tardan</strong>: la latente de la nulípara es mucho más larga y su fase activa algo más lenta. El gráfico usa el <strong>corte clásico de los 3 cm</strong>; ver debajo por qué el otro material de la cátedra usa 5.</figcaption>
+      </figure>
+
+      <h3>Las cifras en disputa</h3>
+      <p>Al reunir los dos materiales quedan <strong>tres pares de cifras que no coinciden</strong>. Dos son <strong>contradicciones internas</strong> del material de mecanismo de parto; la tercera es <strong>entre los dos materiales</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Qué</th><th>Versión A</th><th>Versión B</th><th>Origen del conflicto</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Subfases de la fase activa</strong></td>
+              <td>Aceleración <strong>3 → 8 cm</strong><br>Desaceleración <strong>8 → 10 cm</strong></td>
+              <td>Aceleración <strong>2 → 4 cm</strong><br>Máxima velocidad <strong>4 → 9 cm</strong><br>Desaceleración <strong>9 → completa</strong></td>
+              <td><strong>Interno</strong> — dos diapositivas del mismo material</td>
+            </tr>
+            <tr>
+              <td><strong>Duración del expulsivo</strong></td>
+              <td>Nulípara <strong>90 min</strong> (hasta 120)<br>Multípara <strong>60 min</strong></td>
+              <td>Nulípara <strong>60 min</strong><br>Multípara <strong>30 min</strong><br><strong>Se duplican con analgesia</strong></td>
+              <td><strong>Interno</strong> — dos diapositivas del mismo material</td>
+            </tr>
+            <tr>
+              <td><strong>Inicio de la fase activa</strong></td>
+              <td><strong>3 cm</strong><br><em>«Mecanismo de Parto»</em></td>
+              <td><strong>≥ 5 cm</strong>, citando <strong>OMS 2021</strong><br><em>«Control del Trabajo de Parto»</em></td>
+              <td><strong>Entre los dos materiales</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante! — Por qué difieren los cortes de la fase activa</p>
+        <p><strong>Ninguno de los dos está equivocado.</strong> El corte de los <strong>3 cm</strong> proviene de la <strong>curva de Friedman (1955)</strong>, que es de donde salen también las velocidades de 1,2 y 1,5 cm/h.</p>
+        <p>Estudios posteriores —el <strong>Consortium on Safe Labor</strong> analizado por <strong>Zhang</strong>— mostraron que el trabajo de parto contemporáneo es <strong>más lento</strong> y que la aceleración recién ocurre <strong>después de los 5 – 6 cm</strong>. Sobre esa base la <strong>OMS</strong> fijó el inicio de la fase activa en <strong>5 cm</strong> y el <strong>ACOG</strong> en 6.</p>
+        <p>El <strong>partograma CLAP</strong> que usa el segundo material lo confirma: su <strong>línea de base arranca en los 4,5 cm</strong>. <strong>Conviene preguntar cuál se toma en el examen.</strong></p>
+      </div>
+
+      <p class="cita">Fuente de la nota: ACOG-SMFM, <em>Obstetric Care Consensus N.º 1: Safe Prevention of the Primary Cesarean Delivery</em>, y OMS, <em>Recomendaciones para los cuidados durante el parto</em>.</p>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-tratamiento" id="contraccion">
+      <span class="seccion__pestana"><b>06</b> Contracción</span>
+      <h2 class="seccion__titulo">La Contracción &amp; el Segmento</h2>
+
+      <p>La contracción es el <strong>fenómeno ACTIVO</strong> del parto. El punto en que se hace dolorosa se llama <strong>umbral de dolor</strong> y <strong>depende de la sensibilidad individual de cada mujer</strong>.</p>
+      <p>La <strong>onda contráctil comienza en uno de los cuernos uterinos, a nivel del OSTIUM TUBÁRICO</strong>, y <strong>se propaga en dirección descendente</strong> al resto del órgano.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 330" role="img" aria-label="El triple gradiente descendente de la contracción uterina. La onda nace en el ostium tubárico, en uno de los cuernos, y se propaga hacia abajo, de manera que el fondo se contrae con mayor intensidad que el cuerpo y el cuerpo más que el cuello. Los tres gradientes son: el de propagación, según el cual la contracción va de arriba hacia abajo; el de intensidad, porque la pared es más gruesa en el fondo y por eso la contracción es más intensa allí; y el de duración, porque todo el miometrio se relaja simultáneamente, de modo que si la contracción se origina en el fondo, allí es donde dura más.">
+          <defs>
+            <marker id="pta-grad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+            <clipPath id="clip-utero">
+              <path d="M 250,52 C 190,52 168,100 168,155 C 168,205 190,240 232,252 L 232,300 L 268,300 L 268,252 C 310,240 332,205 332,155 C 332,100 310,52 250,52 Z"></path>
+            </clipPath>
+          </defs>
+
+          <g clip-path="url(#clip-utero)">
+            <rect x="160" y="50" width="180" height="66" fill="var(--c)" fill-opacity="0.48"></rect>
+            <rect x="160" y="116" width="180" height="70" fill="var(--c)" fill-opacity="0.28"></rect>
+            <rect x="160" y="186" width="180" height="120" fill="var(--c)" fill-opacity="0.10"></rect>
+          </g>
+          <path d="M 250,52 C 190,52 168,100 168,155 C 168,205 190,240 232,252 L 232,300 L 268,300 L 268,252 C 310,240 332,205 332,155 C 332,100 310,52 250,52 Z" fill="none" stroke="currentColor" stroke-width="2.5"></path>
+          <polyline points="186,74 148,58" fill="none" stroke="currentColor" stroke-width="3"></polyline>
+          <polyline points="314,74 352,58" fill="none" stroke="currentColor" stroke-width="3"></polyline>
+
+          <circle cx="308" cy="78" r="6" fill="currentColor"></circle>
+          <text x="358" y="82" font-size="10.5" font-weight="700" fill="currentColor">ostium tubárico</text>
+          <text x="358" y="98" font-size="10.5" fill="currentColor">el marcapasos</text>
+
+          <polyline points="302,94 294,138 286,178 280,204" fill="none" stroke="currentColor" stroke-width="1.8" stroke-dasharray="6 3" marker-end="url(#pta-grad)"></polyline>
+
+          <text x="250" y="92" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">FONDO</text>
+          <text x="250" y="156" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">CUERPO</text>
+          <text x="250" y="226" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">CUELLO</text>
+          <text x="196" y="92" font-size="11.5" font-weight="700" fill="currentColor">+++</text>
+          <text x="200" y="156" font-size="11.5" font-weight="700" fill="currentColor">++</text>
+          <text x="204" y="226" font-size="11.5" font-weight="700" fill="currentColor">+</text>
+
+          <rect x="380" y="120" width="310" height="60" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="392" y="142" font-size="11" font-weight="700" fill="currentColor">GRADIENTE DE PROPAGACIÓN</text>
+          <text x="392" y="164" font-size="10.5" fill="currentColor">la contracción va de ARRIBA hacia ABAJO</text>
+
+          <rect x="380" y="190" width="310" height="60" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="392" y="212" font-size="11" font-weight="700" fill="currentColor">GRADIENTE DE INTENSIDAD</text>
+          <text x="392" y="234" font-size="10.5" fill="currentColor">la pared es más gruesa en el fondo</text>
+
+          <rect x="380" y="260" width="310" height="60" rx="3" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="392" y="282" font-size="11" font-weight="700" fill="currentColor">GRADIENTE DE DURACIÓN</text>
+          <text x="392" y="304" font-size="10.5" fill="currentColor">todo el miometrio se relaja a la vez</text>
+        </svg>
+        <figcaption>La frase que resume los tres: la contracción <strong>comienza ANTES, es MÁS INTENSA y dura MÁS en el fondo que en el cuerpo, y en el cuerpo más que en el cuello</strong>. El <strong>gradiente de duración</strong> es el menos intuitivo: como <strong>todo el miometrio se relaja simultáneamente</strong>, la porción que empezó primero es también la que estuvo contraída más tiempo.</figcaption>
+      </figure>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Gradiente</th><th>En qué consiste</th><th>Por qué</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>De PROPAGACIÓN</strong></td><td>Se propaga <strong>de arriba hacia abajo</strong></td><td>La onda nace en el <strong>ostium tubárico</strong></td></tr>
+            <tr><td><strong>De INTENSIDAD</strong></td><td>Es <strong>más intensa en el fondo</strong></td><td>La <strong>pared es más gruesa</strong> allí</td></tr>
+            <tr><td><strong>De DURACIÓN</strong></td><td><strong>Dura más en el fondo</strong></td><td><strong>Todo el miometrio se relaja simultáneamente</strong>: si empieza en el fondo, allí es donde estuvo contraído más tiempo</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante! — Esto es contra lo que se compara la dinámica</p>
+        <p>La sección 07 indica <strong>controlar la dinámica uterina (DU) y el tono uterino (TU) cada 30 minutos</strong>. Lo que se está comparando es <strong>esta contracción</strong>: la que <strong>nace en un cuerno</strong>, <strong>se propaga hacia abajo</strong> y <strong>respeta el triple gradiente</strong>.</p>
+        <p>Cuando el gradiente se pierde —<strong>inversión de gradiente</strong>, <strong>incoordinación</strong>, <strong>hipertonía</strong> o <strong>taquisistolia</strong>— la contracción <strong>deja de dilatar</strong> aunque duela igual, y además <strong>impide que el espacio intervelloso se rellene</strong> entre una y otra.</p>
+      </div>
+
+      <h3>Segmento activo y segmento pasivo</h3>
+      <p>Las contracciones producen un <strong>alargamiento del ovoide uterino</strong> a expensas del <strong>segmento inferior y del cérvix</strong>, con <strong>disminución de los diámetros horizontales</strong>. Este cambio de forma tiene <strong>dos efectos</strong>: <strong>presiona el eje fetal hacia la pelvis</strong> y <strong>contribuye a la dilatación cervical</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th></th><th>Segmento ACTIVO</th><th>Segmento PASIVO</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Dónde</strong></td><td>Segmento uterino <strong>superior</strong></td><td>Segmento uterino <strong>inferior</strong> y <strong>cérvix</strong></td></tr>
+            <tr><td><strong>Qué hace</strong></td><td><strong>Se contrae y se retrae</strong> — impulsa el contenido</td><td><strong>Se distiende</strong> — sus fibras se alargan progresivamente</td></tr>
+            <tr><td><strong>Espesor</strong></td><td><strong>Aumenta</strong> a lo largo del parto</td><td><strong>Disminuye</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante! — El anillo de Bandl</p>
+        <p>El límite entre los dos segmentos es el <strong>anillo de retracción fisiológico</strong>, que normalmente <strong>no se palpa ni se ve</strong>. Cuando existe una <strong>obstrucción al descenso</strong>, el segmento activo se retrae cada vez más y el pasivo se adelgaza en exceso: el anillo <strong>asciende y se hace visible y palpable</strong> como un surco transversal en el abdomen.</p>
+        <p>Es entonces el <strong>ANILLO DE BANDL</strong>, <strong>signo de rotura uterina inminente</strong>. Con el <strong>signo de Frommel</strong> —ligamentos redondos tensos y palpables— configura el <strong>síndrome de inminencia de rotura</strong>, que obliga a <strong>suspender la oxitocina y resolver por cesárea de urgencia</strong>.</p>
+        <p><strong>Lo que separa lo fisiológico de lo patológico no es que exista el anillo, sino que se vea.</strong></p>
+      </div>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-clinica" id="control">
+      <span class="seccion__pestana"><b>07</b> Control</span>
+      <h2 class="seccion__titulo">Control de la Fase Activa &amp; Partograma</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Qué se controla</th><th>Cada cuánto</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Signos vitales maternos</strong> y <strong>estado general</strong></td><td>Periódicamente</td></tr>
+            <tr><td><strong>FCF · DU · TU</strong></td><td><strong>Cada 30 minutos o menos</strong></td></tr>
+            <tr><td><strong>Dilatación, descenso y posición fetal</strong></td><td><strong>Tacto vaginal cada 4 horas</strong>, según necesidad clínica</td></tr>
+            <tr><td><strong>Características del líquido amniótico</strong></td><td>Si la <strong>bolsa está rota</strong></td></tr>
+            <tr><td><strong>Registro en el PARTOGRAMA</strong></td><td>Con cada control</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>El acompañamiento no es accesorio</strong>: figura al mismo nivel que los controles. <strong>Alivio del dolor, respiración, movilización, masajes, posturas, hidratación, apoyo emocional, acompañamiento y comunicación clara.</strong></p>
+
+      <h3>Frecuencia cardíaca fetal</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Aspecto</th><th>Detalle</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Valor normal</strong></td><td><strong><span class="dato">110 – 160 lpm</span></strong></td></tr>
+            <tr><td><strong>Cuándo se controla</strong></td><td><strong>ANTES, DURANTE y DESPUÉS</strong> de una contracción</td></tr>
+            <tr><td><strong>Qué obliga a actuar</strong></td><td><strong>Desaceleraciones tardías o variables</strong> · <strong>Bradicardia</strong> o <strong>taquicardia</strong></td></tr>
+            <tr><td><strong>Conducta</strong></td><td><strong>1.</strong> Posición materna en <strong>decúbito lateral izquierdo (DLI)</strong><br><strong>2.</strong> <strong>Suspender la oxitocina</strong> si se está utilizando<br><strong>3.</strong> <strong>Evaluar el tono uterino</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Tipo</th><th>Cuándo ocurre</th><th>Mecanismo</th><th>Significado</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>DIP I</strong><br><em>precoz</em></td>
+              <td>El fondo <strong>COINCIDE</strong> con el pico de la contracción</td>
+              <td><strong>Compresión de la cabeza fetal</strong> — reflejo vagal</td>
+              <td><strong>BENIGNA.</strong> Esperable en el expulsivo</td>
+            </tr>
+            <tr>
+              <td><strong>DIP II</strong><br><em>tardía</em></td>
+              <td>El fondo ocurre <strong>DESPUÉS</strong> del pico — hay <strong>decalaje</strong></td>
+              <td><strong>Insuficiencia uteroplacentaria</strong> — hipoxia</td>
+              <td><strong>ES LA QUE PREOCUPA</strong></td>
+            </tr>
+            <tr>
+              <td><strong>DIP III</strong><br><em>variable</em></td>
+              <td><strong>Forma y momento variables</strong></td>
+              <td><strong>Compresión del cordón</strong></td>
+              <td>Depende de la <strong>profundidad y duración</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Las tres medidas se entienden desde el mecanismo. El <strong>decúbito lateral izquierdo</strong> libera la vena cava y <strong>mejora la perfusión placentaria</strong> — actúa sobre el DIP II. <strong>Suspender la oxitocina</strong> reduce la frecuencia y devuelve <strong>tiempo de perfusión</strong> entre contracciones. <strong>Evaluar el tono</strong> busca <strong>hipertonía</strong> o <strong>taquisistolia</strong>, que impiden que el espacio intervelloso se rellene. Las tres apuntan a <strong>devolverle oxígeno al feto</strong>.</p>
+
+      <h3>El partograma</h3>
+      <p>Es una <strong>herramienta clínica y gráfica para registrar y evaluar el progreso del trabajo de parto</strong>. Está incluido en los protocolos de la <strong>OMS (2021)</strong> y la <strong>FIGO</strong>. <strong>Detecta el trabajo de parto prolongado o detenido</strong>, <strong>mejora la toma de decisiones</strong> y <strong>reduce el índice de cesáreas</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 314" role="img" aria-label="Esquema del partograma. Sobre un eje de dilatación cervical contra tiempo se traza la línea de base en cuatro coma cinco centímetros, desde donde arranca la curva de alerta. La curva de alerta marca el progreso esperado. La curva real de la paciente se registra con cada control. Cuando la curva real se desplaza hacia la derecha de la curva de alerta, con un retraso creciente, significa que el progreso es más lento de lo esperado y obliga a reevaluar la conducta obstétrica.">
+          <defs>
+            <marker id="pta-part" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <text x="70" y="36" font-size="10.5" fill="currentColor" opacity="0.75">dilatación cervical (cm)</text>
+
+          <polyline points="70,166 660,166" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="5 3" opacity="0.6"></polyline>
+          <text x="664" y="162" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="end">línea de base 4,5 cm</text>
+
+          <path d="M 168,166 C 230,150 300,120 380,90 C 420,74 445,58 463,50" fill="none" stroke="currentColor" stroke-width="2.2" stroke-dasharray="7 4"></path>
+          <path d="M 168,166 C 240,155 310,138 380,120 C 440,104 500,80 562,50" fill="none" stroke="currentColor" stroke-width="2.6"></path>
+
+          <text x="455" y="42" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="end">CURVA DE ALERTA</text>
+          <text x="570" y="46" font-size="10.5" font-weight="700" fill="currentColor">curva REAL</text>
+
+          <polyline points="382,92 474,92" fill="none" stroke="currentColor" stroke-width="1.8" marker-start="url(#pta-part)" marker-end="url(#pta-part)"></polyline>
+          <text x="428" y="84" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">retraso</text>
+
+          <rect x="470" y="180" width="210" height="70" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.8" stroke-dasharray="6 4"></rect>
+          <text x="575" y="202" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">la curva REAL se desplaza</text>
+          <text x="575" y="220" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">a la DERECHA de la de alerta</text>
+          <text x="575" y="240" font-size="10.5" fill="currentColor" text-anchor="middle">→ REEVALUAR la conducta</text>
+
+          <polyline points="70,50 70,260" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+          <polyline points="70,260 660,260" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+
+          <text x="64" y="264" font-size="10.5" fill="currentColor" text-anchor="end">0</text>
+          <text x="64" y="222" font-size="10.5" fill="currentColor" text-anchor="end">2</text>
+          <text x="64" y="180" font-size="10.5" fill="currentColor" text-anchor="end">4</text>
+          <text x="64" y="138" font-size="10.5" fill="currentColor" text-anchor="end">6</text>
+          <text x="64" y="96" font-size="10.5" fill="currentColor" text-anchor="end">8</text>
+          <text x="64" y="54" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="end">10</text>
+
+          <polyline points="70,260 70,266" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+          <polyline points="168,260 168,266" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+          <polyline points="266,260 266,266" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+          <polyline points="365,260 365,266" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+          <polyline points="463,260 463,266" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+          <polyline points="562,260 562,266" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+          <polyline points="660,260 660,266" fill="none" stroke="currentColor" stroke-width="1.5"></polyline>
+          <text x="70"  y="282" font-size="10.5" fill="currentColor" text-anchor="middle">0</text>
+          <text x="168" y="282" font-size="10.5" fill="currentColor" text-anchor="middle">2</text>
+          <text x="266" y="282" font-size="10.5" fill="currentColor" text-anchor="middle">4</text>
+          <text x="365" y="282" font-size="10.5" fill="currentColor" text-anchor="middle">6</text>
+          <text x="463" y="282" font-size="10.5" fill="currentColor" text-anchor="middle">8</text>
+          <text x="562" y="282" font-size="10.5" fill="currentColor" text-anchor="middle">10</text>
+          <text x="660" y="282" font-size="10.5" fill="currentColor" text-anchor="middle">12</text>
+          <text x="365" y="304" font-size="10.5" fill="currentColor" text-anchor="middle" opacity="0.75">horas de registro</text>
+        </svg>
+        <figcaption>La clave de lectura es <strong>geométrica</strong>: mientras la <strong>curva real</strong> va <strong>por encima o sobre</strong> la de alerta, el parto progresa como se espera. Cuando <strong>se desplaza a la derecha</strong> —tarda más de lo previsto en cada centímetro— cruza la curva de alerta, y eso <strong>no es indicación de cesárea</strong> sino <strong>orden de reevaluar</strong>.</figcaption>
+      </figure>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante! — Curva de alerta y línea de acción no son lo mismo</p>
+        <p><strong>Partograma CLAP-OPS/OMS</strong> —el que usa el material—: tiene <strong>SÓLO curva de alerta</strong>. Lo que dispara la reevaluación es que <strong>la curva real se desplace a la derecha</strong>.</p>
+        <p><strong>Partograma de la OMS</strong>: tiene <strong>línea de alerta Y línea de acción</strong>, esta última <strong>4 horas a la derecha</strong>. Cruzar la de alerta indica <strong>reevaluar</strong>; cruzar la de acción indica <strong>intervenir</strong>.</p>
+        <p>La diapositiva del material <strong>mezcla los dos sistemas</strong> al hablar de una «línea de acción que se cruza con la curva de alerta».</p>
+      </div>
+
+      <h3>Cómo se construye la curva de alerta</h3>
+      <p>No es una sola curva: la tabla del partograma CLAP da <strong>patrones distintos</strong> según <strong>tres variables</strong>:</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Variable</th><th>Opciones</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>POSICIÓN</strong></td><td><strong>Vertical</strong> u <strong>horizontal</strong></td></tr>
+            <tr><td><strong>PARIDAD</strong></td><td><strong>Todas</strong> · <strong>Multíparas</strong> · <strong>Nulíparas</strong></td></tr>
+            <tr><td><strong>MEMBRANAS</strong></td><td><strong>Íntegras</strong> o <strong>rotas</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Los valores tabulados corresponden al <strong>percentil 10</strong> y la curva se traza <strong>desde la línea de base de los 4,5 cm</strong>, es decir <strong>desde el inicio de la fase activa</strong> — nunca desde la fase latente.</p>
+
+      <p class="cita">Que sea <strong>percentil 10</strong> explica qué significa cruzarla: <strong>el 90 % de las mujeres con esas mismas características ya habría llegado</strong>. No significa que algo esté mal — significa que esta paciente está entre el <strong>10 % más lento</strong> y corresponde buscar por qué. Y que dependa de <strong>posición, paridad y membranas</strong> es la razón de que <strong>no exista una única curva normal</strong>.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante! — Cuándo intervenir</p>
+        <p><strong>Se recomienda intervenir en el curso espontáneo del parto SÓLO si</strong> se diagnostica una <strong>progresión inadecuada del descenso y/o la dilatación</strong>, o si existe <strong>sospecha de compromiso de la unidad feto-placentaria</strong>.</p>
+        <p>Las dos intervenciones son: <strong>1. Aceleración oxitócica</strong> y <strong>2. Rotura artificial de membranas (RAM)</strong> si estaban intactas.</p>
+        <p><strong>Antes de conducir, palpar.</strong> Una curva desplazada a la derecha y un <strong>anillo de Bandl palpable</strong> (sección 06) son el <strong>mismo cuadro visto de dos maneras</strong>: el registro y la mano. Si el anillo está, <strong>la conducta no es acelerar sino resolver</strong>.</p>
+      </div>
+    </section>
+
+    <!-- ============ 8 ============ -->
+    <section class="seccion s-fisiopatologia" id="feto">
+      <span class="seccion__pestana"><b>08</b> El feto</span>
+      <h2 class="seccion__titulo">El Feto: Estática &amp; Fenómenos Plásticos</h2>
+
+      <p>Del feto interesan, <strong>desde el punto de vista mecánico, dos cosas</strong>: el <strong>tamaño</strong> y la <strong>estática</strong>.</p>
+
+      <h3>La estática fetal: cuatro términos</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Término</th><th>Qué describe</th><th>Cómo se determina</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>ACTITUD</strong></td><td>La relación de las <strong>partes fetales entre sí</strong> — la flexión general</td><td>Palpación y tacto</td></tr>
+            <tr><td><strong>SITUACIÓN</strong></td><td>La relación entre el <strong>eje del feto</strong> y el <strong>eje de la madre</strong>: longitudinal, transversa u oblicua</td><td><strong>1.ª maniobra de Leopold</strong></td></tr>
+            <tr><td><strong>PRESENTACIÓN</strong></td><td>La <strong>parte fetal que se ofrece al estrecho superior</strong>: cefálica o pelviana</td><td><strong>3.ª maniobra de Leopold</strong></td></tr>
+            <tr><td><strong>POSICIÓN</strong></td><td>La relación del <strong>punto guía</strong> con la <strong>pelvis materna</strong>: derecha o izquierda, anterior o posterior</td><td><strong>2.ª maniobra de Leopold</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante! — Los cuatro términos y las cuatro maniobras son lo mismo</p>
+        <p>Los <strong>cuatro términos de la estática</strong> son las <strong>preguntas</strong>; las <strong>cuatro maniobras de Leopold</strong> son <strong>cómo se responden</strong>. Estudiarlos por separado deja cuatro definiciones sin método y cuatro maniobras sin objeto.</p>
+        <p>La <strong>cuarta maniobra</strong> agrega un dato que no está entre los cuatro términos clásicos: el <strong>grado de ENCAJAMIENTO</strong>, que es el que se registra en el partograma junto con los planos de Hodge.</p>
+      </div>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 264" role="img" aria-label="Las cuatro maniobras de Leopold. La primera se realiza con ambas manos sobre el fondo uterino y determina qué polo fetal lo ocupa, orientando la situación. La segunda se realiza con las manos a los lados del abdomen y determina de qué lado se encuentra el dorso fetal, es decir la posición. La tercera se realiza con una mano abarcando el polo inferior por encima del pubis y determina qué parte se presenta y si está móvil, es decir la presentación. La cuarta se realiza con el examinador mirando hacia los pies de la paciente y ambas manos sobre el polo inferior, y determina el grado de encajamiento.">
+          <ellipse cx="92" cy="86" rx="50" ry="60" fill="var(--c)" fill-opacity="0.12" stroke="currentColor" stroke-width="2"></ellipse>
+          <circle cx="92" cy="122" r="17" fill="var(--c)" fill-opacity="0.40" stroke="currentColor" stroke-width="1.5"></circle>
+          <rect x="60" y="20" width="26" height="16" rx="5" fill="var(--c)" fill-opacity="0.55" stroke="currentColor" stroke-width="1.5"></rect>
+          <rect x="98" y="20" width="26" height="16" rx="5" fill="var(--c)" fill-opacity="0.55" stroke="currentColor" stroke-width="1.5"></rect>
+          <text x="92" y="170" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">1.ª MANIOBRA</text>
+          <text x="92" y="190" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">FONDO uterino</text>
+          <text x="92" y="212" font-size="10.5" fill="currentColor" text-anchor="middle">¿qué polo ocupa</text>
+          <text x="92" y="230" font-size="10.5" fill="currentColor" text-anchor="middle">el fondo?</text>
+          <text x="92" y="252" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">→ SITUACIÓN</text>
+
+          <ellipse cx="264" cy="86" rx="50" ry="60" fill="var(--c)" fill-opacity="0.12" stroke="currentColor" stroke-width="2"></ellipse>
+          <circle cx="264" cy="122" r="17" fill="var(--c)" fill-opacity="0.40" stroke="currentColor" stroke-width="1.5"></circle>
+          <rect x="196" y="76" width="26" height="20" rx="5" fill="var(--c)" fill-opacity="0.55" stroke="currentColor" stroke-width="1.5"></rect>
+          <rect x="306" y="76" width="26" height="20" rx="5" fill="var(--c)" fill-opacity="0.55" stroke="currentColor" stroke-width="1.5"></rect>
+          <text x="264" y="170" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">2.ª MANIOBRA</text>
+          <text x="264" y="190" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">LATERALES</text>
+          <text x="264" y="212" font-size="10.5" fill="currentColor" text-anchor="middle">¿de qué lado está</text>
+          <text x="264" y="230" font-size="10.5" fill="currentColor" text-anchor="middle">el dorso?</text>
+          <text x="264" y="252" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">→ POSICIÓN</text>
+
+          <ellipse cx="436" cy="86" rx="50" ry="60" fill="var(--c)" fill-opacity="0.12" stroke="currentColor" stroke-width="2"></ellipse>
+          <circle cx="436" cy="122" r="17" fill="var(--c)" fill-opacity="0.40" stroke="currentColor" stroke-width="1.5"></circle>
+          <rect x="420" y="140" width="32" height="18" rx="5" fill="var(--c)" fill-opacity="0.55" stroke="currentColor" stroke-width="1.5"></rect>
+          <text x="436" y="170" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">3.ª MANIOBRA</text>
+          <text x="436" y="190" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">POLO INFERIOR</text>
+          <text x="436" y="212" font-size="10.5" fill="currentColor" text-anchor="middle">¿qué se presenta</text>
+          <text x="436" y="230" font-size="10.5" fill="currentColor" text-anchor="middle">y está móvil?</text>
+          <text x="436" y="252" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">→ PRESENTACIÓN</text>
+
+          <ellipse cx="608" cy="86" rx="50" ry="60" fill="var(--c)" fill-opacity="0.12" stroke="currentColor" stroke-width="2"></ellipse>
+          <circle cx="608" cy="122" r="17" fill="var(--c)" fill-opacity="0.40" stroke="currentColor" stroke-width="1.5"></circle>
+          <rect x="570" y="140" width="28" height="18" rx="5" fill="var(--c)" fill-opacity="0.55" stroke="currentColor" stroke-width="1.5"></rect>
+          <rect x="606" y="140" width="28" height="18" rx="5" fill="var(--c)" fill-opacity="0.55" stroke="currentColor" stroke-width="1.5"></rect>
+          <text x="608" y="170" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">4.ª MANIOBRA</text>
+          <text x="608" y="190" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">hacia los PIES</text>
+          <text x="608" y="212" font-size="10.5" fill="currentColor" text-anchor="middle">¿cuánto descendió</text>
+          <text x="608" y="230" font-size="10.5" fill="currentColor" text-anchor="middle">en la pelvis?</text>
+          <text x="608" y="252" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">→ ENCAJAMIENTO</text>
+        </svg>
+        <figcaption>Las cuatro <strong>bajan progresivamente</strong> por el abdomen: fondo, laterales, polo inferior y pelvis. Las <strong>tres primeras se hacen mirando a la cara</strong> de la paciente; la <strong>cuarta es la única en que el examinador se da vuelta y mira hacia los pies</strong>, porque necesita seguir la presentación hacia adentro de la pelvis.</figcaption>
+      </figure>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Maniobra</th><th>Cómo se hace</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>1.ª</strong></td><td><strong>Ambas manos sobre el FONDO uterino</strong>. La <strong>nalga</strong> es <strong>grande, irregular y no pelotea</strong>; la <strong>cabeza</strong> es <strong>dura, redondeada y pelotea</strong></td></tr>
+            <tr><td><strong>2.ª</strong></td><td><strong>Manos a ambos LADOS</strong>. Un lado es una <strong>superficie lisa y resistente</strong> —el <strong>dorso</strong>—; el otro, <strong>irregular y con partes pequeñas</strong> —los miembros—</td></tr>
+            <tr><td><strong>3.ª</strong></td><td><strong>Una mano abarca el POLO INFERIOR</strong> por encima del pubis, entre el pulgar y los demás dedos. Se intenta <strong>movilizarlo</strong></td></tr>
+            <tr><td><strong>4.ª</strong></td><td>El examinador <strong>se da vuelta y mira hacia los PIES</strong>. Ambas manos siguen el polo inferior <strong>hacia la pelvis</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>La cabeza fetal y el moldeamiento</h3>
+      <p>Es <strong>la parte más importante, sobre todo por su tamaño</strong>. Es un <strong>ovoide con armazón óseo pero con cierta plasticidad</strong>, porque las <strong>suturas no están osificadas</strong> y en los vértices de unión de los huesos planos se forman las <strong>fontanelas</strong>, no cubiertas aún de hueso.</p>
+      <p>Durante la expulsión se producen fenómenos de <strong>ACABALGAMIENTO</strong> y <strong>DESALINEAMIENTO</strong> entre los huesos de la bóveda craneal — es el <strong>moldeamiento</strong>, y es lo que permite que una cabeza pase por un canal de dimensiones ajustadas.</p>
+
+      <h3>Cefalohematoma y bolsa serosanguínea</h3>
+      <p>Son las <strong>dos colecciones del cuero cabelludo del recién nacido</strong>. Se confunden con facilidad, aunque <strong>una sola regla las separa</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 276" role="img" aria-label="Comparación en corte entre el cefalohematoma y la bolsa serosanguínea. En el cefalohematoma la colección se ubica entre el hueso y el periostio, de modo que queda limitada por las suturas y no cruza la línea media. En la bolsa serosanguínea o caput succedaneum la colección se ubica por encima del periostio, entre éste y la aponeurosis, de modo que se extiende libremente y cruza las suturas.">
+          <polyline points="350,16 350,266" fill="none" stroke="currentColor" stroke-width="1" opacity="0.25"></polyline>
+
+          <text x="180" y="26" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">CEFALOHEMATOMA</text>
+          <text x="180" y="44" font-size="10.5" fill="currentColor" text-anchor="middle">subperióstico</text>
+
+          <path d="M 40,180 Q 180,88 320,180 L 320,200 Q 180,108 40,200 Z" fill="var(--c)" fill-opacity="0.34" stroke="currentColor" stroke-width="1.5"></path>
+          <path d="M 40,176 Q 180,84 320,176" fill="none" stroke="currentColor" stroke-width="2"></path>
+          <path d="M 40,160 Q 180,68 320,160" fill="none" stroke="currentColor" stroke-width="1.8"></path>
+          <path d="M 40,148 Q 180,56 320,148" fill="none" stroke="currentColor" stroke-width="2.2"></path>
+          <path d="M 40,178 Q 110,138 220,136 Q 110,104 40,178 Z" fill="var(--c)" fill-opacity="0.62" stroke="currentColor" stroke-width="1.8"></path>
+          <polyline points="220,132 220,160" fill="none" stroke="currentColor" stroke-width="3"></polyline>
+          <text x="220" y="176" font-size="10.5" fill="currentColor" text-anchor="middle" opacity="0.8">sutura</text>
+
+          <text x="24" y="206" font-size="10.5" font-weight="700" fill="currentColor">· entre HUESO y PERIOSTIO</text>
+          <text x="24" y="224" font-size="10.5" font-weight="700" fill="currentColor">· RESPETA las suturas</text>
+          <text x="24" y="242" font-size="10.5" fill="currentColor">· unilateral, no cruza la línea media</text>
+          <text x="24" y="260" font-size="10.5" fill="currentColor">· aparece a las horas, tarda semanas</text>
+
+          <text x="520" y="26" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">BOLSA SEROSANGUÍNEA</text>
+          <text x="520" y="44" font-size="10.5" fill="currentColor" text-anchor="middle">caput succedaneum</text>
+
+          <path d="M 380,180 Q 520,88 660,180 L 660,200 Q 520,108 380,200 Z" fill="var(--c)" fill-opacity="0.34" stroke="currentColor" stroke-width="1.5"></path>
+          <path d="M 380,176 Q 520,84 660,176" fill="none" stroke="currentColor" stroke-width="2"></path>
+          <path d="M 380,160 Q 520,68 660,160" fill="none" stroke="currentColor" stroke-width="1.8"></path>
+          <path d="M 380,148 Q 520,56 660,148" fill="none" stroke="currentColor" stroke-width="2.2"></path>
+          <path d="M 380,176 Q 520,60 660,176 Q 520,88 380,176 Z" fill="var(--c)" fill-opacity="0.62" stroke="currentColor" stroke-width="1.8"></path>
+          <polyline points="560,131 560,155" fill="none" stroke="currentColor" stroke-width="3"></polyline>
+          <text x="560" y="176" font-size="10.5" fill="currentColor" text-anchor="middle" opacity="0.8">sutura</text>
+
+          <text x="364" y="206" font-size="10.5" font-weight="700" fill="currentColor">· entre PERIOSTIO y APONEUROSIS</text>
+          <text x="364" y="224" font-size="10.5" font-weight="700" fill="currentColor">· CRUZA las suturas</text>
+          <text x="364" y="242" font-size="10.5" fill="currentColor">· extenso y mal delimitado</text>
+          <text x="364" y="260" font-size="10.5" fill="currentColor">· presente al nacer, cede en días</text>
+        </svg>
+        <figcaption>De afuera hacia adentro las capas son <strong>piel, tejido celular subcutáneo, aponeurosis o galea, periostio y hueso</strong>. Toda la distinción está en <strong>de qué lado del PERIOSTIO queda la colección</strong>: el periostio se inserta en los bordes de cada hueso, así que lo que está <strong>por debajo queda encerrado</strong> y lo que está <strong>por encima se extiende libremente</strong>.</figcaption>
+      </figure>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th></th><th>Cefalohematoma</th><th>Bolsa serosanguínea</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Ubicación</strong></td><td>Entre <strong>hueso y periostio</strong> — <strong>subperióstico</strong></td><td>Por <strong>encima del periostio</strong>, entre éste y la <strong>aponeurosis</strong></td></tr>
+            <tr><td><strong>Suturas</strong></td><td><strong>LAS RESPETA</strong></td><td><strong>LAS CRUZA</strong></td></tr>
+            <tr><td><strong>Límites</strong></td><td><strong>Bien delimitado</strong></td><td><strong>Mal delimitado</strong> y difuso</td></tr>
+            <tr><td><strong>Contenido</strong></td><td><strong>Sangre</strong></td><td><strong>Edema</strong></td></tr>
+            <tr><td><strong>Cuándo aparece</strong></td><td><strong>Horas después</strong>, y puede aumentar</td><td><strong>Presente al nacer</strong></td></tr>
+            <tr><td><strong>Evolución</strong></td><td><strong>Semanas a meses</strong>. Puede contribuir a la <strong>ictericia</strong></td><td><strong>Días</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">La <strong>bolsa serosanguínea es banal</strong> y sólo requiere tranquilizar a los padres. El <strong>cefalohematoma</strong> es una <strong>colección hemática</strong> que puede contribuir a la <strong>hiperbilirrubinemia</strong> al reabsorberse y —si es bilateral o extenso— justificar el control del <strong>hematocrito</strong>. <strong>Nunca se punza.</strong></p>
+    </section>
+
+    <!-- ============ 9 ============ -->
+    <h2 class="bloque" id="bloque-c">
+      <span class="bloque__rotulo">Bloque C</span>
+      <span class="bloque__nombre">Expulsivo y alumbramiento</span>
+    </h2>
+
+    <section class="seccion s-diagnostico" id="expulsivo">
+      <span class="seccion__pestana"><b>09</b> Expulsivo</span>
+      <h2 class="seccion__titulo">Expulsivo &amp; Mecanismo de Parto</h2>
+
+      <p>Va <strong>desde la dilatación completa (10 cm) hasta la salida del feto</strong>, con <strong>contracciones intensas más pujos maternos</strong>. Es la fase en que el <strong>descenso es más acelerado y llamativo</strong> — aunque <strong>éste se inicia en la fase de dilatación</strong>, no acá.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 250" role="img" aria-label="Los cuatro tiempos del mecanismo de parto, representados como la cabeza fetal descendiendo por el canal pelviano. En el primer tiempo, el encajamiento, la cabeza atraviesa el estrecho superior orientada en un diámetro oblicuo y permanece alta. En el segundo, el descenso, la cabeza progresa por la excavación manteniendo su orientación. En el tercero, la rotación interna, la cabeza gira para acomodarse al estrecho inferior y el occipucio queda hacia adelante. En el cuarto, la expulsión, la cabeza franquea el estrecho inferior y sale al exterior.">
+          <path d="M 44,28 C 46,70 56,110 68,146" fill="none" stroke="currentColor" stroke-width="2.5"></path>
+          <path d="M 140,28 C 138,70 128,110 116,146" fill="none" stroke="currentColor" stroke-width="2.5"></path>
+          <ellipse cx="92" cy="54" rx="32" ry="25" fill="var(--c)" fill-opacity="0.30" stroke="currentColor" stroke-width="2"></ellipse>
+          <circle cx="66" cy="54" r="5" fill="currentColor"></circle>
+          <text x="92" y="182" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">1. ENCAJAMIENTO</text>
+          <text x="92" y="202" font-size="10.5" fill="currentColor" text-anchor="middle">en el estrecho superior</text>
+          <text x="92" y="220" font-size="10.5" fill="currentColor" text-anchor="middle">diámetro oblicuo</text>
+
+          <path d="M 216,28 C 218,70 228,110 240,146" fill="none" stroke="currentColor" stroke-width="2.5"></path>
+          <path d="M 312,28 C 310,70 300,110 288,146" fill="none" stroke="currentColor" stroke-width="2.5"></path>
+          <ellipse cx="264" cy="88" rx="30" ry="24" fill="var(--c)" fill-opacity="0.30" stroke="currentColor" stroke-width="2"></ellipse>
+          <circle cx="240" cy="88" r="5" fill="currentColor"></circle>
+          <text x="264" y="182" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">2. DESCENSO</text>
+          <text x="264" y="202" font-size="10.5" fill="currentColor" text-anchor="middle">empieza en la fase de</text>
+          <text x="264" y="220" font-size="10.5" fill="currentColor" text-anchor="middle">máxima dilatación</text>
+
+          <path d="M 388,28 C 390,70 400,110 412,146" fill="none" stroke="currentColor" stroke-width="2.5"></path>
+          <path d="M 484,28 C 482,70 472,110 460,146" fill="none" stroke="currentColor" stroke-width="2.5"></path>
+          <ellipse cx="436" cy="116" rx="23" ry="29" fill="var(--c)" fill-opacity="0.30" stroke="currentColor" stroke-width="2"></ellipse>
+          <circle cx="436" cy="140" r="5" fill="currentColor"></circle>
+          <text x="436" y="182" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">3. ROTACIÓN INTERNA</text>
+          <text x="436" y="202" font-size="10.5" fill="currentColor" text-anchor="middle">acomodación al</text>
+          <text x="436" y="220" font-size="10.5" fill="currentColor" text-anchor="middle">estrecho inferior</text>
+
+          <path d="M 560,28 C 562,70 572,110 584,146" fill="none" stroke="currentColor" stroke-width="2.5"></path>
+          <path d="M 656,28 C 654,70 644,110 632,146" fill="none" stroke="currentColor" stroke-width="2.5"></path>
+          <ellipse cx="608" cy="136" rx="23" ry="29" fill="var(--c)" fill-opacity="0.30" stroke="currentColor" stroke-width="2"></ellipse>
+          <circle cx="608" cy="160" r="5" fill="currentColor"></circle>
+          <text x="608" y="182" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">4. EXPULSIÓN</text>
+          <text x="608" y="202" font-size="10.5" fill="currentColor" text-anchor="middle">franquea el estrecho</text>
+          <text x="608" y="220" font-size="10.5" fill="currentColor" text-anchor="middle">inferior</text>
+        </svg>
+        <figcaption>El <strong>punto marca el occipucio</strong>. Entre el segundo y el tercer tiempo cambian <strong>dos cosas a la vez</strong>: la cabeza <strong>desciende</strong> y además <strong>rota</strong> — el óvalo pasa de transverso a anteroposterior y el occipucio queda hacia adelante. Ésa es la razón de que la rotación interna sea el tiempo que más se detiene cuando la pelvis es <strong>androide</strong>.</figcaption>
+      </figure>
+
+      <h3>Los cuatro tiempos según el material</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Tiempo</th><th>Qué ocurre</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>1. ENCAJAMIENTO</strong></td><td>De la cabeza en el <strong>estrecho superior</strong></td></tr>
+            <tr><td><strong>2. DESCENSO</strong></td><td>De la presentación. <strong>Comienza durante la fase de máxima dilatación cervical.</strong> Controles obstétricos <strong>cada 30 minutos</strong></td></tr>
+            <tr><td><strong>3. ROTACIÓN INTERNA</strong></td><td>Y <strong>acomodación al estrecho inferior</strong></td></tr>
+            <tr><td><strong>4. EXPULSIÓN</strong></td><td>Del feto</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Los movimientos cardinales completos</h3>
+      <p>Los cuatro tiempos <strong>comprimen</strong> la secuencia clásica. Ésta es la lista completa, con la correspondencia:</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Movimiento cardinal</th><th>Qué ocurre</th><th>Tiempo</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>1. Encajamiento</strong></td><td>El <strong>diámetro biparietal</strong> atraviesa el <strong>estrecho superior</strong></td><td><strong>1.º</strong></td></tr>
+            <tr><td><strong>2. Descenso</strong></td><td>Progresión por la excavación</td><td><strong>2.º</strong></td></tr>
+            <tr><td><strong>3. FLEXIÓN</strong></td><td>El mentón se aproxima al tórax y la cabeza <strong>ofrece su diámetro menor</strong>, el <strong>suboccípito-bregmático de 9,5 cm</strong></td><td><em>No figura</em></td></tr>
+            <tr><td><strong>4. Rotación interna</strong></td><td>El occipucio gira hacia la <strong>sínfisis</strong>: del diámetro oblicuo al <strong>anteroposterior</strong> del estrecho inferior</td><td><strong>3.º</strong></td></tr>
+            <tr><td><strong>5. EXTENSIÓN o deflexión</strong></td><td>La cabeza <strong>se deflexiona</strong> tomando el pubis como apoyo y <strong>se desprende</strong> siguiendo la curva de Carus</td><td><em>Dentro del 4.º</em></td></tr>
+            <tr><td><strong>6. ROTACIÓN EXTERNA o restitución</strong></td><td>La cabeza, ya afuera, <strong>vuelve a su relación con los hombros</strong></td><td><em>No figura</em></td></tr>
+            <tr><td><strong>7. Expulsión</strong></td><td>Sale el <strong>hombro anterior</strong>, después el posterior y el resto del cuerpo</td><td><strong>4.º</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Las <strong>tres omisiones importan</strong>. La <strong>flexión</strong> determina qué diámetro cefálico se ofrece: bien flexionada, la cabeza presenta el <strong>suboccípito-bregmático de 9,5 cm</strong>; una <strong>deflexión</strong> es causa clásica de detención. La <strong>extensión</strong> es el momento en que se protege el periné. La <strong>rotación externa</strong> es la señal de que hay que asistir el desprendimiento de hombros. Fuente: Cunningham FG et al., <em>Williams Obstetricia</em>, 26.ª ed.</p>
+
+      <p class="cita">La <strong>curva de Carus</strong> y los <strong>planos de Hodge</strong> —que son el sistema con que se registra el descenso en el partograma— están desarrollados en el cuadernillo de <strong>Pelvis Ósea y Periné</strong>.</p>
+    </section>
+
+    <!-- ============ 10 ============ -->
+    <section class="seccion s-importantes" id="alumbramiento">
+      <span class="seccion__pestana"><b>10</b> Alumbramiento</span>
+      <h2 class="seccion__titulo">Alumbramiento</h2>
+
+      <p>Es la <strong>expulsión de la placenta y las membranas</strong>. Dura <strong>45 minutos en la nulípara y 30 en la multípara</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Tipos</th><th>Detalle</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>ESPONTÁNEO</strong></td><td>Sin intervención: se espera la expulsión</td></tr>
+            <tr><td><strong>DIRIGIDO o ACTIVO</strong></td><td><strong>Protocolizado</strong> — ver debajo</td></tr>
+            <tr><td><strong>MANUAL</strong></td><td>Extracción manual de la placenta</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 302" role="img" aria-label="Los dos mecanismos de desprendimiento placentario. En el mecanismo de Schultze, que corresponde al ochenta por ciento de los casos, la placenta comienza a despegarse desde el centro, se forma un hematoma retroplacentario que la empuja, y desciende invaginada de modo que asoma primero su cara fetal, lisa y brillante; la sangre queda retenida detrás y sale después de la placenta. En el mecanismo de Duncan, que corresponde al veinte por ciento, el desprendimiento comienza desde un borde, la placenta desciende de lado y asoma primero su cara materna, rugosa y con los cotiledones; la sangre desciende por el costado y sale antes que la placenta.">
+          <defs>
+            <marker id="pta-des" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <polyline points="350,16 350,296" fill="none" stroke="currentColor" stroke-width="1" opacity="0.25"></polyline>
+
+          <text x="175" y="26" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">SCHULTZE</text>
+          <text x="175" y="44" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">80 %</text>
+
+          <path d="M 119,74 C 119,52 231,52 231,74 L 231,150 C 231,174 201,186 189,190 L 189,212 L 161,212 L 161,190 C 149,186 119,174 119,150 Z" fill="var(--c)" fill-opacity="0.10" stroke="currentColor" stroke-width="2"></path>
+          <ellipse cx="175" cy="76" rx="24" ry="11" fill="var(--c)" fill-opacity="0.70" stroke="currentColor" stroke-width="1.4"></ellipse>
+          <path d="M 133,104 Q 175,74 217,104 Q 175,98 133,104 Z" fill="var(--c)" fill-opacity="0.38" stroke="currentColor" stroke-width="1.8"></path>
+          <polyline points="175,110 175,178" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="5 3" marker-end="url(#pta-des)"></polyline>
+          <text x="113" y="80" font-size="10.5" fill="currentColor" text-anchor="end">hematoma</text>
+          <text x="237" y="108" font-size="10.5" fill="currentColor">placenta</text>
+
+          <text x="24" y="240" font-size="10.5" font-weight="700" fill="currentColor">· se despega desde el CENTRO</text>
+          <text x="24" y="258" font-size="10.5" fill="currentColor">· hematoma retroplacentario la empuja</text>
+          <text x="24" y="276" font-size="10.5" font-weight="700" fill="currentColor">· asoma la cara FETAL — lisa y brillante</text>
+          <text x="24" y="294" font-size="10.5" font-weight="700" fill="currentColor">· la sangre sale DESPUÉS</text>
+
+          <text x="525" y="26" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">DUNCAN</text>
+          <text x="525" y="44" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">20 %</text>
+
+          <path d="M 469,74 C 469,52 581,52 581,74 L 581,150 C 581,174 551,186 539,190 L 539,212 L 511,212 L 511,190 C 499,186 469,174 469,150 Z" fill="var(--c)" fill-opacity="0.10" stroke="currentColor" stroke-width="2"></path>
+          <path d="M 483,116 Q 525,78 567,98 Q 525,94 483,116 Z" fill="var(--c)" fill-opacity="0.38" stroke="currentColor" stroke-width="1.8"></path>
+          <path d="M 483,116 C 478,144 488,172 516,190" fill="none" stroke="currentColor" stroke-width="2.6"></path>
+          <text x="463" y="136" font-size="10.5" fill="currentColor" text-anchor="end">se despega</text>
+          <text x="463" y="152" font-size="10.5" fill="currentColor" text-anchor="end">del BORDE</text>
+          <text x="587" y="100" font-size="10.5" fill="currentColor">placenta</text>
+
+          <text x="374" y="240" font-size="10.5" font-weight="700" fill="currentColor">· se despega desde un BORDE</text>
+          <text x="374" y="258" font-size="10.5" fill="currentColor">· desciende de lado, no invaginada</text>
+          <text x="374" y="276" font-size="10.5" font-weight="700" fill="currentColor">· asoma la cara MATERNA — cotiledones</text>
+          <text x="374" y="294" font-size="10.5" font-weight="700" fill="currentColor">· la sangre sale ANTES</text>
+        </svg>
+        <figcaption>Lo que decide todo es <strong>por dónde empieza a despegarse</strong>. Si empieza por el <strong>centro</strong>, el hematoma queda <strong>atrapado detrás</strong> y sale recién cuando la placenta termina de salir — <strong>Schultze</strong>. Si empieza por un <strong>borde</strong>, la sangre encuentra <strong>camino libre por el costado</strong> — <strong>Duncan</strong>. De ahí la regla: <strong>si el sangrado precede a la placenta, el desprendimiento fue marginal</strong>.</figcaption>
+      </figure>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th></th><th>SCHULTZE</th><th>DUNCAN</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Frecuencia</strong></td><td><strong><span class="dato">80 %</span></strong></td><td><strong><span class="dato">20 %</span></strong></td></tr>
+            <tr><td><strong>Dónde empieza</strong></td><td>Por el <strong>CENTRO</strong></td><td>Por un <strong>BORDE</strong></td></tr>
+            <tr><td><strong>Cara que asoma</strong></td><td><strong>FETAL</strong> — lisa y brillante</td><td><strong>MATERNA</strong> — con los cotiledones</td></tr>
+            <tr><td><strong>Sangrado</strong></td><td><strong>DESPUÉS</strong> de la placenta</td><td><strong>ANTES</strong> de la placenta</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Signos de desprendimiento placentario</h3>
+      <p>Son los que dicen <strong>cuándo la tracción controlada del cordón es segura</strong>:</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Signo</th><th>Cómo se busca</th><th>Positivo cuando</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>AHLFELD</strong></td><td><strong>Pinza en el cordón a nivel de la vulva</strong></td><td>La pinza <strong>DESCIENDE</strong> unos 10 cm o más</td></tr>
+            <tr><td><strong>KÜSTNER</strong></td><td>Se <strong>comprime el útero por encima del pubis</strong></td><td>El cordón <strong>NO asciende</strong>. Si asciende, <strong>sigue adherida</strong></td></tr>
+            <tr><td><strong>DEL PESCADOR</strong><br><em>o de Fabre</em></td><td>Se <strong>tracciona suavemente del cordón</strong> mientras la otra mano palpa el fondo</td><td><strong>NO se transmite</strong> el movimiento al fondo</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Los tres buscan lo mismo desde ángulos distintos: <strong>si el cordón sigue solidario con el útero o ya no</strong>. Traccionar con la placenta <strong>todavía adherida</strong> produce <strong>inversión uterina</strong> o <strong>rotura del cordón</strong>.</p>
+
+      <h3>Alumbramiento activo</h3>
+      <p>Es una <strong>práctica protocolizada para PREVENIR LA HEMORRAGIA POSPARTO</strong>, recomendada por la <strong>OMS (2021)</strong>, la <strong>FIGO</strong> y los ministerios de salud nacionales.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 260" role="img" aria-label="Los tres pasos del alumbramiento activo. El primero es la administración de un uterotónico: oxitocina diez unidades internacionales por vía intramuscular o endovenosa lenta en el primer minuto posparto, con ergometrina o misoprostol como alternativas. El segundo es la tracción controlada del cordón umbilical, suave y acompañada de contratracción sobre el útero para evitar la inversión uterina. El tercero es el masaje uterino: palpar el fondo tras la expulsión de la placenta, constatar la retracción o globo de seguridad de Pinard, y repetir cada quince minutos durante la primera hora. El objetivo del conjunto es prevenir la hemorragia posparto.">
+          <defs>
+            <marker id="pta-act" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <circle cx="118" cy="24" r="14" fill="var(--c)" fill-opacity="0.40" stroke="var(--c)" stroke-width="2"></circle>
+          <text x="118" y="29" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">1</text>
+          <rect x="12" y="44" width="212" height="150" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="118" y="66" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">UTEROTÓNICO</text>
+          <text x="118" y="88" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">Oxitocina 10 UI</text>
+          <text x="118" y="106" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">IM o IV LENTA</text>
+          <text x="118" y="126" font-size="10.5" fill="currentColor" text-anchor="middle">en el PRIMER MINUTO</text>
+          <text x="118" y="144" font-size="10.5" fill="currentColor" text-anchor="middle">posparto</text>
+          <text x="118" y="166" font-size="10.5" fill="currentColor" text-anchor="middle">Alternativas:</text>
+          <text x="118" y="184" font-size="10.5" fill="currentColor" text-anchor="middle">ergometrina o misoprostol</text>
+
+          <polyline points="226,118 246,118" fill="none" stroke="currentColor" stroke-width="1.8" marker-end="url(#pta-act)"></polyline>
+
+          <circle cx="356" cy="24" r="14" fill="var(--c)" fill-opacity="0.40" stroke="var(--c)" stroke-width="2"></circle>
+          <text x="356" y="29" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">2</text>
+          <rect x="250" y="44" width="212" height="150" rx="3" fill="var(--c)" fill-opacity="0.20" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="356" y="66" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">TRACCIÓN CONTROLADA</text>
+          <text x="356" y="88" font-size="10.5" fill="currentColor" text-anchor="middle">del cordón umbilical</text>
+          <text x="356" y="110" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">Tracción SUAVE</text>
+          <text x="356" y="128" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">+ CONTRATRACCIÓN</text>
+          <text x="356" y="146" font-size="10.5" fill="currentColor" text-anchor="middle">sobre el útero</text>
+          <text x="356" y="168" font-size="10.5" fill="currentColor" text-anchor="middle">para evitar la</text>
+          <text x="356" y="186" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">INVERSIÓN UTERINA</text>
+
+          <polyline points="464,118 484,118" fill="none" stroke="currentColor" stroke-width="1.8" marker-end="url(#pta-act)"></polyline>
+
+          <circle cx="594" cy="24" r="14" fill="var(--c)" fill-opacity="0.40" stroke="var(--c)" stroke-width="2"></circle>
+          <text x="594" y="29" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">3</text>
+          <rect x="488" y="44" width="212" height="150" rx="3" fill="var(--c)" fill-opacity="0.28" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="594" y="66" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">MASAJE UTERINO</text>
+          <text x="594" y="88" font-size="10.5" fill="currentColor" text-anchor="middle">Palpar el fondo tras la</text>
+          <text x="594" y="106" font-size="10.5" fill="currentColor" text-anchor="middle">expulsión de la placenta</text>
+          <text x="594" y="128" font-size="10.5" fill="currentColor" text-anchor="middle">Constatar retracción:</text>
+          <text x="594" y="146" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">GLOBO DE SEGURIDAD</text>
+          <text x="594" y="164" font-size="10.5" font-weight="700" fill="currentColor" text-anchor="middle">DE PINARD</text>
+          <text x="594" y="186" font-size="10.5" fill="currentColor" text-anchor="middle">cada 15 min la 1.ª hora</text>
+
+          <rect x="100" y="212" width="500" height="40" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.8" stroke-dasharray="6 4"></rect>
+          <text x="350" y="237" font-size="11" font-weight="700" fill="currentColor" text-anchor="middle">Objetivo: PREVENIR LA HEMORRAGIA POSPARTO</text>
+        </svg>
+        <figcaption>Los tres pasos atacan <strong>la misma causa</strong> desde tres momentos: la hemorragia posparto se produce sobre todo por <strong>atonía uterina</strong>, y el útero deja de sangrar cuando <strong>se contrae y comprime los vasos del lecho placentario</strong>. El <strong>uterotónico</strong> fuerza esa contracción, la <strong>tracción controlada</strong> acorta el tiempo en que el útero está ocupado, y el <strong>masaje</strong> verifica y sostiene la retracción.</figcaption>
+      </figure>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante! — El globo de seguridad de Pinard</p>
+        <p>Es el <strong>signo que confirma que el paso 3 funcionó</strong>: el útero <strong>bien retraído</strong> se palpa como una <strong>masa dura, globulosa y bien delimitada</strong> a nivel o por debajo del ombligo.</p>
+        <p>Su <strong>ausencia</strong> —un útero <strong>blando, alto y mal delimitado</strong>— es el signo de <strong>ATONÍA UTERINA</strong>, la primera causa de hemorragia posparto. Por eso el control <strong>se repite cada 15 minutos durante la primera hora</strong>.</p>
+        <p>Sobre la <strong>contratracción</strong>: la maniobra completa es la de <strong>Brandt-Andrews</strong>. Una mano tracciona el cordón <strong>hacia abajo y afuera</strong> mientras la otra <strong>empuja el útero hacia arriba</strong>. Sin esa contrafuerza, la tracción puede <strong>arrastrar el fondo uterino hacia la vagina</strong> — la <strong>inversión uterina</strong>, emergencia con shock desproporcionado al sangrado. <strong>Nunca se tracciona sin haber comprobado el desprendimiento.</strong></p>
+      </div>
+
+      <p class="cita">El <strong>posparto inmediato</strong> es además el momento de <strong>máximo gasto cardíaco</strong> de todo el embarazo, por el cierre de la circulación uteroplacentaria — desarrollado en el cuadernillo de <strong>Modificaciones del Embarazo</strong>. Coincide con la primera hora de vigilancia del globo de seguridad: es <strong>la hora más peligrosa</strong>, tanto por la hemorragia como por la sobrecarga cardíaca.</p>
+    </section>
+
+    <!-- ============ 11 ============ -->
+    <h2 class="bloque" id="bloque-d">
+      <span class="bloque__rotulo">Cierre</span>
+      <span class="bloque__nombre">Glosario y repaso</span>
+    </h2>
+
+    <section class="seccion s-diferenciales" id="glosario">
+      <span class="seccion__pestana"><b>11</b> Glosario</span>
+      <h2 class="seccion__titulo">Glosario de Siglas</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Sigla</th><th>Significa</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>AU</strong></td><td>Altura uterina</td></tr>
+            <tr><td><strong>DIP</strong></td><td>Desaceleración de la FCF — <strong>DIP I</strong> precoz, <strong>DIP II</strong> tardía, <strong>DIP III</strong> variable</td></tr>
+            <tr><td><strong>DLI</strong></td><td><strong>Decúbito lateral izquierdo</strong></td></tr>
+            <tr><td><strong>DU</strong></td><td><strong>Dinámica uterina</strong> — frecuencia, intensidad y duración de las contracciones</td></tr>
+            <tr><td><strong>EG</strong></td><td>Edad gestacional</td></tr>
+            <tr><td><strong>FCF</strong></td><td><strong>Frecuencia cardíaca fetal</strong></td></tr>
+            <tr><td><strong>FIGO</strong></td><td>Federación Internacional de Ginecología y Obstetricia</td></tr>
+            <tr><td><strong>HCPB</strong></td><td><strong>Historia Clínica Perinatal Base</strong></td></tr>
+            <tr><td><strong>LA</strong></td><td>Líquido amniótico</td></tr>
+            <tr><td><strong>MAF</strong></td><td><strong>Movimientos activos fetales</strong></td></tr>
+            <tr><td><strong>PAF</strong></td><td>Factor activador plaquetario</td></tr>
+            <tr><td><strong>PGE2 / PGF2α</strong></td><td>Prostaglandinas E2 y F2 alfa</td></tr>
+            <tr><td><strong>RAM</strong></td><td><strong>Rotura artificial de membranas</strong></td></tr>
+            <tr><td><strong>SGB</strong></td><td><strong>Estreptococo del grupo B</strong> — <em>Streptococcus agalactiae</em></td></tr>
+            <tr><td><strong>TdP</strong></td><td>Trabajo de parto</td></tr>
+            <tr><td><strong>TU</strong></td><td><strong>Tono uterino</strong></td></tr>
+            <tr><td><strong>TV</strong></td><td><strong>Tacto vaginal</strong></td></tr>
+            <tr><td><strong>VDRL</strong></td><td>Prueba no treponémica para <strong>sífilis</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ Repaso ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso</span>
+      <h2 class="seccion__titulo">Repaso Activo</h2>
+      <p>Respondé antes de abrir cada tarjeta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary class="fc__p">Definición de trabajo de parto y los cuatro criterios de la OMS</summary>
+          <div class="fc__r">El <strong>conjunto de contracciones uterinas que producen el borramiento y la dilatación del cuello</strong>, con el objeto de expulsar un <strong>feto viable</strong>. Criterios OMS: <strong>comienzo espontáneo</strong>, <strong>bajo riesgo</strong>, <strong>presentación cefálica</strong> y <strong>término entre 37 y 42 semanas</strong>.</div>
+        </details>
+        <details class="fc s-generalidades">
+          <summary class="fc__p">Uterotropinas contra uterotoninas</summary>
+          <div class="fc__r">Las <strong>uterotropinas PREPARAN</strong> las condiciones para el inicio. Las <strong>uterotoninas DESENCADENAN directamente la contracción</strong>. Preparar y disparar no son lo mismo.</div>
+        </details>
+        <details class="fc s-generalidades">
+          <summary class="fc__p">Los cinco parámetros del test de Bishop</summary>
+          <div class="fc__r"><strong>Dilatación, borramiento, consistencia, posición y altura de la presentación.</strong> Puntaje de 0 a 13. <strong>≥ 6 – 8 es favorable</strong>; <strong>≤ 5 desfavorable</strong> e indica maduración cervical previa antes de la oxitocina.</div>
+        </details>
+        <details class="fc s-fisiopatologia">
+          <summary class="fc__p">La cascada de las prostaglandinas, paso a paso</summary>
+          <div class="fc__r">Del <strong>ácido araquidónico</strong>, almacenado como <strong>glicerofosfolípidos</strong>, movilizado por la <strong>fosfolipasa A2</strong>. <strong>Amnios y corion</strong> producen sólo <strong>PGE2</strong>; la <strong>decidua</strong> ambas. La <strong>rotura de los lisosomas deciduales</strong> libera la fosfolipasa.</div>
+        </details>
+        <details class="fc s-fisiopatologia">
+          <summary class="fc__p">¿Qué cuatro factores rompen los lisosomas deciduales?</summary>
+          <div class="fc__r"><strong>Infección amniótica, hemorragia, sobredistensión uterina y rotura de membranas.</strong> Por eso corioamnionitis, desprendimiento, polihidramnios, embarazo múltiple y RPM son causas de <strong>parto pretérmino</strong>.</div>
+        </details>
+        <details class="fc s-fisiopatologia">
+          <summary class="fc__p">¿Qué hormona mantiene el útero quiescente y cómo?</summary>
+          <div class="fc__r">La <strong>PROGESTERONA</strong>, mediante el <strong>bloqueo progesterónico</strong>: impide las <strong>uniones gap</strong> y los <strong>receptores de oxitocina</strong>. El parto empieza cuando ese bloqueo se levanta por <strong>retirada funcional</strong> y los estrógenos quedan sin oposición.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary class="fc__p">Los cuatro pilares del diagnóstico de trabajo de parto</summary>
+          <div class="fc__r"><strong>1.</strong> Contracciones uterinas. <strong>2.</strong> Modificaciones cervicales. <strong>3.</strong> Descenso y presentación fetal. <strong>4.</strong> Signos acompañantes — <strong>rotura de membranas</strong> y <strong>tapón mucoso</strong>.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary class="fc__p">¿Cómo se distingue el trabajo de parto verdadero del falso?</summary>
+          <div class="fc__r">Las contracciones del verdadero <strong>NO ceden con reposo ni hidratación</strong>. Las <strong>prodrómicas o de Braxton Hicks</strong> son irregulares, no progresan, ceden con reposo y sobre todo <strong>NO producen modificaciones cervicales</strong>. <strong>Sin modificación del cuello no hay trabajo de parto.</strong></div>
+        </details>
+        <details class="fc s-diferenciales">
+          <summary class="fc__p">¿Por qué el SGB figura en el laboratorio de ingreso?</summary>
+          <div class="fc__r">Porque coloniza a la madre <strong>sin síntomas</strong> pero puede producir <strong>sepsis neonatal precoz</strong>. Si es positivo corresponde <strong>profilaxis antibiótica INTRAPARTO</strong>, que sólo sirve si se da <strong>durante el trabajo de parto</strong> — por eso el dato se necesita al ingreso.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary class="fc__p">Los tres períodos del parto y las duraciones de la fase activa</summary>
+          <div class="fc__r"><strong>Dilatante · expulsivo · alumbramiento.</strong> Fase latente máxima <strong>20 h nulípara / 14 h multípara</strong>. Dilatación <strong>1,2 / 1,5 cm/h</strong>. Descenso <strong>1 / 2 cm/h</strong>. Alumbramiento <strong>45 / 30 minutos</strong>.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary class="fc__p">¿Qué predomina en la fase aceleratoria y qué en la desaceleratoria?</summary>
+          <div class="fc__r">En la <strong>aceleratoria predomina la DILATACIÓN</strong>; en la <strong>desaceleratoria ocurre el DESCENSO</strong>. Por eso una desaceleración de la curva cerca del final <strong>no es necesariamente una detención</strong>.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary class="fc__p">Borramiento y dilatación: ¿en qué se diferencian nulípara y multípara?</summary>
+          <div class="fc__r">En la <strong>NULÍPARA el borramiento PRECEDE a la dilatación</strong>. En la <strong>MULTÍPARA ocurren SIMULTÁNEAMENTE</strong>. Por eso la fase latente es mucho más larga en la primeriza.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary class="fc__p">Las tres cifras en disputa entre los dos materiales</summary>
+          <div class="fc__r"><strong>Subfases de la fase activa</strong>: 3→8 / 8→10 contra 2→4 / 4→9 / 9→completa. <strong>Duración del expulsivo</strong>: 90/60 contra 60/30. <strong>Inicio de la fase activa</strong>: <strong>3 cm (Friedman)</strong> contra <strong>5 cm (OMS 2021)</strong>. Las dos primeras son internas de un mismo deck.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary class="fc__p">¿Dónde nace la onda contráctil y cuáles son los tres gradientes?</summary>
+          <div class="fc__r">Nace en el <strong>OSTIUM TUBÁRICO</strong> de un cuerno. <strong>Propagación</strong>: de arriba hacia abajo. <strong>Intensidad</strong>: la pared es más gruesa en el fondo. <strong>Duración</strong>: todo el miometrio se relaja a la vez, así que la porción que empezó primero estuvo contraída más tiempo. Resumen: <strong>comienza antes, es más intensa y dura más en el fondo</strong>.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary class="fc__p">Segmento activo contra segmento pasivo</summary>
+          <div class="fc__r"><strong>ACTIVO</strong> = superior: se contrae y se retrae, <strong>impulsa</strong>, y su espesor <strong>aumenta</strong>. <strong>PASIVO</strong> = inferior y cérvix: <strong>se distiende</strong>, sus fibras se alargan, y su espesor <strong>disminuye</strong>.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary class="fc__p">¿Qué es el anillo de Bandl y qué obliga a hacer?</summary>
+          <div class="fc__r">El <strong>anillo de retracción</strong> entre los dos segmentos, que normalmente <strong>no se ve ni se palpa</strong>. Ante una <strong>obstrucción al descenso</strong> asciende y se hace <strong>palpable</strong>: es <strong>signo de rotura uterina inminente</strong>. Obliga a <strong>suspender la oxitocina y resolver por cesárea de urgencia</strong>.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary class="fc__p">Controles de la fase activa y sus intervalos</summary>
+          <div class="fc__r"><strong>FCF, DU y TU cada 30 minutos o menos.</strong> <strong>Tacto vaginal cada 4 horas</strong> según necesidad clínica. Signos vitales periódicamente. Si la bolsa está rota, <strong>características del líquido amniótico</strong>. Todo al <strong>partograma</strong>.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary class="fc__p">Los tres tipos de desaceleración y cuál preocupa</summary>
+          <div class="fc__r"><strong>DIP I precoz</strong>: coincide con el pico, por <strong>compresión cefálica</strong> — benigna. <strong>DIP II tardía</strong>: <strong>DESPUÉS</strong> del pico, por <strong>insuficiencia uteroplacentaria</strong> — <strong>es la que preocupa</strong>. <strong>DIP III variable</strong>: sin relación fija, por <strong>compresión del cordón</strong>.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary class="fc__p">¿Qué significa que la curva real cruce la de alerta?</summary>
+          <div class="fc__r">Que la paciente <strong>tarda más de lo esperado</strong>. La curva de alerta es el <strong>percentil 10</strong>: el <strong>90 % ya habría llegado</strong>. <strong>No es indicación de cesárea</strong> sino orden de <strong>REEVALUAR</strong>, y valorar <strong>amniotomía o conducción</strong>. Pero antes de conducir hay que <strong>palpar</strong>: si hay <strong>anillo de Bandl</strong>, la conducta es resolver, no acelerar.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary class="fc__p">Curva de alerta contra línea de acción</summary>
+          <div class="fc__r">El <strong>partograma CLAP</strong> tiene <strong>sólo curva de alerta</strong>; cruzarla obliga a <strong>reevaluar</strong>. El <strong>de la OMS</strong> agrega una <strong>línea de acción</strong> trazada <strong>4 horas a la derecha</strong>, y ésa obliga a <strong>intervenir</strong>. Las tres variables que definen la curva: <strong>posición, paridad y membranas</strong>.</div>
+        </details>
+        <details class="fc s-fisiopatologia">
+          <summary class="fc__p">Los cuatro términos de la estática y qué maniobra determina cada uno</summary>
+          <div class="fc__r"><strong>ACTITUD</strong>: relación de las partes fetales entre sí. <strong>SITUACIÓN</strong> → <strong>1.ª maniobra</strong>. <strong>POSICIÓN</strong> → <strong>2.ª maniobra</strong>. <strong>PRESENTACIÓN</strong> → <strong>3.ª maniobra</strong>. Y la <strong>4.ª</strong> agrega el <strong>ENCAJAMIENTO</strong>, que no está entre los cuatro términos clásicos.</div>
+        </details>
+        <details class="fc s-fisiopatologia">
+          <summary class="fc__p">¿Cuál es la única maniobra de Leopold que se hace de espaldas a la paciente?</summary>
+          <div class="fc__r">La <strong>CUARTA</strong>. El examinador <strong>se da vuelta y mira hacia los pies</strong> porque necesita seguir la presentación <strong>hacia adentro de la pelvis</strong>. Las tres primeras se hacen mirando a la cara.</div>
+        </details>
+        <details class="fc s-fisiopatologia">
+          <summary class="fc__p">Cefalohematoma contra bolsa serosanguínea: la regla que los separa</summary>
+          <div class="fc__r"><strong>De qué lado del PERIOSTIO está la colección.</strong> El <strong>cefalohematoma es subperióstico</strong> y <strong>RESPETA las suturas</strong>: es sangre, aparece a las horas y tarda semanas. La <strong>bolsa está por encima del periostio</strong>, <strong>CRUZA las suturas</strong>: es edema, está al nacer y cede en días.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary class="fc__p">Los cuatro tiempos del mecanismo y los movimientos que omiten</summary>
+          <div class="fc__r">Tiempos: <strong>encajamiento, descenso, rotación interna y expulsión</strong>. Los movimientos cardinales agregan la <strong>FLEXIÓN</strong> —que hace que la cabeza ofrezca el <strong>suboccípito-bregmático de 9,5 cm</strong>—, la <strong>EXTENSIÓN</strong> y la <strong>ROTACIÓN EXTERNA o restitución</strong>.</div>
+        </details>
+        <details class="fc s-importantes">
+          <summary class="fc__p">Schultze contra Duncan: las cuatro diferencias</summary>
+          <div class="fc__r"><strong>SCHULTZE (80 %)</strong>: desde el <strong>CENTRO</strong>, hematoma retroplacentario, asoma la <strong>cara FETAL</strong>, sangre <strong>DESPUÉS</strong>. <strong>DUNCAN (20 %)</strong>: desde un <strong>BORDE</strong>, de lado, asoma la <strong>cara MATERNA</strong>, sangre <strong>ANTES</strong>.</div>
+        </details>
+        <details class="fc s-importantes">
+          <summary class="fc__p">Los tres signos de desprendimiento placentario</summary>
+          <div class="fc__r"><strong>AHLFELD</strong>: la pinza del cordón <strong>desciende</strong>. <strong>KÜSTNER</strong>: al comprimir el útero sobre el pubis, el cordón <strong>NO asciende</strong>. <strong>DEL PESCADOR</strong>: la tracción <strong>no se transmite al fondo</strong>. Los tres dicen lo mismo: <strong>el cordón ya no es solidario con el útero</strong>.</div>
+        </details>
+        <details class="fc s-importantes">
+          <summary class="fc__p">Los tres pasos del alumbramiento activo</summary>
+          <div class="fc__r"><strong>1. UTEROTÓNICO</strong>: oxitocina <strong>10 UI IM o IV lenta en el primer minuto</strong>; alternativas ergometrina o misoprostol. <strong>2. TRACCIÓN CONTROLADA</strong> con <strong>contratracción</strong> —maniobra de Brandt-Andrews—. <strong>3. MASAJE UTERINO</strong> cada <strong>15 minutos la primera hora</strong>.</div>
+        </details>
+        <details class="fc s-importantes">
+          <summary class="fc__p">¿Qué es el globo de seguridad de Pinard y qué indica su ausencia?</summary>
+          <div class="fc__r">El útero <strong>bien retraído</strong>: una <strong>masa dura, globulosa y bien delimitada</strong> a nivel o por debajo del ombligo. Su <strong>ausencia</strong> —útero blando, alto y mal delimitado— es <strong>ATONÍA UTERINA</strong>, la primera causa de hemorragia posparto.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Inicio y diagnóstico</dt>
+        <dd><strong>Uterotropinas preparan, uterotoninas disparan.</strong> Criterios OMS: <strong>comienzo espontáneo, bajo riesgo, cefálica, 37 – 42 semanas</strong>. Diagnóstico por <strong>cuatro pilares</strong>: contracciones <strong>2 – 5 en 10 min</strong> de <strong>30 – 60 seg</strong> que <strong>NO ceden con reposo ni hidratación</strong>, modificaciones cervicales, descenso y signos acompañantes. La regla que resuelve la duda: <strong>sin modificación del cuello no hay trabajo de parto</strong>.</dd>
+
+        <dt class="r-gold">Los números</dt>
+        <dd><strong>Fase latente máxima</strong> 20 h nulípara / 14 h multípara · <strong>dilatación</strong> 1,2 / 1,5 cm/h · <strong>descenso</strong> 1 / 2 cm/h · <strong>alumbramiento</strong> 45 / 30 min. <strong>Dinámica normal</strong>: 3 contracciones en 10 min, <strong>25 – 50 mmHg</strong>. <strong>FCF 110 – 160</strong>, controlada antes, durante y después. <strong>Expulsivo: dos versiones</strong> —90/60 contra 60/30— que <strong>se duplican con analgesia</strong>. <strong>Fase activa: 3 cm o 5 cm según el material</strong>.</dd>
+
+        <dt class="r-tto">Contracción, control y mecanismo</dt>
+        <dd>La onda nace en el <strong>ostium tubárico</strong>: <strong>comienza antes, es más intensa y dura más en el fondo</strong>. <strong>Segmento activo</strong> se retrae, <strong>pasivo</strong> se distiende. Controles: <strong>FCF, DU y TU cada 30 min</strong>; <strong>TV cada 4 h</strong>. <strong>Curva de alerta = percentil 10</strong> desde la <strong>línea de base de 4,5 cm</strong>: cruzarla obliga a <strong>reevaluar</strong>, no a operar. Se interviene <strong>sólo</strong> con <strong>oxitocina y RAM</strong>. <strong>Leopold</strong>: 1.ª situación · 2.ª posición · 3.ª presentación · 4.ª encajamiento. <strong>Tiempos</strong>: encajamiento, descenso, rotación interna, expulsión — más <strong>flexión, extensión y rotación externa</strong>.</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd><strong>DIP II (tardía)</strong> es la que preocupa → <strong>DLI, suspender oxitocina, evaluar tono</strong>. <strong>Anillo de Bandl visible y palpable = rotura uterina inminente</strong>: no acelerar, resolver. <strong>Nunca traccionar el cordón</strong> sin comprobar el desprendimiento —Ahlfeld, Küstner, del pescador— ni <strong>sin contratracción</strong>: riesgo de <strong>inversión uterina</strong>. <strong>Ausencia del globo de Pinard = ATONÍA</strong>. El <strong>cefalohematoma respeta las suturas</strong>, <strong>la bolsa las cruza</strong>.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed por <strong>fusión de dos materiales de la Cátedra de Obstetricia, Sede San Rafael</strong>: «Mecanismo de Parto» del Dr. Miguel Blanco y «Control de Trabajo de Parto» de la Lic. Natalia Paola Molina, Obstetra del Hospital T. J. Schestakow. <strong>Reemplaza a los cuadernillos individuales de ambos.</strong> Complementado con Williams Obstetricia, Schwarcz Obstetricia, el consenso ACOG-SMFM sobre prevención de la cesárea primaria, las recomendaciones de la OMS sobre cuidados durante el parto y el partograma CLAP-OPS/OMS. Material de estudio: no reemplaza el criterio clínico ni la guía institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+
+  // ---- Tema claro / oscuro ----
+  // Sin eleccion estampada manda el sistema; el boton la estampa y la guarda.
+  var raiz = document.documentElement;
+  var boton = document.getElementById('tema');
+
+  function temaActual(){
+    var estampado = raiz.getAttribute('data-theme');
+    if (estampado) return estampado;
+    return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+
+  if (boton){
+    var rotular = function(){
+      var actual = temaActual();
+      boton.setAttribute('aria-pressed', actual === 'dark' ? 'true' : 'false');
+      boton.setAttribute('aria-label', actual === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+    };
+    boton.addEventListener('click', function(){
+      var nuevo = temaActual() === 'dark' ? 'light' : 'dark';
+      raiz.setAttribute('data-theme', nuevo);
+      try { localStorage.setItem('wordmed-tema', nuevo); } catch (e) { /* sin persistencia */ }
+      rotular();
+    });
+    rotular();
+  }
+
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link, .ir-link'));
+
+  // Devuelve TODOS los enlaces al ancla: la misma seccion figura en el indice
+  // lateral y en el compacto, y los dos tienen que encenderse juntos.
+  function porMeta(hash){
+    return enlaces.filter(function(l){ return l.getAttribute('href') === '#' + hash; });
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var activos = porMeta(e.target.id);
+        if (!activos.length) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          activos.forEach(function(l){ l.setAttribute('aria-current', 'true'); });
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>

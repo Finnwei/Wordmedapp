@@ -1,0 +1,1895 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Período Placentario Patológico</title>
+<link rel="stylesheet" href="../../fuentes/fuentes.css">
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-bloque:1.95rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+
+  /* Que la barra de desplazamiento y los controles nativos acompanen al tema */
+  color-scheme: light dark;
+}
+
+/* Eleccion explicita de claro: solo hace falta para el color-scheme, los
+   tokens claros ya son la base sin estampar. */
+:root[data-theme="light"]{ color-scheme: light; }
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* Interruptor de tema claro / oscuro.
+   El estampado `data-theme` en la raíz ya lo respetan los bloques de tokens de
+   arriba; este botón sólo lo pone y lo guarda. Sin elección estampada mandan
+   las preferencias del sistema, que es el comportamiento por defecto. */
+.tema{
+  position:fixed; top:.7rem; right:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.tema:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.tema__icono{ width:1.15rem; height:1.15rem; display:block; }
+
+/* Se muestra el icono del tema al que se va a cambiar, no el actual.
+   Mismo escalonado que los tokens: base clara · sistema oscuro · elección explícita. */
+.tema__sol{ display:none; }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .tema__sol{ display:block; }
+  :root:not([data-theme="light"]) .tema__luna{ display:none; }
+}
+:root[data-theme="dark"] .tema__sol{ display:block; }
+:root[data-theme="dark"] .tema__luna{ display:none; }
+:root[data-theme="light"] .tema__sol{ display:none; }
+:root[data-theme="light"] .tema__luna{ display:block; }
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índices ---------- */
+/* Dos piezas complementarias y deliberadamente redundantes:
+   · .indice        — barra lateral fija, sólo en pantalla ancha, navegación permanente.
+   · .indice-rapido — tarjeta compacta al principio del cuerpo, visible en TODO ancho.
+   La lateral desaparece por debajo de 64rem, que es justo el ancho del panel de
+   Artifacts y del celular; sin la compacta el cuadernillo publicado se queda sin
+   índice. Las dos apuntan a los mismos anclajes y se resaltan juntas al desplazar. */
+
+/* 6.1 · Barra lateral */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+/* Rótulo de bloque intercalado en la lista lateral: no es un enlace, sólo
+   separa grupos de secciones para que 30 entradas no sean una tira plana. */
+.indice__bloque{
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+  margin:.9rem 0 .2rem; padding:0 .55rem;
+}
+.indice__bloque:first-child{ margin-top:0; }
+
+/* 6.2 · Índice compacto (va después de la portada, dentro del cuerpo) */
+.indice-rapido{
+  background:var(--hoja-hund);
+  border:1px solid var(--linea);
+  border-radius:var(--radio);
+  padding:1.1rem 1.2rem 1.2rem;
+}
+.indice-rapido__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .85rem;
+}
+/* auto-fit: una columna en el panel angosto, dos o tres en pantalla ancha */
+.indice-rapido__bloques{
+  list-style:none; margin:0; padding:0;
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(15rem, 1fr));
+  gap:1rem 2rem; align-items:start;
+}
+.ir-bloque{
+  display:block; margin-bottom:.4rem;
+  font-family:var(--f-titulo); font-size:.98rem; font-weight:700; line-height:1.3;
+  color:var(--tinta); text-decoration:none;
+  padding-bottom:.3rem; border-bottom:1px solid var(--linea-fuerte);
+}
+.ir-bloque:hover{ color:var(--cli-t); }
+.ir-secciones{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.05rem; }
+.ir-link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.55rem 1fr; align-items:baseline; gap:.4rem;
+  padding:.2rem .35rem; border-radius:2px;
+  font-size:.86rem; line-height:1.4; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.ir-link > b{
+  font-family:var(--f-dato); font-size:.76rem; font-weight:700;
+  font-variant-numeric:tabular-nums; color:var(--ct); opacity:.85;
+}
+.ir-link:hover{ background:var(--hoja); color:var(--tinta); }
+.ir-link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Título de bloque y ficha de sección ---------- */
+
+/* Anuncia un grupo de secciones. Neutro en color a propósito: los siete colores
+   tienen significado clínico fijo y un bloque agrupa secciones de varios. La
+   regla de abajo lleva el degradado completo de la paleta, igual que la pestaña
+   de repaso y la cabecera de la ficha relámpago.
+   Sin <svg> adentro: el exportador a Word aparea los diagramas con las figuras
+   por contador posicional sobre el HTML crudo (ver exportar_docx.py). */
+.bloque{
+  margin:1.4rem 0 0; padding:0;
+  text-align:center; scroll-margin-top:2.5rem;
+  display:flex; flex-direction:column; align-items:center; gap:.3rem;
+  font-weight:400;
+}
+.bloque:first-child{ margin-top:0; }
+.bloque__rotulo{
+  font-family:var(--f-texto);
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+}
+.bloque__nombre{
+  font-family:var(--f-titulo); font-size:var(--t-bloque); font-weight:700; line-height:1.15;
+  letter-spacing:-.01em; color:var(--tinta); text-wrap:balance; max-width:32ch;
+}
+.bloque::after{
+  content:""; width:7rem; height:2.5px; margin-top:.5rem; border-radius:2px;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+}
+
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.5rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-column:1; grid-row:1; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+/* El icono ocupa la columna 1 y NADA MAS. Todo el resto del contenido se
+   apila en la columna 2, una fila por elemento, sin importar cuantos
+   parrafos haya.
+
+   Sin esta regla la caja solo funciona con un unico <p>: a partir del
+   segundo, la autocolocacion del grid empieza a repartir contenido en la
+   columna del icono, que es `auto` y por lo tanto se ensancha hasta abarcar
+   el parrafo que le toco. La columna `1fr` queda entonces reducida a una
+   tira angosta, el texto se parte en dos columnas desbalanceadas y la caja
+   crece hasta volverse ilegible. */
+.importante > :not(.importante__icono){ grid-column:2; }
+.importante__titulo{
+  grid-row:1;
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante ul, .importante ol{ margin:0; padding-left:1.15rem; }
+.importante li + li{ margin-top:.3rem; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso, .tema{ display:none !important; }
+  /* La lateral no se imprime, pero la compacta sí: en papel es la tabla de
+     contenidos del cuadernillo. */
+  .indice-rapido{ display:block; break-inside:avoid; page-break-inside:avoid; margin-bottom:1.2rem; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .bloque{
+    margin:1.6rem 0 1rem;
+    break-after:avoid; page-break-after:avoid;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+<style>
+/* Fuentes de la capa de contenido. Va después del estilo del
+   cuadernillo para pisar las de Windows, que no se pueden
+   redistribuir y no existen en Android. */
+:root{
+  --f-titulo:'Spectral',Georgia,'Times New Roman',serif;
+  --f-texto:'Open Sans',system-ui,-apple-system,sans-serif;
+  --f-dato:'Cascadia Mono','Cascadia Code',ui-monospace,Consolas,monospace;
+}
+/* Botón de volver, espejo del de tema que ya trae el cuadernillo. */
+.volver{
+  position:fixed; top:.7rem; left:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.volver:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.volver__icono{ width:1.15rem; height:1.15rem; display:block; }
+</style>
+</head>
+<body data-clave="obstetricia/10-periodo-placentario-patologico">
+<script>
+/* Aplica el tema guardado antes de pintar. Va aca arriba a proposito: si
+   esperara al script del final, el documento parpadearia en el tema del
+   sistema antes de corregirse. */
+(function(){
+  try {
+    var guardado = localStorage.getItem('wordmed-tema');
+    if (guardado === 'dark' || guardado === 'light') {
+      document.documentElement.setAttribute('data-theme', guardado);
+    }
+  } catch (e) { /* almacenamiento bloqueado: manda el sistema */ }
+})();
+</script>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<button class="tema" id="tema" type="button" aria-pressed="false" aria-label="Cambiar a modo oscuro">
+  <svg class="tema__icono tema__sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.2"></circle>
+    <path d="M12 2.6v2.1M12 19.3v2.1M5.1 5.1l1.5 1.5M17.4 17.4l1.5 1.5M2.6 12h2.1M19.3 12h2.1M5.1 18.9l1.5-1.5M17.4 6.6l1.5-1.5"></path>
+  </svg>
+  <svg class="tema__icono tema__luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20.4 14.2A8.6 8.6 0 0 1 9.8 3.6a8.6 8.6 0 1 0 10.6 10.6z"></path>
+  </svg>
+</button>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li class="indice__bloque">Bloque A</li>
+      <li><a class="indice__link i-generalidades"  href="#marco">Qué es y qué abarca</a></li>
+      <li class="indice__bloque">Bloque B</li>
+      <li><a class="indice__link i-importantes"    href="#clasificacion">Cómo se clasifica la retención</a></li>
+      <li><a class="indice__link i-clinica"        href="#dinamica">Inercia y anillos de contracción</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#conducta">Conducta en la retención total</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#acretismo">Acretismo placentario</a></li>
+      <li><a class="indice__link i-clinica"        href="#parcial">Restos y membranas</a></li>
+      <li class="indice__bloque">Bloque C</li>
+      <li><a class="indice__link i-diagnostico"    href="#hemorragia">Definición y reconocimiento</a></li>
+      <li><a class="indice__link i-importantes"    href="#cuatro-t">Las cuatro T</a></li>
+      <li><a class="indice__link i-clinica"        href="#tono">Tono — atonía uterina</a></li>
+      <li><a class="indice__link i-clinica"        href="#trauma">Trauma — partes blandas</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#trombina">Trombina — coagulopatía</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#escalera">Tratamiento escalonado</a></li>
+      <li class="indice__bloque">Bloque D</li>
+      <li><a class="indice__link i-importantes"    href="#inversion">Inversión aguda del útero</a></li>
+      <li class="indice__bloque">Cierre</li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Obstetricia · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Período Placentario Patológico</h1>
+      <p class="portada__bajada">Las tres formas en que el alumbramiento se sale de cauce: la placenta que no sale, la que sale dejando una hemorragia, y el útero que se da vuelta. Cuadernillo de la patología; la fisiología está en el cuadernillo vecino.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">13 secciones</span>
+        <span class="etiqueta s-importantes">Las cuatro T</span>
+        <span class="etiqueta s-tratamiento">Escalera de la HPP</span>
+        <span class="etiqueta s-diagnostico">Acretismo</span>
+      </div>
+    </header>
+
+    <nav class="indice-rapido" aria-label="Contenido del cuadernillo">
+      <p class="indice-rapido__rotulo">Contenido</p>
+      <ol class="indice-rapido__bloques">
+        <li>
+          <a class="ir-bloque" href="#bloque-a">Bloque A · El marco</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades"  href="#marco"><b>01</b> Qué es y qué abarca</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-b">Bloque B · Retención de placenta y membranas</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-importantes"    href="#clasificacion"><b>02</b> Cómo se clasifica la retención</a></li>
+            <li><a class="ir-link i-clinica"        href="#dinamica"><b>03</b> Causa dinámica: inercia y anillos</a></li>
+            <li><a class="ir-link i-tratamiento"    href="#conducta"><b>04</b> Conducta ante la retención total</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#acretismo"><b>05</b> Acretismo placentario</a></li>
+            <li><a class="ir-link i-clinica"        href="#parcial"><b>06</b> Retención parcial: restos y membranas</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-c">Bloque C · Hemorragias del alumbramiento</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-diagnostico"    href="#hemorragia"><b>07</b> Definición y reconocimiento</a></li>
+            <li><a class="ir-link i-importantes"    href="#cuatro-t"><b>08</b> Las cuatro causas son las cuatro T</a></li>
+            <li><a class="ir-link i-clinica"        href="#tono"><b>09</b> Tono — atonía uterina</a></li>
+            <li><a class="ir-link i-clinica"        href="#trauma"><b>10</b> Trauma — lesiones de partes blandas</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#trombina"><b>11</b> Trombina — coagulopatía obstétrica</a></li>
+            <li><a class="ir-link i-tratamiento"    href="#escalera"><b>12</b> Tratamiento escalonado</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-d">Bloque D · Inversión uterina</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-importantes"    href="#inversion"><b>13</b> Inversión aguda del útero</a></li>
+          </ul>
+        </li>
+        <li>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-clinica"     href="#repaso"><b>·</b> Repaso activo</a></li>
+            <li><a class="ir-link i-importantes" href="#relampago"><b>⚡</b> Ficha Relámpago</a></li>
+          </ul>
+        </li>
+      </ol>
+    </nav>
+
+    <h2 class="bloque" id="bloque-a">
+      <span class="bloque__rotulo">Bloque A</span>
+      <span class="bloque__nombre">El marco</span>
+    </h2>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="marco">
+      <span class="seccion__pestana"><b>01</b> Base</span>
+      <h2 class="seccion__titulo">Qué es y qué abarca</h2>
+
+      <p>El <strong>período placentario</strong> —o alumbramiento— es el tercer período del parto: va desde la salida del feto hasta la expulsión completa de la placenta y las membranas. Dura minutos, pero es donde ocurre <strong>la mayor parte de la mortalidad materna evitable</strong>: en ningún otro momento del parto se puede perder tanta sangre en tan poco tiempo.</p>
+
+      <p>La fisiología del alumbramiento normal —el motor, los mecanismos de Baudelocque y Duncan, los signos de desprendimiento, el manejo activo y el globo de seguridad de Pinard— está desarrollada en el cuadernillo de <a href="https://claude.ai/code/artifact/0ab662c2-903b-4f15-b9b6-95d186df26e0">Alumbramiento y Postalumbramiento</a>. Este cuadernillo empieza donde aquél termina: <strong>cuando el alumbramiento se sale de cauce</strong>.</p>
+
+      <h3>Las tres entidades</h3>
+      <p>El teórico las enumera de entrada y conviene retener que son <strong>tres y solo tres</strong>, porque cada una tiene una lógica distinta:</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Entidad</th><th>El problema</th><th>La pregunta que la define</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Retención de la placenta y las membranas</strong></td>
+              <td>La placenta no sale, entera o en parte</td>
+              <td>¿Por qué no sale: no la empujan o está pegada?</td>
+            </tr>
+            <tr>
+              <td><strong>Hemorragias del alumbramiento</strong></td>
+              <td>Se pierde sangre por encima de lo tolerable</td>
+              <td>¿De dónde sale la sangre?</td>
+            </tr>
+            <tr>
+              <td><strong>Inversión aguda del útero</strong></td>
+              <td>El útero se invagina dentro de sí mismo</td>
+              <td>Rara, pero catastrófica y casi siempre provocada</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Las tres se entrelazan: la retención <strong>causa</strong> hemorragia, la hemorragia se trata con maniobras que <strong>pueden causar</strong> inversión, y la inversión produce a su vez más hemorragia. No son tres capítulos independientes sino tres estaciones de un mismo camino, y en las secciones que siguen ese camino se recorre en ese orden.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-b">
+      <span class="bloque__rotulo">Bloque B</span>
+      <span class="bloque__nombre">Retención de placenta y membranas</span>
+    </h2>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-importantes" id="clasificacion">
+      <span class="seccion__pestana"><b>02</b> Clasificación</span>
+      <h2 class="seccion__titulo">Cómo se clasifica la retención</h2>
+
+      <p>La clasificación tiene <strong>dos preguntas encadenadas</strong>, y hacerlas en orden es lo que decide la conducta.</p>
+
+      <ol>
+        <li><strong>¿Quedó todo adentro o solo una parte?</strong> Separa la retención <strong>total</strong> de la <strong>parcial</strong>.</li>
+        <li><strong>Si quedó todo: ¿falla el motor o falla la anatomía?</strong> Separa las <strong>distocias dinámicas</strong> de las <strong>anatómicas</strong>.</li>
+      </ol>
+
+      <p>La segunda pregunta es la misma que ordena las distocias del trabajo de parto —motor contra estructura—, y no es casualidad: el útero que no expulsa la placenta falla por las mismas dos razones por las que no expulsa al feto. Quien ya estudió las <a href="https://claude.ai/code/artifact/a68d180b-e5fc-4aff-9720-940adc397a13">Distocias del Parto</a> tiene medio capítulo hecho.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 318" role="img" aria-label="Mapa de la retención placentaria: se divide primero en total y parcial; la total se subdivide en distocias dinámicas, con inercia uterina y anillos de contracción, y distocias anatómicas, con la adherencia anormal de la placenta; la parcial se subdivide en retención de restos placentarios y retención de membranas ovulares.">
+          <defs>
+            <marker id="pp1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="256" y="8" width="188" height="44" rx="3" fill="var(--c)" fill-opacity="0.24" stroke="var(--c)" stroke-width="2.4"></rect>
+          <text x="350" y="28" font-size="12.5" font-weight="700" text-anchor="middle" fill="currentColor">RETENCIÓN</text>
+          <text x="350" y="44" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.78">la placenta no sale</text>
+
+          <line x1="310" y1="52" x2="186" y2="80" stroke="currentColor" stroke-width="1.5" marker-end="url(#pp1)"></line>
+          <line x1="390" y1="52" x2="514" y2="80" stroke="currentColor" stroke-width="1.5" marker-end="url(#pp1)"></line>
+
+          <rect x="60" y="86" width="252" height="38" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="1.9"></rect>
+          <text x="186" y="103" font-size="11.5" font-weight="700" text-anchor="middle" fill="currentColor">TOTAL</text>
+          <text x="186" y="118" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.78">quedó adentro entera</text>
+
+          <rect x="388" y="86" width="252" height="38" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="1.9"></rect>
+          <text x="514" y="103" font-size="11.5" font-weight="700" text-anchor="middle" fill="currentColor">PARCIAL</text>
+          <text x="514" y="118" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.78">salió, pero incompleta</text>
+
+          <line x1="140" y1="124" x2="110" y2="150" stroke="currentColor" stroke-width="1.3" marker-end="url(#pp1)"></line>
+          <line x1="240" y1="124" x2="266" y2="150" stroke="currentColor" stroke-width="1.3" marker-end="url(#pp1)"></line>
+          <line x1="468" y1="124" x2="440" y2="150" stroke="currentColor" stroke-width="1.3" marker-end="url(#pp1)"></line>
+          <line x1="560" y1="124" x2="588" y2="150" stroke="currentColor" stroke-width="1.3" marker-end="url(#pp1)"></line>
+
+          <rect x="14" y="156" width="176" height="112" rx="3" fill="none" stroke="var(--c)" stroke-width="1.6"></rect>
+          <text x="28" y="176" font-size="11" font-weight="700" fill="currentColor">DINÁMICA</text>
+          <text x="28" y="192" font-size="10" fill="currentColor" opacity="0.72">el motor no empuja</text>
+          <text x="28" y="216" font-size="10.5" font-weight="700" fill="currentColor">Inercia uterina</text>
+          <text x="28" y="240" font-size="10.5" font-weight="700" fill="currentColor">Anillos de</text>
+          <text x="28" y="255" font-size="10.5" font-weight="700" fill="currentColor">contracción</text>
+
+          <rect x="200" y="156" width="176" height="112" rx="3" fill="none" stroke="var(--c)" stroke-width="1.6"></rect>
+          <text x="214" y="176" font-size="11" font-weight="700" fill="currentColor">ANATÓMICA</text>
+          <text x="214" y="192" font-size="10" fill="currentColor" opacity="0.72">está pegada</text>
+          <text x="214" y="216" font-size="10.5" font-weight="700" fill="currentColor">Adherencia anormal</text>
+          <text x="214" y="231" font-size="10.5" font-weight="700" fill="currentColor">de la placenta</text>
+          <text x="214" y="255" font-size="10" fill="currentColor" opacity="0.72">acretismo</text>
+
+          <rect x="386" y="156" width="140" height="112" rx="3" fill="none" stroke="var(--c)" stroke-width="1.6"></rect>
+          <text x="400" y="176" font-size="11" font-weight="700" fill="currentColor">RESTOS</text>
+          <text x="400" y="200" font-size="10.5" fill="currentColor" opacity="0.85">Uno o varios</text>
+          <text x="400" y="215" font-size="10.5" fill="currentColor" opacity="0.85">cotiledones</text>
+          <text x="400" y="240" font-size="10" fill="currentColor" opacity="0.72">legrado</text>
+
+          <rect x="536" y="156" width="150" height="112" rx="3" fill="none" stroke="var(--c)" stroke-width="1.6"></rect>
+          <text x="550" y="176" font-size="11" font-weight="700" fill="currentColor">MEMBRANAS</text>
+          <text x="550" y="200" font-size="10.5" fill="currentColor" opacity="0.85">Total o parcial</text>
+          <text x="550" y="225" font-size="10" fill="currentColor" opacity="0.72">se eliminan solas</text>
+          <text x="550" y="240" font-size="10" fill="currentColor" opacity="0.72">con los loquios</text>
+
+          <text x="186" y="296" font-size="10.5" font-weight="700" text-anchor="middle" fill="currentColor">se saca a mano</text>
+          <text x="514" y="296" font-size="10.5" font-weight="700" text-anchor="middle" fill="currentColor">se raspa o se espera</text>
+        </svg>
+        <figcaption>La rama izquierda se resuelve entrando al útero; la derecha, casi nunca. Esa es la consecuencia práctica de la primera pregunta y la razón para hacerla antes que ninguna otra.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-clinica" id="dinamica">
+      <span class="seccion__pestana"><b>03</b> Clínica</span>
+      <h2 class="seccion__titulo">Causa dinámica: inercia y anillos de contracción</h2>
+
+      <p>Las dos formas dinámicas son <strong>opuestas entre sí</strong>: en una el útero se contrae de menos y en la otra de más, pero de forma desordenada. Las dos terminan con la placenta adentro.</p>
+
+      <h3>Inercia uterina</h3>
+      <p><strong>Actividad contráctil insuficiente para desprender o expulsar la placenta.</strong> Es la más frecuente y la de mejor pronóstico, porque responde a los uterotónicos.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Origen</th><th>Causa</th><th>Por qué la fibra rinde menos</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>General</strong></td>
+              <td><strong>Uso abusivo de drogas sedantes</strong></td>
+              <td>Depresión farmacológica de la contractilidad</td>
+            </tr>
+            <tr>
+              <td><strong>Local</strong></td>
+              <td><strong>Distensión exagerada</strong> del útero: hidramnios, embarazo gemelar</td>
+              <td>Fibra estirada más allá de su longitud óptima</td>
+            </tr>
+            <tr>
+              <td><strong>Local</strong></td>
+              <td><strong>Agotamiento</strong> de la actividad contráctil</td>
+              <td>Trabajo de parto prolongado que consumió la reserva</td>
+            </tr>
+            <tr>
+              <td><strong>Local</strong></td>
+              <td><strong>Multiparidad</strong> y fibromatosis uterina</td>
+              <td>Músculo reemplazado por tejido fibroso</td>
+            </tr>
+            <tr>
+              <td><strong>Local</strong></td>
+              <td>Malformaciones congénitas del útero</td>
+              <td>Arquitectura de la fibra alterada de base</td>
+            </tr>
+            <tr>
+              <td><strong>Local</strong></td>
+              <td><strong>Infección amniótica</strong></td>
+              <td>Miometrio inflamado, que responde mal al estímulo</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Es la misma lista que la de la hipodinamia del trabajo de parto, y por la misma razón: <strong>una fibra sobredistendida, agotada, reemplazada por fibrosis o inflamada genera menos tensión</strong>. Retenerla una vez sirve para los dos capítulos.</p>
+
+      <h3>Anillos de contracción</h3>
+      <p><strong>Contractura de una zona circular del útero</strong> que atrapa la placenta —ya desprendida o no— por encima de ella. El útero no es que no se contraiga: se contrae en el lugar equivocado.</p>
+
+      <ul>
+        <li><strong>Causas:</strong> muchas veces sin causa evidente; también <strong>iatrogénico, por uso excesivo de oxitócicos</strong>.</li>
+        <li><strong>Ubicación y nombre según dónde se forme:</strong>
+          <ul>
+            <li>En el <strong>cuerno uterino</strong> → <strong>engatillamiento</strong> de la placenta.</li>
+            <li>En el <strong>anillo de Bandl</strong>, entre cuerpo y segmento → <strong>encarcelamiento</strong> de la placenta.</li>
+          </ul>
+        </li>
+        <li><strong>Clínica característica:</strong> <strong>hemorragia a chorros, en forma intermitente</strong>. Ese patrón es el dato semiológico de la sección: la sangre se acumula por encima del anillo y sale de golpe cada vez que éste cede, en vez de fluir de manera continua como en la atonía.</li>
+        <li><strong>Tratamiento:</strong> <strong>alumbramiento manual bajo anestesia general</strong>. La anestesia no es por el dolor sino porque hace falta <strong>relajar el anillo</strong> para poder atravesarlo; sin eso la mano no pasa.</li>
+      </ul>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-tratamiento" id="conducta">
+      <span class="seccion__pestana"><b>04</b> Conducta</span>
+      <h2 class="seccion__titulo">Conducta ante la retención total</h2>
+
+      <p>El teórico plantea <strong>tres escenarios</strong>, y lo que los separa no es cuánto tiempo pasó sino <strong>en qué estado está la placenta</strong> y <strong>si hay hemorragia</strong>. Ese es el orden correcto de las preguntas, porque la respuesta cambia por completo la ventana de tiempo disponible.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 350" role="img" aria-label="Árbol de conducta ante la retención total de placenta según tres escenarios: placenta totalmente adherida sin hemorragia, que permite treinta minutos de conducta expectante con masaje y oxitócicos antes del alumbramiento manual con maniobra de Credé; placenta parcialmente desprendida con hemorragia, que no admite espera y va a masaje, oxitócicos o alumbramiento manual; y placenta ya desprendida y solo retenida, que se resuelve con expresión del útero y suave tracción del cordón.">
+          <defs>
+            <marker id="pp2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="200" y="8" width="300" height="42" rx="3" fill="var(--c)" fill-opacity="0.24" stroke="var(--c)" stroke-width="2.4"></rect>
+          <text x="350" y="27" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">La placenta no salió — dos preguntas</text>
+          <text x="350" y="43" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.8">¿está desprendida? · ¿está sangrando?</text>
+
+          <line x1="270" y1="50" x2="116" y2="76" stroke="currentColor" stroke-width="1.4" marker-end="url(#pp2)"></line>
+          <line x1="350" y1="50" x2="350" y2="76" stroke="currentColor" stroke-width="1.4" marker-end="url(#pp2)"></line>
+          <line x1="430" y1="50" x2="584" y2="76" stroke="currentColor" stroke-width="1.4" marker-end="url(#pp2)"></line>
+
+          <rect x="14" y="82" width="204" height="52" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="116" y="101" font-size="11" font-weight="700" text-anchor="middle" fill="currentColor">ADHERIDA del todo</text>
+          <text x="116" y="118" font-size="11" font-weight="700" text-anchor="middle" fill="currentColor">SIN hemorragia</text>
+
+          <rect x="248" y="82" width="204" height="52" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="350" y="101" font-size="11" font-weight="700" text-anchor="middle" fill="currentColor">PARCIALMENTE desprendida</text>
+          <text x="350" y="118" font-size="11" font-weight="700" text-anchor="middle" fill="currentColor">CON hemorragia</text>
+
+          <rect x="482" y="82" width="204" height="52" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="584" y="101" font-size="11" font-weight="700" text-anchor="middle" fill="currentColor">DESPRENDIDA</text>
+          <text x="584" y="118" font-size="11" font-weight="700" text-anchor="middle" fill="currentColor">solo falta que salga</text>
+
+          <line x1="116" y1="134" x2="116" y2="154" stroke="currentColor" stroke-width="1.4" marker-end="url(#pp2)"></line>
+          <line x1="350" y1="134" x2="350" y2="154" stroke="currentColor" stroke-width="1.4" marker-end="url(#pp2)"></line>
+          <line x1="584" y1="134" x2="584" y2="154" stroke="currentColor" stroke-width="1.4" marker-end="url(#pp2)"></line>
+
+          <rect x="14" y="160" width="204" height="118" rx="3" fill="none" stroke="var(--c)" stroke-width="1.6"></rect>
+          <text x="28" y="180" font-size="12" font-weight="700" fill="currentColor">Expectante 30 min</text>
+          <text x="28" y="202" font-size="10.5" fill="currentColor" opacity="0.85">Masaje externo uterino</text>
+          <text x="28" y="220" font-size="10.5" fill="currentColor" opacity="0.85">Oxitócicos para reactivar</text>
+          <text x="28" y="236" font-size="10.5" fill="currentColor" opacity="0.85">la contractilidad</text>
+          <text x="28" y="262" font-size="10.5" font-weight="700" fill="currentColor">Si no responde: manual</text>
+
+          <rect x="248" y="160" width="204" height="118" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="2.2"></rect>
+          <text x="262" y="180" font-size="12" font-weight="700" fill="currentColor">NO se espera</text>
+          <text x="262" y="202" font-size="10.5" fill="currentColor" opacity="0.85">Masajes</text>
+          <text x="262" y="220" font-size="10.5" fill="currentColor" opacity="0.85">Oxitócicos</text>
+          <text x="262" y="241" font-size="10.5" font-weight="700" fill="currentColor">Alumbramiento manual</text>
+          <text x="262" y="258" font-size="10" fill="currentColor" opacity="0.72">el desprendimiento parcial</text>
+          <text x="262" y="270" font-size="10" fill="currentColor" opacity="0.72">es lo que la hace sangrar</text>
+
+          <rect x="482" y="160" width="204" height="118" rx="3" fill="none" stroke="var(--c)" stroke-width="1.6"></rect>
+          <text x="496" y="180" font-size="12" font-weight="700" fill="currentColor">Lo más simple</text>
+          <text x="496" y="202" font-size="10.5" fill="currentColor" opacity="0.85">Expresión del útero</text>
+          <text x="496" y="222" font-size="10.5" fill="currentColor" opacity="0.85">Suave tracción del cordón</text>
+          <text x="496" y="250" font-size="10" fill="currentColor" opacity="0.72">SUAVE: la tracción brusca</text>
+          <text x="496" y="263" font-size="10" fill="currentColor" opacity="0.72">invierte el útero</text>
+
+          <rect x="14" y="294" width="672" height="46" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.28" stroke-width="1.3" stroke-dasharray="5 3"></rect>
+          <text x="30" y="313" font-size="11" font-weight="700" fill="currentColor">La paradoja del reloj</text>
+          <text x="30" y="331" font-size="10.5" fill="currentColor" opacity="0.8">La placenta MÁS pegada es la que da MÁS tiempo, porque mientras no se desprende no sangra. La que se soltó a medias es la urgente.</text>
+        </svg>
+        <figcaption>El escenario del medio es el urgente aunque parezca el intermedio: una placenta a medio desprender deja los senos venosos abiertos y el útero no puede contraerse sobre un contenido que sigue ocupándolo.</figcaption>
+      </figure>
+
+      <h3>Las maniobras nombradas</h3>
+      <ul>
+        <li><strong>Alumbramiento artificial o manual:</strong> se introduce la mano en la cavidad y se despega la placenta con el borde cubital, siguiendo el plano de clivaje entre placenta y decidua.</li>
+        <li><strong>Maniobra de Credé:</strong> <strong>expresión continua y sostenida del fondo uterino</strong> para hacer salir la placenta. La palabra que importa es <em>sostenida</em>: la presión intermitente o brusca sobre el fondo es justamente el mecanismo de la inversión uterina de la sección <a href="#inversion">13</a>.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Los <strong>30 minutos de espera valen únicamente si no hay hemorragia</strong>. Con sangrado activo el reloj no existe: se pasa directamente a las maniobras. Y esos 30 minutos corresponden al alumbramiento <strong>dirigido</strong> —con oxitócicos—; en el alumbramiento espontáneo, sin conducta activa, el plazo aceptado es de <strong>60 minutos</strong>. Confundir los dos plazos es esperar el doble de lo debido.</p>
+      </div>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-fisiopatologia" id="acretismo">
+      <span class="seccion__pestana"><b>05</b> Mecanismo</span>
+      <h2 class="seccion__titulo">Acretismo placentario</h2>
+
+      <p>Es la <strong>adherencia anormal de la placenta</strong> al útero: la vellosidad, en vez de detenerse en la decidua, se ancla al miometrio o lo invade. Es la causa <strong>anatómica</strong> de retención total, y la única que <strong>no se resuelve entrando con la mano</strong>.</p>
+
+      <h3>Por qué ocurre</h3>
+      <p>El mecanismo es siempre el mismo: <strong>una decidua basal defectuosa</strong>. Donde falta la capa que normalmente frena a la vellosidad, ésta sigue avanzando. De ahí que los antecedentes sean todos de <strong>daño previo del endometrio</strong>: <strong>endometritis</strong>, <strong>legrados</strong> y, sobre todo, <strong>cicatrices uterinas</strong>.</p>
+
+      <p>Puede ser <strong>total</strong>, cuando abarca toda la superficie placentaria, o <strong>parcial</strong>, cuando compromete solo algunos sectores. Esa distinción es la que explica el hallazgo del tacto: <strong>zonas que se desprenden junto a zonas que no</strong>.</p>
+
+      <h3>Los tres grados</h3>
+      <p>Se definen por la <strong>profundidad de penetración</strong> de la vellosidad en el miometrio, y la nomenclatura es transparente si se la lee como una escala de invasión.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 268" role="img" aria-label="Los tres grados de acretismo placentario representados contra las capas de la pared uterina: en la placenta acreta la vellosidad se apoya firmemente sobre el miometrio sin penetrarlo, en la increta se introduce dentro del miometrio sin atravesarlo, y en la percreta lo atraviesa por completo y alcanza la serosa, pudiendo comprometer órganos vecinos.">
+          <defs>
+            <marker id="pp3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <text x="18" y="22" font-size="10.5" font-weight="700" fill="currentColor">SEROSA</text>
+          <text x="18" y="70" font-size="10.5" font-weight="700" fill="currentColor">MIOMETRIO</text>
+          <text x="18" y="146" font-size="10.5" font-weight="700" fill="currentColor">DECIDUA</text>
+          <text x="18" y="182" font-size="10.5" font-weight="700" fill="currentColor">PLACENTA</text>
+
+          <line x1="118" y1="16" x2="688" y2="16" stroke="currentColor" stroke-width="2.2" stroke-opacity="0.6"></line>
+          <rect x="118" y="16" width="570" height="112" fill="currentColor" fill-opacity="0.06"></rect>
+          <line x1="118" y1="128" x2="688" y2="128" stroke="currentColor" stroke-width="2.2" stroke-opacity="0.6"></line>
+          <rect x="118" y="128" width="570" height="26" fill="currentColor" fill-opacity="0.14"></rect>
+          <line x1="118" y1="154" x2="688" y2="154" stroke="currentColor" stroke-width="1.6" stroke-opacity="0.45" stroke-dasharray="4 3"></line>
+
+          <rect x="140" y="154" width="150" height="42" rx="2" fill="var(--c)" fill-opacity="0.28" stroke="var(--c)" stroke-width="1.6"></rect>
+          <rect x="330" y="154" width="150" height="42" rx="2" fill="var(--c)" fill-opacity="0.28" stroke="var(--c)" stroke-width="1.6"></rect>
+          <rect x="520" y="154" width="150" height="42" rx="2" fill="var(--c)" fill-opacity="0.28" stroke="var(--c)" stroke-width="1.6"></rect>
+
+          <path d="M 195 154 L 195 130 M 215 154 L 215 130 M 235 154 L 235 130" stroke="var(--c)" stroke-width="3.4" stroke-linecap="round"></path>
+          <path d="M 385 154 L 385 74 M 405 154 L 405 88 M 425 154 L 425 66" stroke="var(--c)" stroke-width="3.4" stroke-linecap="round"></path>
+          <path d="M 575 154 L 575 14 M 595 154 L 595 14 M 615 154 L 615 14" stroke="var(--c)" stroke-width="3.4" stroke-linecap="round"></path>
+
+          <text x="215" y="214" font-size="12.5" font-weight="700" text-anchor="middle" fill="currentColor">ACRETA</text>
+          <text x="215" y="232" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.8">se apoya en el miometrio</text>
+          <text x="215" y="247" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.8">pero NO penetra</text>
+
+          <text x="405" y="214" font-size="12.5" font-weight="700" text-anchor="middle" fill="currentColor">INCRETA</text>
+          <text x="405" y="232" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.8">entra EN el miometrio</text>
+          <text x="405" y="247" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.8">pero no lo atraviesa</text>
+
+          <text x="595" y="214" font-size="12.5" font-weight="700" text-anchor="middle" fill="currentColor">PERCRETA</text>
+          <text x="595" y="232" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.8">lo ATRAVIESA y llega</text>
+          <text x="595" y="247" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.8">a la serosa</text>
+
+          <line x1="640" y1="62" x2="678" y2="34" stroke="currentColor" stroke-width="1.3" stroke-opacity="0.6" marker-end="url(#pp3)"></line>
+          <text x="632" y="60" font-size="10" text-anchor="end" fill="currentColor" opacity="0.75">puede invadir vejiga</text>
+        </svg>
+        <figcaption>La regla mnemotécnica está en los prefijos: <em>a-creta</em> se adhiere, <em>in-creta</em> entra, <em>per-creta</em> perfora. La percreta puede comprometer órganos vecinos —la vejiga es el más frecuente— y por eso su cirugía se planifica con urología.</figcaption>
+      </figure>
+
+      <h3>Diagnóstico</h3>
+      <p>El teórico da como método el <strong>tacto intrauterino</strong>, que encuentra partes de la placenta desprendidas junto a otras firmemente adheridas. Es un hallazgo real, pero llega tarde: para cuando la mano está adentro, ya se está en la complicación.</p>
+
+      <p><strong>La sospecha correcta es prenatal.</strong> El escenario de riesgo clásico y el que hay que saber de memoria es <strong>placenta previa sobre una cicatriz de cesárea anterior</strong>: la placenta se implanta justo donde no hay decidua sana. El riesgo crece con el número de cesáreas previas. En esa situación la ecografía busca signos de invasión y, si hay dudas, se completa con resonancia. La diferencia práctica es enorme: <strong>una hemorragia imprevista en una guardia contra una cirugía programada</strong>, con equipo quirúrgico completo, hemoderivados reservados y el momento elegido.</p>
+
+      <h3>Tratamiento</h3>
+      <p><strong>Histerectomía.</strong> El teórico explica bien por qué, y es la frase que hay que retener: el alumbramiento manual <strong>no es posible porque la placenta se desgarra pero no se desprende</strong> — no existe plano de clivaje que seguir, porque la vellosidad está anclada al músculo.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Ante un acretismo reconocido, <strong>insistir con el alumbramiento manual es lo peor que se puede hacer</strong>. Cada intento arranca fragmentos de placenta y deja senos venosos miometriales abiertos que no se pueden contraer, convirtiendo una situación grave en una hemorragia masiva. Si la mano encuentra una placenta que <strong>se desgarra sin despegarse</strong>, la conducta es <strong>detenerse, no seguir</strong>: pedir ayuda, asegurar accesos y sangre, y preparar el quirófano.</p>
+      </div>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-clinica" id="parcial">
+      <span class="seccion__pestana"><b>06</b> Clínica</span>
+      <h2 class="seccion__titulo">Retención parcial: restos y membranas</h2>
+
+      <p>Acá la placenta ya salió, pero incompleta. Las dos formas <strong>se manejan de manera opuesta</strong>, y esa asimetría es lo que hay que entender.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th></th><th>Retención de restos placentarios</th><th>Retención de membranas ovulares</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Qué queda</strong></td>
+              <td>Uno o varios <strong>cotiledones</strong></td>
+              <td>Membranas, en forma total o parcial</td>
+            </tr>
+            <tr>
+              <td><strong>Causas</strong></td>
+              <td><strong>Maniobras intempestivas</strong> durante el alumbramiento: expresiones apresuradas, tironeamientos del cordón · <strong>cotiledones aberrantes</strong> (placenta succenturiada) · adherencias anormales</td>
+              <td><strong>Maniobras apresuradas</strong> · membranas <strong>friables</strong> · adherencia anormal (placenta previa)</td>
+            </tr>
+            <tr>
+              <td><strong>Diagnóstico</strong></td>
+              <td><strong>Examen minucioso de la placenta</strong>; el tacto intrauterino confirma</td>
+              <td>Examen de las membranas al revisar la placenta</td>
+            </tr>
+            <tr>
+              <td><strong>Riesgo principal</strong></td>
+              <td><strong>Hemorragia</strong> — el útero no se contrae sobre una cavidad ocupada</td>
+              <td><strong>Infección</strong> — facilita el ascenso de gérmenes y predispone a endometritis</td>
+            </tr>
+            <tr>
+              <td><strong>Conducta</strong></td>
+              <td><strong>Legrado instrumental o digital</strong></td>
+              <td>Expectante: se eliminan solas con los <strong>loquios</strong> en los días siguientes. Oxitócicos (ergotina), antibióticos y bolsa de hielo. Solo en la <strong>retención total</strong> se raspa, con <strong>cureta roma de Pinard</strong> o raspado manual</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>Por qué la asimetría.</strong> Un cotiledón retenido es tejido vascularizado, adherido a un lecho con senos abiertos: sangra y hay que sacarlo. Las membranas no tienen vasos propios, así que no sangran; se desprenden y se eliminan solas con los loquios. Lo que se gana raspándolas es poco y lo que se arriesga —perforación, sinequias, infección introducida— es mucho. De ahí que el criterio sea <strong>sacar los restos, esperar las membranas</strong>.</p>
+
+      <p>Notar que la causa encabeza las dos columnas y es la misma: <strong>el apuro</strong>. Expresiones apresuradas y tracciones del cordón fragmentan la placenta y desgarran las membranas. Es la misma maniobra mal hecha que reaparecerá en la sección <a href="#inversion">13</a> con una consecuencia todavía peor.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-c">
+      <span class="bloque__rotulo">Bloque C</span>
+      <span class="bloque__nombre">Hemorragias del alumbramiento</span>
+    </h2>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-diagnostico" id="hemorragia">
+      <span class="seccion__pestana"><b>07</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">Definición y reconocimiento</h2>
+
+      <p>El teórico la define como la <strong>pérdida sanguínea mayor a <span class="dato">500 ml</span> durante las primeras <span class="dato">24 horas</span> después del parto</strong>.</p>
+
+      <h3>Las tres formas, y por qué importa la segunda</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Forma</th><th>Dónde va la sangre</th><th>Cómo se detecta</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Externa</strong></td>
+              <td>Fluye al exterior</td>
+              <td>Se ve. Es la que todos reconocen</td>
+            </tr>
+            <tr>
+              <td><strong>Interna</strong></td>
+              <td>Se colecciona <strong>dentro del útero</strong></td>
+              <td><strong>No se ve nada</strong>. Se detecta por el útero que crece y se ablanda, y por los signos de shock</td>
+            </tr>
+            <tr>
+              <td><strong>Mixta</strong></td>
+              <td>Combinación de ambas</td>
+              <td>Lo visible subestima lo perdido</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>La <strong>forma interna es la traicionera</strong>: el útero atónico se comporta como un reservorio y puede alojar más de un litro sin que salga sangre por la vulva. Por eso la vigilancia del posparto <strong>no es mirar el apósito, es palpar el útero</strong>. Un fondo que asciende y se ablanda está diciendo que se está llenando.</p>
+
+      <h3>Cuadro clínico</h3>
+      <p>Depende de la intensidad y es el del <strong>shock hemorrágico</strong>: <strong>palidez, sudoración, polipnea, hipotensión y taquicardia</strong>.</p>
+
+      <p>Un matiz que cambia la conducta: <strong>en una mujer joven y sana la hipotensión es un signo tardío</strong>. Los mecanismos de compensación mantienen la presión hasta pérdidas considerables, y lo primero que se altera es la <strong>frecuencia cardíaca</strong>. Esperar la hipotensión para activar el protocolo es llegar tarde a propósito.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>Hay dos definiciones vigentes y conviene tener las dos.</strong> La <strong>clásica</strong>, que es la del teórico y la que la OMS conserva para el parto vaginal: <strong>más de 500 ml en 24 h</strong> (más de 1000 ml si fue cesárea). La de <strong>ACOG desde 2017</strong>, que unificó el criterio: <strong>pérdida acumulada ≥ 1000 ml <em>o</em> sangrado acompañado de signos de hipovolemia</strong> dentro de las 24 h, <strong>cualquiera sea la vía del parto</strong>. La segunda agrega algo que la primera no tiene: permite diagnosticar hemorragia <strong>por la clínica aunque el volumen medido no llegue al umbral</strong>, que es exactamente lo que pasa en la forma interna.</p>
+      </div>
+
+      <p class="cita">Fuente: ACOG Practice Bulletin No. 183: Postpartum Hemorrhage, Obstet Gynecol 2017, con la definición del programa reVITALize; Organización Mundial de la Salud, recomendaciones para la prevención y el tratamiento de la hemorragia posparto.</p>
+    </section>
+
+    <!-- ============ 8 ============ -->
+    <section class="seccion s-importantes" id="cuatro-t">
+      <span class="seccion__pestana"><b>08</b> Clasificación</span>
+      <h2 class="seccion__titulo">Las cuatro causas del teórico son las cuatro T</h2>
+
+      <p>El teórico enumera las causas de hemorragia repartidas en cinco diapositivas y sin agruparlas. Puestas juntas se ve que <strong>son exactamente las cuatro T</strong>, la regla que se usa hoy en toda guardia. No hay contenido nuevo acá: hay un nombre para lo que ya estaba.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 300" role="img" aria-label="Las cuatro T de la hemorragia posparto con el hallazgo que identifica a cada una: tono, con útero blando y globo de seguridad ausente; tejido, con placenta incompleta al revisarla; trauma, con útero bien contraído pero sangrado que continúa; y trombina, con sangrado que no coagula, incluso desde los sitios de punción.">
+          <defs>
+            <marker id="pp4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="14" y="8" width="672" height="34" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2.2"></rect>
+          <text x="350" y="30" font-size="12.5" font-weight="700" text-anchor="middle" fill="currentColor">HEMORRAGIA POSPARTO — ¿de dónde sale la sangre?</text>
+
+          <line x1="350" y1="42" x2="350" y2="56" stroke="currentColor" stroke-width="1.5" marker-end="url(#pp4)"></line>
+
+          <rect x="14" y="62" width="164" height="150" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="2.4"></rect>
+          <text x="96" y="86" font-size="15" font-weight="700" text-anchor="middle" fill="currentColor">TONO</text>
+          <text x="96" y="106" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.8">el útero no se contrae</text>
+          <line x1="34" y1="118" x2="158" y2="118" stroke="currentColor" stroke-width="1" stroke-opacity="0.35"></line>
+          <text x="96" y="136" font-size="10.5" font-weight="700" text-anchor="middle" fill="currentColor">útero BLANDO</text>
+          <text x="96" y="152" font-size="10.5" font-weight="700" text-anchor="middle" fill="currentColor">globo de Pinard</text>
+          <text x="96" y="167" font-size="10.5" font-weight="700" text-anchor="middle" fill="currentColor">ausente</text>
+          <text x="96" y="192" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.78">7 de cada 10</text>
+          <text x="96" y="205" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.78">casos</text>
+
+          <rect x="186" y="62" width="164" height="150" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="268" y="86" font-size="15" font-weight="700" text-anchor="middle" fill="currentColor">TEJIDO</text>
+          <text x="268" y="106" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.8">quedó algo adentro</text>
+          <line x1="206" y1="118" x2="330" y2="118" stroke="currentColor" stroke-width="1" stroke-opacity="0.35"></line>
+          <text x="268" y="136" font-size="10.5" font-weight="700" text-anchor="middle" fill="currentColor">placenta</text>
+          <text x="268" y="151" font-size="10.5" font-weight="700" text-anchor="middle" fill="currentColor">INCOMPLETA</text>
+          <text x="268" y="166" font-size="10.5" font-weight="700" text-anchor="middle" fill="currentColor">al revisarla</text>
+          <text x="268" y="192" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.78">restos · acretismo</text>
+
+          <rect x="358" y="62" width="164" height="150" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="440" y="86" font-size="15" font-weight="700" text-anchor="middle" fill="currentColor">TRAUMA</text>
+          <text x="440" y="106" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.8">hay una brecha</text>
+          <line x1="378" y1="118" x2="502" y2="118" stroke="currentColor" stroke-width="1" stroke-opacity="0.35"></line>
+          <text x="440" y="136" font-size="10.5" font-weight="700" text-anchor="middle" fill="currentColor">útero BIEN</text>
+          <text x="440" y="151" font-size="10.5" font-weight="700" text-anchor="middle" fill="currentColor">CONTRAÍDO</text>
+          <text x="440" y="166" font-size="10.5" font-weight="700" text-anchor="middle" fill="currentColor">y sigue sangrando</text>
+          <text x="440" y="192" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.78">desgarros del canal</text>
+
+          <rect x="530" y="62" width="156" height="150" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="608" y="86" font-size="15" font-weight="700" text-anchor="middle" fill="currentColor">TROMBINA</text>
+          <text x="608" y="106" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.8">la sangre no coagula</text>
+          <line x1="550" y1="118" x2="666" y2="118" stroke="currentColor" stroke-width="1" stroke-opacity="0.35"></line>
+          <text x="608" y="136" font-size="10.5" font-weight="700" text-anchor="middle" fill="currentColor">sangra por los</text>
+          <text x="608" y="151" font-size="10.5" font-weight="700" text-anchor="middle" fill="currentColor">SITIOS DE PUNCIÓN</text>
+          <text x="608" y="166" font-size="10.5" font-weight="700" text-anchor="middle" fill="currentColor">y las encías</text>
+          <text x="608" y="192" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.78">la menos frecuente</text>
+
+          <rect x="14" y="228" width="672" height="60" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.28" stroke-width="1.3" stroke-dasharray="5 3"></rect>
+          <text x="30" y="248" font-size="11" font-weight="700" fill="currentColor">El orden de la revisión, que se deduce del cuadro</text>
+          <text x="30" y="266" font-size="10.5" fill="currentColor" opacity="0.8">1) Palpar el útero — resuelve TONO. 2) Revisar la placenta — resuelve TEJIDO. 3) Revisar el canal con valvas —</text>
+          <text x="30" y="281" font-size="10.5" fill="currentColor" opacity="0.8">resuelve TRAUMA. 4) Si nada de eso explica el sangrado, es TROMBINA y hay que pedir coagulograma.</text>
+        </svg>
+        <figcaption>La columna que el teórico no da es la del medio: el hallazgo que separa una T de otra. Con esas cuatro preguntas hechas en orden, la causa queda identificada en menos de un minuto y sin estudios.</figcaption>
+      </figure>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Las cuatro T</th><th>Cómo lo nombra el teórico</th><th>Dónde está en este cuadernillo</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Tono</strong></td>
+              <td>Distocias dinámicas: <strong>inercia</strong> y <strong>anillos de contracción</strong>; <strong>atonía del posalumbramiento</strong></td>
+              <td>Secciones <a href="#dinamica">03</a> y <a href="#tono">09</a></td>
+            </tr>
+            <tr>
+              <td><strong>Tejido</strong></td>
+              <td>Distocias anatómicas: <strong>adherencia anormal de la placenta</strong>; <strong>retención de restos placentarios</strong></td>
+              <td>Secciones <a href="#acretismo">05</a> y <a href="#parcial">06</a></td>
+            </tr>
+            <tr>
+              <td><strong>Trauma</strong></td>
+              <td><strong>Lesiones de partes blandas</strong></td>
+              <td>Sección <a href="#trauma">10</a></td>
+            </tr>
+            <tr>
+              <td><strong>Trombina</strong></td>
+              <td><strong>Incoagulabilidad sanguínea de causa obstétrica</strong></td>
+              <td>Sección <a href="#trombina">11</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ 9 ============ -->
+    <section class="seccion s-clinica" id="tono">
+      <span class="seccion__pestana"><b>09</b> Clínica</span>
+      <h2 class="seccion__titulo">Tono — atonía uterina</h2>
+
+      <p>La <strong>inercia o atonía del posalumbramiento</strong> es que <strong>el útero no se retrae ni se contrae después de haber expulsado la placenta</strong>. Es la primera de las cuatro T y la más frecuente con diferencia.</p>
+
+      <h3>Por qué la contracción es la hemostasia</h3>
+      <p>Tras el desprendimiento queda un lecho de <span class="dato">~20 cm²</span> con cientos de senos venosos abiertos. Ahí <strong>no se puede hacer hemostasia quirúrgica</strong>: no hay vasos que ligar uno por uno. La sangre se detiene porque las fibras miometriales, dispuestas en malla alrededor de los vasos que atraviesan la pared, <strong>los ocluyen al contraerse</strong> — son las <em>ligaduras vivientes</em> de Pinard.</p>
+
+      <p>De ahí se deduce todo lo demás: <strong>sin contracción no hay hemostasia posible</strong>, y por eso el tratamiento de la atonía consiste enteramente en lograr que el útero se contraiga, por los medios que sea.</p>
+
+      <h3>Diagnóstico</h3>
+      <p>Es de la mano, no de laboratorio: <strong>útero de consistencia blanda</strong> y <strong>globo de seguridad de Pinard ausente</strong>. El globo es ese útero duro, redondeado y bien delimitado que se palpa a la altura del ombligo cuando la retracción fue correcta; su ausencia es el signo.</p>
+
+      <h3>Factores de riesgo</h3>
+      <p>Son <strong>los mismos de la inercia con retención placentaria</strong>, como aclara el teórico: sobredistensión, agotamiento, multiparidad, fibromatosis, infección amniótica y sedantes. Están desarrollados en la sección <a href="#dinamica">03</a>. A esa lista hay que sumarle uno del cuadernillo vecino: <strong>el parto precipitado</strong> — un útero que se contrajo con gran fuerza antes del parto suele quedar hipotónico después.</p>
+
+      <p>El tratamiento no va acá sino en la sección <a href="#escalera">12</a>, porque es el mismo para toda hemorragia por atonía y porque el teórico lo resuelve en tres líneas que dejan afuera casi todo lo que hay entre el masaje y la histerectomía.</p>
+    </section>
+
+    <!-- ============ 10 ============ -->
+    <section class="seccion s-clinica" id="trauma">
+      <span class="seccion__pestana"><b>10</b> Clínica</span>
+      <h2 class="seccion__titulo">Trauma — lesiones de partes blandas</h2>
+
+      <p>La sangre no viene del lecho placentario sino de una <strong>brecha en el canal</strong>. Puede estar en <strong>periné, vulva, vagina, cuello uterino o cuerpo del útero</strong>, y esa lista está ordenada de menor a mayor gravedad.</p>
+
+      <h3>El dato que la identifica</h3>
+      <p><strong>Útero bien contraído y sangrado que continúa.</strong> Es la combinación que descarta la atonía y obliga a revisar el canal con valvas. Si el globo de seguridad está formado y la mujer sigue sangrando, la causa <strong>no está en el útero</strong>.</p>
+
+      <h3>Causas</h3>
+      <ul>
+        <li><strong>Parto precipitado</strong> — el canal no tuvo tiempo de distenderse progresivamente.</li>
+        <li><strong>Maniobras incorrectas</strong> durante la asistencia.</li>
+        <li><strong>Fórceps</strong> y <strong>versión interna</strong>.</li>
+      </ul>
+
+      <p>Notar que todas son <strong>mecánicas y en buena parte evitables</strong>. A diferencia de la atonía, que puede aparecer en un parto impecable, el trauma casi siempre tiene una maniobra detrás.</p>
+
+      <h3>Diagnóstico y tratamiento</h3>
+      <ul>
+        <li><strong>Diagnóstico: examen directo de la lesión.</strong> No hay estudio que reemplace mirar, con buena luz, valvas y ayudante.</li>
+        <li><strong>Tratamiento: sutura de la brecha.</strong> La vía la decide la altura del desgarro — <strong>por vía vaginal</strong> en la inmensa mayoría; <strong>por vía abdominal si el desgarro es corporal</strong>, porque un desgarro del cuerpo uterino no se alcanza desde abajo y equivale a una rotura uterina.</li>
+      </ul>
+    </section>
+
+    <!-- ============ 11 ============ -->
+    <section class="seccion s-fisiopatologia" id="trombina">
+      <span class="seccion__pestana"><b>11</b> Mecanismo</span>
+      <h2 class="seccion__titulo">Trombina — coagulopatía obstétrica</h2>
+
+      <p>Es la <strong>incoagulabilidad sanguínea de causa obstétrica</strong>: hemorragia por <strong>fibrinogenopenia</strong>, es decir por descenso del fibrinógeno circulante por debajo de sus niveles críticos. Es la menos frecuente de las cuatro T y la más grave, porque <strong>ninguna maniobra local la resuelve</strong>: se puede tener el útero perfectamente contraído y el canal íntegro, y la mujer sigue sangrando.</p>
+
+      <h3>El mecanismo, que es uno solo a tres velocidades</h3>
+      <p>El teórico describe tres vías por las que baja el fibrinógeno —<strong>consumo</strong> por coagulación intravascular lejos del útero, <strong>fibrinólisis exagerada</strong> y paso de <strong>tromboplastina</strong> al torrente— pero en la práctica obstétrica confluyen en una sola cadena. Y nombra las <strong>tres situaciones</strong> que la disparan, que hay que saber de memoria porque son la señal de alarma.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 302" role="img" aria-label="Cascada de la coagulopatía obstétrica: tres situaciones desencadenantes, el feto muerto y retenido de instalación crónica, el desprendimiento de placenta normoinserta de instalación aguda y la embolia de líquido amniótico de instalación hiperaguda, vuelcan tromboplastina deciduoplacentaria al torrente circulatorio, lo que activa la coagulación intravascular, consume fibrinógeno y plaquetas y activa la fibrinólisis, y desemboca en una hemorragia que no coagula.">
+          <defs>
+            <marker id="pp5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="14" y="8" width="200" height="56" rx="3" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.6"></rect>
+          <text x="28" y="28" font-size="11" font-weight="700" fill="currentColor">Feto muerto y retenido</text>
+          <text x="28" y="46" font-size="10.5" fill="currentColor" opacity="0.78">instalación CRÓNICA</text>
+          <text x="28" y="59" font-size="10" fill="currentColor" opacity="0.66">días a semanas</text>
+
+          <rect x="14" y="76" width="200" height="56" rx="3" fill="var(--c)" fill-opacity="0.18" stroke="var(--c)" stroke-width="1.9"></rect>
+          <text x="28" y="96" font-size="11" font-weight="700" fill="currentColor">Desprendimiento de</text>
+          <text x="28" y="110" font-size="11" font-weight="700" fill="currentColor">placenta normoinserta</text>
+          <text x="28" y="127" font-size="10.5" fill="currentColor" opacity="0.78">instalación AGUDA — horas</text>
+
+          <rect x="14" y="144" width="200" height="56" rx="3" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="2.4"></rect>
+          <text x="28" y="164" font-size="11" font-weight="700" fill="currentColor">Embolia de líquido</text>
+          <text x="28" y="178" font-size="11" font-weight="700" fill="currentColor">amniótico</text>
+          <text x="28" y="195" font-size="10.5" fill="currentColor" opacity="0.82">HIPERAGUDA — minutos</text>
+
+          <line x1="214" y1="36"  x2="266" y2="96" stroke="currentColor" stroke-width="1.4" marker-end="url(#pp5)"></line>
+          <line x1="214" y1="104" x2="266" y2="104" stroke="currentColor" stroke-width="1.4" marker-end="url(#pp5)"></line>
+          <line x1="214" y1="172" x2="266" y2="112" stroke="currentColor" stroke-width="1.4" marker-end="url(#pp5)"></line>
+
+          <rect x="272" y="76" width="180" height="56" rx="3" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="2.2"></rect>
+          <text x="362" y="96" font-size="11.5" font-weight="700" text-anchor="middle" fill="currentColor">TROMBOPLASTINA</text>
+          <text x="362" y="111" font-size="11.5" font-weight="700" text-anchor="middle" fill="currentColor">deciduoplacentaria</text>
+          <text x="362" y="126" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.8">pasa al torrente</text>
+
+          <line x1="452" y1="104" x2="504" y2="104" stroke="currentColor" stroke-width="1.6" marker-end="url(#pp5)"></line>
+
+          <rect x="510" y="76" width="176" height="56" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="598" y="96" font-size="11.5" font-weight="700" text-anchor="middle" fill="currentColor">Coagulación</text>
+          <text x="598" y="111" font-size="11.5" font-weight="700" text-anchor="middle" fill="currentColor">INTRAVASCULAR</text>
+          <text x="598" y="126" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.8">lejos del útero</text>
+
+          <line x1="598" y1="132" x2="598" y2="164" stroke="currentColor" stroke-width="1.6" marker-end="url(#pp5)"></line>
+          <text x="608" y="152" font-size="10.5" fill="currentColor" opacity="0.75">consume</text>
+
+          <rect x="392" y="170" width="294" height="62" rx="3" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="408" y="190" font-size="11.5" font-weight="700" fill="currentColor">Caída del FIBRINÓGENO circulante</text>
+          <text x="408" y="208" font-size="10.5" fill="currentColor" opacity="0.82">se consumen también plaquetas y factores</text>
+          <text x="408" y="224" font-size="10.5" fill="currentColor" opacity="0.82">y se activa la FIBRINÓLISIS, que disuelve lo poco formado</text>
+
+          <path d="M 392 201 L 350 201 L 350 240" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#pp5)"></path>
+
+          <rect x="112" y="248" width="476" height="46" rx="3" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="2.6"></rect>
+          <text x="350" y="268" font-size="12.5" font-weight="700" text-anchor="middle" fill="currentColor">HEMORRAGIA QUE NO COAGULA</text>
+          <text x="350" y="286" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.82">sangra por punciones, encías y heridas — el útero puede estar bien contraído</text>
+
+
+        </svg>
+        <figcaption>Las tres situaciones difieren solo en cuán rápido llega la tromboplastina a la circulación: goteo sostenido en el feto retenido, descarga brusca en el desprendimiento, inundación en la embolia. Por eso el teórico las llama crónica, aguda e hiperaguda.</figcaption>
+      </figure>
+
+      <h3>Diagnóstico</h3>
+      <p>Como dice el teórico, <strong>hay que pensarla</strong>: toda vez que aparezca uno de esos tres cuadros, la coagulopatía se asume hasta que el laboratorio diga lo contrario. Los métodos que nombra son la <strong>dosificación de fibrinógeno</strong>, el <strong>test de Weiner</strong> (con umbral en 150 mg%) y la <strong>valoración de la actividad fibrinolítica del plasma</strong>.</p>
+
+      <p><strong>Un detalle del fibrinógeno que se pasa por alto y cambia la lectura:</strong> en el embarazo normal el fibrinógeno está <strong>fisiológicamente elevado</strong>, en el orden de <span class="dato">400 a 600 mg/dL</span>. Eso significa que un valor de <span class="dato">200 mg/dL</span>, que en cualquier otra persona parecería normal, en una embarazada <strong>ya representa una caída de más de la mitad</strong>. El umbral de alarma obstétrico es más alto que el de la hemorragia traumática, y los protocolos actuales apuntan a <strong>mantener el fibrinógeno por encima de 200 mg/dL</strong>.</p>
+
+      <h3>Tratamiento</h3>
+      <p>Tiene tres frentes simultáneos:</p>
+      <ol>
+        <li><strong>Tratar la causa.</strong> Mientras el útero contenga el desencadenante —feto retenido, placenta desprendida— la cadena sigue alimentándose. <strong>Vaciar el útero es parte del tratamiento hematológico</strong>, no un paso posterior.</li>
+        <li><strong>Reponer lo que falta, dirigido por laboratorio:</strong> <strong>fibrinógeno</strong> —como concentrado o como crioprecipitado— apuntando a mantenerlo sobre 200 mg/dL, plasma fresco congelado, plaquetas y glóbulos rojos según el sangrado y los controles.</li>
+        <li><strong>Ácido tranexámico</strong>, que actúa justamente sobre el brazo fibrinolítico de la cascada. Dosis y ventana en la sección <a href="#escalera">12</a>.</li>
+      </ol>
+      <p>Y si todo lo anterior no controla el sangrado, la <strong>histerectomía</strong> como recurso final, tal como la plantea el teórico.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>No dar heparina.</strong> El teórico la encabeza como tratamiento de la hipofibrinogenemia, y es de los pocos puntos del material donde seguir la indicación empeoraría directamente a la paciente. La <strong>coagulación intravascular diseminada con hemorragia activa es una contraindicación de la heparina</strong>: anticoagular a alguien que ya está sangrando por consumo de factores agrava el sangrado. La lógica de «si el problema es que coagula de más adentro de los vasos, hay que anticoagular» es teóricamente atractiva y clínicamente errónea en este escenario. La heparina de bajo peso molecular tiene su lugar <strong>12 a 24 h después</strong> de controlada la hemorragia y con la coagulación normalizada, y ahí ya es <strong>profilaxis antitrombótica</strong> —la puérpera que sangró es una paciente de alto riesgo trombótico—, no tratamiento de la coagulopatía.</p>
+      </div>
+
+      <p>Del mismo modo, el <strong>test de Weiner</strong> —una prueba de observación del coágulo junto a la cama— fue útil cuando no había otra cosa, pero hoy quedó desplazado por la <strong>dosificación directa de fibrinógeno</strong> y, donde está disponible, por las pruebas viscoelásticas, que dan un perfil de la coagulación en minutos.</p>
+    </section>
+
+    <!-- ============ 12 ============ -->
+    <section class="seccion s-tratamiento" id="escalera">
+      <span class="seccion__pestana"><b>12</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Tratamiento escalonado de la hemorragia</h2>
+
+      <p>El teórico resuelve el tratamiento de la atonía en tres líneas: <strong>masaje, oxitócicos e histerectomía abdominal ante el fracaso de las medidas anteriores</strong>. Los dos primeros son correctos y el tercero también, pero <strong>entre el segundo y el tercero falta toda la escalera</strong> — y es justamente el tramo que evita histerectomías en mujeres jóvenes. Lo que sigue completa ese hueco.</p>
+
+      <p>Dos principios antes del detalle. Primero, <strong>los escalones se recorren rápido</strong>: si uno no funciona en minutos, se sube, no se insiste. Segundo, <strong>en paralelo se busca la causa</strong> con las cuatro preguntas de la sección <a href="#cuatro-t">08</a>; un balón intrauterino no sirve de nada si lo que sangra es un desgarro del cuello.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 384" role="img" aria-label="Escalera terapéutica de la hemorragia posparto en seis escalones: medidas iniciales con pedido de ayuda, accesos venosos, sonda vesical y cronómetro; primera línea simultánea con masaje o compresión bimanual, oxitocina y ácido tranexámico; uterotónicos de segunda línea como ergometrina, misoprostol y carbetocina; taponamiento con balón intrauterino; cirugía conservadora con suturas compresivas, ligaduras arteriales o embolización; y por último histerectomía. En paralelo se identifica cuál de las cuatro T es la causa.">
+          <defs>
+            <marker id="pp6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="14" y="8" width="486" height="48" rx="3" fill="var(--c)" fill-opacity="0.24" stroke="var(--c)" stroke-width="2.4"></rect>
+          <text x="30" y="28" font-size="12" font-weight="700" fill="currentColor">0 · PEDIR AYUDA — cronómetro — dos accesos venosos gruesos</text>
+          <text x="30" y="47" font-size="10.5" fill="currentColor" opacity="0.82">laboratorio con grupo y factor · SONDA VESICAL: la vejiga llena impide que el útero se contraiga</text>
+
+          <rect x="14" y="70" width="486" height="62" rx="3" fill="var(--c)" fill-opacity="0.18" stroke="var(--c)" stroke-width="2.2"></rect>
+          <text x="30" y="90" font-size="12" font-weight="700" fill="currentColor">1 · PRIMERA LÍNEA — los tres a la vez, no en orden</text>
+          <text x="30" y="108" font-size="10.5" fill="currentColor" opacity="0.85">Masaje uterino y compresión bimanual</text>
+          <text x="30" y="124" font-size="10.5" fill="currentColor" opacity="0.85">OXITOCINA  +  ÁCIDO TRANEXÁMICO 1 g IV</text>
+
+          <rect x="14" y="146" width="486" height="58" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="30" y="166" font-size="12" font-weight="700" fill="currentColor">2 · UTEROTÓNICOS DE SEGUNDA LÍNEA</text>
+          <text x="30" y="184" font-size="10.5" fill="currentColor" opacity="0.85">Ergometrina — NO en hipertensión ni preeclampsia</text>
+          <text x="30" y="199" font-size="10.5" fill="currentColor" opacity="0.85">Misoprostol · carbetocina</text>
+
+          <rect x="14" y="218" width="486" height="44" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="30" y="238" font-size="12" font-weight="700" fill="currentColor">3 · TAPONAMIENTO CON BALÓN INTRAUTERINO</text>
+          <text x="30" y="255" font-size="10.5" fill="currentColor" opacity="0.85">comprime desde adentro y gana tiempo para trasladar u operar</text>
+
+          <rect x="14" y="276" width="486" height="58" rx="3" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="30" y="296" font-size="12" font-weight="700" fill="currentColor">4 · CIRUGÍA QUE CONSERVA EL ÚTERO</text>
+          <text x="30" y="314" font-size="10.5" fill="currentColor" opacity="0.85">Suturas compresivas — B-Lynch</text>
+          <text x="30" y="329" font-size="10.5" fill="currentColor" opacity="0.85">Ligadura de arterias uterinas e hipogástricas · embolización arterial</text>
+
+          <rect x="14" y="348" width="486" height="30" rx="3" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="2.6"></rect>
+          <text x="30" y="368" font-size="12.5" font-weight="700" fill="currentColor">5 · HISTERECTOMÍA</text>
+
+          <line x1="257" y1="56"  x2="257" y2="66"  stroke="currentColor" stroke-width="1.5" marker-end="url(#pp6)"></line>
+          <line x1="257" y1="132" x2="257" y2="142" stroke="currentColor" stroke-width="1.5" marker-end="url(#pp6)"></line>
+          <line x1="257" y1="204" x2="257" y2="214" stroke="currentColor" stroke-width="1.5" marker-end="url(#pp6)"></line>
+          <line x1="257" y1="262" x2="257" y2="272" stroke="currentColor" stroke-width="1.5" marker-end="url(#pp6)"></line>
+          <line x1="257" y1="334" x2="257" y2="344" stroke="currentColor" stroke-width="1.5" marker-end="url(#pp6)"></line>
+
+          <rect x="516" y="70" width="170" height="264" rx="3" fill="none" stroke="var(--c)" stroke-width="1.8" stroke-dasharray="6 3"></rect>
+          <text x="601" y="92" font-size="11.5" font-weight="700" text-anchor="middle" fill="currentColor">EN PARALELO</text>
+          <text x="601" y="110" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.8">buscar cuál de las 4 T</text>
+          <line x1="536" y1="124" x2="666" y2="124" stroke="currentColor" stroke-width="1" stroke-opacity="0.35"></line>
+          <text x="532" y="148" font-size="10.5" font-weight="700" fill="currentColor">Palpar el útero</text>
+          <text x="532" y="163" font-size="10" fill="currentColor" opacity="0.72">TONO</text>
+          <text x="532" y="190" font-size="10.5" font-weight="700" fill="currentColor">Revisar la placenta</text>
+          <text x="532" y="205" font-size="10" fill="currentColor" opacity="0.72">TEJIDO</text>
+          <text x="532" y="232" font-size="10.5" font-weight="700" fill="currentColor">Revisar el canal</text>
+          <text x="532" y="247" font-size="10.5" font-weight="700" fill="currentColor">con valvas</text>
+          <text x="532" y="262" font-size="10" fill="currentColor" opacity="0.72">TRAUMA</text>
+          <text x="532" y="289" font-size="10.5" font-weight="700" fill="currentColor">Coagulograma</text>
+          <text x="532" y="304" font-size="10" fill="currentColor" opacity="0.72">TROMBINA</text>
+          <text x="532" y="326" font-size="10" fill="currentColor" opacity="0.72">y reponer volumen</text>
+
+          <path d="M 502 200 C 512 200 512 200 516 200" fill="none" stroke="currentColor" stroke-width="1.4" stroke-opacity="0.5"></path>
+        </svg>
+        <figcaption>El teórico cubre el escalón 0, la mitad del 1 y el 5. Lo que falta —tranexámico, uterotónicos de segunda línea, balón y cirugía conservadora— es precisamente el tramo donde se decide si la mujer conserva el útero.</figcaption>
+      </figure>
+
+      <h3>Los uterotónicos, y cuándo no usar cada uno</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Fármaco</th><th>Lugar en la escalera</th><th>Cuándo NO</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Oxitocina</strong></td>
+              <td>Primera línea, siempre</td>
+              <td>Cuidado con la infusión rápida en bolo: produce hipotensión</td>
+            </tr>
+            <tr>
+              <td><strong>Ergometrina</strong> o metilergometrina</td>
+              <td>Segunda línea</td>
+              <td><strong>Contraindicada en hipertensión y preeclampsia</strong>: es vasoconstrictora</td>
+            </tr>
+            <tr>
+              <td><strong>Misoprostol</strong></td>
+              <td>Segunda línea; útil donde no hay cadena de frío</td>
+              <td>Produce fiebre y escalofríos, que pueden confundir el cuadro</td>
+            </tr>
+            <tr>
+              <td><strong>Carbetocina</strong></td>
+              <td>Análogo de oxitocina de vida media larga</td>
+              <td>Disponibilidad y costo</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>El ácido tranexámico no está en el teórico y hoy es tratamiento estándar.</strong> La OMS lo recomienda para <strong>toda</strong> hemorragia posparto, cualquiera sea la causa y la vía del parto: <strong>1 g intravenoso lo antes posible</strong>, y una <strong>segunda dosis</strong> si el sangrado continúa después de 30 minutos o reaparece dentro de las 24 h. Lo que hay que retener es la <strong>ventana</strong>: el beneficio depende de la precocidad y <strong>se pierde si se administra pasadas las 3 horas</strong> del inicio del sangrado. No es un rescate para cuando fallaron los uterotónicos — va con la oxitocina, en el mismo momento.</p>
+      </div>
+
+      <p class="cita">Fuente: WOMAN Trial Collaborators. Effect of early tranexamic acid administration on mortality, hysterectomy, and other morbidities in women with post-partum haemorrhage. The Lancet 2017; recomendaciones de la Organización Mundial de la Salud sobre el uso de ácido tranexámico en la hemorragia posparto.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-d">
+      <span class="bloque__rotulo">Bloque D</span>
+      <span class="bloque__nombre">Inversión uterina</span>
+    </h2>
+
+    <!-- ============ 13 ============ -->
+    <section class="seccion s-importantes" id="inversion">
+      <span class="seccion__pestana"><b>13</b> Claves</span>
+      <h2 class="seccion__titulo">Inversión aguda del útero</h2>
+
+      <p>Es la <strong>invaginación del útero dentro de sí mismo</strong>: el fondo se hunde hacia la cavidad y, en los grados mayores, asoma por el cuello o la vulva. Es rara, es catastrófica y —a diferencia de casi todo lo demás de este cuadernillo— <strong>es casi siempre provocada</strong>.</p>
+
+      <h3>Etiopatogenia</h3>
+      <p>Hacen falta dos condiciones que suelen darse juntas:</p>
+      <ul>
+        <li><strong>Atonía del útero</strong>, que lo vuelve blando y plegable.</li>
+        <li><strong>Maniobras precipitadas e intempestivas:</strong> <strong>presiones sobre el fondo del útero</strong> y <strong>tracciones del cordón umbilical</strong>.</li>
+      </ul>
+
+      <p>Vale detenerse acá, porque es el cierre del cuadernillo: <strong>esas dos maniobras son las mismas que el teórico indica en la sección <a href="#conducta">04</a></strong> —la expresión de Credé y la tracción del cordón—. No es una contradicción del material: es que <strong>la misma maniobra, bien hecha, resuelve una retención, y mal hecha invierte el útero</strong>. La diferencia está en las palabras que suelen leerse por encima: la expresión debe ser <em>continua y sostenida</em>, y la tracción <em>suave</em> y sobre un útero <em>contraído</em>. Traccionar de un cordón con el útero blando es tirar del techo de una bolsa dada vuelta.</p>
+
+      <h3>Clínica</h3>
+      <ul>
+        <li><strong>Dolor agudo en el hipogastrio</strong>, de comienzo brusco.</li>
+        <li>A la palpación abdominal, <strong>ausencia del útero</strong> donde debería estar el fondo: no se palpa el globo, o se palpa una depresión en cráter.</li>
+        <li>Frecuentemente, una <strong>masa rojo-violácea</strong> en vagina o asomando por la vulva —el fondo invertido—, muchas veces <strong>con la placenta todavía adherida</strong>.</li>
+        <li><strong>Shock desproporcionado a la sangre perdida.</strong> Es el rasgo que la delata: además del componente hemorrágico hay un <strong>componente neurogénico</strong>, por la tracción de los ligamentos y el peritoneo. Una paciente en shock profundo con poca sangre visible obliga a pensar en inversión.</li>
+      </ul>
+
+      <h3>Tratamiento</h3>
+      <p>El teórico lo divide en <strong>profiláctico</strong> y <strong>curativo</strong> —«la reposición por vía vaginal del útero invertido con anestesia general en plano quirúrgico»—. El profiláctico es no hacer lo que la causa. El curativo tiene una secuencia que conviene tener ordenada, porque el orden importa más que las maniobras:</p>
+
+      <ol>
+        <li><strong>Reponer de inmediato,</strong> sin esperar. Cuanto antes, más fácil: el anillo cervical se contrae con los minutos y después no deja pasar. Se empuja el fondo con la palma de la mano a través del cuello, en dirección al ombligo — es la <strong>maniobra de Johnson</strong>.</li>
+        <li><strong>Si el anillo ya se cerró:</strong> relajar el útero para poder atravesarlo, con <strong>uteroinhibidores</strong> —nitroglicerina, terbutalina— o con la <strong>anestesia general</strong> que menciona el teórico.</li>
+        <li><strong>Apenas repuesto: invertir la conducta farmacológica.</strong> Se suspende el relajante y se administran <strong>uterotónicos</strong>, manteniendo la mano dentro de la cavidad hasta que el útero se contraiga sobre ella. Sin ese paso el útero vuelve a invertirse.</li>
+        <li><strong>Si la vía vaginal fracasa:</strong> reposición quirúrgica por vía abdominal.</li>
+      </ol>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>Si la placenta sigue adherida, no se la retira antes de reponer el útero.</strong> Es el error clásico y el reflejo natural: parece lógico sacar primero la placenta para tener el campo libre. Pero mientras la placenta está en su lecho lo mantiene <strong>parcialmente ocluido</strong>; desprenderla con el útero invertido deja al descubierto toda la superficie sangrante en el peor momento posible, con la paciente ya en shock. <strong>Primero se repone el útero; la placenta se extrae después</strong>, con el órgano en posición y los uterotónicos actuando.</p>
+        <p>Y la <strong>secuencia farmacológica es contraintuitiva de punta a punta</strong>: primero se <strong>relaja</strong> un útero que está sangrando —para poder reponerlo— y recién después se lo <strong>contrae</strong>. Dar uterotónicos antes de haber repuesto el fondo cierra el anillo sobre el útero invertido y convierte una urgencia resoluble en una cirugía.</p>
+      </div>
+    </section>
+
+    <!-- ============ REPASO ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>¿Cuáles son las tres entidades del período placentario patológico?</summary>
+          <div class="fc__r"><strong>Retención</strong> de placenta y membranas · <strong>Hemorragias</strong> del alumbramiento · <strong>Inversión aguda</strong> del útero. Se encadenan: la retención causa hemorragia, y las maniobras para tratarla pueden causar inversión.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>Las dos preguntas que clasifican una retención.</summary>
+          <div class="fc__r">Primero: <strong>¿total o parcial?</strong> Después, si es total: <strong>¿dinámica o anatómica?</strong> — o sea, ¿falla el motor o está pegada. Es el mismo eje que ordena las distocias del trabajo de parto.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué hemorragia es característica del anillo de contracción?</summary>
+          <div class="fc__r"><strong>A chorros, intermitente.</strong> La sangre se acumula por encima del anillo y sale de golpe cada vez que éste cede, a diferencia del flujo continuo de la atonía.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Engatillamiento y encarcelamiento: ¿dónde está el anillo en cada uno?</summary>
+          <div class="fc__r"><strong>Engatillamiento:</strong> anillo en el <strong>cuerno uterino</strong>. <strong>Encarcelamiento:</strong> anillo <strong>de Bandl</strong>, entre cuerpo y segmento inferior.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Por qué el alumbramiento manual del anillo de contracción se hace bajo anestesia general?</summary>
+          <div class="fc__r">No por el dolor: para <strong>relajar el anillo</strong>. Sin relajación la mano no puede atravesarlo.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿En cuál de los tres escenarios de retención total se puede esperar, y cuánto?</summary>
+          <div class="fc__r">Solo en la <strong>placenta totalmente adherida SIN hemorragia</strong>: <strong>30 minutos</strong> de conducta expectante con masaje y oxitócicos. Con sangrado no se espera nada.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Por qué la placenta más pegada da más tiempo que la que se soltó a medias?</summary>
+          <div class="fc__r">Porque <strong>mientras no se desprende, no sangra</strong>. El desprendimiento parcial deja senos venosos abiertos y el útero no puede contraerse sobre una cavidad ocupada: ése es el escenario urgente.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Qué es la maniobra de Credé y cuál es la palabra clave?</summary>
+          <div class="fc__r"><strong>Expresión continua y sostenida</strong> del fondo uterino para hacer salir la placenta. <em>Sostenida</em>: la presión brusca o intermitente sobre el fondo es el mecanismo de la <strong>inversión uterina</strong>.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>Definí acreta, increta y percreta.</summary>
+          <div class="fc__r"><strong>Acreta:</strong> la vellosidad se adhiere firmemente al miometrio <strong>sin penetrarlo</strong>. <strong>Increta:</strong> <strong>entra</strong> en el miometrio sin atravesarlo. <strong>Percreta:</strong> lo <strong>atraviesa</strong> y llega a la serosa, pudiendo invadir la vejiga.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Cuál es el mecanismo común de todo acretismo?</summary>
+          <div class="fc__r">Una <strong>decidua basal defectuosa</strong>: falta la capa que frena a la vellosidad. De ahí los antecedentes de <strong>endometritis, legrados y cicatrices uterinas</strong>.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Cuál es el escenario de riesgo clásico de acretismo, y cuándo se sospecha?</summary>
+          <div class="fc__r"><strong>Placenta previa sobre cicatriz de cesárea previa</strong> — se implanta justo donde no hay decidua sana. La sospecha debe ser <strong>prenatal, por ecografía</strong>, no con la mano adentro: convierte una hemorragia imprevista en una cirugía programada.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Por qué no se puede hacer alumbramiento manual en un acretismo?</summary>
+          <div class="fc__r">Porque <strong>la placenta se desgarra pero no se desprende</strong>: no hay plano de clivaje. Insistir arranca fragmentos y deja senos miometriales abiertos. La conducta es <strong>detenerse</strong> y preparar la histerectomía.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Restos vs. membranas retenidas: ¿por qué el manejo es opuesto?</summary>
+          <div class="fc__r">Los <strong>restos</strong> son tejido vascularizado sobre un lecho abierto: sangran, y se hace <strong>legrado</strong>. Las <strong>membranas</strong> no tienen vasos propios: no sangran, se eliminan solas con los loquios y su riesgo es <strong>infeccioso</strong>. <em>Sacar los restos, esperar las membranas.</em></div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Las dos definiciones vigentes de hemorragia posparto.</summary>
+          <div class="fc__r"><strong>Clásica / OMS:</strong> &gt; 500 ml en 24 h en parto vaginal (&gt; 1000 en cesárea). <strong>ACOG 2017:</strong> pérdida acumulada <strong>≥ 1000 ml o sangrado con signos de hipovolemia</strong>, cualquiera sea la vía.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Por qué la hemorragia interna es la más peligrosa?</summary>
+          <div class="fc__r">Porque <strong>no se ve</strong>: el útero atónico actúa como reservorio y puede alojar más de un litro sin sangrado externo. Por eso la vigilancia del posparto es <strong>palpar el útero</strong>, no mirar el apósito.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Por qué no hay que esperar la hipotensión?</summary>
+          <div class="fc__r">Porque en una mujer joven y sana <strong>es un signo tardío</strong>: la compensación mantiene la presión hasta pérdidas importantes. Lo primero que se altera es la <strong>frecuencia cardíaca</strong>.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>Nombrá las cuatro T y el hallazgo que identifica a cada una.</summary>
+          <div class="fc__r"><strong>Tono:</strong> útero blando, globo de Pinard ausente. <strong>Tejido:</strong> placenta incompleta al revisarla. <strong>Trauma:</strong> útero bien contraído y sigue sangrando. <strong>Trombina:</strong> sangra por los sitios de punción y no coagula.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Cuál de las cuatro T es la más frecuente?</summary>
+          <div class="fc__r"><strong>Tono</strong>, con diferencia: alrededor de <strong>7 de cada 10</strong> hemorragias posparto. La menos frecuente es <strong>Trombina</strong>, que es a la vez la más grave.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Por qué la contracción uterina ES la hemostasia del alumbramiento?</summary>
+          <div class="fc__r">Porque el lecho placentario tiene cientos de senos venosos abiertos que <strong>no se pueden ligar uno por uno</strong>. Las fibras miometriales en malla los ocluyen al contraerse — las <strong>ligaduras vivientes de Pinard</strong>. Sin contracción no hay hemostasia posible.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Útero bien contraído y la mujer sigue sangrando: ¿qué pensás?</summary>
+          <div class="fc__r"><strong>Trauma</strong> — un desgarro del canal. Hay que revisar periné, vagina y cuello con valvas. Si el globo de seguridad está formado, la causa no está en el útero.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>Las tres situaciones obstétricas que producen coagulopatía, y su velocidad.</summary>
+          <div class="fc__r"><strong>Feto muerto y retenido</strong> → crónica. <strong>Desprendimiento de placenta normoinserta</strong> → aguda. <strong>Embolia de líquido amniótico</strong> → hiperaguda. Mismo mecanismo —paso de tromboplastina deciduoplacentaria— a tres velocidades.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Por qué un fibrinógeno de 200 mg/dL es alarmante en una embarazada?</summary>
+          <div class="fc__r">Porque en el embarazo normal está <strong>fisiológicamente elevado (400-600 mg/dL)</strong>: 200 ya representa una caída de más de la mitad. El umbral obstétrico es más alto que el de la hemorragia traumática.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Por qué no se da heparina en la coagulopatía obstétrica con sangrado?</summary>
+          <div class="fc__r">Porque la <strong>CID con hemorragia activa es contraindicación de heparina</strong>: anticoagular a quien ya sangra por consumo de factores agrava el sangrado. La HBPM entra <strong>12-24 h después</strong> de controlada la hemorragia, y ahí ya es profilaxis antitrombótica.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Dosis y ventana del ácido tranexámico en la HPP.</summary>
+          <div class="fc__r"><strong>1 g IV lo antes posible</strong>, segunda dosis si el sangrado sigue a los 30 min o reaparece dentro de 24 h. El beneficio <strong>se pierde pasadas las 3 horas</strong> del inicio: va junto con la oxitocina, no como rescate.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Qué falta entre el masaje y la histerectomía en la escalera del teórico?</summary>
+          <div class="fc__r"><strong>Tranexámico</strong>, <strong>uterotónicos de segunda línea</strong> (ergometrina, misoprostol, carbetocina), <strong>taponamiento con balón</strong> y <strong>cirugía conservadora</strong> — suturas compresivas, ligaduras arteriales, embolización.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿En qué paciente NO se usa ergometrina?</summary>
+          <div class="fc__r">En la <strong>hipertensa</strong> y en la <strong>preeclámptica</strong>: es vasoconstrictora.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Qué signo delata una inversión uterina?</summary>
+          <div class="fc__r"><strong>Shock desproporcionado a la sangre perdida</strong> —hay componente neurogénico por tracción de ligamentos y peritoneo— más <strong>ausencia del útero</strong> a la palpación abdominal y dolor agudo en hipogastrio.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>Inversión uterina con placenta adherida: ¿qué se hace primero?</summary>
+          <div class="fc__r"><strong>Reponer el útero. La placenta se saca después.</strong> Mientras está en su lecho lo mantiene parcialmente ocluido; desprenderla con el útero invertido expone toda la superficie sangrante en el peor momento.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Cuál es la secuencia farmacológica de la inversión uterina?</summary>
+          <div class="fc__r">Contraintuitiva: primero <strong>relajar</strong> (nitroglicerina, terbutalina o anestesia general) para poder reponer, y <strong>recién después contraer</strong> con uterotónicos, manteniendo la mano adentro. Dar uterotónicos antes cierra el anillo sobre el útero invertido.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ RELÁMPAGO ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Las tres entidades</dt>
+        <dd><strong>Retención</strong> · <strong>Hemorragia</strong> · <strong>Inversión</strong>. Se encadenan: la retención sangra, y las maniobras para resolverla invierten el útero.</dd>
+
+        <dt class="r-gold">Identificar la causa en un minuto</dt>
+        <dd>Las <strong>4 T</strong> con su hallazgo: <strong>Tono</strong> útero blando · <strong>Tejido</strong> placenta incompleta · <strong>Trauma</strong> útero duro que sigue sangrando · <strong>Trombina</strong> sangra por las punciones. Palpar → revisar placenta → revisar canal → coagulograma.</dd>
+
+        <dt class="r-tto">Escalera de la hemorragia</dt>
+        <dd>Masaje + <strong>oxitocina + tranexámico 1 g IV</strong> → uterotónicos de 2.ª línea → <strong>balón</strong> → suturas compresivas y ligaduras → histerectomía. El tranexámico va al principio, no de rescate.</dd>
+
+        <dt class="r-tto">Retención total</dt>
+        <dd><strong>Sin</strong> hemorragia: 30 min expectante con oxitócicos. <strong>Con</strong> hemorragia: no se espera. Ya desprendida: expresión y tracción <strong>suave</strong>.</dd>
+
+        <dt class="r-alerta">Criterios de alerta</dt>
+        <dd>Placenta que <strong>se desgarra sin despegarse</strong> = acretismo: detenerse, no insistir. <strong>Shock desproporcionado al sangrado</strong> = inversión uterina. Y no dar <strong>heparina</strong> a quien está sangrando por coagulopatía.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir del material de la Cátedra de Obstetricia (Dr. Miguel Blanco) y de las guías de la OMS y ACOG. Material de estudio: no reemplaza el criterio clínico ni la guía institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+
+  // ---- Tema claro / oscuro ----
+  // Sin eleccion estampada manda el sistema; el boton la estampa y la guarda.
+  var raiz = document.documentElement;
+  var boton = document.getElementById('tema');
+
+  function temaActual(){
+    var estampado = raiz.getAttribute('data-theme');
+    if (estampado) return estampado;
+    return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+
+  if (boton){
+    var rotular = function(){
+      var actual = temaActual();
+      boton.setAttribute('aria-pressed', actual === 'dark' ? 'true' : 'false');
+      boton.setAttribute('aria-label', actual === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+    };
+    boton.addEventListener('click', function(){
+      var nuevo = temaActual() === 'dark' ? 'light' : 'dark';
+      raiz.setAttribute('data-theme', nuevo);
+      try { localStorage.setItem('wordmed-tema', nuevo); } catch (e) { /* sin persistencia */ }
+      rotular();
+    });
+    rotular();
+  }
+
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link, .ir-link'));
+
+  // Devuelve TODOS los enlaces al ancla: la misma seccion figura en el indice
+  // lateral y en el compacto, y los dos tienen que encenderse juntos.
+  function porMeta(hash){
+    return enlaces.filter(function(l){ return l.getAttribute('href') === '#' + hash; });
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var activos = porMeta(e.target.id);
+        if (!activos.length) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          activos.forEach(function(l){ l.setAttribute('aria-current', 'true'); });
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>
+<script>
+(function(){
+  "use strict";
+  var clave = document.body.dataset.clave || "";
+  var enApp = typeof window.WordmedApp !== "undefined";
+  var MEM = "wordmed:progreso";
+
+  function leer(){ try{ return JSON.parse(localStorage.getItem(MEM)) || {}; }catch(e){ return {}; } }
+  function guardar(m){ try{ localStorage.setItem(MEM, JSON.stringify(m)); }catch(e){} }
+
+  function alto(){
+    return Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+  }
+
+  /* retomar donde quedó */
+  if (clave) {
+    var m = leer()[clave];
+    if (m && m.y > 0) {
+      window.addEventListener("load", function(){
+        window.scrollTo(0, Math.min(m.y, alto()));
+      });
+    }
+  }
+
+  /* anotar el avance, sin ahogar el scroll */
+  var pendiente = false;
+  window.addEventListener("scroll", function(){
+    if (pendiente || !clave) return;
+    pendiente = true;
+    requestAnimationFrame(function(){
+      pendiente = false;
+      var y = window.scrollY;
+      var pct = Math.round((y / alto()) * 100);
+      pct = Math.max(0, Math.min(100, pct));
+      var m = leer();
+      m[clave] = { y: y, pct: pct, ts: Date.now() };
+      guardar(m);
+      if (enApp && window.WordmedApp.progreso) window.WordmedApp.progreso(clave, pct, y);
+    });
+  }, { passive: true });
+
+  /* volver: solo cuando vinimos de la cáscara web */
+  if (!enApp && document.referrer && document.referrer.indexOf(location.origin) === 0) {
+    var b = document.createElement("button");
+    b.className = "volver";
+    b.type = "button";
+    b.setAttribute("aria-label", "Volver");
+    b.innerHTML = '<svg class="volver__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg>';
+    b.addEventListener("click", function(){ history.back(); });
+    document.body.appendChild(b);
+  }
+})();
+</script>
+</body>
+</html>
