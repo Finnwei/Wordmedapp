@@ -161,29 +161,34 @@ private fun RejillaMaterias(
                             ) {
                                 RuedaColor { alTocarRueda(mat.slug) }
                                 Agarre(
-                                    Modifier.pointerInput(orden) {
+                                    /* Reordenar en pleno arrastre hacía que Compose
+                                       recreara el nodo y matara el gesto: nunca llegaba
+                                       el "soltar" y la carpeta quedaba trabada. Ahora la
+                                       carpeta sigue al dedo y el reordenamiento ocurre
+                                       recién al soltar. */
+                                    Modifier.pointerInput(mat.slug) {
                                         detectDragGestures(
                                             onDragStart = {
                                                 arrastrado = mat.slug
                                                 desplazamiento = Offset.Zero
-                                                foto = lista.indices.map { casilleros[it] ?: Rect.Zero }
+                                                foto = orden.indices.map { casilleros[it] ?: Rect.Zero }
                                             },
                                             onDrag = { cambio, delta ->
                                                 cambio.consume()
                                                 desplazamiento += delta
-                                                val i = orden.indexOf(arrastrado)
+                                            },
+                                            onDragEnd = {
+                                                val i = orden.indexOf(mat.slug)
                                                 if (i >= 0 && i < foto.size) {
                                                     val centro = foto[i].center + desplazamiento
                                                     val j = foto.indexOfFirst { it.contains(centro) }
                                                     if (j >= 0 && j != i) {
-                                                        orden = orden.toMutableList()
+                                                        val nuevo = orden.toMutableList()
                                                             .apply { add(j, removeAt(i)) }
-                                                        desplazamiento -= (foto[j].topLeft - foto[i].topLeft)
+                                                        orden = nuevo
+                                                        estado.reordenar(nuevo)
                                                     }
                                                 }
-                                            },
-                                            onDragEnd = {
-                                                estado.reordenar(orden)
                                                 arrastrado = null
                                                 desplazamiento = Offset.Zero
                                             },

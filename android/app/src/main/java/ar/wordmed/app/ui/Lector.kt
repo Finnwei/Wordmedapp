@@ -30,6 +30,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -69,13 +71,86 @@ fun Lector(
 
     BackHandler { if (panelLetra) panelLetra = false else alVolver() }
 
-    Column(
+    /* El WebView va primero y la barra después: un AndroidView se dibuja
+       por encima de todo lo que se componga antes que él, aunque no se
+       superpongan en el layout. Componiendo la barra al final queda
+       arriba, y el WebView arranca más abajo por el padding. */
+    var altoBarra by remember { mutableStateOf(0) }
+    val densidad = LocalDensity.current
+
+    Box(
         Modifier
             .fillMaxSize()
             .background(t.papel)
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
+
+        AndroidView(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = with(densidad) { altoBarra.toDp() }),
+            factory = { c ->
+                val cargador = WebViewAssetLoader.Builder()
+                    .addPathHandler(
+                        "/contenido/",
+                        WebViewAssetLoader.InternalStoragePathHandler(c, File(c.filesDir, "contenido"))
+                    )
+                    .build()
+
+                WebView(c).apply {
+                    settings.javaScriptEnabled = true
+                    settings.domStorageEnabled = true
+                    settings.allowFileAccess = false
+                    settings.allowContentAccess = false
+
+                    /* Que se vea como al abrir el archivo a mano en el celular:
+                       el envoltorio no emite <meta viewport> cuando detecta la
+                       app, así que el WebView maqueta a su ancho por omisión y
+                       lo encoge para que entre. Ese encogido es también el tope
+                       de zoom out, que es lo que se pidió. */
+                    settings.useWideViewPort = true
+                    settings.loadWithOverviewMode = true
+                    settings.setSupportZoom(true)
+                    settings.builtInZoomControls = true
+                    settings.displayZoomControls = false
+
+                    settings.textZoom = tamanoLetra
+                    isVerticalScrollBarEnabled = true
+
+                    addJavascriptInterface(PuenteLector(alProgreso), "WordmedApp")
+
+                    webViewClient = object : WebViewClient() {
+                        override fun shouldInterceptRequest(
+                            view: WebView, request: WebResourceRequest,
+                        ): WebResourceResponse? = cargador.shouldInterceptRequest(request.url)
+
+                        /* Los enlaces internos (#seccion) se resuelven acá adentro;
+                           cualquier cosa que apunte afuera no se abre. */
+                        override fun shouldOverrideUrlLoading(
+                            view: WebView, request: WebResourceRequest,
+                        ): Boolean = request.url.host != "appassets.androidplatform.net"
+
+                        override fun onPageFinished(view: WebView, url: String) {
+                            view.evaluateJavascript(guionTema(oscuro), null)
+                        }
+                    }
+
+                    loadUrl("https://appassets.androidplatform.net/contenido/$ruta")
+                }
+            },
+            update = { v ->
+                v.settings.textZoom = tamanoLetra
+                v.evaluateJavascript(guionTema(oscuro), null)
+            },
+        )
+
+        Column(
+            Modifier
+                .align(Alignment.TopStart)
+                .background(t.papel)
+                .onGloballyPositioned { altoBarra = it.size.height }
+        ) {
 
         /* --- barra fija, arriba del nombre de la materia --- */
         Row(
@@ -127,65 +202,7 @@ fun Lector(
         }
 
         Box(Modifier.fillMaxWidth().height(1.dp).background(t.linea))
-
-        AndroidView(
-            /* weight y no fillMaxSize: adentro de una Column, fillMaxSize
-               pide toda la altura y le pasa por encima a la barra. */
-            modifier = Modifier.fillMaxWidth().weight(1f),
-            factory = { c ->
-                val cargador = WebViewAssetLoader.Builder()
-                    .addPathHandler(
-                        "/contenido/",
-                        WebViewAssetLoader.InternalStoragePathHandler(c, File(c.filesDir, "contenido"))
-                    )
-                    .build()
-
-                WebView(c).apply {
-                    settings.javaScriptEnabled = true
-                    settings.domStorageEnabled = true
-                    settings.allowFileAccess = false
-                    settings.allowContentAccess = false
-
-                    /* Que se vea como al abrir el archivo a mano en el celular:
-                       el envoltorio le saca el <meta viewport> cuando detecta la
-                       app, así que el WebView maqueta a su ancho por omisión y lo
-                       encoge para que entre. Ese encogido es también el tope de
-                       zoom out, que es lo que se pidió. */
-                    settings.useWideViewPort = true
-                    settings.loadWithOverviewMode = true
-                    settings.setSupportZoom(true)
-                    settings.builtInZoomControls = true
-                    settings.displayZoomControls = false
-
-                    settings.textZoom = tamanoLetra
-                    isVerticalScrollBarEnabled = true
-
-                    addJavascriptInterface(PuenteLector(alProgreso), "WordmedApp")
-
-                    webViewClient = object : WebViewClient() {
-                        override fun shouldInterceptRequest(
-                            view: WebView, request: WebResourceRequest,
-                        ): WebResourceResponse? = cargador.shouldInterceptRequest(request.url)
-
-                        /* Los enlaces internos (#seccion) se resuelven acá adentro;
-                           cualquier cosa que apunte afuera no se abre. */
-                        override fun shouldOverrideUrlLoading(
-                            view: WebView, request: WebResourceRequest,
-                        ): Boolean = request.url.host != "appassets.androidplatform.net"
-
-                        override fun onPageFinished(view: WebView, url: String) {
-                            view.evaluateJavascript(guionTema(oscuro), null)
-                        }
-                    }
-
-                    loadUrl("https://appassets.androidplatform.net/contenido/$ruta")
-                }
-            },
-            update = { v ->
-                v.settings.textZoom = tamanoLetra
-                v.evaluateJavascript(guionTema(oscuro), null)
-            },
-        )
+        }
     }
 }
 
