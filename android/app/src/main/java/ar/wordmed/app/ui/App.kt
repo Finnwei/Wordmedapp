@@ -290,7 +290,7 @@ private fun Cajon(estado: Estado, alCerrar: () -> Unit) {
             .navigationBarsPadding(),
     ) {
         Column(Modifier.padding(18.dp, 24.dp, 18.dp, 20.dp)) {
-            Text("Wordmed", fontFamily = Titulo, fontWeight = FontWeight.Bold, fontSize = 26.sp, color = t.tinta)
+            Text("Configuración", fontFamily = Titulo, fontWeight = FontWeight.Bold, fontSize = 26.sp, color = t.tinta)
             Text(
                 m?.let { "${it.totalTemas} temas en ${it.materias.size} materias" } ?: "sin contenido",
                 fontFamily = Texto, fontSize = 11.5.sp, color = t.tintaTenue,
