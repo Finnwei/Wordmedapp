@@ -16,6 +16,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -37,6 +38,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -221,26 +223,26 @@ fun Lector(
         }
         }
 
-        /* La lengüeta va pegada al borde de abajo de la barra y se queda
-           siempre a mano: pliega la barra para dejar más pantalla al
-           cuadernillo sin perder las funciones. */
-        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-            Box(
-                Modifier
-                    .clip(RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp))
-                    .background(t.hojaHund)
-                    .clickable { barraVisible = !barraVisible }
-                    .padding(horizontal = 20.dp, vertical = 5.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    if (barraVisible) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                    if (barraVisible) "Ocultar la barra" else "Mostrar la barra",
-                    tint = t.tintaTenue,
-                    modifier = Modifier.size(20.dp),
-                )
-            }
         }
+
+        /* La flecha flota sobre el cuadernillo: no vive en la columna, así
+           que no empuja el contenido ni ocupa una franja propia. Sin fondo,
+           solo el ícono. */
+        Box(
+            Modifier
+                .align(Alignment.TopCenter)
+                .offset { IntOffset(0, altoBarra) }
+                .size(44.dp)
+                .clip(RoundedCornerShape(50))
+                .clickable { barraVisible = !barraVisible },
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                if (barraVisible) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                if (barraVisible) "Ocultar la barra" else "Mostrar la barra",
+                tint = t.tintaTenue.copy(alpha = 0.75f),
+                modifier = Modifier.size(22.dp),
+            )
         }
     }
 }
