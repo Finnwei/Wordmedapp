@@ -8,6 +8,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -19,6 +20,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -68,8 +71,15 @@ fun Lector(
 ) {
     val t = LocalTinta.current
     var panelLetra by remember { mutableStateOf(false) }
+    var barraVisible by remember { mutableStateOf(true) }
 
-    BackHandler { if (panelLetra) panelLetra = false else alVolver() }
+    BackHandler {
+        when {
+            panelLetra -> panelLetra = false
+            !barraVisible -> barraVisible = true
+            else -> alVolver()
+        }
+    }
 
     /* El WebView va primero y la barra después: un AndroidView se dibuja
        por encima de todo lo que se componga antes que él, aunque no se
@@ -153,6 +163,12 @@ fun Lector(
         ) {
 
         /* --- barra fija, arriba del nombre de la materia --- */
+        AnimatedVisibility(
+            visible = barraVisible,
+            enter = expandVertically(tween(220)) + fadeIn(tween(220)),
+            exit = shrinkVertically(tween(220)) + fadeOut(tween(160)),
+        ) {
+        Column {
         Row(
             Modifier.fillMaxWidth().padding(horizontal = 6.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -202,6 +218,29 @@ fun Lector(
         }
 
         Box(Modifier.fillMaxWidth().height(1.dp).background(t.linea))
+        }
+        }
+
+        /* La lengüeta va pegada al borde de abajo de la barra y se queda
+           siempre a mano: pliega la barra para dejar más pantalla al
+           cuadernillo sin perder las funciones. */
+        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            Box(
+                Modifier
+                    .clip(RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp))
+                    .background(t.hojaHund)
+                    .clickable { barraVisible = !barraVisible }
+                    .padding(horizontal = 20.dp, vertical = 5.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    if (barraVisible) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    if (barraVisible) "Ocultar la barra" else "Mostrar la barra",
+                    tint = t.tintaTenue,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+        }
         }
     }
 }

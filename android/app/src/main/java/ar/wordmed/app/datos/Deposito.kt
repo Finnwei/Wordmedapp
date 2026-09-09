@@ -225,6 +225,18 @@ class Deposito(private val ctx: Context) {
         Carpeta(p.getOrNull(0)?.ifBlank { null }, p.getOrNull(1)?.ifBlank { null }, p.getOrNull(2)?.toIntOrNull())
     }
 
+    /** El orden de todas las carpetas, en una sola escritura.
+     *  Guardarlas de a una hacía que las escrituras se pisaran entre sí
+     *  —cada una leía el valor viejo— y solo sobrevivía la última. */
+    suspend fun guardarOrden(orden: List<String>) {
+        val m = mapaDe(leer(kCarpetas))
+        orden.forEachIndexed { i, slug ->
+            val p = (m[slug] ?: "||").split("|")
+            m[slug] = "${p.getOrElse(0) { "" }}|${p.getOrElse(1) { "" }}|$i"
+        }
+        escribir(kCarpetas, textoDe(m))
+    }
+
     suspend fun guardarCarpeta(slug: String, c: Carpeta) {
         val m = mapaDe(leer(kCarpetas))
         m[slug] = "${c.color ?: ""}|${c.estilo ?: ""}|${c.orden ?: ""}"

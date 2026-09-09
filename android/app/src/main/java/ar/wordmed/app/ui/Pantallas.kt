@@ -49,13 +49,9 @@ fun PantallaMaterias(
         contentPadding = PaddingValues(16.dp, 0.dp, 16.dp, 96.dp),
         verticalArrangement = Arrangement.spacedBy(22.dp),
     ) {
-        item {
-            Text(
-                "Wordmed",
-                fontFamily = Titulo, fontWeight = FontWeight.Bold,
-                fontSize = 34.sp, lineHeight = 36.sp, color = t.tinta,
-            )
-        }
+        /* Sin título grande: el encabezado de arriba ya dice Wordmed y
+           repetirlo en grande solo comía pantalla. */
+        item { Spacer(Modifier.height(2.dp)) }
 
         if (estado.editando) {
             item { AvisoEditar() }

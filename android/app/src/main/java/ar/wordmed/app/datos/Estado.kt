@@ -78,10 +78,7 @@ class Estado(app: Application) : AndroidViewModel(app) {
     fun fijarEstilo(slug: String, estilo: String) = guardarCarpeta(slug) { it.copy(estilo = estilo) }
 
     fun reordenar(orden: List<String>) = viewModelScope.launch {
-        orden.forEachIndexed { i, slug ->
-            val c = carpetas[slug] ?: Deposito.Carpeta(null, null, null)
-            deposito.guardarCarpeta(slug, c.copy(orden = i))
-        }
+        deposito.guardarOrden(orden)
         carpetas = deposito.carpetas()
     }
 

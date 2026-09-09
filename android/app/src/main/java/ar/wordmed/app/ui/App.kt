@@ -1,7 +1,9 @@
 package ar.wordmed.app.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -96,7 +98,22 @@ fun App(estado: Estado, alAbrirRecurso: (String) -> Unit) {
                 alBuscar = { buscadorAbierto = true },
             )
 
-            when (val r = ruta) {
+            /* Entrar a una materia empuja la pantalla hacia la izquierda y
+               trae el contenido desde la derecha; volver hace lo inverso. */
+            AnimatedContent(
+                targetState = ruta,
+                transitionSpec = {
+                    val entrando = targetState is Ruta.Temas
+                    val ancho = if (entrando) 1 else -1
+                    (
+                        slideInHorizontally(tween(SUAVE)) { ancho * it } + fadeIn(tween(SUAVE))
+                    ) togetherWith (
+                        slideOutHorizontally(tween(SUAVE)) { -ancho * it } + fadeOut(tween(SUAVE))
+                    )
+                },
+                label = "pantallas",
+            ) { destino ->
+            when (val r = destino) {
                 is Ruta.Materias -> PantallaMaterias(
                     estado = estado,
                     alEntrar = { ruta = Ruta.Temas(it) },
@@ -120,6 +137,7 @@ fun App(estado: Estado, alAbrirRecurso: (String) -> Unit) {
                 }
 
                 else -> Unit
+            }
             }
         }
 
