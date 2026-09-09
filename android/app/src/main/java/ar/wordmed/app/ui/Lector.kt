@@ -129,7 +129,9 @@ fun Lector(
         Box(Modifier.fillMaxWidth().height(1.dp).background(t.linea))
 
         AndroidView(
-            modifier = Modifier.fillMaxSize(),
+            /* weight y no fillMaxSize: adentro de una Column, fillMaxSize
+               pide toda la altura y le pasa por encima a la barra. */
+            modifier = Modifier.fillMaxWidth().weight(1f),
             factory = { c ->
                 val cargador = WebViewAssetLoader.Builder()
                     .addPathHandler(

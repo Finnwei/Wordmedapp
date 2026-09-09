@@ -170,11 +170,21 @@ function leerSecciones(cuerpo) {
       suyo en una barra fija. */
 const PUENTE_CABECERA = `
 (function(){
-  if (typeof window.WordmedApp === "undefined") return;
-  var m = document.querySelector('meta[name=viewport]');
-  if (m && m.parentNode) m.parentNode.removeChild(m);
-  var s = document.createElement('style');
-  s.textContent = '.tema{display:none !important}';
+  var enApp = typeof window.WordmedApp !== "undefined";
+  if (!enApp) {
+    /* En la web el cuadernillo se maqueta al ancho del dispositivo. */
+    var m = document.createElement("meta");
+    m.name = "viewport";
+    m.content = "width=device-width, initial-scale=1";
+    document.head.appendChild(m);
+    return;
+  }
+  /* En la app no se emite viewport: el WebView maqueta a su ancho por
+     omision y lo encoge para que entre, igual que al abrir el archivo a
+     mano. Sacar el meta despues de parsearlo no reencuadra nada, por eso
+     directamente no se emite. */
+  var s = document.createElement("style");
+  s.textContent = ".tema{display:none !important}";
   document.head.appendChild(s);
 })();
 `;
@@ -242,7 +252,6 @@ function envolver({ titulo, estilo, cuerpo, clave }) {
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
 <script>${PUENTE_CABECERA}</script>
 <title>${titulo}</title>
 <link rel="stylesheet" href="../../fuentes/fuentes.css">
