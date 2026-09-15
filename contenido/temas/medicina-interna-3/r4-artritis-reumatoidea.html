@@ -1,0 +1,1741 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<script>
+(function(){
+  var enApp = typeof window.WordmedApp !== "undefined";
+  if (!enApp) {
+    /* En la web el cuadernillo se maqueta al ancho del dispositivo. */
+    var m = document.createElement("meta");
+    m.name = "viewport";
+    m.content = "width=device-width, initial-scale=1";
+    document.head.appendChild(m);
+    return;
+  }
+  /* En la app no se emite viewport: el WebView maqueta a su ancho por
+     omision y lo encoge para que entre, igual que al abrir el archivo a
+     mano. Sacar el meta despues de parsearlo no reencuadra nada, por eso
+     directamente no se emite. */
+  var s = document.createElement("style");
+  s.textContent = ".tema{display:none !important}";
+  document.head.appendChild(s);
+})();
+</script>
+<title>Artritis Reumatoidea</title>
+<link rel="stylesheet" href="../../fuentes/fuentes.css">
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-bloque:1.95rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+
+  /* Que la barra de desplazamiento y los controles nativos acompanen al tema */
+  color-scheme: light dark;
+}
+
+/* Eleccion explicita de claro: solo hace falta para el color-scheme, los
+   tokens claros ya son la base sin estampar. */
+:root[data-theme="light"]{ color-scheme: light; }
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* Interruptor de tema claro / oscuro.
+   El estampado `data-theme` en la raíz ya lo respetan los bloques de tokens de
+   arriba; este botón sólo lo pone y lo guarda. Sin elección estampada mandan
+   las preferencias del sistema, que es el comportamiento por defecto. */
+.tema{
+  position:fixed; top:.7rem; right:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.tema:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.tema__icono{ width:1.15rem; height:1.15rem; display:block; }
+
+/* Se muestra el icono del tema al que se va a cambiar, no el actual.
+   Mismo escalonado que los tokens: base clara · sistema oscuro · elección explícita. */
+.tema__sol{ display:none; }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .tema__sol{ display:block; }
+  :root:not([data-theme="light"]) .tema__luna{ display:none; }
+}
+:root[data-theme="dark"] .tema__sol{ display:block; }
+:root[data-theme="dark"] .tema__luna{ display:none; }
+:root[data-theme="light"] .tema__sol{ display:none; }
+:root[data-theme="light"] .tema__luna{ display:block; }
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índices ---------- */
+/* Dos piezas complementarias y deliberadamente redundantes:
+   · .indice        — barra lateral fija, sólo en pantalla ancha, navegación permanente.
+   · .indice-rapido — tarjeta compacta al principio del cuerpo, visible en TODO ancho.
+   La lateral desaparece por debajo de 64rem, que es justo el ancho del panel de
+   Artifacts y del celular; sin la compacta el cuadernillo publicado se queda sin
+   índice. Las dos apuntan a los mismos anclajes y se resaltan juntas al desplazar. */
+
+/* 6.1 · Barra lateral */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+/* Rótulo de bloque intercalado en la lista lateral: no es un enlace, sólo
+   separa grupos de secciones para que 30 entradas no sean una tira plana. */
+.indice__bloque{
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+  margin:.9rem 0 .2rem; padding:0 .55rem;
+}
+.indice__bloque:first-child{ margin-top:0; }
+
+/* 6.2 · Índice compacto (va después de la portada, dentro del cuerpo) */
+.indice-rapido{
+  background:var(--hoja-hund);
+  border:1px solid var(--linea);
+  border-radius:var(--radio);
+  padding:1.1rem 1.2rem 1.2rem;
+}
+.indice-rapido__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .85rem;
+}
+/* auto-fit: una columna en el panel angosto, dos o tres en pantalla ancha */
+.indice-rapido__bloques{
+  list-style:none; margin:0; padding:0;
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(15rem, 1fr));
+  gap:1rem 2rem; align-items:start;
+}
+.ir-bloque{
+  display:block; margin-bottom:.4rem;
+  font-family:var(--f-titulo); font-size:.98rem; font-weight:700; line-height:1.3;
+  color:var(--tinta); text-decoration:none;
+  padding-bottom:.3rem; border-bottom:1px solid var(--linea-fuerte);
+}
+.ir-bloque:hover{ color:var(--cli-t); }
+.ir-secciones{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.05rem; }
+.ir-link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.55rem 1fr; align-items:baseline; gap:.4rem;
+  padding:.2rem .35rem; border-radius:2px;
+  font-size:.86rem; line-height:1.4; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.ir-link > b{
+  font-family:var(--f-dato); font-size:.76rem; font-weight:700;
+  font-variant-numeric:tabular-nums; color:var(--ct); opacity:.85;
+}
+.ir-link:hover{ background:var(--hoja); color:var(--tinta); }
+.ir-link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Título de bloque y ficha de sección ---------- */
+
+/* Anuncia un grupo de secciones. Neutro en color a propósito: los siete colores
+   tienen significado clínico fijo y un bloque agrupa secciones de varios. La
+   regla de abajo lleva el degradado completo de la paleta, igual que la pestaña
+   de repaso y la cabecera de la ficha relámpago.
+   Sin <svg> adentro: el exportador a Word aparea los diagramas con las figuras
+   por contador posicional sobre el HTML crudo (ver exportar_docx.py). */
+.bloque{
+  margin:1.4rem 0 0; padding:0;
+  text-align:center; scroll-margin-top:2.5rem;
+  display:flex; flex-direction:column; align-items:center; gap:.3rem;
+  font-weight:400;
+}
+.bloque:first-child{ margin-top:0; }
+.bloque__rotulo{
+  font-family:var(--f-texto);
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+}
+.bloque__nombre{
+  font-family:var(--f-titulo); font-size:var(--t-bloque); font-weight:700; line-height:1.15;
+  letter-spacing:-.01em; color:var(--tinta); text-wrap:balance; max-width:32ch;
+}
+.bloque::after{
+  content:""; width:7rem; height:2.5px; margin-top:.5rem; border-radius:2px;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+}
+
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.5rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-column:1; grid-row:1; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+/* El icono ocupa la columna 1 y NADA MAS. Todo el resto del contenido se
+   apila en la columna 2, una fila por elemento, sin importar cuantos
+   parrafos haya.
+
+   Sin esta regla la caja solo funciona con un unico <p>: a partir del
+   segundo, la autocolocacion del grid empieza a repartir contenido en la
+   columna del icono, que es `auto` y por lo tanto se ensancha hasta abarcar
+   el parrafo que le toco. La columna `1fr` queda entonces reducida a una
+   tira angosta, el texto se parte en dos columnas desbalanceadas y la caja
+   crece hasta volverse ilegible. */
+.importante > :not(.importante__icono){ grid-column:2; }
+.importante__titulo{
+  grid-row:1;
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante ul, .importante ol{ margin:0; padding-left:1.15rem; }
+.importante li + li{ margin-top:.3rem; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso, .tema{ display:none !important; }
+  /* La lateral no se imprime, pero la compacta sí: en papel es la tabla de
+     contenidos del cuadernillo. */
+  .indice-rapido{ display:block; break-inside:avoid; page-break-inside:avoid; margin-bottom:1.2rem; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .bloque{
+    margin:1.6rem 0 1rem;
+    break-after:avoid; page-break-after:avoid;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+<style>
+/* Fuentes de la capa de contenido. Va después del estilo del
+   cuadernillo para pisar las de Windows, que no se pueden
+   redistribuir y no existen en Android. */
+:root{
+  --f-titulo:'Spectral',Georgia,'Times New Roman',serif;
+  --f-texto:'Open Sans',system-ui,-apple-system,sans-serif;
+  --f-dato:'Cascadia Mono','Cascadia Code',ui-monospace,Consolas,monospace;
+}
+/* Botón de volver, espejo del de tema que ya trae el cuadernillo. */
+.volver{
+  position:fixed; top:.7rem; left:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.volver:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.volver__icono{ width:1.15rem; height:1.15rem; display:block; }
+</style>
+</head>
+<body data-clave="medicina-interna-3/r4-artritis-reumatoidea">
+<script>
+/* Aplica el tema guardado antes de pintar. Va aca arriba a proposito: si
+   esperara al script del final, el documento parpadearia en el tema del
+   sistema antes de corregirse. */
+(function(){
+  try {
+    var guardado = localStorage.getItem('wordmed-tema');
+    if (guardado === 'dark' || guardado === 'light') {
+      document.documentElement.setAttribute('data-theme', guardado);
+    }
+  } catch (e) { /* almacenamiento bloqueado: manda el sistema */ }
+})();
+</script>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<button class="tema" id="tema" type="button" aria-pressed="false" aria-label="Cambiar a modo oscuro">
+  <svg class="tema__icono tema__sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.2"></circle>
+    <path d="M12 2.6v2.1M12 19.3v2.1M5.1 5.1l1.5 1.5M17.4 17.4l1.5 1.5M2.6 12h2.1M19.3 12h2.1M5.1 18.9l1.5-1.5M17.4 6.6l1.5-1.5"></path>
+  </svg>
+  <svg class="tema__icono tema__luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20.4 14.2A8.6 8.6 0 0 1 9.8 3.6a8.6 8.6 0 1 0 10.6 10.6z"></path>
+  </svg>
+</button>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li class="indice__bloque">Bloque A</li>
+      <li><a class="indice__link i-generalidades"  href="#generalidades">Definición y epidemiología</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#patogenia">Patogenia en tres fases</a></li>
+
+      <li class="indice__bloque">Bloque B</li>
+      <li><a class="indice__link i-clinica"        href="#articular">Manifestaciones articulares</a></li>
+      <li><a class="indice__link i-clinica"        href="#ventana">Artritis temprana y la ventana</a></li>
+      <li><a class="indice__link i-clinica"        href="#deformidades">Deformidades y complicaciones</a></li>
+      <li><a class="indice__link i-clinica"        href="#extraarticular">Manifestaciones extraarticulares</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#criterios">Criterios de clasificación</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#estudios">Laboratorio e imágenes</a></li>
+
+      <li class="indice__bloque">Bloque C</li>
+      <li><a class="indice__link i-tratamiento" href="#objetivos">Pronóstico y treat to target</a></li>
+      <li><a class="indice__link i-tratamiento" href="#farmacos">Tratamiento farmacológico</a></li>
+      <li><a class="indice__link i-importantes" href="#antes-biologico">Antes de un biológico</a></li>
+
+      <li class="indice__bloque">Cierre</li>
+      <li><a class="indice__link i-clinica"     href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes" href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Medicina Interna III · Reumatología · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Artritis Reumatoidea</h1>
+      <p class="portada__bajada">Una sinovitis crónica que destruye la articulación y se extiende al resto del organismo. De la autoinmunidad silenciosa que empieza años antes a la ventana de oportunidad que no hay que perder, y del metotrexato al tratamiento guiado por objetivos.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-fisiopatologia">Citrulinación · pannus</span>
+        <span class="etiqueta s-clinica">Ventana de oportunidad</span>
+        <span class="etiqueta s-diagnostico">ACR/EULAR 2010</span>
+        <span class="etiqueta s-tratamiento">Treat to target · EULAR 2022</span>
+      </div>
+    </header>
+
+    <nav class="indice-rapido" aria-label="Contenido del cuadernillo">
+      <p class="indice-rapido__rotulo">Contenido</p>
+      <ol class="indice-rapido__bloques">
+        <li>
+          <a class="ir-bloque" href="#bloque-a">Bloque A · Qué es y por qué pasa</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades"  href="#generalidades"><b>01</b> Definición y epidemiología</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#patogenia"><b>02</b> Patogenia en tres fases</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-b">Bloque B · Cómo se presenta y se confirma</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-clinica"     href="#articular"><b>03</b> Manifestaciones articulares</a></li>
+            <li><a class="ir-link i-clinica"     href="#ventana"><b>04</b> Artritis temprana y la ventana</a></li>
+            <li><a class="ir-link i-clinica"     href="#deformidades"><b>05</b> Deformidades y complicaciones</a></li>
+            <li><a class="ir-link i-clinica"     href="#extraarticular"><b>06</b> Manifestaciones extraarticulares</a></li>
+            <li><a class="ir-link i-diagnostico" href="#criterios"><b>07</b> Criterios de clasificación</a></li>
+            <li><a class="ir-link i-diagnostico" href="#estudios"><b>08</b> Laboratorio, imágenes y evaluación</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-c">Bloque C · Cómo se trata</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-tratamiento" href="#objetivos"><b>09</b> Pronóstico y treat to target</a></li>
+            <li><a class="ir-link i-tratamiento" href="#farmacos"><b>10</b> Tratamiento farmacológico</a></li>
+            <li><a class="ir-link i-importantes" href="#antes-biologico"><b>11</b> Antes de un biológico o un JAK</a></li>
+            <li><a class="ir-link i-clinica"     href="#repaso"><b>·</b> Repaso activo</a></li>
+            <li><a class="ir-link i-importantes" href="#relampago"><b>⚡</b> Ficha Relámpago</a></li>
+          </ul>
+        </li>
+      </ol>
+    </nav>
+
+    <h2 class="bloque" id="bloque-a">
+      <span class="bloque__rotulo">Bloque A</span>
+      <span class="bloque__nombre">Qué es y por qué pasa</span>
+    </h2>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="generalidades">
+      <span class="seccion__pestana"><b>01</b> Base</span>
+      <h2 class="seccion__titulo">Definición y epidemiología</h2>
+
+      <p>Es una enfermedad <strong>inflamatoria crónica, multisistémica y de etiología desconocida</strong> cuyo órgano blanco principal es la <strong>membrana sinovial</strong>. Produce una <strong>sinovitis crónica</strong>: una poliartritis que toma articulaciones pequeñas y grandes de manera <strong>aditiva y simétrica</strong>, con compromiso sistémico e impacto importante en la vida diaria.</p>
+
+      <p>El teórico la califica de <strong>enfermedad severa</strong>, con signos de exclamación, y tiene razón: además de destruir articulaciones, acorta la vida. Por eso uno de los objetivos del tratamiento es, literalmente, <strong>impedir la mortalidad prematura</strong>.</p>
+
+      <h3>Números</h3>
+      <ul>
+        <li>Afecta al <span class="dato">0,2 a 1 %</span> de la población mundial. En la Argentina, unas <span class="dato">400.000 personas</span> según el censo de 2010.</li>
+        <li>Todos los grupos étnicos, con predominio en caucásicos.</li>
+        <li>Mayor incidencia entre los <span class="dato">40 y 60 años</span>: la edad de mayor capacidad laboral y productiva.</li>
+        <li><span class="dato">3 veces</span> más frecuente en mujeres.</li>
+      </ul>
+
+      <h3>Lo que cambió desde los 90</h3>
+      <p>El teórico resume la evolución del tratamiento en cinco ideas, que son a la vez el mapa de este cuadernillo: <strong>artritis temprana y período de ventana</strong> (sección <a href="#ventana">04</a>), <strong>tratar hacia un objetivo y adherencia</strong> (<a href="#objetivos">09</a>), <strong>agentes biológicos y biosimilares</strong>, <strong>nuevas moléculas</strong> (<a href="#farmacos">10</a>) y <strong>biomarcadores</strong> (<a href="#estudios">08</a>).</p>
+
+      <p class="cita">Fuente: teórico de la cátedra de Medicina Interna III, Reumatología.</p>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-fisiopatologia" id="patogenia">
+      <span class="seccion__pestana"><b>02</b> Mecanismo</span>
+      <h2 class="seccion__titulo">Patogenia en tres fases</h2>
+
+      <p>La artritis reumatoidea no empieza cuando duele la primera articulación. Empieza <strong>años antes</strong>, sin síntomas, y el laboratorio puede verla antes que el paciente.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 240" role="img" aria-label="Las fases en el desarrollo de la artritis reumatoidea a lo largo del tiempo. Primero, el riesgo: genes como HLA y PTPN22 más factores ambientales como el tabaco, la periodontitis y el microbioma intestinal. Segundo, la autoinmunidad silenciosa: la enzima PAD4 citrulina proteínas propias y aparecen anticuerpos anti-CCP y factor reumatoideo, junto con IL-6, TNF y proteína C reactiva. Estas dos fases no dan síntomas y pueden durar años. Tercero, la artritis, primero indiferenciada y luego artritis reumatoidea definida. Por último, el daño: erosiones, deformidades y comorbilidades.">
+          <defs>
+            <marker id="ar2p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <line x1="14" y1="40" x2="378" y2="40" stroke="currentColor" stroke-width="1.3" opacity="0.6"></line>
+          <line x1="14" y1="34" x2="14" y2="46" stroke="currentColor" stroke-width="1.3" opacity="0.6"></line>
+          <line x1="378" y1="34" x2="378" y2="46" stroke="currentColor" stroke-width="1.3" opacity="0.6"></line>
+          <text x="196" y="30" font-size="11" font-weight="700" text-anchor="middle" fill="currentColor">sin síntomas: puede durar años</text>
+
+          <rect x="14" y="56" width="160" height="112" rx="4" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="94" y="80" font-size="12.5" font-weight="700" text-anchor="middle" fill="currentColor">1 · Riesgo</text>
+          <text x="94" y="102" font-size="10.5" text-anchor="middle" fill="currentColor">genes: HLA, PTPN22</text>
+          <text x="94" y="120" font-size="10.5" text-anchor="middle" fill="currentColor">tabaco</text>
+          <text x="94" y="138" font-size="10.5" text-anchor="middle" fill="currentColor">periodontitis</text>
+          <text x="94" y="156" font-size="10.5" text-anchor="middle" fill="currentColor">microbioma intestinal</text>
+
+          <rect x="190" y="56" width="188" height="112" rx="4" fill="var(--c)" fill-opacity="0.18" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="284" y="80" font-size="12.5" font-weight="700" text-anchor="middle" fill="currentColor">2 · Autoinmunidad</text>
+          <text x="284" y="102" font-size="10.5" text-anchor="middle" fill="currentColor">la PAD4 citrulina proteínas</text>
+          <text x="284" y="120" font-size="10.5" text-anchor="middle" fill="currentColor">aparecen anti-CCP y FR</text>
+          <text x="284" y="138" font-size="10.5" text-anchor="middle" fill="currentColor">IL-6, TNF y PCR</text>
+          <text x="284" y="156" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.8">se pierde la tolerancia</text>
+
+          <rect x="394" y="56" width="140" height="112" rx="4" fill="var(--cli-c)" fill-opacity="0.14" stroke="var(--cli-c)" stroke-width="1.8"></rect>
+          <text x="464" y="80" font-size="12.5" font-weight="700" text-anchor="middle" fill="currentColor">3 · Artritis</text>
+          <text x="464" y="102" font-size="10.5" text-anchor="middle" fill="currentColor">primero</text>
+          <text x="464" y="120" font-size="10.5" text-anchor="middle" fill="currentColor">indiferenciada</text>
+          <text x="464" y="138" font-size="10.5" text-anchor="middle" fill="currentColor">después AR</text>
+          <text x="464" y="156" font-size="10.5" text-anchor="middle" fill="currentColor">definida</text>
+
+          <rect x="550" y="56" width="136" height="112" rx="4" fill="var(--imp-c)" fill-opacity="0.14" stroke="var(--imp-c)" stroke-width="1.8"></rect>
+          <text x="618" y="80" font-size="12.5" font-weight="700" text-anchor="middle" fill="currentColor">4 · Daño</text>
+          <text x="618" y="102" font-size="10.5" text-anchor="middle" fill="currentColor">erosiones</text>
+          <text x="618" y="120" font-size="10.5" text-anchor="middle" fill="currentColor">deformidades</text>
+          <text x="618" y="138" font-size="10.5" text-anchor="middle" fill="currentColor">comorbilidades</text>
+
+          <path d="M 174 112 L 188 112" stroke="currentColor" stroke-width="1.6" fill="none" marker-end="url(#ar2p)"></path>
+          <path d="M 378 112 L 392 112" stroke="currentColor" stroke-width="1.6" fill="none" marker-end="url(#ar2p)"></path>
+          <path d="M 534 112 L 548 112" stroke="currentColor" stroke-width="1.6" fill="none" marker-end="url(#ar2p)"></path>
+
+          <path d="M 14 200 L 684 200" stroke="currentColor" stroke-width="1.6" fill="none" marker-end="url(#ar2p)"></path>
+          <text x="684" y="222" font-size="11" text-anchor="end" fill="currentColor" opacity="0.8">tiempo</text>
+          <line x1="386" y1="190" x2="386" y2="210" stroke="currentColor" stroke-width="1.4"></line>
+          <text x="386" y="226" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.85">primeros síntomas</text>
+        </svg>
+        <figcaption>Todo lo que está a la izquierda de la línea de los primeros síntomas pasa sin que el paciente lo note. Por eso el anti-CCP puede ser positivo antes de la artritis, y por eso la ventana de la sección 04 empieza tan temprano.</figcaption>
+      </figure>
+
+      <h3>La citrulinación</h3>
+      <p>La enzima <strong>peptidil arginina desaminasa tipo IV (PAD4)</strong> convierte la arginina de algunas proteínas propias en <strong>citrulina</strong>. Esas proteínas citrulinadas se vuelven extrañas para el sistema inmune, que fabrica anticuerpos contra ellas: los <strong>anti-CCP</strong>. El tabaco, la periodontitis y el microbioma intestinal favorecen la citrulinación en personas con genes de susceptibilidad; por eso el tabaco es el factor ambiental más firme.</p>
+      <p>La transición a la artritis la precipitan factores que todavía se estudian —infecciones, cambios de la microvasculatura, factores neuroinmunes y biomecánicos—.</p>
+
+      <h3>Cómo erosiona el pannus</h3>
+      <p>Una vez instalada, la sinovitis cambia de naturaleza. La membrana sinovial <strong>prolifera</strong> y forma el <strong>pannus</strong>, un tejido invasivo que avanza sobre el cartílago y el hueso.</p>
+      <ul>
+        <li>Empieza por los <strong>márgenes</strong> de la articulación, donde la sinovial toca hueso que no tiene cartílago que lo proteja. Por eso las erosiones de la AR son <strong>marginales</strong>, y es el signo que se busca en la radiografía de manos y pies.</li>
+        <li>Los fibroblastos sinoviales y los linfocitos T expresan <strong>RANKL</strong>, que activa los <strong>osteoclastos</strong>: son ellos los que comen el hueso. El TNF y la IL-6 amplifican el proceso.</li>
+        <li>El cartílago se destruye por enzimas que degradan la matriz.</li>
+      </ul>
+      <p>Esta cadena explica el sentido de los tratamientos de la sección <a href="#farmacos">10</a>: bloquear el TNF o la IL-6 no solo alivia el dolor, <strong>frena la erosión</strong>.</p>
+
+      <p class="cita">Fuente: fases de la enfermedad según el teórico de la cátedra. Citrulinación, transición a la artritis, pannus y RANKL según McInnes IB, Schett G, The Pathogenesis of Rheumatoid Arthritis, N Engl J Med 2011;365:2205-2219, citado en el mismo teórico.</p>
+    </section>
+    <h2 class="bloque" id="bloque-b">
+      <span class="bloque__rotulo">Bloque B</span>
+      <span class="bloque__nombre">Cómo se presenta y se confirma</span>
+    </h2>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-clinica" id="articular">
+      <span class="seccion__pestana"><b>03</b> Clínica</span>
+      <h2 class="seccion__titulo">Manifestaciones articulares</h2>
+
+      <p>La artritis reumatoidea tiene un patrón tan característico que, reunido, casi diagnostica solo:</p>
+      <ul>
+        <li><strong>Dolor y tumefacción articular.</strong></li>
+        <li><strong>Rigidez matinal prolongada</strong> — de una hora o más, que es lo que separa la rigidez inflamatoria de la mecánica.</li>
+        <li><strong>Comienzo insidioso.</strong></li>
+        <li><strong>Poliarticular</strong> y de <strong>distribución simétrica</strong>.</li>
+        <li><strong>Articulaciones pequeñas y medianas</strong>: metacarpofalángicas, interfalángicas proximales, carpos, metatarsofalángicas.</li>
+        <li><strong>Compromiso aditivo</strong>: las articulaciones se van sumando, no se reemplazan unas por otras.</li>
+        <li><strong>Curso generalmente sostenido o progresivo.</strong></li>
+      </ul>
+
+      <p>Dos rasgos ayudan a separarla de sus diferenciales. El compromiso <strong>aditivo</strong> la diferencia de la artritis migratoria —la del lupus o la fiebre reumática—. Y las <strong>interfalángicas distales suelen estar respetadas</strong>, al revés que en la artrosis de manos o en la artritis psoriásica. El enfoque general del paciente con poliartritis está en el cuadernillo de <strong>Monoartritis y Poliartritis</strong>.</p>
+
+      <p class="cita">Fuente: manifestaciones articulares según el teórico de la cátedra. Respeto de las interfalángicas distales según Harrison, Principios de Medicina Interna, capítulo de artritis reumatoide.</p>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-clinica" id="ventana">
+      <span class="seccion__pestana"><b>04</b> Clínica</span>
+      <h2 class="seccion__titulo">Artritis temprana y la ventana de oportunidad</h2>
+
+      <p>El teórico pide «quedarse con dos conceptos claros», y son los que ordenan toda la consulta inicial:</p>
+      <ul>
+        <li><strong>Artralgia sospechosa</strong>: dolor articular todavía sin sinovitis evidente, pero con rasgos que hacen pensar en una AR en camino.</li>
+        <li><strong>Artritis temprana</strong>: sinovitis ya presente, de poco tiempo de evolución.</li>
+      </ul>
+      <p>Los dos piden lo mismo: <strong>no esperar</strong> a que la enfermedad se defina sola.</p>
+
+      <h3>El score CONAART</h3>
+      <p>El Consorcio Argentino de Artritis Temprana desarrolló un puntaje para estimar qué artritis temprana va a terminar siendo AR:</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Ítem</th><th>Puntos</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>5 o más articulaciones dolorosas</td><td><span class="dato">3</span></td></tr>
+            <tr><td>4 o más articulaciones tumefactas</td><td><span class="dato">3</span></td></tr>
+            <tr><td>Compromiso articular simétrico</td><td><span class="dato">2</span></td></tr>
+            <tr><td>Eritrosedimentación mayor de 22,5 mm/h</td><td><span class="dato">1</span></td></tr>
+            <tr><td>Proteína C reactiva mayor de 8,5 mg/L</td><td><span class="dato">3</span></td></tr>
+            <tr><td><strong>Factor reumatoide positivo</strong></td><td><span class="dato">4</span></td></tr>
+            <tr><td><strong>Anti-CCP2 mayor de 15 U</strong></td><td><span class="dato">4</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Un puntaje de <strong>9 o más</strong> predice AR. En los extremos es casi binario: con <strong>4 o menos</strong> la probabilidad es del <span class="dato">1 %</span>; con <strong>13 o más</strong>, del <span class="dato">99 %</span>. Los dos ítems que más pesan son los serológicos.</p>
+
+      <h3>La ventana</h3>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 190" role="img" aria-label="La ventana de oportunidad en la evolución de la artritis reumatoidea. Desde el inicio de los síntomas hasta los 4 meses es artritis reumatoidea muy temprana; desde los 4 meses hasta los 2 años, artritis temprana; después, artritis tardía. La ventana de oportunidad se ubica al comienzo, y el tratamiento intensivo durante los primeros 6 meses es el que cambia el curso de la enfermedad.">
+          <defs>
+            <marker id="ar4p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="40" y="36" width="250" height="26" rx="4" fill="var(--tto-c)" fill-opacity="0.20" stroke="var(--tto-c)" stroke-width="1.6"></rect>
+          <text x="165" y="54" font-size="11.5" font-weight="700" text-anchor="middle" fill="currentColor">ventana de oportunidad</text>
+
+          <rect x="40" y="88" width="160" height="40" rx="3" fill="var(--c)" fill-opacity="0.30" stroke="var(--c)" stroke-width="1.6"></rect>
+          <text x="120" y="113" font-size="11.5" font-weight="700" text-anchor="middle" fill="currentColor">AR muy temprana</text>
+          <rect x="200" y="88" width="300" height="40" rx="3" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.4"></rect>
+          <text x="350" y="113" font-size="11.5" font-weight="700" text-anchor="middle" fill="currentColor">AR temprana</text>
+          <rect x="500" y="88" width="170" height="40" rx="3" fill="currentColor" fill-opacity="0.06" stroke="currentColor" stroke-width="1.2" opacity="0.85"></rect>
+          <text x="585" y="113" font-size="11.5" font-weight="700" text-anchor="middle" fill="currentColor">AR tardía</text>
+
+          <path d="M 40 150 L 684 150" stroke="currentColor" stroke-width="1.6" fill="none" marker-end="url(#ar4p)"></path>
+          <line x1="40" y1="143" x2="40" y2="157" stroke="currentColor" stroke-width="1.4"></line>
+          <line x1="200" y1="143" x2="200" y2="157" stroke="currentColor" stroke-width="1.4"></line>
+          <line x1="290" y1="143" x2="290" y2="157" stroke="var(--tto-c)" stroke-width="2"></line>
+          <line x1="500" y1="143" x2="500" y2="157" stroke="currentColor" stroke-width="1.4"></line>
+          <text x="40" y="174" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.85">síntomas</text>
+          <text x="200" y="174" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.85">4 meses</text>
+          <text x="290" y="174" font-size="10.5" font-weight="700" text-anchor="middle" fill="currentColor">6 meses</text>
+          <text x="500" y="174" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.85">2 años</text>
+          <text x="684" y="174" font-size="10.5" text-anchor="end" fill="currentColor" opacity="0.75">tiempo</text>
+        </svg>
+        <figcaption>En el seguimiento a largo plazo del estudio COBRA, el tratamiento intensivo durante los primeros 6 meses redujo de forma sostenida la progresión radiológica a los 5 años, en un 35 %, sin importar qué tratamiento recibió el paciente después. La escala no es proporcional: lo que importa es dónde cae la ventana.</figcaption>
+      </figure>
+
+      <p>La frase del teórico —<strong>«nunca perder el período de ventana»</strong>— tiene un fundamento concreto: lo que se hace en los primeros meses deja un efecto que se sigue viendo años después. El daño articular que se deja pasar en esa etapa no se recupera.</p>
+
+      <p class="cita">Fuente: conceptos, CONAART y ventana según el teórico de la cátedra, que cita el seguimiento a largo plazo del estudio COBRA (Arthritis Rheum 2002).</p>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-clinica" id="deformidades">
+      <span class="seccion__pestana"><b>05</b> Clínica</span>
+      <h2 class="seccion__titulo">Deformidades y complicaciones de la sinovitis persistente</h2>
+
+      <p>Lo que la ventana no evitó aparece acá: la sinovitis que dura años <strong>afloja cápsulas y ligamentos, rompe tendones y erosiona hueso</strong>, y la mano cambia de forma.</p>
+
+      <h3>Las deformidades</h3>
+      <ul>
+        <li><strong>Subluxaciones metacarpofalángicas y metatarsofalángicas.</strong></li>
+        <li><strong>Desviación cubital</strong> de los dedos a nivel de las metacarpofalángicas.</li>
+        <li><strong>Dedo en cuello de cisne</strong> y <strong>dedo en boutonnière</strong> (en ojal).</li>
+        <li><strong>Signo de la tecla</strong> en la muñeca: la cabeza del cúbito, subluxada, se hunde al presionarla y vuelve a subir, como una tecla de piano.</li>
+        <li><strong>Genu valgo.</strong></li>
+      </ul>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 230" role="img" aria-label="Comparación de dos deformidades de los dedos en la artritis reumatoidea. En el dedo en cuello de cisne, la articulación interfalángica proximal está en hiperextensión y la interfalángica distal en flexión. En el dedo en boutonnière, o en ojal, es al revés: la interfalángica proximal está en flexión y la interfalángica distal en hiperextensión.">
+          <rect x="16" y="8" width="328" height="214" rx="5" fill="var(--c)" fill-opacity="0.06" stroke="var(--c)" stroke-width="1.3"></rect>
+          <text x="30" y="30" font-size="13" font-weight="750" fill="currentColor">Cuello de cisne</text>
+
+          <polyline points="50,150 150,150 225,104 285,150" fill="none" stroke="var(--c)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="0.45"></polyline>
+          <circle cx="150" cy="150" r="9" fill="var(--imp-c)" fill-opacity="0.8"></circle>
+          <circle cx="225" cy="104" r="9" fill="currentColor" fill-opacity="0.55"></circle>
+          <text x="150" y="180" font-size="11" font-weight="700" text-anchor="middle" fill="currentColor">IFP en hiperextensión</text>
+          <text x="225" y="84" font-size="11" font-weight="700" text-anchor="middle" fill="currentColor">IFD en flexión</text>
+          <text x="60" y="138" font-size="10.5" fill="currentColor" opacity="0.7">falange proximal</text>
+
+          <rect x="356" y="8" width="328" height="214" rx="5" fill="var(--c)" fill-opacity="0.06" stroke="var(--c)" stroke-width="1.3"></rect>
+          <text x="370" y="30" font-size="13" font-weight="750" fill="currentColor">Boutonnière (en ojal)</text>
+
+          <polyline points="390,110 490,110 562,160 625,128" fill="none" stroke="var(--c)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="0.45"></polyline>
+          <circle cx="490" cy="110" r="9" fill="var(--imp-c)" fill-opacity="0.8"></circle>
+          <circle cx="562" cy="160" r="9" fill="currentColor" fill-opacity="0.55"></circle>
+          <text x="490" y="88" font-size="11" font-weight="700" text-anchor="middle" fill="currentColor">IFP en flexión</text>
+          <text x="562" y="192" font-size="11" font-weight="700" text-anchor="middle" fill="currentColor">IFD en hiperextensión</text>
+          <text x="400" y="98" font-size="10.5" fill="currentColor" opacity="0.7">falange proximal</text>
+        </svg>
+        <figcaption>Son imágenes especulares. La regla para no confundirlas es mirar la interfalángica proximal, marcada en rojo: en el cuello de cisne se va para arriba, en el boutonnière se dobla hacia abajo, y la distal hace siempre lo contrario.</figcaption>
+      </figure>
+
+      <h3>Las complicaciones</h3>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Complicación</th><th>Mecanismo o consecuencia</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Roturas tendinosas</strong></td><td>Por tenosinovitis persistente y por la subluxación radiocubital, que desgasta los tendones extensores sobre el borde óseo</td></tr>
+            <tr><td><strong>Quistes sinoviales</strong></td><td>Pueden comprimir estructuras neurovasculares. El de la rodilla, al romperse, produce el <strong>síndrome pseudotromboflebítico</strong>: dolor y edema de pantorrilla que simulan una trombosis venosa</td></tr>
+            <tr><td><strong>Neuropatías compresivas</strong></td><td>La sinovial engrosada comprime nervios en su trayecto, como el mediano en el túnel carpiano</td></tr>
+            <tr><td><strong>Subluxación atlantoaxoidea</strong></td><td>Puede terminar en <strong>mielopatía cervical</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>La <strong>subluxación atlantoaxoidea</strong> es la complicación articular que puede matar. La columna cervical alta es inestable, y una hiperextensión del cuello —como la de una <strong>intubación orotraqueal</strong>— puede comprimir la médula.</p>
+        <p>En el paciente con AR de larga evolución que se va a operar, la columna cervical se evalúa <strong>antes</strong> de la anestesia general, aunque no tenga síntomas.</p>
+      </div>
+
+      <p class="cita">Fuente: deformidades y complicaciones de la sinovitis persistente según el teórico de la cátedra. Síndrome pseudotromboflebítico, neuropatías compresivas y riesgo de la subluxación atlantoaxoidea en la intubación según Harrison, Principios de Medicina Interna, capítulo de artritis reumatoide.</p>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-clinica" id="extraarticular">
+      <span class="seccion__pestana"><b>06</b> Clínica</span>
+      <h2 class="seccion__titulo">Manifestaciones extraarticulares</h2>
+
+      <p>La AR es sistémica, y el teórico recorre el compromiso órgano por órgano. Las manifestaciones extraarticulares son más frecuentes en quienes tienen <strong>factor reumatoide a título alto, nódulos y enfermedad severa</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Órgano</th><th>Manifestación</th><th>Qué hay que saber</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>General</strong></td><td>Fatiga, rigidez matinal</td><td>Acompañan la actividad de la enfermedad</td></tr>
+            <tr><td><strong>Piel</strong></td><td>Nódulos subcutáneos (reumatoideos)</td><td>En zonas de apoyo y superficies extensoras; se asocian a FR positivo</td></tr>
+            <tr><td><strong>Glándulas</strong></td><td>Síndrome de Sjögren</td><td>Secundario a la AR</td></tr>
+            <tr><td><strong>Sangre</strong></td><td><strong>Anemia normocítica normocrómica</strong></td><td>De enfermedad crónica: hierro, transferrina y eritropoyetina bajos, con <strong>ferritina alta</strong> por retención de hierro</td></tr>
+            <tr><td><strong>Sangre</strong></td><td>Trombocitosis</td><td>Marca actividad</td></tr>
+            <tr><td><strong>Sangre</strong></td><td>Trombocitopenia, eosinofilia, linfadenopatías</td><td>La trombocitopenia se ve en el síndrome de Felty</td></tr>
+            <tr><td><strong>Bazo</strong></td><td><strong>Síndrome de Felty</strong></td><td>AR con <strong>esplenomegalia y neutropenia</strong>: el paciente queda expuesto a infecciones</td></tr>
+            <tr><td><strong>Ojo</strong></td><td>Queratoconjuntivitis seca</td><td>Por el Sjögren secundario</td></tr>
+            <tr><td><strong>Ojo</strong></td><td>Epiescleritis</td><td>Curso benigno</td></tr>
+            <tr><td><strong>Ojo</strong></td><td>Escleritis</td><td>Da trastornos visuales</td></tr>
+            <tr><td><strong>Ojo</strong></td><td><strong>Escleromalacia perforans</strong></td><td>Adelgazamiento de la esclera casi sin inflamación, con riesgo de perforación del globo</td></tr>
+            <tr><td><strong>Pulmón</strong></td><td>Pleuritis, nódulos pulmonares</td><td>—</td></tr>
+            <tr><td><strong>Pulmón</strong></td><td><strong>Síndrome de Caplan</strong></td><td>Nódulos reumatoideos pulmonares en un paciente con <strong>neumoconiosis</strong></td></tr>
+            <tr><td><strong>Pulmón</strong></td><td><strong>Fibrosis intersticial difusa</strong></td><td>La forma de compromiso pulmonar de mayor peso pronóstico</td></tr>
+            <tr><td><strong>Pulmón</strong></td><td>Bronquiolitis obliterante con neumonía organizada, bronquiolitis constrictiva</td><td>—</td></tr>
+            <tr><td><strong>Corazón</strong></td><td>Pericarditis</td><td>—</td></tr>
+            <tr><td><strong>Nervio</strong></td><td>Neuropatías periféricas</td><td>Por compresión o por vasculitis</td></tr>
+            <tr><td><strong>Riñón</strong></td><td>Amiloidosis</td><td>Secundaria a la inflamación crónica</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>La vasculitis reumatoidea</h3>
+      <p>Es la manifestación extraarticular más grave, y el teórico le dedica una diapositiva propia:</p>
+      <ul>
+        <li><strong>Síntomas generales</strong>: fiebre y pérdida de peso.</li>
+        <li><strong>Piel</strong>: fenómeno de Raynaud, lesiones cutáneas isquémicas, <strong>necrosis digital</strong> y úlceras crónicas en las piernas.</li>
+        <li><strong>Nervio</strong>: neuropatía periférica en forma de <strong>mononeuritis múltiple</strong>.</li>
+        <li><strong>Vísceras</strong>: erosiones de la mucosa gastrointestinal y arteritis mesentérica, coronaria y renal.</li>
+      </ul>
+
+      <p class="cita">Fuente: manifestaciones sistémicas, hematológicas, oculares, pulmonares y vasculitis según el teórico de la cátedra. Definición del síndrome de Felty, del síndrome de Caplan y de la escleromalacia perforans, y asociación con FR a título alto, según Harrison, Principios de Medicina Interna.</p>
+    </section>
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-diagnostico" id="criterios">
+      <span class="seccion__pestana"><b>07</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">Criterios de clasificación</h2>
+
+      <p>El teórico presenta dos juegos, y la diferencia entre ellos cuenta la historia de la sección <a href="#ventana">04</a>.</p>
+
+      <h3>ACR 1987</h3>
+      <p>Se requieren <strong>4 de los 7 criterios</strong>, y los <strong>criterios 1 a 4 deben estar presentes al menos 6 semanas</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>#</th><th>Criterio</th><th>Definición</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>Rigidez matinal</td><td>Al menos 1 hora antes de la máxima mejoría</td></tr>
+            <tr><td>2</td><td>Artritis en 3 o más áreas</td><td>Metacarpofalángicas, interfalángicas proximales, carpos, codos, rodillas, tobillos y metatarsofalángicas</td></tr>
+            <tr><td>3</td><td>Artritis de manos</td><td>Al menos un área articular</td></tr>
+            <tr><td>4</td><td>Artritis simétrica</td><td>Compromiso simultáneo de ambos lados del cuerpo</td></tr>
+            <tr><td>5</td><td>Nódulos reumatoideos</td><td>Observados por un médico</td></tr>
+            <tr><td>6</td><td>Factor reumatoide</td><td>Positivo</td></tr>
+            <tr><td>7</td><td>Cambios radiológicos</td><td>Erosiones u osteopenia periarticular franca en manos y carpos</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>El problema está a la vista: <strong>nódulos y erosiones son rasgos de enfermedad establecida</strong>. Un paciente que cumple estos criterios muchas veces ya perdió la ventana. Por eso se reemplazaron.</p>
+
+      <h3>ACR/EULAR 2010</h3>
+      <p>Se aplican a un paciente con <strong>tumefacción clínica definida en al menos una articulación</strong>, que <strong>no se explique mejor por otra enfermedad</strong>. Se suman cuatro dominios y se clasifica como AR con <strong>6 puntos o más sobre 10</strong>:</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Dominio</th><th>Categoría</th><th>Puntos</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Compromiso articular</strong></td><td>1 articulación grande</td><td><span class="dato">0</span></td></tr>
+            <tr><td><strong>Compromiso articular</strong></td><td>2 a 10 articulaciones grandes</td><td><span class="dato">1</span></td></tr>
+            <tr><td><strong>Compromiso articular</strong></td><td>1 a 3 articulaciones pequeñas</td><td><span class="dato">2</span></td></tr>
+            <tr><td><strong>Compromiso articular</strong></td><td>4 a 10 articulaciones pequeñas</td><td><span class="dato">3</span></td></tr>
+            <tr><td><strong>Compromiso articular</strong></td><td>Más de 10, al menos una pequeña</td><td><span class="dato">5</span></td></tr>
+            <tr><td><strong>Serología</strong></td><td>FR negativo y anti-CCP negativo</td><td><span class="dato">0</span></td></tr>
+            <tr><td><strong>Serología</strong></td><td>FR <strong>o</strong> anti-CCP positivo bajo</td><td><span class="dato">2</span></td></tr>
+            <tr><td><strong>Serología</strong></td><td>FR <strong>o</strong> anti-CCP positivo alto</td><td><span class="dato">3</span></td></tr>
+            <tr><td><strong>Reactantes de fase aguda</strong></td><td>Eritrosedimentación y PCR normales</td><td><span class="dato">0</span></td></tr>
+            <tr><td><strong>Reactantes de fase aguda</strong></td><td>Eritrosedimentación o PCR aumentada</td><td><span class="dato">1</span></td></tr>
+            <tr><td><strong>Duración de los síntomas</strong></td><td>Menos de 6 semanas</td><td><span class="dato">0</span></td></tr>
+            <tr><td><strong>Duración de los síntomas</strong></td><td>6 semanas o más</td><td><span class="dato">1</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Las articulaciones <strong>grandes</strong> son hombros, codos, caderas, rodillas y tobillos; las <strong>pequeñas</strong>, metacarpofalángicas, interfalángicas proximales, metatarsofalángicas de la segunda a la quinta, interfalángica del pulgar y muñecas. El paciente con <strong>menos de 6 puntos</strong> no queda descartado: no es clasificable todavía y se <strong>reevalúa en el tiempo</strong>.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>La diapositiva del teórico tiene dos errores que cambian el puntaje. Dice «FR positivo bajo <strong>y</strong> anti-CCP positivo bajo»: en los criterios es <strong>o</strong> —alcanza con uno de los dos—. Y dice que «al menos un test <strong>debe ser positivo</strong>», cuando el requisito es tener <strong>al menos un resultado</strong> de cada tipo.</p>
+        <p>La propia tabla del teórico lo desmiente: da 0 puntos al paciente con FR y anti-CCP negativos, algo imposible si fuera obligatorio que uno fuera positivo. Existe la <strong>AR seronegativa</strong>, y se clasifica sumando los otros dominios. Además, el título dice «2009» y los criterios son de <strong>2010</strong>, como figura al pie de la misma diapositiva.</p>
+      </div>
+
+      <p class="cita">Fuente: criterios según el teórico de la cátedra, corregidos contra Aletaha D et al., 2010 Rheumatoid arthritis classification criteria: an American College of Rheumatology/European League Against Rheumatism collaborative initiative, Ann Rheum Dis 2010;69:1580-1588.</p>
+    </section>
+
+    <!-- ============ 8 ============ -->
+    <section class="seccion s-diagnostico" id="estudios">
+      <span class="seccion__pestana"><b>08</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">Laboratorio, imágenes y evaluación basal</h2>
+
+      <h3>Laboratorio</h3>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Estudio</th><th>Resultado en la AR</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Hemoglobina y hematocrito</td><td>Bajos: anemia de enfermedad crónica</td></tr>
+            <tr><td>Leucocitos</td><td>Normales o levemente elevados</td></tr>
+            <tr><td>Plaquetas</td><td>Elevadas con la enfermedad activa</td></tr>
+            <tr><td>Eritrosedimentación y PCR</td><td>Generalmente elevadas</td></tr>
+            <tr><td><strong>Factor reumatoide</strong></td><td>Presente en el <span class="dato">80 %</span></td></tr>
+            <tr><td><strong>Anti-CCP</strong></td><td>Presente en el <span class="dato">70 %</span>, y <strong>tempranamente</strong></td></tr>
+            <tr><td>Anticuerpos antinucleares</td><td>Presentes en el <span class="dato">15 %</span>; se asocian a enfermedad severa y FR positivo</td></tr>
+            <tr><td>Inmunoglobulinas</td><td>IgG, IgA e IgM elevadas</td></tr>
+            <tr><td>Líquido sinovial</td><td>Inflamatorio</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>El <strong>FR y el anti-CCP</strong> sirven para el <strong>diagnóstico y el pronóstico</strong>: los dos, positivos, predicen una enfermedad más agresiva. El anti-CCP es el más específico y el que aparece antes —en la fase silenciosa de la sección <a href="#patogenia">02</a>—; el teórico además los considera patogénicos, no solo marcadores. El método, la especificidad y las trampas de cada uno están en el cuadernillo de <strong>Laboratorio Inmunológico</strong>.</p>
+
+      <p>Para el <strong>seguimiento</strong> se usan dos grupos de estudios: los de <strong>actividad</strong> —eritrosedimentación y PCR, dentro de los índices de la sección <a href="#objetivos">09</a>— y los de <strong>toxicidad</strong> de los fármacos —hepatograma, hemograma, urea y creatinina—, que se desarrollan en la sección <a href="#farmacos">10</a>.</p>
+
+      <h3>Qué muestra la radiografía y por qué</h3>
+      <p>Cada signo radiológico es la sombra de un momento de la patología. Leída de arriba abajo, la tabla es la evolución de la enfermedad:</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Patología</th><th>Radiología</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Inflamación sinovial</td><td>Tumefacción de partes blandas</td></tr>
+            <tr><td>Derrame de líquido sinovial</td><td>Ensanchamiento del espacio articular</td></tr>
+            <tr><td>Hiperemia</td><td><strong>Osteoporosis periarticular</strong></td></tr>
+            <tr><td>Daño del cartílago</td><td>Estrechamiento del espacio articular</td></tr>
+            <tr><td>Pannus en las áreas periféricas del hueso</td><td><strong>Erosiones óseas marginales</strong></td></tr>
+            <tr><td>Pannus que destruye el hueso subcondral</td><td>Erosiones y quistes subcondrales</td></tr>
+            <tr><td>Proliferación fibrosa ósea</td><td>Anquilosis ósea</td></tr>
+            <tr><td>Laxitud capsular y ligamentaria, contracturas musculares</td><td>Deformidades, subluxaciones, fracturas, fragmentación y esclerosis</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>En la AR temprana la radiografía puede ser normal o mostrar solo las tres primeras filas. Por eso la evaluación incluye la <strong>ecografía con power doppler</strong> y la <strong>resonancia</strong>, que ven la sinovitis y las erosiones antes que la radiografía.</p>
+
+      <h3>La evaluación basal</h3>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Quién o qué</th><th>Qué se registra</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>El paciente</strong></td><td>Dolor articular por escala visual analógica, duración de la rigidez matinal, fatiga, limitación funcional por HAQ</td></tr>
+            <tr><td><strong>El médico</strong></td><td>Número de articulaciones dolorosas e inflamadas, deformidades, manifestaciones extraarticulares</td></tr>
+            <tr><td><strong>El laboratorio</strong></td><td>General, reactantes de fase aguda, FR y anti-CCP</td></tr>
+            <tr><td><strong>Las imágenes</strong></td><td>Radiografías de manos y pies leídas con un score radiológico, de las articulaciones comprometidas, ecografía power doppler y resonancia</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Los números que se registran acá —articulaciones dolorosas e inflamadas, reactantes, la opinión del paciente— son exactamente los ingredientes de los índices de actividad de la sección <a href="#objetivos">09</a>. La evaluación basal es la foto contra la que se mide todo lo que viene.</p>
+
+      <p class="cita">Fuente: laboratorio, correlaciones anatomo-radiológicas y evaluación basal según el teórico de la cátedra.</p>
+    </section>
+    <h2 class="bloque" id="bloque-c">
+      <span class="bloque__rotulo">Bloque C</span>
+      <span class="bloque__nombre">Cómo se trata</span>
+    </h2>
+
+    <!-- ============ 9 ============ -->
+    <section class="seccion s-tratamiento" id="objetivos">
+      <span class="seccion__pestana"><b>09</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Pronóstico, objetivos y treat to target</h2>
+
+      <h3>Factores de mal pronóstico</h3>
+      <ul>
+        <li><strong>Factor reumatoide y anti-CCP positivos.</strong></li>
+        <li><strong>Más de 5 articulaciones inflamadas.</strong></li>
+        <li><strong>Elevación persistente de los reactantes de fase aguda.</strong></li>
+        <li><strong>Retardo en iniciar los DMAR.</strong></li>
+        <li><strong>Retardo en controlar la actividad</strong>: no escalar la dosis ni agregar otro DMAR a tiempo.</li>
+        <li><strong>Deterioro progresivo de la capacidad funcional</strong>, medido por HAQ.</li>
+      </ul>
+      <p>Dos de los seis no dependen del paciente sino del médico: <strong>los dos retardos</strong>. Es la versión en forma de lista de la ventana de la sección <a href="#ventana">04</a>.</p>
+
+      <h3>Qué se busca con el tratamiento</h3>
+      <ul>
+        <li>Suprimir la inflamación y controlar la actividad.</li>
+        <li>Retardar o impedir las erosiones y las deformidades.</li>
+        <li>Restablecer o mantener la capacidad funcional.</li>
+        <li>Mantener o mejorar la calidad de vida.</li>
+        <li><strong>Impedir la mortalidad prematura.</strong></li>
+      </ul>
+
+      <h3>Tratar hacia un objetivo</h3>
+      <p>El <strong>treat to target</strong> fija un objetivo medible y ajusta el tratamiento hasta alcanzarlo, en lugar de mantener lo que el paciente tolera.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 220" role="img" aria-label="El circuito de tratar hacia un objetivo. Con la artritis reumatoidea activa se ajusta el tratamiento, considerando las comorbilidades y explicándole al paciente. La actividad se mide con un índice compuesto cada 1 a 3 meses. Si se llegó a la remisión, o a la baja actividad como objetivo alternativo, se mantiene el tratamiento y se evalúa cada 3 a 6 meses. Si no se llegó, se vuelve a ajustar el tratamiento.">
+          <defs>
+            <marker id="ar9p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="14" y="86" width="116" height="52" rx="4" fill="var(--imp-c)" fill-opacity="0.14" stroke="var(--imp-c)" stroke-width="1.8"></rect>
+          <text x="72" y="117" font-size="12.5" font-weight="700" text-anchor="middle" fill="currentColor">AR activa</text>
+
+          <path d="M 130 112 L 164 112" stroke="currentColor" stroke-width="1.6" fill="none" marker-end="url(#ar9p)"></path>
+
+          <rect x="166" y="86" width="160" height="52" rx="4" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="1.6"></rect>
+          <text x="246" y="108" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">Ajustar el tratamiento</text>
+          <text x="246" y="126" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.85">según comorbilidades</text>
+
+          <path d="M 326 112 L 360 112" stroke="currentColor" stroke-width="1.6" fill="none" marker-end="url(#ar9p)"></path>
+
+          <rect x="362" y="86" width="172" height="52" rx="4" fill="var(--c)" fill-opacity="0.14" stroke="var(--c)" stroke-width="1.6"></rect>
+          <text x="448" y="108" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">Medir con un índice</text>
+          <text x="448" y="126" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.85">cada 1 a 3 meses</text>
+
+          <path d="M 534 112 L 566 112" stroke="currentColor" stroke-width="1.6" fill="none" marker-end="url(#ar9p)"></path>
+
+          <rect x="568" y="86" width="118" height="52" rx="4" fill="var(--c)" fill-opacity="0.26" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="627" y="108" font-size="12" font-weight="750" text-anchor="middle" fill="currentColor">¿Remisión?</text>
+          <text x="627" y="126" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.85">o baja actividad</text>
+
+          <path d="M 627 86 L 627 60" stroke="currentColor" stroke-width="1.6" fill="none" marker-end="url(#ar9p)"></path>
+          <text x="635" y="78" font-size="11" font-weight="700" fill="currentColor">sí</text>
+
+          <rect x="436" y="12" width="250" height="46" rx="4" fill="var(--gen-c)" fill-opacity="0.16" stroke="var(--gen-c)" stroke-width="1.8"></rect>
+          <text x="561" y="32" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">Mantener</text>
+          <text x="561" y="49" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.85">evaluar cada 3 a 6 meses</text>
+
+          <path d="M 627 138 L 627 184 L 246 184 L 246 142" stroke="currentColor" stroke-width="1.6" fill="none" marker-end="url(#ar9p)"></path>
+          <text x="436" y="204" font-size="11" font-weight="700" text-anchor="middle" fill="currentColor">no: se vuelve a ajustar</text>
+        </svg>
+        <figcaption>El objetivo principal es la remisión; la baja actividad es el objetivo alternativo, sobre todo en la enfermedad de larga evolución. El circuito se repite hasta llegar, y es lo que evita el daño articular y preserva la capacidad funcional.</figcaption>
+      </figure>
+
+      <h3>Los índices de actividad</h3>
+      <p>El teórico pide medir con un «índice compuesto» sin decir cuál. Hay tres de uso habitual, y los tres se arman con los datos de la evaluación basal de la sección <a href="#estudios">08</a>:</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Índice</th><th>Qué suma</th><th>Remisión</th><th>Baja</th><th>Moderada</th><th>Alta</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>DAS28</strong></td><td>28 articulaciones dolorosas y tumefactas, eritrosedimentación o PCR, y la evaluación global del paciente</td><td>menos de 2,6</td><td>hasta 3,2</td><td>hasta 5,1</td><td>más de 5,1</td></tr>
+            <tr><td><strong>CDAI</strong></td><td>Articulaciones dolorosas y tumefactas más la evaluación global del paciente y del médico. <strong>Sin laboratorio</strong></td><td>hasta 2,8</td><td>hasta 10</td><td>hasta 22</td><td>más de 22</td></tr>
+            <tr><td><strong>SDAI</strong></td><td>Lo mismo que el CDAI, más la PCR</td><td>hasta 3,3</td><td>hasta 11</td><td>hasta 26</td><td>más de 26</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>El CDAI tiene una ventaja práctica: como no lleva laboratorio, se calcula en la misma consulta y permite decidir en el momento si se ajusta el tratamiento.</p>
+
+      <p class="cita">Fuente: factores de mal pronóstico, objetivos y circuito del treat to target según el teórico de la cátedra, que cita a Smolen JS et al., Treating rheumatoid arthritis to target, Ann Rheum Dis 2010;69:631-637, y las guías de la Sociedad Argentina de Reumatología 2013. Componentes y cortes de los índices según Aletaha D, Smolen JS, The Simplified Disease Activity Index (SDAI) and the Clinical Disease Activity Index (CDAI), Clin Exp Rheumatol 2005.</p>
+    </section>
+
+    <!-- ============ 10 ============ -->
+    <section class="seccion s-tratamiento" id="farmacos">
+      <span class="seccion__pestana"><b>10</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Tratamiento farmacológico</h2>
+
+      <p>El tratamiento no es solo farmacológico: incluye <strong>educación del paciente y la familia</strong>, kinesiología, terapia ocupacional, terapia psicológica y cirugía ortopédica cuando hace falta, a cargo de un <strong>equipo transdisciplinario</strong> —reumatólogo, clínico, kinesiólogo, terapista ocupacional, psicólogo, nutricionista, fisiatra y cirujano ortopédico—. Los fármacos se ordenan en cuatro grupos.</p>
+
+      <h3>AINE: alivian, no cambian nada</h3>
+      <p>Reducen el dolor y la inflamación, pero <strong>no alteran el curso ni el pronóstico</strong> de la enfermedad. Un paciente tratado solo con AINE sigue erosionando. Entre los clásicos, aspirina, indometacina, naproxeno, diclofenac, ibuprofeno y piroxicam; entre los inhibidores de la COX-2, <strong>celecoxib y etoricoxib</strong>, y el meloxicam como preferencial.</p>
+      <p>El teórico lista además <strong>rofecoxib, valdecoxib y lumiracoxib</strong>: los tres fueron <strong>retirados del mercado</strong> por su toxicidad y ya no se usan.</p>
+
+      <h3>Corticoides: el puente</h3>
+      <ul>
+        <li><strong>Dosis bajas</strong>: menos de 10 mg/día de prednisona.</li>
+        <li>Muy útiles para controlar la inflamación, y <strong>reducen la progresión radiológica</strong> y la aparición de erosiones nuevas: tienen capacidad de modificar el curso.</li>
+        <li>Pero su <strong>toxicidad a largo plazo</strong> —la osteoporosis inducida, entre otras— impide usarlos solos: son un <strong>puente</strong> hasta que actúan los DMAR, que tardan semanas. Se bajan y se suspenden lo antes que la clínica permita.</li>
+        <li>Existen también las dosis altas y las infiltraciones intraarticulares.</li>
+      </ul>
+
+      <h3>DMAR sintéticos</h3>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>DMAR</th><th>Dosis del teórico</th><th>Comentario</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Metotrexato</strong></td><td>7,5 a 25 mg/semana</td><td><strong>Estándar de oro</strong>: la base de todo esquema</td></tr>
+            <tr><td>Leflunomida</td><td>20 mg/día de mantenimiento</td><td>Alternativa cuando no se puede usar metotrexato</td></tr>
+            <tr><td>Sulfasalazina</td><td>2 a 3 g/día</td><td>Alternativa cuando no se puede usar metotrexato</td></tr>
+            <tr><td>Hidroxicloroquina</td><td>400 mg/día</td><td>Se usa en combinaciones</td></tr>
+            <tr><td>Cloroquina</td><td>200 mg/día</td><td>—</td></tr>
+            <tr><td>Azatioprina</td><td>1 a 2 mg/kg/día</td><td>—</td></tr>
+            <tr><td>Ciclosporina</td><td>1 a 3 mg/kg/día</td><td>—</td></tr>
+            <tr><td>Tacrolimus</td><td>«2 a 3 mg/kg/día»</td><td><strong>Error de unidad</strong>: la dosis en AR es de <strong>3 mg/día</strong>, no por kilo</td></tr>
+            <tr><td>Oro oral y parenteral</td><td>6 mg/día · 0,05 g/semana</td><td><strong>En desuso</strong>: las guías actuales no lo incluyen</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>El metotrexato</h3>
+      <p>Es el <strong>estándar de oro</strong>, y el teórico enumera por qué: eficacia y seguridad demostradas, mayor adherencia a largo plazo, <strong>reduce el daño estructural y la mortalidad</strong>, se toma una vez por semana y es barato.</p>
+      <ul>
+        <li><strong>Dosis</strong>: 7,5 a 25 mg <strong>una vez por semana</strong>.</li>
+        <li><strong>Ácido fólico</strong>: 5 a 10 mg una vez por semana, a las 48 horas de la dosis. Un esquema alternativo es 1 mg/día. Reduce la toxicidad.</li>
+        <li><strong>Es teratogénico.</strong></li>
+      </ul>
+
+      <h3>Qué vigila el laboratorio de toxicidad</h3>
+      <ul>
+        <li><strong>Hepatograma</strong> —hepatotoxicidad— y <strong>hemograma</strong> —citopenias—: cada 2 a 4 semanas al comenzar, cada 8 a 12 semanas entre el tercer y el sexto mes, y cada 12 semanas después.</li>
+        <li><strong>Creatinina</strong>: el metotrexato se elimina por riñón, y la insuficiencia renal aumenta su toxicidad.</li>
+        <li>Se suspende si las transaminasas superan <strong>3 veces el límite normal</strong>, o si se mantienen por encima de 2 veces durante más de un mes.</li>
+        <li>Otras toxicidades: intolerancia digestiva, cáncer de piel no melanoma y la <strong>neumonitis por metotrexato</strong>, que obliga a suspenderlo.</li>
+      </ul>
+
+      <h3>Biológicos</h3>
+      <p>Cada uno bloquea un eslabón de la patogenia de la sección <a href="#patogenia">02</a>:</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Blanco</th><th>Fármacos</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>TNF</strong></td><td>Etanercept, infliximab, adalimumab, certolizumab, golimumab</td></tr>
+            <tr><td><strong>Receptor de IL-6</strong></td><td>Tocilizumab</td></tr>
+            <tr><td><strong>Coestimulación del linfocito T</strong></td><td>Abatacept</td></tr>
+            <tr><td><strong>Linfocito B</strong></td><td>Rituximab</td></tr>
+            <tr><td><strong>Receptor de IL-1</strong></td><td>Anakinra</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Moléculas pequeñas: los inhibidores de JAK</h3>
+      <p>Se toman por boca: <strong>tofacitinib</strong> 5 mg cada 12 horas u 11 mg de liberación prolongada, <strong>baricitinib</strong> 2 o 4 mg y <strong>upadacitinib</strong> 15 mg.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>El teórico presenta los JAK sin advertencias. Desde 2022, la Agencia Europea de Medicamentos restringe su uso: en <strong>mayores de 65 años</strong>, <strong>fumadores o exfumadores de larga data</strong>, y personas con <strong>riesgo cardiovascular o de cáncer</strong>, se indican <strong>solo si no hay otra alternativa</strong>.</p>
+        <p>EULAR lo recoge en su algoritmo: antes de un JAK hay que ponderar el riesgo de eventos cardiovasculares mayores, de cáncer y de tromboembolismo.</p>
+      </div>
+
+      <h3>El algoritmo</h3>
+      <p>El teórico enumera los fármacos pero no dice en qué orden usarlos. Las recomendaciones de EULAR sí:</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 330" role="img" aria-label="Algoritmo de tratamiento de la artritis reumatoidea según EULAR. Con el diagnóstico se indica metotrexato más corticoide por poco tiempo; si no se puede usar metotrexato, leflunomida o sulfasalazina. Si a los 3 meses hay mejoría y a los 6 meses se llegó al objetivo, se sigue igual, y con remisión sostenida se puede reducir con cautela. Si no, se agrega un biológico, o un inhibidor de JAK ponderando sus riesgos. Si falla, se cambia a otro biológico o inhibidor de JAK, de la misma clase o de otra.">
+          <defs>
+            <marker id="ar10p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="230" y="8" width="240" height="36" rx="4" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="350" y="31" font-size="12.5" font-weight="700" text-anchor="middle" fill="currentColor">Diagnóstico de AR</text>
+
+          <path d="M 350 44 L 350 60" stroke="currentColor" stroke-width="1.6" fill="none" marker-end="url(#ar10p)"></path>
+
+          <rect x="150" y="62" width="400" height="50" rx="4" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="350" y="83" font-size="12.5" font-weight="700" text-anchor="middle" fill="currentColor">Metotrexato + corticoide por poco tiempo</text>
+          <text x="350" y="101" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.85">si no se puede: leflunomida o sulfasalazina</text>
+
+          <path d="M 350 112 L 350 128" stroke="currentColor" stroke-width="1.6" fill="none" marker-end="url(#ar10p)"></path>
+
+          <rect x="150" y="130" width="400" height="46" rx="4" fill="var(--c)" fill-opacity="0.26" stroke="var(--c)" stroke-width="2"></rect>
+          <text x="350" y="158" font-size="12" font-weight="750" text-anchor="middle" fill="currentColor">¿Mejora a los 3 meses y llega al objetivo a los 6?</text>
+
+          <path d="M 250 176 L 150 202" stroke="currentColor" stroke-width="1.6" fill="none" marker-end="url(#ar10p)"></path>
+          <text x="180" y="184" font-size="11" font-weight="700" text-anchor="end" fill="currentColor">sí</text>
+          <path d="M 450 176 L 550 202" stroke="currentColor" stroke-width="1.6" fill="none" marker-end="url(#ar10p)"></path>
+          <text x="520" y="184" font-size="11" font-weight="700" fill="currentColor">no</text>
+
+          <rect x="14" y="204" width="250" height="52" rx="4" fill="var(--gen-c)" fill-opacity="0.16" stroke="var(--gen-c)" stroke-width="1.8"></rect>
+          <text x="139" y="225" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">Seguir igual</text>
+          <text x="139" y="243" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.85">remisión sostenida: reducir con cautela</text>
+
+          <rect x="426" y="204" width="260" height="52" rx="4" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="556" y="225" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">Agregar un biológico</text>
+          <text x="556" y="243" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.85">o un JAK, ponderando riesgos</text>
+
+          <path d="M 556 256 L 556 272" stroke="currentColor" stroke-width="1.6" fill="none" marker-end="url(#ar10p)"></path>
+          <text x="564" y="268" font-size="10.5" fill="currentColor" opacity="0.8">si falla</text>
+
+          <rect x="426" y="274" width="260" height="48" rx="4" fill="var(--imp-c)" fill-opacity="0.12" stroke="var(--imp-c)" stroke-width="1.6"></rect>
+          <text x="556" y="294" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">Otro biológico o JAK</text>
+          <text x="556" y="311" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.85">de otra clase o de la misma</text>
+        </svg>
+        <figcaption>Es el algoritmo de la actualización EULAR 2025. La versión de 2022 agregaba un paso en la rama del «no»: con factores de mal pronóstico se pasaba a un biológico o JAK, y sin ellos a otro DMAR sintético. En 2025 esa estratificación se eliminó, porque no haber respondido al primer esquema ya es un factor de mal pronóstico.</figcaption>
+      </figure>
+
+      <p class="cita">Fuente: grupos farmacológicos, dosis, metotrexato, biológicos y JAK según el teórico de la cátedra, que cita a Kirwan JR et al., N Engl J Med 1995, para los corticoides. Tacrolimus 3 mg/día según los ensayos clínicos en AR revisados en «The efficacy and safety of tacrolimus in rheumatoid arthritis», Ther Adv Musculoskelet Dis 2011. Monitoreo del metotrexato según las recomendaciones del American College of Rheumatology (Singh JA et al., Arthritis Care Res 2012). Restricción de los JAK según la Agencia Europea de Medicamentos (2022). Algoritmo según Smolen JS et al., EULAR recommendations for the management of rheumatoid arthritis: 2022 update, Ann Rheum Dis 2023;82:3-18, y su actualización de 2025 (Ann Rheum Dis 2026).</p>
+    </section>
+    <!-- ============ 11 ============ -->
+    <section class="seccion s-importantes" id="antes-biologico">
+      <span class="seccion__pestana"><b>11</b> Importante</span>
+      <h2 class="seccion__titulo">Antes de un biológico o un JAK</h2>
+
+      <p>Biológicos y JAK bajan las defensas contra infecciones que el paciente puede tener dormidas. Antes de la primera dosis hay una lista de requisitos, y el teórico la encabeza con signos de exclamación: <strong>vacunar</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Requisito</th><th>Qué se hace</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Vacunas</strong></td><td>Antigripal, antineumocócica, antitetánica y contra la hepatitis B</td></tr>
+            <tr><td><strong>Tuberculosis</strong></td><td>Radiografía de tórax y PPD para descartar una tuberculosis latente. Si está: <strong>isoniazida por 9 meses</strong></td></tr>
+            <tr><td><strong>Serologías</strong></td><td>HIV, hepatitis C y antígeno de superficie de la hepatitis B</td></tr>
+            <tr><td><strong>Embarazo</strong></td><td>Prueba de embarazo</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>La vacuna antineumocócica, al día</h3>
+      <p>El teórico indica el esquema con <strong>Prevenar 13 y Neumo 23</strong>. Hoy hay vacunas conjugadas de más serotipos, y la recomendación para el adulto inmunocomprometido que nunca recibió una conjugada es una de dos opciones: <strong>una dosis de PCV20 o de PCV21 sola</strong>, o <strong>PCV15 seguida de la polisacárida PPSV23</strong> —en el inmunocomprometido, con un intervalo mínimo de 8 semanas—. La idea de fondo del teórico no cambia: conjugada primero y, si hace falta, polisacárida después.</p>
+
+      <p>Las vacunas se aplican preferentemente <strong>antes</strong> de empezar el tratamiento, porque bajo inmunosupresión la respuesta es peor, y las de <strong>virus vivos atenuados</strong> quedan contraindicadas una vez iniciado el biológico.</p>
+
+      <p class="cita">Fuente: requisitos previos según el teórico de la cátedra. Esquema antineumocócico vigente según Pneumococcal Vaccine for Adults Aged ≥19 Years: Recommendations of the Advisory Committee on Immunization Practices, United States, 2023, y la incorporación de PCV21 (MMWR 2024;73(36)).</p>
+    </section>
+    <!-- ============ Repaso ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>¿Cuál es el órgano blanco de la AR y cómo es su patrón articular?</summary>
+          <div class="fc__r">La <strong>membrana sinovial</strong>: una sinovitis crónica que da una poliartritis de articulaciones pequeñas y grandes, <strong>aditiva y simétrica</strong>, con compromiso sistémico.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿A quién afecta la AR y con qué frecuencia?</summary>
+          <div class="fc__r">Al <strong>0,2 a 1 %</strong> de la población —unas 400.000 personas en la Argentina—, <strong>3 veces más a mujeres</strong>, con mayor incidencia entre los <strong>40 y 60 años</strong>.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué es la citrulinación y qué tiene que ver con el anti-CCP?</summary>
+          <div class="fc__r">La enzima <strong>PAD4</strong> convierte arginina en <strong>citrulina</strong> en proteínas propias, que el sistema inmune pasa a reconocer como extrañas: los anticuerpos contra ellas son los <strong>anti-CCP</strong>. El tabaco favorece la citrulinación.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Por qué las erosiones de la AR son marginales?</summary>
+          <div class="fc__r">Porque el <strong>pannus</strong> ataca primero los márgenes de la articulación, donde la sinovial toca hueso <strong>sin cartílago</strong> que lo proteja. El <strong>RANKL</strong> de fibroblastos y linfocitos T activa a los osteoclastos, que comen el hueso.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Puede el anti-CCP ser positivo antes de que haya artritis?</summary>
+          <div class="fc__r"><strong>Sí.</strong> La autoinmunidad empieza <strong>años antes</strong> de los síntomas: en esa fase silenciosa ya aparecen el anti-CCP y el FR.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué articulaciones suele respetar la AR y por qué sirve ese dato?</summary>
+          <div class="fc__r">Las <strong>interfalángicas distales</strong>. Ayuda a separarla de la artrosis de manos y de la artritis psoriásica, que sí las toman.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué mostró el estudio COBRA sobre la ventana de oportunidad?</summary>
+          <div class="fc__r">Que el tratamiento intensivo en los <strong>primeros 6 meses</strong> redujo de forma sostenida la progresión radiológica a los 5 años, en un <strong>35 %</strong>, sin importar el tratamiento posterior.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué es el CONAART y cuáles son sus cortes?</summary>
+          <div class="fc__r">El score del Consorcio Argentino de Artritis Temprana para predecir qué artritis temprana será AR. Con <strong>9 o más</strong> predice AR; con <strong>4 o menos</strong> la probabilidad es del 1 %, y con <strong>13 o más</strong>, del 99 %. FR y anti-CCP son los ítems que más pesan (4 puntos cada uno).</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Cómo se distingue el dedo en cuello de cisne del boutonnière?</summary>
+          <div class="fc__r">Mirando la <strong>interfalángica proximal</strong>. En el cuello de cisne está en <strong>hiperextensión</strong> con la distal flexionada; en el boutonnière está en <strong>flexión</strong> con la distal en hiperextensión.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Por qué preocupa la subluxación atlantoaxoidea antes de una cirugía?</summary>
+          <div class="fc__r">Porque la hiperextensión del cuello en la <strong>intubación</strong> puede comprimir la médula. En la AR de larga evolución la columna cervical se evalúa <strong>antes</strong> de la anestesia general.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué es el síndrome pseudotromboflebítico?</summary>
+          <div class="fc__r">La rotura de un <strong>quiste sinovial de la rodilla</strong> que produce dolor y edema de pantorrilla y <strong>simula una trombosis venosa</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué es el síndrome de Felty y qué es el de Caplan?</summary>
+          <div class="fc__r"><strong>Felty</strong>: AR con <strong>esplenomegalia y neutropenia</strong>. <strong>Caplan</strong>: nódulos reumatoideos pulmonares en un paciente con <strong>neumoconiosis</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Cómo es el perfil de hierro en la anemia de la AR?</summary>
+          <div class="fc__r">De <strong>enfermedad crónica</strong>: normocítica normocrómica, con hierro, transferrina y eritropoyetina bajos y <strong>ferritina alta</strong> por retención de hierro.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Por qué se reemplazaron los criterios ACR 1987?</summary>
+          <div class="fc__r">Porque se apoyan en rasgos de <strong>enfermedad establecida</strong> —nódulos, erosiones—: cuando el paciente los cumplía, muchas veces ya había perdido la ventana. Los de 2010 permiten clasificar antes.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿A quién se le aplican los criterios ACR/EULAR 2010 y cuál es el corte?</summary>
+          <div class="fc__r">A quien tiene <strong>tumefacción clínica de al menos una articulación</strong> que no se explique mejor por otra enfermedad. Se clasifica como AR con <strong>6 puntos o más sobre 10</strong>; con menos, se reevalúa en el tiempo.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>En los criterios 2010, ¿se necesita que el FR o el anti-CCP sean positivos?</summary>
+          <div class="fc__r"><strong>No.</strong> Se necesita al menos un <strong>resultado</strong>. Con los dos negativos suma 0 en ese dominio y puede clasificarse igual por los otros: es la <strong>AR seronegativa</strong>. Y el positivo bajo es «FR <strong>o</strong> anti-CCP», no «y».</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Qué signos radiológicos aparecen primero y cuál es el característico del daño?</summary>
+          <div class="fc__r">Primero la <strong>tumefacción de partes blandas</strong>, el ensanchamiento del espacio y la <strong>osteoporosis periarticular</strong>. El característico del daño es la <strong>erosión ósea marginal</strong>, obra del pannus.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Cuál es el objetivo del treat to target y cada cuánto se mide?</summary>
+          <div class="fc__r">La <strong>remisión</strong> —o la baja actividad como objetivo alternativo—, medida con un <strong>índice compuesto cada 1 a 3 meses</strong> mientras hay actividad. Si no se llega, se ajusta el tratamiento.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Cuáles son los cortes de remisión del DAS28, el CDAI y el SDAI?</summary>
+          <div class="fc__r"><strong>DAS28</strong> menos de 2,6; <strong>CDAI</strong> hasta 2,8; <strong>SDAI</strong> hasta 3,3. El CDAI no lleva laboratorio y se calcula en la misma consulta.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Cuál es el algoritmo EULAR vigente y qué cambió en 2025?</summary>
+          <div class="fc__r"><strong>Metotrexato con corticoide por poco tiempo</strong>; si a los 3 a 6 meses no alcanza, se agrega un <strong>biológico</strong> o un <strong>JAK</strong> ponderando riesgos. En 2025 se eliminó la estratificación por factores de mal pronóstico: no responder ya es uno.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Cómo se indica el metotrexato y qué se controla?</summary>
+          <div class="fc__r"><strong>7,5 a 25 mg una vez por semana</strong>, con <strong>ácido fólico</strong>. Hemograma y hepatograma cada 2 a 4 semanas al inicio y después más espaciados, más creatinina. Se suspende con transaminasas mayores de 3 veces el límite. Es teratogénico.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿En quién se restringen los inhibidores de JAK?</summary>
+          <div class="fc__r">En <strong>mayores de 65 años</strong>, <strong>fumadores</strong> o exfumadores de larga data, y personas con <strong>riesgo cardiovascular o de cáncer</strong>: solo si no hay otra alternativa.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Qué se hace antes de indicar un biológico o un JAK?</summary>
+          <div class="fc__r"><strong>Vacunar</strong> (gripe, neumococo, tétanos, hepatitis B), <strong>radiografía de tórax y PPD</strong> —con tuberculosis latente, isoniazida por 9 meses—, serologías de <strong>HIV, hepatitis C y hepatitis B</strong>, y prueba de embarazo.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Cuadro clave</dt>
+        <dd>Mujer de 40 a 60 años con <strong>poliartritis aditiva y simétrica</strong> de metacarpofalángicas, interfalángicas proximales y carpos, que <strong>respeta las interfalángicas distales</strong>, con <strong>rigidez matinal de una hora o más</strong>.</dd>
+
+        <dt class="r-gold">Diagnóstico</dt>
+        <dd><strong>ACR/EULAR 2010</strong>: 6 puntos o más con sinovitis de al menos una articulación. <strong>FR y anti-CCP</strong> para diagnóstico y pronóstico. Radiografía: osteoporosis periarticular y <strong>erosiones marginales</strong>.</dd>
+
+        <dt class="r-tto">Tratamiento</dt>
+        <dd><strong>Metotrexato semanal con ácido fólico</strong> y corticoide como puente. <strong>Treat to target</strong> hacia la remisión, con un índice cada 1 a 3 meses. Sin respuesta a los 3 a 6 meses: <strong>biológico o JAK</strong>.</dd>
+
+        <dt class="r-alerta">Criterios de alerta</dt>
+        <dd><strong>Nunca perder la ventana.</strong> Columna cervical antes de intubar. <strong>PPD y radiografía de tórax</strong> antes de un biológico. JAK en mayores de 65, fumadores o con riesgo cardiovascular: solo sin alternativa.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir del teórico de Medicina Interna III, Reumatología, los criterios ACR/EULAR 2010, las recomendaciones EULAR de 2022 y 2025 para el manejo de la artritis reumatoidea y las recomendaciones de treat to target. Material de estudio: no reemplaza el criterio clínico ni la guía institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+
+  // ---- Tema claro / oscuro ----
+  // Sin eleccion estampada manda el sistema; el boton la estampa y la guarda.
+  var raiz = document.documentElement;
+  var boton = document.getElementById('tema');
+
+  function temaActual(){
+    var estampado = raiz.getAttribute('data-theme');
+    if (estampado) return estampado;
+    return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+
+  if (boton){
+    var rotular = function(){
+      var actual = temaActual();
+      boton.setAttribute('aria-pressed', actual === 'dark' ? 'true' : 'false');
+      boton.setAttribute('aria-label', actual === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+    };
+    boton.addEventListener('click', function(){
+      var nuevo = temaActual() === 'dark' ? 'light' : 'dark';
+      raiz.setAttribute('data-theme', nuevo);
+      try { localStorage.setItem('wordmed-tema', nuevo); } catch (e) { /* sin persistencia */ }
+      rotular();
+    });
+    rotular();
+  }
+
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link, .ir-link'));
+
+  // Devuelve TODOS los enlaces al ancla: la misma seccion figura en el indice
+  // lateral y en el compacto, y los dos tienen que encenderse juntos.
+  function porMeta(hash){
+    return enlaces.filter(function(l){ return l.getAttribute('href') === '#' + hash; });
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var activos = porMeta(e.target.id);
+        if (!activos.length) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          activos.forEach(function(l){ l.setAttribute('aria-current', 'true'); });
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>
+<script>
+(function(){
+  "use strict";
+  var clave = document.body.dataset.clave || "";
+  var enApp = typeof window.WordmedApp !== "undefined";
+  var MEM = "wordmed:progreso";
+
+  function leer(){ try{ return JSON.parse(localStorage.getItem(MEM)) || {}; }catch(e){ return {}; } }
+  function guardar(m){ try{ localStorage.setItem(MEM, JSON.stringify(m)); }catch(e){} }
+
+  function alto(){
+    return Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+  }
+
+  /* retomar donde quedó */
+  if (clave) {
+    var m = leer()[clave];
+    if (m && m.y > 0) {
+      window.addEventListener("load", function(){
+        window.scrollTo(0, Math.min(m.y, alto()));
+      });
+    }
+  }
+
+  /* anotar el avance, sin ahogar el scroll */
+  var pendiente = false;
+  window.addEventListener("scroll", function(){
+    if (pendiente || !clave) return;
+    pendiente = true;
+    requestAnimationFrame(function(){
+      pendiente = false;
+      var y = window.scrollY;
+      var pct = Math.round((y / alto()) * 100);
+      pct = Math.max(0, Math.min(100, pct));
+      var m = leer();
+      m[clave] = { y: y, pct: pct, ts: Date.now() };
+      guardar(m);
+      if (enApp && window.WordmedApp.progreso) window.WordmedApp.progreso(clave, pct, y);
+    });
+  }, { passive: true });
+
+  /* volver: solo cuando vinimos de la cáscara web */
+  if (!enApp && document.referrer && document.referrer.indexOf(location.origin) === 0) {
+    var b = document.createElement("button");
+    b.className = "volver";
+    b.type = "button";
+    b.setAttribute("aria-label", "Volver");
+    b.innerHTML = '<svg class="volver__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg>';
+    b.addEventListener("click", function(){ history.back(); });
+    document.body.appendChild(b);
+  }
+})();
+</script>
+</body>
+</html>

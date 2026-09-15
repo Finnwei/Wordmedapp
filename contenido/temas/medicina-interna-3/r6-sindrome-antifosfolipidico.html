@@ -1,0 +1,1542 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<script>
+(function(){
+  var enApp = typeof window.WordmedApp !== "undefined";
+  if (!enApp) {
+    /* En la web el cuadernillo se maqueta al ancho del dispositivo. */
+    var m = document.createElement("meta");
+    m.name = "viewport";
+    m.content = "width=device-width, initial-scale=1";
+    document.head.appendChild(m);
+    return;
+  }
+  /* En la app no se emite viewport: el WebView maqueta a su ancho por
+     omision y lo encoge para que entre, igual que al abrir el archivo a
+     mano. Sacar el meta despues de parsearlo no reencuadra nada, por eso
+     directamente no se emite. */
+  var s = document.createElement("style");
+  s.textContent = ".tema{display:none !important}";
+  document.head.appendChild(s);
+})();
+</script>
+<title>Síndrome Antifosfolipídico</title>
+<link rel="stylesheet" href="../../fuentes/fuentes.css">
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-bloque:1.95rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+
+  /* Que la barra de desplazamiento y los controles nativos acompanen al tema */
+  color-scheme: light dark;
+}
+
+/* Eleccion explicita de claro: solo hace falta para el color-scheme, los
+   tokens claros ya son la base sin estampar. */
+:root[data-theme="light"]{ color-scheme: light; }
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* Interruptor de tema claro / oscuro.
+   El estampado `data-theme` en la raíz ya lo respetan los bloques de tokens de
+   arriba; este botón sólo lo pone y lo guarda. Sin elección estampada mandan
+   las preferencias del sistema, que es el comportamiento por defecto. */
+.tema{
+  position:fixed; top:.7rem; right:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.tema:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.tema__icono{ width:1.15rem; height:1.15rem; display:block; }
+
+/* Se muestra el icono del tema al que se va a cambiar, no el actual.
+   Mismo escalonado que los tokens: base clara · sistema oscuro · elección explícita. */
+.tema__sol{ display:none; }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .tema__sol{ display:block; }
+  :root:not([data-theme="light"]) .tema__luna{ display:none; }
+}
+:root[data-theme="dark"] .tema__sol{ display:block; }
+:root[data-theme="dark"] .tema__luna{ display:none; }
+:root[data-theme="light"] .tema__sol{ display:none; }
+:root[data-theme="light"] .tema__luna{ display:block; }
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índices ---------- */
+/* Dos piezas complementarias y deliberadamente redundantes:
+   · .indice        — barra lateral fija, sólo en pantalla ancha, navegación permanente.
+   · .indice-rapido — tarjeta compacta al principio del cuerpo, visible en TODO ancho.
+   La lateral desaparece por debajo de 64rem, que es justo el ancho del panel de
+   Artifacts y del celular; sin la compacta el cuadernillo publicado se queda sin
+   índice. Las dos apuntan a los mismos anclajes y se resaltan juntas al desplazar. */
+
+/* 6.1 · Barra lateral */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+/* Rótulo de bloque intercalado en la lista lateral: no es un enlace, sólo
+   separa grupos de secciones para que 30 entradas no sean una tira plana. */
+.indice__bloque{
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+  margin:.9rem 0 .2rem; padding:0 .55rem;
+}
+.indice__bloque:first-child{ margin-top:0; }
+
+/* 6.2 · Índice compacto (va después de la portada, dentro del cuerpo) */
+.indice-rapido{
+  background:var(--hoja-hund);
+  border:1px solid var(--linea);
+  border-radius:var(--radio);
+  padding:1.1rem 1.2rem 1.2rem;
+}
+.indice-rapido__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .85rem;
+}
+/* auto-fit: una columna en el panel angosto, dos o tres en pantalla ancha */
+.indice-rapido__bloques{
+  list-style:none; margin:0; padding:0;
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(15rem, 1fr));
+  gap:1rem 2rem; align-items:start;
+}
+.ir-bloque{
+  display:block; margin-bottom:.4rem;
+  font-family:var(--f-titulo); font-size:.98rem; font-weight:700; line-height:1.3;
+  color:var(--tinta); text-decoration:none;
+  padding-bottom:.3rem; border-bottom:1px solid var(--linea-fuerte);
+}
+.ir-bloque:hover{ color:var(--cli-t); }
+.ir-secciones{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.05rem; }
+.ir-link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.55rem 1fr; align-items:baseline; gap:.4rem;
+  padding:.2rem .35rem; border-radius:2px;
+  font-size:.86rem; line-height:1.4; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.ir-link > b{
+  font-family:var(--f-dato); font-size:.76rem; font-weight:700;
+  font-variant-numeric:tabular-nums; color:var(--ct); opacity:.85;
+}
+.ir-link:hover{ background:var(--hoja); color:var(--tinta); }
+.ir-link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Título de bloque y ficha de sección ---------- */
+
+/* Anuncia un grupo de secciones. Neutro en color a propósito: los siete colores
+   tienen significado clínico fijo y un bloque agrupa secciones de varios. La
+   regla de abajo lleva el degradado completo de la paleta, igual que la pestaña
+   de repaso y la cabecera de la ficha relámpago.
+   Sin <svg> adentro: el exportador a Word aparea los diagramas con las figuras
+   por contador posicional sobre el HTML crudo (ver exportar_docx.py). */
+.bloque{
+  margin:1.4rem 0 0; padding:0;
+  text-align:center; scroll-margin-top:2.5rem;
+  display:flex; flex-direction:column; align-items:center; gap:.3rem;
+  font-weight:400;
+}
+.bloque:first-child{ margin-top:0; }
+.bloque__rotulo{
+  font-family:var(--f-texto);
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+}
+.bloque__nombre{
+  font-family:var(--f-titulo); font-size:var(--t-bloque); font-weight:700; line-height:1.15;
+  letter-spacing:-.01em; color:var(--tinta); text-wrap:balance; max-width:32ch;
+}
+.bloque::after{
+  content:""; width:7rem; height:2.5px; margin-top:.5rem; border-radius:2px;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+}
+
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.5rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-column:1; grid-row:1; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+/* El icono ocupa la columna 1 y NADA MAS. Todo el resto del contenido se
+   apila en la columna 2, una fila por elemento, sin importar cuantos
+   parrafos haya.
+
+   Sin esta regla la caja solo funciona con un unico <p>: a partir del
+   segundo, la autocolocacion del grid empieza a repartir contenido en la
+   columna del icono, que es `auto` y por lo tanto se ensancha hasta abarcar
+   el parrafo que le toco. La columna `1fr` queda entonces reducida a una
+   tira angosta, el texto se parte en dos columnas desbalanceadas y la caja
+   crece hasta volverse ilegible. */
+.importante > :not(.importante__icono){ grid-column:2; }
+.importante__titulo{
+  grid-row:1;
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante ul, .importante ol{ margin:0; padding-left:1.15rem; }
+.importante li + li{ margin-top:.3rem; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso, .tema{ display:none !important; }
+  /* La lateral no se imprime, pero la compacta sí: en papel es la tabla de
+     contenidos del cuadernillo. */
+  .indice-rapido{ display:block; break-inside:avoid; page-break-inside:avoid; margin-bottom:1.2rem; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .bloque{
+    margin:1.6rem 0 1rem;
+    break-after:avoid; page-break-after:avoid;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+<style>
+/* Fuentes de la capa de contenido. Va después del estilo del
+   cuadernillo para pisar las de Windows, que no se pueden
+   redistribuir y no existen en Android. */
+:root{
+  --f-titulo:'Spectral',Georgia,'Times New Roman',serif;
+  --f-texto:'Open Sans',system-ui,-apple-system,sans-serif;
+  --f-dato:'Cascadia Mono','Cascadia Code',ui-monospace,Consolas,monospace;
+}
+/* Botón de volver, espejo del de tema que ya trae el cuadernillo. */
+.volver{
+  position:fixed; top:.7rem; left:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.volver:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.volver__icono{ width:1.15rem; height:1.15rem; display:block; }
+</style>
+</head>
+<body data-clave="medicina-interna-3/r6-sindrome-antifosfolipidico">
+<script>
+/* Aplica el tema guardado antes de pintar. Va aca arriba a proposito: si
+   esperara al script del final, el documento parpadearia en el tema del
+   sistema antes de corregirse. */
+(function(){
+  try {
+    var guardado = localStorage.getItem('wordmed-tema');
+    if (guardado === 'dark' || guardado === 'light') {
+      document.documentElement.setAttribute('data-theme', guardado);
+    }
+  } catch (e) { /* almacenamiento bloqueado: manda el sistema */ }
+})();
+</script>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<button class="tema" id="tema" type="button" aria-pressed="false" aria-label="Cambiar a modo oscuro">
+  <svg class="tema__icono tema__sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.2"></circle>
+    <path d="M12 2.6v2.1M12 19.3v2.1M5.1 5.1l1.5 1.5M17.4 17.4l1.5 1.5M2.6 12h2.1M19.3 12h2.1M5.1 18.9l1.5-1.5M17.4 6.6l1.5-1.5"></path>
+  </svg>
+  <svg class="tema__icono tema__luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20.4 14.2A8.6 8.6 0 0 1 9.8 3.6a8.6 8.6 0 1 0 10.6 10.6z"></path>
+  </svg>
+</button>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li class="indice__bloque">Bloque A</li>
+      <li><a class="indice__link i-generalidades"  href="#saf">Definición y formas</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#mecanismo">Mecanismo trombogénico</a></li>
+
+      <li class="indice__bloque">Bloque B</li>
+      <li><a class="indice__link i-clinica"        href="#clinica">Trombosis y más allá</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#laboratorio">Laboratorio y AL</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#criterios">Criterios y diferenciales</a></li>
+
+      <li class="indice__bloque">Bloque C</li>
+      <li><a class="indice__link i-tratamiento" href="#tratamiento">Profilaxis y trombosis</a></li>
+      <li><a class="indice__link i-tratamiento" href="#obstetrico">SAF obstétrico</a></li>
+      <li><a class="indice__link i-importantes" href="#caps">SAF catastrófico</a></li>
+
+      <li class="indice__bloque">Cierre</li>
+      <li><a class="indice__link i-clinica"     href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes" href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Medicina Interna III · Reumatología · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Síndrome Antifosfolipídico</h1>
+      <p class="portada__bajada">Un anticuerpo, dos escenarios: trombosis o pérdida fetal. De la β2-glicoproteína I al trombo, del anticoagulante lúpico que alarga el tubo y coagula al paciente, a la warfarina indefinida y la heparina del embarazo.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-fisiopatologia">β2-glicoproteína I</span>
+        <span class="etiqueta s-diagnostico">Sydney 2006 · ACR/EULAR 2023</span>
+        <span class="etiqueta s-tratamiento">EULAR 2019</span>
+        <span class="etiqueta s-importantes">SAF catastrófico</span>
+      </div>
+    </header>
+
+    <nav class="indice-rapido" aria-label="Contenido del cuadernillo">
+      <p class="indice-rapido__rotulo">Contenido</p>
+      <ol class="indice-rapido__bloques">
+        <li>
+          <a class="ir-bloque" href="#bloque-a">Bloque A · Qué es y por qué coagula</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades"  href="#saf"><b>01</b> Definición y formas</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#mecanismo"><b>02</b> Mecanismo trombogénico</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-b">Bloque B · Cómo se presenta y se confirma</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-clinica"     href="#clinica"><b>03</b> Clínica: trombosis y más allá</a></li>
+            <li><a class="ir-link i-diagnostico" href="#laboratorio"><b>04</b> Laboratorio y anticoagulante lúpico</a></li>
+            <li><a class="ir-link i-diagnostico" href="#criterios"><b>05</b> Criterios y diferenciales</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-c">Bloque C · Cómo se trata</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-tratamiento" href="#tratamiento"><b>06</b> Profilaxis, trombosis y seguimiento</a></li>
+            <li><a class="ir-link i-tratamiento" href="#obstetrico"><b>07</b> SAF obstétrico</a></li>
+            <li><a class="ir-link i-importantes" href="#caps"><b>08</b> SAF catastrófico</a></li>
+            <li><a class="ir-link i-clinica"     href="#repaso"><b>·</b> Repaso activo</a></li>
+            <li><a class="ir-link i-importantes" href="#relampago"><b>⚡</b> Ficha Relámpago</a></li>
+          </ul>
+        </li>
+      </ol>
+    </nav>
+
+    <h2 class="bloque" id="bloque-a">
+      <span class="bloque__rotulo">Bloque A</span>
+      <span class="bloque__nombre">Qué es y por qué coagula</span>
+    </h2>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="saf">
+      <span class="seccion__pestana"><b>01</b> Base</span>
+      <h2 class="seccion__titulo">Definición y formas</h2>
+
+      <p>El síndrome antifosfolipídico (SAF), también llamado <strong>síndrome de Hughes</strong>, es una <strong>enfermedad autoinmune sistémica</strong>. Se caracteriza por <strong>trombosis venosa o arterial</strong>, <strong>morbilidad obstétrica recurrente</strong> o ambas, en presencia <strong>persistente</strong> de anticuerpos antifosfolípidos (aPL). Es la <strong>trombofilia adquirida más frecuente</strong>.</p>
+      <ul>
+        <li><span class="dato">12 semanas</span>: el intervalo mínimo para confirmar que el anticuerpo persiste.</li>
+        <li><strong>Triple positividad</strong> (anticoagulante lúpico + anticardiolipinas + anti-β2-glicoproteína I): el mayor riesgo trombótico.</li>
+        <li>Entre el <span class="dato">30 y el 40 %</span> de los pacientes con LES tienen anticuerpos antifosfolípidos.</li>
+      </ul>
+
+      <h3>Cuatro formas clínicas</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Forma</th><th>Qué la define</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Primario</strong></td><td>Sin enfermedad autoinmune subyacente</td></tr>
+            <tr><td><strong>Secundario</strong></td><td>Asociado a otra enfermedad autoinmune, con mayor frecuencia el <strong>LES</strong></td></tr>
+            <tr><td><strong>Obstétrico</strong></td><td>Manifestaciones exclusivamente gestacionales</td></tr>
+            <tr><td><strong>Catastrófico</strong></td><td>Trombosis multiorgánica de instalación rápida; menos del <span class="dato">1 %</span>, con alta mortalidad (sección <a href="#caps">08</a>)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>El vínculo con el lupus es el más estrecho. En el cuadernillo <strong>R7</strong>, los antifosfolípidos figuran entre los criterios inmunológicos del LES y explican buena parte de sus trombosis.</p>
+      <p>Hay un parentesco histórico que ordena el tema. La <strong>cardiolipina</strong> es el antígeno de la VDRL, y por eso el SAF es causa de <strong>VDRL falsamente reactiva</strong>, como figura en el cuadernillo de Enfermedades de Transmisión Sexual. También por eso las anticardiolipinas aparecen de forma transitoria en infecciones como la sífilis. De ahí la exigencia de que el anticuerpo persista.</p>
+
+      <p class="cita">Fuente: teórico «Síndrome de Anticuerpos Antifosfolípidos» de la cátedra de Medicina Interna III, Reumatología (Dra. Mariela Araujo).</p>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-fisiopatologia" id="mecanismo">
+      <span class="seccion__pestana"><b>02</b> Mecanismo</span>
+      <h2 class="seccion__titulo">Mecanismo trombogénico</h2>
+
+      <p>El anticuerpo se une a <strong>proteínas plasmáticas ligadas a fosfolípidos</strong>, principalmente la <strong>β2-glicoproteína I</strong>, sobre la superficie de <strong>plaquetas y células endoteliales</strong>, y genera un estado protrombótico.</p>
+      <p>El nombre engaña. Los anticuerpos «antifosfolípidos» <strong>no reconocen al fosfolípido aislado</strong>, sino a la proteína unida a él. La β2-glicoproteína I es el antígeno predominante del síndrome.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 250" role="img" aria-label="Mecanismo del síndrome antifosfolipídico. La beta 2 glicoproteína uno se une al fosfolípido de la membrana de plaquetas y células endoteliales. El anticuerpo antifosfolípido reconoce a esa proteína unida. Eso activa plaquetas, endotelio y complemento. El resultado puede ser trombosis venosa, arterial o de pequeño vaso, o manifestaciones sin trombo como trombocitopenia, valvulopatía, livedo y compromiso neurológico.">
+          <defs>
+            <marker id="sf1p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="24" y="14" width="200" height="56" rx="4" fill="var(--imp-c)" fill-opacity="0.12" stroke="var(--imp-c)" stroke-width="1.6"></rect>
+          <text x="124" y="36" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">Anticuerpo antifosfolípido</text>
+          <text x="124" y="56" font-size="10.5" text-anchor="middle" fill="currentColor">aCL · anti-β2GPI · AL</text>
+
+          <path d="M 124 70 L 124 102" stroke="currentColor" stroke-width="1.6" fill="none" marker-end="url(#sf1p)"></path>
+          <text x="134" y="91" font-size="10.5" fill="currentColor">reconoce</text>
+
+          <rect x="24" y="104" width="200" height="50" rx="4" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.6"></rect>
+          <text x="124" y="125" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">β2-glicoproteína I</text>
+          <text x="124" y="143" font-size="10.5" text-anchor="middle" fill="currentColor">unida al fosfolípido</text>
+
+          <rect x="14" y="170" width="220" height="56" rx="4" fill="var(--cli-c)" fill-opacity="0.12" stroke="var(--cli-c)" stroke-width="1.5"></rect>
+          <text x="124" y="192" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">Fosfolípido de membrana</text>
+          <text x="124" y="212" font-size="10.5" text-anchor="middle" fill="currentColor">plaqueta · célula endotelial</text>
+          <line x1="124" y1="154" x2="124" y2="170" stroke="currentColor" stroke-width="1.4" stroke-dasharray="3 3"></line>
+
+          <path d="M 224 129 L 278 129" stroke="currentColor" stroke-width="1.8" fill="none" marker-end="url(#sf1p)"></path>
+
+          <rect x="280" y="74" width="180" height="110" rx="4" fill="var(--c)" fill-opacity="0.20" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="370" y="100" font-size="12.5" font-weight="700" text-anchor="middle" fill="currentColor">Activación</text>
+          <text x="370" y="124" font-size="10.5" text-anchor="middle" fill="currentColor">de plaquetas</text>
+          <text x="370" y="142" font-size="10.5" text-anchor="middle" fill="currentColor">del endotelio</text>
+          <text x="370" y="160" font-size="10.5" text-anchor="middle" fill="currentColor">del complemento</text>
+
+          <path d="M 460 110 L 506 70" stroke="currentColor" stroke-width="1.6" fill="none" marker-end="url(#sf1p)"></path>
+          <path d="M 460 150 L 506 176" stroke="currentColor" stroke-width="1.6" fill="none" marker-end="url(#sf1p)"></path>
+
+          <rect x="508" y="30" width="178" height="72" rx="4" fill="var(--imp-c)" fill-opacity="0.16" stroke="var(--imp-c)" stroke-width="1.8"></rect>
+          <text x="597" y="54" font-size="12.5" font-weight="700" text-anchor="middle" fill="currentColor">Trombosis</text>
+          <text x="597" y="74" font-size="10.5" text-anchor="middle" fill="currentColor">venosa, arterial</text>
+          <text x="597" y="90" font-size="10.5" text-anchor="middle" fill="currentColor">o de pequeño vaso</text>
+
+          <rect x="508" y="140" width="178" height="80" rx="4" fill="var(--cli-c)" fill-opacity="0.12" stroke="var(--cli-c)" stroke-width="1.5"></rect>
+          <text x="597" y="162" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">Sin trombo</text>
+          <text x="597" y="182" font-size="10.5" text-anchor="middle" fill="currentColor">trombocitopenia,</text>
+          <text x="597" y="198" font-size="10.5" text-anchor="middle" fill="currentColor">valvulopatía, livedo,</text>
+          <text x="597" y="214" font-size="10.5" text-anchor="middle" fill="currentColor">compromiso neurológico</text>
+        </svg>
+        <figcaption>El anticuerpo no ataca al fosfolípido sino a la proteína que se le pega. La activación que desencadena tiene dos salidas: el trombo, que define el síndrome, y un conjunto de manifestaciones inmunomediadas que no dependen de la oclusión del vaso.</figcaption>
+      </figure>
+
+      <p>No todas las manifestaciones del SAF se explican por trombosis. El teórico destaca también la <strong>activación plaquetaria</strong>, la <strong>activación del complemento</strong> y <strong>mecanismos inmunomediados</strong>. De ahí salen la trombocitopenia, el livedo y buena parte de lo neurológico de la sección <a href="#clinica">03</a>. Y por eso la hidroxicloroquina tiene un papel (sección <a href="#tratamiento">06</a>).</p>
+
+      <p class="cita">Fuente: mecanismo según el teórico «Síndrome de Anticuerpos Antifosfolípidos». La β2-glicoproteína I como antígeno predominante, según la revisión The Significance of Anti-Beta-2-Glycoprotein I Antibodies in Antiphospholipid Syndrome (PMC6698844).</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-b">
+      <span class="bloque__rotulo">Bloque B</span>
+      <span class="bloque__nombre">Cómo se presenta y cómo se confirma</span>
+    </h2>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-clinica" id="clinica">
+      <span class="seccion__pestana"><b>03</b> Clínica</span>
+      <h2 class="seccion__titulo">Trombosis y más allá</h2>
+
+      <h3>Manifestaciones criterio</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Manifestación</th><th>Qué incluye</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Trombosis venosa</strong></td><td>TVP y TEP: <strong>la manifestación más frecuente</strong></td></tr>
+            <tr><td><strong>Trombosis arterial</strong></td><td>ACV isquémico, IAM, isquemia de miembros</td></tr>
+            <tr><td><strong>Morbilidad obstétrica</strong></td><td>Pérdidas fetales recurrentes, preeclampsia, restricción del crecimiento intrauterino</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Dónde trombosa</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Venosas (más frecuentes)</th><th>Arteriales</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Miembros inferiores</td><td>Cerebrales (ACV)</td></tr>
+            <tr><td>Renales</td><td>Coronarias</td></tr>
+            <tr><td>Hepáticas</td><td>Renales</td></tr>
+            <tr><td>Senos venosos</td><td>Mesentéricas</td></tr>
+            <tr><td>Cavas</td><td>Otras</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Hay <strong>tendencia a la recurrencia</strong>. La regla práctica del teórico: <strong>sospechar SAF ante una trombosis en un paciente joven, sin factores de riesgo o en un sitio inusual</strong>. Una trombosis de senos venosos o de venas hepáticas, por ejemplo, merece la búsqueda de anticuerpos.</p>
+
+      <h3>Más allá del trombo</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Sistema</th><th>Manifestaciones</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Hematológico</strong></td><td>Trombocitopenia, anemia hemolítica, microangiopatía trombótica y <strong>sangrado</strong> (anticuerpos antiprotrombina)</td></tr>
+            <tr><td><strong>Pulmonar</strong></td><td>Hipertensión pulmonar, hemorragia alveolar</td></tr>
+            <tr><td><strong>Cardiovascular</strong></td><td>Isquemia o IAM, valvulopatía</td></tr>
+            <tr><td><strong>Gastrointestinal</strong></td><td>Isquemia mesentérica, infarto esplénico o hepático</td></tr>
+            <tr><td><strong>Ocular</strong></td><td>Oclusión vascular retiniana</td></tr>
+            <tr><td><strong>Óseo</strong></td><td>Osteonecrosis avascular</td></tr>
+            <tr><td><strong>Suprarrenal</strong></td><td>Insuficiencia suprarrenal por <strong>infarto adrenal bilateral</strong> (cuadernillo <strong>E5</strong>)</td></tr>
+            <tr><td><strong>Renal</strong></td><td>Nefropatía asociada al SAF</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>El sangrado por anticuerpos antiprotrombina es la excepción que confirma la regla: casi todo en el SAF es exceso de coagulación.</p>
+
+      <h3>Piel y sistema nervioso</h3>
+      <p>La manifestación cutánea más frecuente es el <strong>livedo reticularis</strong>: si es <strong>persistente y generalizado</strong>, obliga a descartar SAF. Los criterios de 2023 puntúan específicamente el <strong>livedo racemosa</strong>, dentro del dominio microvascular.</p>
+      <p>Las manifestaciones neurológicas van más allá del ACV isquémico y están <strong>mediadas por anticuerpos</strong>:</p>
+      <ul>
+        <li>manifestaciones psicológicas y psiquiátricas;</li>
+        <li>migraña y cefalea;</li>
+        <li>epilepsia;</li>
+        <li><strong>mielitis transversa</strong>;</li>
+        <li>deterioro cognitivo.</li>
+      </ul>
+      <p>En un paciente con LES y un evento neurológico, la pregunta del cuadernillo <strong>R7</strong> —«¿es inflamación o es trombo?»— empieza por los antifosfolípidos, porque la respuesta cambia el tratamiento.</p>
+
+      <p class="cita">Fuente: manifestaciones clínicas según el teórico «Síndrome de Anticuerpos Antifosfolípidos». Livedo racemosa en el dominio microvascular, según Barbhaiya M et al., The 2023 ACR/EULAR Antiphospholipid Syndrome Classification Criteria, Arthritis Rheumatol 2023;75:1687-1702.</p>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-diagnostico" id="laboratorio">
+      <span class="seccion__pestana"><b>04</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">Laboratorio y anticoagulante lúpico</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Prueba</th><th>Método</th><th>Qué aporta</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Anticardiolipinas (aCL)</strong></td><td>ELISA, IgG o IgM</td><td>Las más sensibles pero las <strong>menos específicas</strong>: aparecen de forma transitoria en infecciones como la sífilis</td></tr>
+            <tr><td><strong>Anti-β2-glicoproteína I</strong></td><td>ELISA, IgG o IgM</td><td>Apunta al antígeno principal; <strong>más específica</strong> que las anticardiolipinas</td></tr>
+            <tr><td><strong>Anticoagulante lúpico (AL)</strong></td><td>Prolonga pruebas de coagulación in vitro (TTPK) y no revierte con plasma normal</td><td>El que <strong>más se asocia a trombosis</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Los tres se piden juntos, porque lo que pesa es el <strong>perfil</strong>. EULAR define como <strong>alto riesgo</strong> cualquiera de estos: <strong>anticoagulante lúpico positivo</strong>, <strong>doble o triple positividad</strong> o <strong>títulos persistentemente altos</strong>. La positividad transitoria de las infecciones es la razón por la que una sola determinación no alcanza.</p>
+      <p>El cuadernillo <strong>R1</strong> desarrolla los métodos, pero llama a las anticardiolipinas «las más específicas». La evidencia dice lo contrario: son las más sensibles y las menos específicas.</p>
+
+      <h3>El anticoagulante lúpico a fondo</h3>
+      <p>Tiene el nombre más engañoso de la medicina interna. No es un anticoagulante ni es exclusivo del lupus: es un anticuerpo que <strong>alarga la coagulación en el tubo y trombosa en el paciente</strong>.</p>
+      <p>En la prueba, el anticuerpo <strong>ocupa el fosfolípido</strong> que los factores de la coagulación necesitan para armar sus complejos, y el tiempo se alarga. En el paciente, en cambio, el mismo anticuerpo activa plaquetas y endotelio (sección <a href="#mecanismo">02</a>).</p>
+      <p>Como el hallazgo es un tiempo alargado, hay que demostrar que se debe a un <strong>inhibidor dependiente de fosfolípido</strong> y no a la falta de un factor. La guía de la ISTH lo estudia en <strong>tres pasos con dos pruebas en paralelo</strong>: tiempo de veneno de víbora de Russell diluido (dRVVT) y TTPK, con sílice como activador preferido.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 226" role="img" aria-label="Los tres pasos del estudio del anticoagulante lúpico. Uno, tamizaje: dRVVT y TTPK con poco fosfolípido; el tiempo se alarga. Dos, mezcla: plasma del paciente más plasma normal; no corrige, entonces hay un inhibidor y no falta un factor. Tres, confirmación: se agrega fosfolípido en exceso; el tiempo se acorta, entonces el inhibidor depende del fosfolípido y es anticoagulante lúpico. Abajo, la paradoja: en el tubo ocupa el fosfolípido de la prueba y la coagulación se alarga; en el paciente activa plaquetas y endotelio y produce trombosis.">
+          <defs>
+            <marker id="sf2p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="14" y="14" width="212" height="106" rx="4" fill="var(--c)" fill-opacity="0.10" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="120" y="36" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">1 · Tamizaje</text>
+          <text x="120" y="58" font-size="10.5" text-anchor="middle" fill="currentColor">dRVVT y TTPK con</text>
+          <text x="120" y="74" font-size="10.5" text-anchor="middle" fill="currentColor">poco fosfolípido</text>
+          <text x="120" y="102" font-size="11" font-weight="700" text-anchor="middle" fill="currentColor">el tiempo se alarga</text>
+
+          <rect x="244" y="14" width="212" height="106" rx="4" fill="var(--c)" fill-opacity="0.15" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="350" y="36" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">2 · Mezcla</text>
+          <text x="350" y="58" font-size="10.5" text-anchor="middle" fill="currentColor">plasma del paciente</text>
+          <text x="350" y="74" font-size="10.5" text-anchor="middle" fill="currentColor">+ plasma normal</text>
+          <text x="350" y="102" font-size="11" font-weight="700" text-anchor="middle" fill="currentColor">no corrige: inhibidor</text>
+
+          <rect x="474" y="14" width="212" height="106" rx="4" fill="var(--c)" fill-opacity="0.22" stroke="var(--c)" stroke-width="1.8"></rect>
+          <text x="580" y="36" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">3 · Confirmación</text>
+          <text x="580" y="58" font-size="10.5" text-anchor="middle" fill="currentColor">se agrega fosfolípido</text>
+          <text x="580" y="74" font-size="10.5" text-anchor="middle" fill="currentColor">en exceso</text>
+          <text x="580" y="102" font-size="11" font-weight="700" text-anchor="middle" fill="currentColor">se acorta: es AL</text>
+
+          <path d="M 226 67 L 242 67" stroke="currentColor" stroke-width="1.6" fill="none" marker-end="url(#sf2p)"></path>
+          <path d="M 456 67 L 472 67" stroke="currentColor" stroke-width="1.6" fill="none" marker-end="url(#sf2p)"></path>
+
+          <rect x="14" y="146" width="330" height="66" rx="4" fill="var(--cli-c)" fill-opacity="0.10" stroke="var(--cli-c)" stroke-width="1.4"></rect>
+          <text x="179" y="168" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">En el tubo</text>
+          <text x="179" y="188" font-size="10.5" text-anchor="middle" fill="currentColor">ocupa el fosfolípido de la prueba:</text>
+          <text x="179" y="204" font-size="10.5" text-anchor="middle" fill="currentColor">la coagulación se alarga</text>
+
+          <rect x="356" y="146" width="330" height="66" rx="4" fill="var(--imp-c)" fill-opacity="0.14" stroke="var(--imp-c)" stroke-width="1.6"></rect>
+          <text x="521" y="168" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">En el paciente</text>
+          <text x="521" y="188" font-size="10.5" text-anchor="middle" fill="currentColor">activa plaquetas y endotelio:</text>
+          <text x="521" y="204" font-size="10.5" text-anchor="middle" fill="currentColor">trombosis</text>
+        </svg>
+        <figcaption>Cada paso descarta una explicación. El tamizaje muestra que algo alarga la coagulación. La mezcla con plasma normal separa un inhibidor de un déficit de factor, porque un factor faltante se repone y un inhibidor no. La confirmación prueba que ese inhibidor depende del fosfolípido. La frase del teórico, «no revierte con plasma normal», es el segundo paso.</figcaption>
+      </figure>
+
+      <p><strong>La trampa de la anticoagulación.</strong> La heparina, la warfarina y los anticoagulantes directos alteran estas pruebas. La guía de la ISTH de 2020 dedica recomendaciones específicas al paciente anticoagulado y al momento del estudio. Por eso el laboratorio tiene que saber qué recibe el paciente, y lo ideal es estudiar el anticoagulante lúpico antes de anticoagular.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Un <strong>TTPK prolongado por anticoagulante lúpico no es tendencia al sangrado: es un marcador de trombosis</strong>. No justifica suspender ni postergar la anticoagulación de un paciente con SAF. La excepción son los anticuerpos antiprotrombina de la sección <a href="#clinica">03</a>, que sí pueden sangrar.</p>
+      </div>
+
+      <p class="cita">Fuente: pruebas según el teórico «Síndrome de Anticuerpos Antifosfolípidos». Perfil de alto riesgo según Tektonidou MG et al., EULAR recommendations for the management of antiphospholipid syndrome in adults, Ann Rheum Dis 2019;78:1296-1304. Asociación del AL con la trombosis según Lupus anticoagulants are stronger risk factors for thrombosis than anticardiolipin antibodies in the antiphospholipid syndrome: a systematic review of the literature, Blood 2003;101:1827. Estudio en tres pasos según Devreese KMJ et al., Guidance from the Scientific and Standardization Committee for lupus anticoagulant/antiphospholipid antibodies of the ISTH: update of the guidelines for lupus anticoagulant detection and interpretation, J Thromb Haemost 2020;18:2828-2839.</p>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-diagnostico" id="criterios">
+      <span class="seccion__pestana"><b>05</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">Criterios y diferenciales</h2>
+
+      <h3>Criterios de Sydney (Sapporo revisados, 2006)</h3>
+      <p>Se requiere <strong>al menos 1 criterio clínico y 1 de laboratorio</strong>.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Tipo</th><th>Criterio</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Clínico</strong></td><td>1 o más episodios de <strong>trombosis vascular</strong>: venosa, arterial o de pequeño vaso</td></tr>
+            <tr><td><strong>Clínico</strong></td><td>1 o más muertes inexplicadas de un feto morfológicamente normal desde la <span class="dato">semana 10</span></td></tr>
+            <tr><td><strong>Clínico</strong></td><td>1 o más partos prematuros de un feto morfológicamente normal antes de la <span class="dato">semana 34</span>, por eclampsia, preeclampsia grave o insuficiencia placentaria</td></tr>
+            <tr><td><strong>Clínico</strong></td><td><span class="dato">3 o más</span> abortos espontáneos consecutivos inexplicados antes de la <span class="dato">semana 10</span></td></tr>
+            <tr><td><strong>Laboratorio</strong></td><td>Anticoagulante lúpico positivo</td></tr>
+            <tr><td><strong>Laboratorio</strong></td><td>Anticardiolipinas IgG o IgM en título moderado o alto: más de <span class="dato">40 GPL o MPL</span>, o por encima del percentil 99</td></tr>
+            <tr><td><strong>Laboratorio</strong></td><td>Anti-β2-glicoproteína I IgG o IgM por encima del percentil 99</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>El laboratorio tiene que ser positivo en <strong>2 ocasiones separadas por al menos 12 semanas</strong>. No se clasifica como SAF si entre la prueba positiva y el evento clínico pasaron <strong>menos de 12 semanas o más de 5 años</strong>.</p>
+      <p>El teórico enumera la morbilidad obstétrica sin las semanas y el laboratorio sin el corte del título; la tabla los completa según el consenso original.</p>
+
+      <h3>Lo que cambió en 2023</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Aspecto</th><th>Sydney 2006</th><th>ACR/EULAR 2023</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Entrada</strong></td><td>—</td><td>Un criterio clínico más un aPL positivo <strong>dentro de los 3 años</strong></td></tr>
+            <tr><td><strong>Estructura</strong></td><td>1 clínico + 1 de laboratorio</td><td>Ítems con peso de <span class="dato">1 a 7</span> puntos; se clasifica con <strong>3 o más clínicos y 3 o más de laboratorio</strong></td></tr>
+            <tr><td><strong>Dominios clínicos</strong></td><td>Trombosis y morbilidad obstétrica</td><td>Seis: tromboembolismo venoso, trombosis arterial, microvascular, obstétrico, <strong>valvular cardíaco</strong> y <strong>hematológico</strong> (trombocitopenia de 20.000 a 130.000/mm³)</td></tr>
+            <tr><td><strong>Otros factores de riesgo</strong></td><td>No se ponderan</td><td>El evento con otros factores de riesgo pesa menos: un tromboembolismo venoso vale <span class="dato">1 punto</span> con perfil de alto riesgo y <span class="dato">3</span> sin él</td></tr>
+            <tr><td><strong>Obstétrico</strong></td><td>Cortes en las semanas 10 y 34</td><td>Redefinido: muertes prefetales o fetales tempranas, muerte fetal entre las semanas 16 y 34, y preeclampsia o insuficiencia placentaria graves antes de la semana 34</td></tr>
+            <tr><td><strong>Laboratorio</strong></td><td>AL, aCL y anti-β2GPI</td><td>Dos dominios: AL (una vez o persistente) y ELISA, con IgG e IgM separadas y títulos moderados (40–79) o altos (80 o más)</td></tr>
+            <tr><td><strong>Rendimiento</strong></td><td>Sensibilidad <span class="dato">99 %</span>, especificidad <span class="dato">86 %</span></td><td>Sensibilidad <span class="dato">84 %</span>, especificidad <span class="dato">99 %</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La idea detrás del cambio es que una trombosis que tiene otra explicación, como una cirugía, es menos atribuible al SAF. El sistema nuevo gana especificidad a costa de sensibilidad. Son criterios de <strong>clasificación</strong>, pensados para investigación: no reemplazan al juicio clínico frente al paciente. El peso de cada ítem está en la publicación original.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 300" role="img" aria-label="Algoritmo diagnóstico del síndrome antifosfolipídico. Ante la sospecha clínica, trombosis en un paciente joven, sin factores de riesgo o en un sitio inusual, morbilidad obstétrica, livedo o trombocitopenia, se piden los tres anticuerpos: anticoagulante lúpico, anticardiolipinas y anti-beta 2 glicoproteína uno. Si son negativos se busca otra causa. Si son positivos se repiten a las 12 semanas o más. Si persisten, es síndrome antifosfolipídico y se define el perfil de riesgo. Si se negativizan, era una positividad transitoria.">
+          <defs>
+            <marker id="sf3p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="130" y="10" width="440" height="60" rx="4" fill="var(--cli-c)" fill-opacity="0.12" stroke="var(--cli-c)" stroke-width="1.5"></rect>
+          <text x="350" y="30" font-size="12.5" font-weight="700" text-anchor="middle" fill="currentColor">Sospecha clínica</text>
+          <text x="350" y="48" font-size="10.5" text-anchor="middle" fill="currentColor">trombosis en joven, sin factores de riesgo o en sitio inusual</text>
+          <text x="350" y="63" font-size="10.5" text-anchor="middle" fill="currentColor">morbilidad obstétrica · livedo · trombocitopenia</text>
+          <path d="M 350 70 L 350 86" stroke="currentColor" stroke-width="1.6" fill="none" marker-end="url(#sf3p)"></path>
+
+          <rect x="150" y="88" width="400" height="44" rx="4" fill="var(--c)" fill-opacity="0.15" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="350" y="107" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">Pedir los tres</text>
+          <text x="350" y="124" font-size="10.5" text-anchor="middle" fill="currentColor">anticoagulante lúpico · anticardiolipinas · anti-β2GPI</text>
+
+          <line x1="350" y1="132" x2="350" y2="150" stroke="currentColor" stroke-width="1.6"></line>
+          <line x1="139" y1="150" x2="533" y2="150" stroke="currentColor" stroke-width="1.6"></line>
+          <path d="M 139 150 L 139 168" stroke="currentColor" stroke-width="1.6" fill="none" marker-end="url(#sf3p)"></path>
+          <path d="M 533 150 L 533 168" stroke="currentColor" stroke-width="1.6" fill="none" marker-end="url(#sf3p)"></path>
+          <text x="244" y="144" font-size="10.5" text-anchor="middle" fill="currentColor">negativos</text>
+          <text x="444" y="144" font-size="10.5" text-anchor="middle" fill="currentColor">positivo</text>
+
+          <rect x="14" y="170" width="250" height="56" rx="4" fill="var(--gen-c)" fill-opacity="0.10" stroke="var(--gen-c)" stroke-width="1.4"></rect>
+          <text x="139" y="190" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">Buscar otra causa</text>
+          <text x="139" y="208" font-size="10.5" text-anchor="middle" fill="currentColor">trombofilia hereditaria, PTT,</text>
+          <text x="139" y="222" font-size="10.5" text-anchor="middle" fill="currentColor">neoplasia, nefrótico, fármacos</text>
+
+          <rect x="380" y="170" width="306" height="44" rx="4" fill="var(--c)" fill-opacity="0.18" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="533" y="189" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">Repetir</text>
+          <text x="533" y="206" font-size="10.5" text-anchor="middle" fill="currentColor">a las 12 semanas o más</text>
+          <path d="M 533 214 L 533 238" stroke="currentColor" stroke-width="1.6" fill="none" marker-end="url(#sf3p)"></path>
+          <path d="M 380 206 L 266 256" stroke="currentColor" stroke-width="1.4" fill="none" stroke-dasharray="5 4" marker-end="url(#sf3p)"></path>
+
+          <rect x="14" y="242" width="250" height="50" rx="4" fill="var(--c)" fill-opacity="0.08" stroke="var(--c)" stroke-width="1.3"></rect>
+          <text x="139" y="262" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">Se negativiza</text>
+          <text x="139" y="280" font-size="10.5" text-anchor="middle" fill="currentColor">era transitorio (infección)</text>
+
+          <rect x="380" y="240" width="306" height="52" rx="4" fill="var(--imp-c)" fill-opacity="0.14" stroke="var(--imp-c)" stroke-width="1.8"></rect>
+          <text x="533" y="261" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">Persiste: SAF</text>
+          <text x="533" y="280" font-size="10.5" text-anchor="middle" fill="currentColor">clasificar y definir el perfil de riesgo</text>
+        </svg>
+        <figcaption>La repetición a las 12 semanas es lo que separa el SAF de los anticuerpos transitorios de una infección. Y el perfil que queda al final —cuántos anticuerpos, cuáles y con qué título— es el que decide el tratamiento de la sección 06.</figcaption>
+      </figure>
+
+      <h3>No toda trombofilia es un SAF</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Diferencial</th><th>Qué lo caracteriza</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Trombofilias hereditarias</strong></td><td>Factor V Leiden, mutación de la protrombina, déficit de proteína C, S o antitrombina</td></tr>
+            <tr><td><strong>PTT / SUH</strong></td><td>Anemia hemolítica microangiopática con trombocitopenia</td></tr>
+            <tr><td><strong>Vasculitis sistémicas</strong></td><td>Pueden simular trombosis de pequeño vaso</td></tr>
+            <tr><td><strong>Otras coagulopatías adquiridas</strong></td><td>Neoplasias, síndrome nefrótico, fármacos</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Fuente: criterios y diferenciales según el teórico «Síndrome de Anticuerpos Antifosfolípidos». Criterios completos según Miyakis S et al., International consensus statement on an update of the classification criteria for definite antiphospholipid syndrome (APS), J Thromb Haemost 2006;4:295-306. Criterios 2023 según Barbhaiya M et al., The 2023 ACR/EULAR Antiphospholipid Syndrome Classification Criteria, Arthritis Rheumatol 2023;75:1687-1702.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-c">
+      <span class="bloque__rotulo">Bloque C</span>
+      <span class="bloque__nombre">Cómo se trata</span>
+    </h2>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-tratamiento" id="tratamiento">
+      <span class="seccion__pestana"><b>06</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Profilaxis, trombosis y seguimiento</h2>
+
+      <h3>Medidas generales para todo paciente con aPL</h3>
+      <p>EULAR las indica para todos, y con más énfasis si el perfil es de alto riesgo:</p>
+      <ul>
+        <li>control estricto de los factores de riesgo cardiovascular: tabaco, hipertensión, dislipidemia, diabetes y sedentarismo;</li>
+        <li><strong>heparina de bajo peso molecular</strong> en situaciones de alto riesgo, como la cirugía, la internación, la inmovilización prolongada y el puerperio;</li>
+        <li>evitar los <strong>anticonceptivos con estrógenos</strong>.</li>
+      </ul>
+
+      <h3>Profilaxis primaria</h3>
+      <p>Es el tratamiento que se da para <strong>prevenir el primer evento trombótico</strong> en quien tiene anticuerpos pero todavía no tuvo clínica de SAF. Se hace con <strong>AAS en dosis bajas</strong> (<span class="dato">100 mg/día VO</span>), con o sin <strong>hidroxicloroquina</strong> (<span class="dato">200 mg cada 12 h VO</span>).</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>El teórico indica profilaxis en toda <strong>enfermedad del tejido conectivo con aPL positivos «de cualquier título»</strong>. EULAR 2019 decide por <strong>perfil de riesgo</strong>. Recomienda AAS en dosis bajas para el portador asintomático y para el paciente con LES sin eventos previos, <strong>cuando el perfil es de alto riesgo</strong>: anticoagulante lúpico, doble o triple positividad, o títulos persistentemente altos.</p>
+        <p>La segunda indicación del teórico, el perfil de alto riesgo sin clínica, coincide exactamente con la guía. La diferencia está solo en el «cualquier título».</p>
+      </div>
+
+      <h3>El evento trombótico</h3>
+      <p>El tratamiento es el mismo para el SAF primario y el secundario.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Situación</th><th>Manejo</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Evento agudo</strong></td><td>Heparina de bajo peso molecular o no fraccionada</td></tr>
+            <tr><td><strong>Mantenimiento</strong></td><td>Anticoagulante oral convencional: warfarina o acenocumarol</td></tr>
+            <tr><td><strong>Primera trombosis venosa</strong></td><td>INR objetivo <span class="dato">2 a 3</span>, a largo plazo</td></tr>
+            <tr><td><strong>Primera trombosis arterial</strong></td><td>INR <span class="dato">2 a 3</span> o <span class="dato">3 a 4</span> según el riesgo de sangrado y de trombosis de cada paciente, con o sin antiagregación</td></tr>
+            <tr><td><strong>Recurrencia pese a buen tratamiento</strong></td><td>Subir el INR a 3–4, sumar AAS o pasar a heparina de bajo peso molecular</td></tr>
+            <tr><td><strong>Triple positividad o recurrencia</strong></td><td>Se prefiere <strong>warfarina</strong> sobre los anticoagulantes directos</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Anticoagulantes directos.</strong> EULAR es explícita: el <strong>rivaroxabán no se usa en la triple positividad</strong>, y los anticoagulantes directos <strong>no se recomiendan en el SAF definido con trombosis arterial</strong>, por el alto riesgo de recurrencia. Es el punto en el que el SAF se aparta del resto de la tromboembolia venosa.</p>
+      <p><strong>Hidroxicloroquina.</strong> Según el teórico, reduce el tamaño y la persistencia del trombo y revierte la activación plaquetaria que inducen los anticuerpos.</p>
+      <p><strong>Duración.</strong> Por la alta tasa de recurrencia, que el teórico estima en un <span class="dato">11 % anual</span>, la anticoagulación después de un evento confirmado es <strong>por tiempo indeterminado</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 700 300" role="img" aria-label="Árbol de tratamiento del paciente con anticuerpos antifosfolípidos. Sin eventos y con perfil de alto riesgo: aspirina 100 miligramos por día, más hidroxicloroquina si hay lupus. Trombosis venosa: heparina y después warfarina con INR 2 a 3 por tiempo indefinido. Trombosis arterial: warfarina con INR 2 a 3 o 3 a 4, con o sin aspirina, sin anticoagulantes directos. Si hay recurrencia con buen tratamiento: INR 3 a 4, sumar aspirina o pasar a heparina de bajo peso molecular. En el embarazo la warfarina está contraindicada y se usa heparina. En la triple positividad se prefiere warfarina y no se usa rivaroxabán.">
+          <defs>
+            <marker id="sf4p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="250" y="10" width="200" height="40" rx="4" fill="var(--c)" fill-opacity="0.16" stroke="var(--c)" stroke-width="1.6"></rect>
+          <text x="350" y="35" font-size="12.5" font-weight="700" text-anchor="middle" fill="currentColor">Paciente con aPL</text>
+
+          <line x1="350" y1="50" x2="350" y2="64" stroke="currentColor" stroke-width="1.6"></line>
+          <line x1="119" y1="64" x2="581" y2="64" stroke="currentColor" stroke-width="1.6"></line>
+          <path d="M 119 64 L 119 78" stroke="currentColor" stroke-width="1.6" fill="none" marker-end="url(#sf4p)"></path>
+          <path d="M 350 64 L 350 78" stroke="currentColor" stroke-width="1.6" fill="none" marker-end="url(#sf4p)"></path>
+          <path d="M 581 64 L 581 78" stroke="currentColor" stroke-width="1.6" fill="none" marker-end="url(#sf4p)"></path>
+
+          <rect x="14" y="80" width="212" height="92" rx="4" fill="var(--gen-c)" fill-opacity="0.10" stroke="var(--gen-c)" stroke-width="1.4"></rect>
+          <text x="120" y="102" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">Sin eventos</text>
+          <text x="120" y="122" font-size="10.5" text-anchor="middle" fill="currentColor">perfil de alto riesgo:</text>
+          <text x="120" y="140" font-size="10.5" text-anchor="middle" fill="currentColor">AAS 100 mg/día</text>
+          <text x="120" y="158" font-size="10.5" text-anchor="middle" fill="currentColor">± HCQ si hay LES</text>
+
+          <rect x="244" y="80" width="212" height="92" rx="4" fill="var(--c)" fill-opacity="0.12" stroke="var(--c)" stroke-width="1.5"></rect>
+          <text x="350" y="102" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">Trombosis venosa</text>
+          <text x="350" y="122" font-size="10.5" text-anchor="middle" fill="currentColor">heparina, después</text>
+          <text x="350" y="140" font-size="10.5" text-anchor="middle" fill="currentColor">warfarina INR 2–3</text>
+          <text x="350" y="158" font-size="10.5" text-anchor="middle" fill="currentColor">por tiempo indefinido</text>
+
+          <rect x="474" y="80" width="212" height="92" rx="4" fill="var(--imp-c)" fill-opacity="0.14" stroke="var(--imp-c)" stroke-width="1.7"></rect>
+          <text x="580" y="102" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">Trombosis arterial</text>
+          <text x="580" y="122" font-size="10.5" text-anchor="middle" fill="currentColor">warfarina INR 2–3 o 3–4</text>
+          <text x="580" y="140" font-size="10.5" text-anchor="middle" fill="currentColor">± AAS</text>
+          <text x="580" y="158" font-size="10.5" text-anchor="middle" fill="currentColor">sin anticoagulantes directos</text>
+
+          <path d="M 350 172 L 350 198" stroke="currentColor" stroke-width="1.6" fill="none" marker-end="url(#sf4p)"></path>
+          <path d="M 580 172 L 580 198" stroke="currentColor" stroke-width="1.6" fill="none" marker-end="url(#sf4p)"></path>
+
+          <rect x="244" y="200" width="442" height="60" rx="4" fill="var(--c)" fill-opacity="0.20" stroke="var(--c)" stroke-width="1.6"></rect>
+          <text x="465" y="222" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">Recurrencia con buen tratamiento</text>
+          <text x="465" y="244" font-size="10.5" text-anchor="middle" fill="currentColor">INR 3–4, sumar AAS o pasar a heparina de bajo peso molecular</text>
+
+          <rect x="14" y="200" width="212" height="60" rx="4" fill="var(--dia-c)" fill-opacity="0.14" stroke="var(--dia-c)" stroke-width="1.5"></rect>
+          <text x="120" y="222" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">Embarazo</text>
+          <text x="120" y="244" font-size="10.5" text-anchor="middle" fill="currentColor">sin warfarina: heparina (07)</text>
+
+          <text x="350" y="288" font-size="10.5" text-anchor="middle" fill="currentColor">triple positividad: se prefiere warfarina y el rivaroxabán no se usa</text>
+        </svg>
+        <figcaption>La primera pregunta es si ya hubo un evento. Sin eventos, lo que decide es el perfil de anticuerpos; con un evento, lo que decide es si fue venoso o arterial. El embarazo cambia el fármaco en cualquier rama, porque la warfarina es teratogénica.</figcaption>
+      </figure>
+
+      <h3>Seguimiento</h3>
+      <p>La recurrencia es mayor con <strong>triple positividad</strong>, <strong>LES asociado</strong> o <strong>suspensión del tratamiento</strong>. Se controlan periódicamente el perfil de anticuerpos y la aparición de nuevas manifestaciones.</p>
+
+      <p class="cita">Fuente: profilaxis, tratamiento, hidroxicloroquina y seguimiento según el teórico «Síndrome de Anticuerpos Antifosfolípidos». Perfil de riesgo, INR, recurrencia y anticoagulantes directos según Tektonidou MG et al., EULAR recommendations for the management of antiphospholipid syndrome in adults, Ann Rheum Dis 2019;78:1296-1304.</p>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-tratamiento" id="obstetrico">
+      <span class="seccion__pestana"><b>07</b> Tratamiento</span>
+      <h2 class="seccion__titulo">SAF obstétrico</h2>
+
+      <p>El tratamiento depende de qué pasó antes del embarazo actual.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Antecedente</th><th>Durante el embarazo</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Perfil de alto riesgo, sin trombosis ni complicaciones previas</strong></td><td>Considerar AAS en dosis bajas (<span class="dato">75 a 100 mg/día</span>)</td></tr>
+            <tr><td><strong>3 o más abortos antes de la semana 10, o pérdida fetal desde la semana 10</strong></td><td>AAS + <strong>heparina de bajo peso molecular en dosis profiláctica</strong>. El teórico da <span class="dato">AAS 100 mg/día + 40 mg/día SC</span>, hasta 6 semanas posparto</td></tr>
+            <tr><td><strong>Parto antes de la semana 34 por preeclampsia grave o insuficiencia placentaria</strong></td><td>AAS sola o AAS + heparina profiláctica, según el riesgo individual</td></tr>
+            <tr><td><strong>Trombosis vascular previa</strong></td><td>Heparina de bajo peso molecular en <strong>dosis de anticoagulación</strong>; EULAR le suma AAS en dosis bajas</td></tr>
+            <tr><td><strong>Complicaciones que se repiten pese al tratamiento</strong></td><td>Heparina en dosis terapéutica, sumar hidroxicloroquina o prednisolona en dosis bajas en el primer trimestre</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Por qué la warfarina queda afuera</h3>
+      <p>La warfarina está <strong>contraindicada en el embarazo por teratogenicidad</strong> y se reemplaza por heparina. El período crítico de la embriopatía por warfarina va de la <strong>semana 6 a la 12</strong>. Como la warfarina tiene una vida media larga, pasar a heparina recién en la semana 6 puede ser tarde: el cambio se planifica <strong>antes</strong>, idealmente al confirmar el embarazo.</p>
+      <p>Con el tratamiento adecuado, entre el <span class="dato">70 y el 80 %</span> de los embarazos en pacientes con SAF llegan a buen término.</p>
+
+      <p class="cita">Fuente: esquemas y pronóstico según el teórico «Síndrome de Anticuerpos Antifosfolípidos». Escenarios según Tektonidou MG et al., EULAR recommendations for the management of antiphospholipid syndrome in adults, Ann Rheum Dis 2019;78:1296-1304. Ventana de la warfarina según The «warfarin window» in pregnancy: the importance of half-life (PubMed 21176310) y la monografía del UK Teratology Information Service sobre la warfarina en el embarazo.</p>
+    </section>
+
+    <!-- ============ 8 ============ -->
+    <section class="seccion s-importantes" id="caps">
+      <span class="seccion__pestana"><b>08</b> Importante</span>
+      <h2 class="seccion__titulo">SAF catastrófico</h2>
+
+      <p>Es la forma acelerada del síndrome, con <strong>trombosis simultánea de 3 o más órganos o sistemas en menos de una semana</strong>, oclusión de pequeño vaso y <strong>fallo multiorgánico</strong>. Representa <strong>menos del 1 %</strong> de los SAF, pero la mortalidad informada supera el <span class="dato">30 a 50 %</span> y requiere manejo en <strong>terapia intensiva</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Aspecto</th><th>Detalle</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Definición</strong></td><td>3 o más órganos o sistemas, en menos de una semana, con confirmación histológica de oclusión de pequeño vaso</td></tr>
+            <tr><td><strong>Desencadenantes</strong></td><td>Infecciones, cirugía, <strong>suspensión de la anticoagulación</strong>, neoplasias</td></tr>
+            <tr><td><strong>Tratamiento</strong></td><td><strong>Anticoagulación + glucocorticoides + plasmaféresis o inmunoglobulina IV</strong>; ciclofosfamida si se asocia a un brote lúpico</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>El teórico presenta la confirmación histológica como parte de la definición. En los criterios de consenso, esa biopsia es lo que separa el <strong>CAPS definido</strong> del <strong>probable</strong>. En un paciente crítico muchas veces no se puede hacer, y su falta no impide sospecharlo ni tratarlo.</p>
+      <p>El consenso internacional ordena el tratamiento en tres objetivos: tratar el desencadenante, prevenir y tratar las trombosis en curso, y frenar la tormenta de citocinas. De ahí la combinación: el anticoagulante apunta al trombo, y el corticoide, la plasmaféresis y la inmunoglobulina, a la respuesta inmune.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>La mejor forma de tratar el CAPS es no desencadenarlo. EULAR recomienda <strong>tratar pronto las infecciones</strong> en todo paciente con aPL y <strong>evitar interrupciones de la anticoagulación o los INR bajos</strong> en el SAF trombótico. Una suspensión de la warfarina por un procedimiento, sin puente con heparina, es exactamente el tipo de error que lo precipita.</p>
+      </div>
+
+      <p class="cita">Fuente: definición, desencadenantes, mortalidad y tratamiento según el teórico «Síndrome de Anticuerpos Antifosfolípidos». Frecuencia, criterios y objetivos del tratamiento según Asherson RA et al., Catastrophic antiphospholipid syndrome: international consensus statement on classification criteria and treatment guidelines, Lupus 2003;12:530-534. Prevención según EULAR 2019 (Ann Rheum Dis 2019;78:1296-1304).</p>
+    </section>
+
+    <!-- ============ Repaso ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>¿Qué define al SAF?</summary>
+          <div class="fc__r">Trombosis venosa o arterial, morbilidad obstétrica recurrente o ambas, con <strong>anticuerpos antifosfolípidos persistentes</strong>. Es la <strong>trombofilia adquirida más frecuente</strong>.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Cuáles son las cuatro formas del SAF?</summary>
+          <div class="fc__r"><strong>Primario</strong> (sin enfermedad de base), <strong>secundario</strong> (sobre todo al LES), <strong>obstétrico</strong> (solo gestacional) y <strong>catastrófico</strong> (multiorgánico, menos del 1 %).</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Por qué el SAF puede dar una VDRL falsamente reactiva?</summary>
+          <div class="fc__r">Porque la <strong>cardiolipina</strong> es el antígeno de la VDRL. Por la misma razón, las anticardiolipinas aparecen de forma transitoria en la sífilis y otras infecciones.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Contra qué se dirigen realmente los anticuerpos «antifosfolípidos»?</summary>
+          <div class="fc__r">Contra <strong>proteínas plasmáticas unidas a fosfolípidos</strong>, sobre todo la <strong>β2-glicoproteína I</strong>, en plaquetas y endotelio. No reconocen al fosfolípido aislado.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Todas las manifestaciones del SAF son trombóticas?</summary>
+          <div class="fc__r"><strong>No.</strong> La activación plaquetaria, del complemento y los mecanismos inmunomediados explican la trombocitopenia, el livedo y buena parte de lo neurológico.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Cuál es la manifestación más frecuente y cuándo hay que sospechar SAF?</summary>
+          <div class="fc__r">La <strong>trombosis venosa</strong> (TVP, TEP). Sospecharlo ante una trombosis en un paciente <strong>joven</strong>, <strong>sin factores de riesgo</strong> o en un <strong>sitio inusual</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué manifestación cutánea obliga a descartar SAF?</summary>
+          <div class="fc__r">El <strong>livedo reticularis</strong>, sobre todo si es persistente y generalizado. Los criterios de 2023 puntúan el livedo racemosa.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Cuál de los tres anticuerpos es el menos específico y cuál el que más se asocia a trombosis?</summary>
+          <div class="fc__r">Las <strong>anticardiolipinas</strong> son las más sensibles pero las menos específicas. El <strong>anticoagulante lúpico</strong> es el que más se asocia a trombosis.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Qué es un perfil de alto riesgo?</summary>
+          <div class="fc__r">Cualquiera de estos: <strong>anticoagulante lúpico positivo</strong>, <strong>doble o triple positividad</strong>, o <strong>títulos persistentemente altos</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Por qué el anticoagulante lúpico alarga el TTPK si el paciente trombosa?</summary>
+          <div class="fc__r">Porque en el tubo <strong>ocupa el fosfolípido</strong> que los factores necesitan y la coagulación se alarga. En el paciente activa plaquetas y endotelio. Es un marcador de trombosis, <strong>no de sangrado</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Cuáles son los tres pasos del estudio del anticoagulante lúpico?</summary>
+          <div class="fc__r"><strong>Tamizaje</strong> (dRVVT y TTPK: el tiempo se alarga), <strong>mezcla</strong> con plasma normal (no corrige: es un inhibidor) y <strong>confirmación</strong> con fosfolípido en exceso (se acorta: depende del fosfolípido).</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Qué exigen los criterios de Sydney?</summary>
+          <div class="fc__r"><strong>1 criterio clínico</strong> (trombosis o morbilidad obstétrica) y <strong>1 de laboratorio</strong> (AL, aCL de más de 40 GPL/MPL o por encima del percentil 99, o anti-β2GPI por encima del percentil 99), positivo en 2 ocasiones separadas por <strong>12 semanas o más</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Cuáles son los criterios obstétricos de Sydney?</summary>
+          <div class="fc__r">1 o más muertes fetales inexplicadas desde la <strong>semana 10</strong>; 1 o más partos prematuros antes de la <strong>semana 34</strong> por preeclampsia grave, eclampsia o insuficiencia placentaria; <strong>3 o más abortos consecutivos</strong> antes de la semana 10.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Qué cambió con los criterios ACR/EULAR 2023?</summary>
+          <div class="fc__r">Criterio de entrada (aPL positivo dentro de los 3 años), ítems con peso de 1 a 7 puntos y umbral de <strong>3 clínicos y 3 de laboratorio</strong>. Suman dominios valvular y hematológico, y el evento con otros factores de riesgo pesa menos. Especificidad del 99 %.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿A quién se le indica profilaxis primaria con AAS según EULAR?</summary>
+          <div class="fc__r">Al portador asintomático y al paciente con LES sin eventos, <strong>con perfil de alto riesgo</strong>. El teórico la extiende a toda enfermedad del tejido conectivo «con cualquier título».</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Qué INR se busca tras una trombosis venosa y tras una arterial?</summary>
+          <div class="fc__r">Venosa: <strong>INR 2 a 3</strong>. Arterial: <strong>2 a 3 o 3 a 4</strong> según el riesgo de sangrado y de trombosis, con o sin AAS. En los dos casos, anticoagulación indefinida.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Cuándo no se usan los anticoagulantes directos en el SAF?</summary>
+          <div class="fc__r">El <strong>rivaroxabán no se usa en la triple positividad</strong>, y los anticoagulantes directos no se recomiendan en el SAF con <strong>trombosis arterial</strong>. Ahí se prefiere warfarina.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Cómo se trata a una embarazada con SAF obstétrico previo?</summary>
+          <div class="fc__r"><strong>AAS + heparina de bajo peso molecular en dosis profiláctica</strong>. El teórico da AAS 100 mg y 40 mg/día SC, hasta 6 semanas posparto. Si hubo trombosis previa, heparina en dosis de anticoagulación.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Cuándo es teratogénica la warfarina y cuándo se cambia?</summary>
+          <div class="fc__r">El período crítico va de la <strong>semana 6 a la 12</strong>. Como tiene vida media larga, el cambio a heparina se planifica <strong>antes</strong>, al confirmar el embarazo.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Qué define al SAF catastrófico y cómo se trata?</summary>
+          <div class="fc__r">Trombosis de <strong>3 o más órganos en menos de una semana</strong>, con oclusión de pequeño vaso. Se trata con <strong>anticoagulación + glucocorticoides + plasmaféresis o inmunoglobulina IV</strong>, en terapia intensiva.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Qué desencadena el SAF catastrófico y cómo se previene?</summary>
+          <div class="fc__r">Infecciones, cirugía, <strong>suspensión de la anticoagulación</strong> y neoplasias. Se previene tratando pronto las infecciones y evitando interrupciones del anticoagulante o INR bajos.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Cuadro clave</dt>
+        <dd><strong>Trombosis</strong> venosa o arterial en un paciente joven, sin factores de riesgo o en un sitio inusual, o <strong>pérdidas fetales</strong>, con <strong>anticuerpos antifosfolípidos persistentes</strong>. Livedo, trombocitopenia y LES asociado.</dd>
+
+        <dt class="r-gold">Diagnóstico</dt>
+        <dd>Pedir los tres: <strong>anticoagulante lúpico, anticardiolipinas y anti-β2GPI</strong>, y repetir a las <strong>12 semanas</strong>. Sydney: 1 clínico + 1 de laboratorio. ACR/EULAR 2023: 3 o más puntos clínicos y 3 o más de laboratorio.</dd>
+
+        <dt class="r-tto">Tratamiento</dt>
+        <dd>Evento: heparina y después <strong>warfarina indefinida</strong>, con INR 2–3 en la venosa y 2–3 o 3–4 en la arterial. Sin anticoagulantes directos en la arterial ni rivaroxabán en la triple positividad. Embarazo: <strong>AAS + heparina</strong>. Profilaxis primaria: AAS si el perfil es de alto riesgo.</dd>
+
+        <dt class="r-alerta">Criterios de alerta</dt>
+        <dd>TTPK largo por AL = <strong>trombosis, no sangrado</strong>. Nunca warfarina en el embarazo. Nunca suspender la anticoagulación sin puente. Trombosis de 3 o más órganos en una semana = <strong>SAF catastrófico</strong>, a terapia intensiva.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir del teórico «Síndrome de Anticuerpos Antifosfolípidos» de Medicina Interna III, Reumatología (Dra. Mariela Araujo). Se complementó con los criterios de Sydney de 2006, los criterios ACR/EULAR de 2023, las recomendaciones EULAR de 2019, la guía de la ISTH de 2020 para el anticoagulante lúpico y el consenso internacional sobre el SAF catastrófico. Material de estudio: no reemplaza el criterio clínico ni la guía institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+
+  // ---- Tema claro / oscuro ----
+  // Sin eleccion estampada manda el sistema; el boton la estampa y la guarda.
+  var raiz = document.documentElement;
+  var boton = document.getElementById('tema');
+
+  function temaActual(){
+    var estampado = raiz.getAttribute('data-theme');
+    if (estampado) return estampado;
+    return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+
+  if (boton){
+    var rotular = function(){
+      var actual = temaActual();
+      boton.setAttribute('aria-pressed', actual === 'dark' ? 'true' : 'false');
+      boton.setAttribute('aria-label', actual === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+    };
+    boton.addEventListener('click', function(){
+      var nuevo = temaActual() === 'dark' ? 'light' : 'dark';
+      raiz.setAttribute('data-theme', nuevo);
+      try { localStorage.setItem('wordmed-tema', nuevo); } catch (e) { /* sin persistencia */ }
+      rotular();
+    });
+    rotular();
+  }
+
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link, .ir-link'));
+
+  // Devuelve TODOS los enlaces al ancla: la misma seccion figura en el indice
+  // lateral y en el compacto, y los dos tienen que encenderse juntos.
+  function porMeta(hash){
+    return enlaces.filter(function(l){ return l.getAttribute('href') === '#' + hash; });
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var activos = porMeta(e.target.id);
+        if (!activos.length) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          activos.forEach(function(l){ l.setAttribute('aria-current', 'true'); });
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>
+<script>
+(function(){
+  "use strict";
+  var clave = document.body.dataset.clave || "";
+  var enApp = typeof window.WordmedApp !== "undefined";
+  var MEM = "wordmed:progreso";
+
+  function leer(){ try{ return JSON.parse(localStorage.getItem(MEM)) || {}; }catch(e){ return {}; } }
+  function guardar(m){ try{ localStorage.setItem(MEM, JSON.stringify(m)); }catch(e){} }
+
+  function alto(){
+    return Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+  }
+
+  /* retomar donde quedó */
+  if (clave) {
+    var m = leer()[clave];
+    if (m && m.y > 0) {
+      window.addEventListener("load", function(){
+        window.scrollTo(0, Math.min(m.y, alto()));
+      });
+    }
+  }
+
+  /* anotar el avance, sin ahogar el scroll */
+  var pendiente = false;
+  window.addEventListener("scroll", function(){
+    if (pendiente || !clave) return;
+    pendiente = true;
+    requestAnimationFrame(function(){
+      pendiente = false;
+      var y = window.scrollY;
+      var pct = Math.round((y / alto()) * 100);
+      pct = Math.max(0, Math.min(100, pct));
+      var m = leer();
+      m[clave] = { y: y, pct: pct, ts: Date.now() };
+      guardar(m);
+      if (enApp && window.WordmedApp.progreso) window.WordmedApp.progreso(clave, pct, y);
+    });
+  }, { passive: true });
+
+  /* volver: solo cuando vinimos de la cáscara web */
+  if (!enApp && document.referrer && document.referrer.indexOf(location.origin) === 0) {
+    var b = document.createElement("button");
+    b.className = "volver";
+    b.type = "button";
+    b.setAttribute("aria-label", "Volver");
+    b.innerHTML = '<svg class="volver__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg>';
+    b.addEventListener("click", function(){ history.back(); });
+    document.body.appendChild(b);
+  }
+})();
+</script>
+</body>
+</html>

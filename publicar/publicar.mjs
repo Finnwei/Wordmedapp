@@ -28,8 +28,14 @@ const RAIZ = fileURLToPath(new URL("..", import.meta.url));
 const ORIGEN = join(RAIZ, "Materias");
 const DESTINO = join(RAIZ, "contenido");
 
-/* Temas que existen en la carpeta pero no se publican. */
-const IGNORAR = new Set(["Infecto/9. ETS.html"]);
+/* Temas que existen en la carpeta pero no se publican.
+   `H3 Coagulación.html` es la versión vieja del mismo tema: la reemplaza
+   `H3. Coagulacion.html`. Si no estuviera acá, Medicina Interna 3 saldría
+   con dos H3. Se puede borrar del disco; mientras siga ahí, no molesta. */
+const IGNORAR = new Set([
+  "Infecto/9. ETS.html",
+  "Medicina interna 3/H3 Coagulación.html",
+]);
 
 /* Sufijo que a veces trae la portada y no aporta nada. */
 const SUFIJO_PORTADA = /·\s*Cuadernillo de estudio\s*$/i;
@@ -92,7 +98,25 @@ function partir(html) {
   const mEstilo = /<style>([\s\S]*?)<\/style>/i.exec(html);
   if (!mTitulo) throw new Error("no tiene <title>");
   if (!mEstilo) throw new Error("no tiene <style>");
-  const cuerpo = html.slice(mEstilo.index + mEstilo[0].length).trim();
+
+  let cuerpo = html.slice(mEstilo.index + mEstilo[0].length).trim();
+
+  /* Los cuadernillos llegan como fragmento —sin <head> ni <body>—, que es
+     lo que este envoltorio espera. Pero algunos vienen ya envueltos: ahí lo
+     de arriba se queda también con </head><body>…</body></html>, y el
+     archivo publicado sale con dos <body> y el puente corriendo dos veces.
+     Cuando pasa, nos quedamos con lo de adentro del <body> y tiramos el
+     puente viejo, que el envoltorio vuelve a poner. */
+  const mCuerpo = /<body\b[^>]*>([\s\S]*)<\/body>/i.exec(cuerpo);
+  if (mCuerpo) {
+    cuerpo = mCuerpo[1]
+      .replace(
+        /<script\b[^>]*>(?:(?!<\/script>)[\s\S])*?wordmed:progreso[\s\S]*?<\/script>/gi,
+        "",
+      )
+      .trim();
+  }
+
   return { titulo: mTitulo[1].trim(), estilo: mEstilo[1], cuerpo };
 }
 

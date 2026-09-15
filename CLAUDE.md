@@ -40,6 +40,11 @@ Globales en `~/.claude/skills/`: `android-cli` (Google — SDK, emulador, build)
   una guía oficial, se omite.
 - Los HTML de `Materias/` son el producto final del generador — no editarlos acá a mano.
   Si hay que corregir contenido, se corrige en `..\Wordmed claude` y se regenera.
+- Los escribe `herramientas/finalizar.py` del proyecto hermano, con el nombre
+  `<prefijo>. <tema>.html` (`E2.`, `H4.`, `R1.` en Medicina Interna 3; sólo el número
+  en el resto). No copiarlos a mano.
+- **Van sin envoltorio**: sin `<!DOCTYPE>`, sin `<head>` y sin `<body>`. `publicar.mjs`
+  se lo pone al publicar; un archivo ya envuelto sale de ahí con dos `<body>`.
 - No tomar decisiones de producto ni de arquitectura que Andrés no haya tomado.
   Si falta un dato, preguntar.
 
