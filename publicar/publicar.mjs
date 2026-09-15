@@ -28,14 +28,8 @@ const RAIZ = fileURLToPath(new URL("..", import.meta.url));
 const ORIGEN = join(RAIZ, "Materias");
 const DESTINO = join(RAIZ, "contenido");
 
-/* Temas que existen en la carpeta pero no se publican.
-   `H3 Coagulación.html` es la versión vieja del mismo tema: la reemplaza
-   `H3. Coagulacion.html`. Si no estuviera acá, Medicina Interna 3 saldría
-   con dos H3. Se puede borrar del disco; mientras siga ahí, no molesta. */
-const IGNORAR = new Set([
-  "Infecto/9. ETS.html",
-  "Medicina interna 3/H3 Coagulación.html",
-]);
+/* Temas que existen en la carpeta pero no se publican. */
+const IGNORAR = new Set(["Infecto/9. ETS.html"]);
 
 /* Sufijo que a veces trae la portada y no aporta nada. */
 const SUFIJO_PORTADA = /·\s*Cuadernillo de estudio\s*$/i;
