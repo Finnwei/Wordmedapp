@@ -90,15 +90,24 @@ class EstadoNotas(
         enSegundoPlano { almacen.guardar(clave, nuevas) }
     }
 
-    fun agregar(fx: Float, fy: Float) {
-        val nota = Nota(id = UUID.randomUUID().toString(), fx = enHoja(fx), fy = enHoja(fy))
+    fun agregar(fx: Float, fy: Float, ancla: String, dx: Float, dy: Float) {
+        val nota = Nota(
+            id = UUID.randomUUID().toString(),
+            ancla = ancla.ifBlank { null }, dx = dx, dy = dy,
+            fx = enHoja(fx), fy = enHoja(fy),
+        )
         persistir(notas + nota)
         reciencreada = nota.id
         abierta = nota.id
     }
 
-    fun mover(id: String, fx: Float, fy: Float) = persistir(
-        notas.map { if (it.id == id) it.copy(fx = enHoja(fx), fy = enHoja(fy)) else it }
+    fun mover(id: String, fx: Float, fy: Float, ancla: String, dx: Float, dy: Float) = persistir(
+        notas.map {
+            if (it.id == id) it.copy(
+                ancla = ancla.ifBlank { null }, dx = dx, dy = dy,
+                fx = enHoja(fx), fy = enHoja(fy),
+            ) else it
+        }
     )
 
     fun escribir(id: String, texto: String) =

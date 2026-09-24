@@ -704,12 +704,24 @@ avisa después, así que la marca iba un paso atrás, se despegaba en los
 tirones rápidos y flotaba en el rebote del final. Siendo parte de la página
 no hay nada que sincronizar, y de paso crece y se achica sola con el zoom.
 
-**Dónde se anclan.** La posición se guarda como **fracción de la hoja** —0 es
-el borde de arriba o el de la izquierda, 1 el de abajo o el de la derecha— y
-el guion la multiplica por lo que mide el documento. Nunca en píxeles: el
-formato viejo los convertía con el zoom que informaba el WebView, que llega
-tarde y con valores que cambian después de cargar, y una nota podía quedar
-guardada fuera de la hoja y no verse nunca más. Pasó de verdad.
+**Dónde se anclan: a un párrafo, no a una proporción.** Cada nota guarda el
+`id` del elemento del cuadernillo que tiene debajo y a qué distancia de su
+esquina. Los cuadernillos numeran todas sus secciones, así que casi siempre
+hay un ancla a mano; si no aparece, queda la fracción de la hoja como
+respaldo.
+
+Antes se guardaba sólo la fracción, y ahí estaba el problema de las
+«animaciones descoordinadas»: el cuadernillo abre y cierra secciones y
+fichas, cada vez que una crece el documento se alarga, y una nota guardada
+como fracción del largo se corría sola mientras el texto se quedaba quieto.
+Prendida al párrafo se queda con su párrafo: si lo que se despliega está más
+arriba, baja con él; si está más abajo, no se mueve; y si su párrafo queda
+plegado, desaparece con él. Un ResizeObserver la reubica durante la
+animación, cuadro a cuadro.
+
+Medido con el teléfono grabando a 60 cuadros por segundo: en un scroll
+rápido el cuadradito y el texto se mueven con 1 o 2 px de diferencia, y
+durante el plegado de una sección, con el mismo número exacto.
 
 **Qué cruza la frontera.** Sólo cuatro cosas, todas por `window.WordmedApp`:
 la página avisa que tocaron una nota, que la soltaron en otro lado, o que

@@ -24,6 +24,13 @@ import java.io.File
 @Serializable
 data class Nota(
     val id: String,
+    /** El `id` del elemento del cuadernillo al que está prendida, y a qué
+     *  distancia de su esquina en píxeles CSS. Es el ancla buena: si una
+     *  sección de más arriba se despliega y el documento se alarga, la nota
+     *  sigue junto a su párrafo en vez de correrse. */
+    val ancla: String? = null,
+    val dx: Float = 0f,
+    val dy: Float = 0f,
     val fx: Float? = null,
     val fy: Float? = null,
     val x: Float? = null,

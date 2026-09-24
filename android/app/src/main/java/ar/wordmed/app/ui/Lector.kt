@@ -345,8 +345,8 @@ private fun BotonVisor(alTocar: () -> Unit, contenido: @Composable () -> Unit) {
 class PuenteLector(
     private val alProgreso: (String, Int, Int) -> Unit,
     private val alAbrirNota: (String) -> Unit,
-    private val alMoverNota: (String, Float, Float) -> Unit,
-    private val alCrearNota: (Float, Float) -> Unit,
+    private val alMoverNota: (String, Float, Float, String, Float, Float) -> Unit,
+    private val alCrearNota: (Float, Float, String, Float, Float) -> Unit,
 ) {
     /* Todo esto llega desde el hilo de JavaScript, y del otro lado hay
        estado de Compose, que sólo se toca desde el principal. */
@@ -361,12 +361,12 @@ class PuenteLector(
     }
 
     @JavascriptInterface
-    fun moverNota(id: String, fx: Double, fy: Double) {
-        principal.post { alMoverNota(id, fx.toFloat(), fy.toFloat()) }
+    fun moverNota(id: String, fx: Double, fy: Double, ancla: String, dx: Double, dy: Double) {
+        principal.post { alMoverNota(id, fx.toFloat(), fy.toFloat(), ancla, dx.toFloat(), dy.toFloat()) }
     }
 
     @JavascriptInterface
-    fun crearNota(fx: Double, fy: Double) {
-        principal.post { alCrearNota(fx.toFloat(), fy.toFloat()) }
+    fun crearNota(fx: Double, fy: Double, ancla: String, dx: Double, dy: Double) {
+        principal.post { alCrearNota(fx.toFloat(), fy.toFloat(), ancla, dx.toFloat(), dy.toFloat()) }
     }
 }

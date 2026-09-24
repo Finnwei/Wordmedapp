@@ -5,16 +5,20 @@ import ar.wordmed.app.datos.Nota
 /**
  * Los cuadraditos de las notas, dibujados **adentro** del cuadernillo.
  *
- * Antes los dibujaba Compose encima del WebView y se los movía a mano
- * siguiendo el scroll. Eso nunca puede quedar pegado: el WebView scrollea
- * en su propio hilo y avisa después, así que la marca iba siempre un paso
- * atrás, se despegaba en los tirones rápidos y flotaba en el rebote del
- * final. Siendo un elemento más de la página no hay nada que sincronizar
- * —se mueve con el texto porque *es* el texto— y de paso crece y se achica
- * sola con el zoom, sin que nadie haga cuentas.
+ * Son un elemento más de la página, así que se mueven con el texto porque
+ * *son* el texto: no hay nada que sincronizar con el scroll. Dibujarlos por
+ * fuera, encima del WebView, no podía quedar pegado —el WebView scrollea en
+ * su propio hilo y avisa después—, y de paso así crecen y se achican solos
+ * con el zoom.
  *
- * Se inyecta al terminar de cargar. No toca el archivo del cuadernillo: los
- * cuadraditos existen sólo mientras la página está abierta en la app.
+ * **Cada nota está prendida a un elemento del cuadernillo**, no a una
+ * proporción de la hoja. Los cuadernillos abren y cierran secciones y fichas;
+ * cada vez que una crece, el documento se alarga, y una nota guardada como
+ * fracción del largo se corría sola. Prendida al párrafo, se queda con su
+ * párrafo: si lo que se despliega está más arriba, baja con él; si está más
+ * abajo, no se mueve. Y si su párrafo queda plegado, desaparece con él.
+ *
+ * Se inyecta al terminar de cargar. No toca el archivo del cuadernillo.
  */
 const val GUION_NOTAS = """
 (function(){
@@ -34,11 +38,12 @@ const val GUION_NOTAS = """
     'width:' + LADO + 'px;height:' + LADO + 'px;' +
     'border:2px solid;border-image:linear-gradient(135deg,' +
     '#27AE60,#8E44AD,#2980B9,#D4AC0D,#008CBA,#C0392B) 1;' +
-    'background:transparent;touch-action:none;z-index:55}' +
+    'background:transparent;touch-action:none}' +
     '.wm-nota.wm-agarrada{opacity:.55}';
   document.head.appendChild(estilo);
 
   var notas = [];
+  var marcas = [];
   var med = { ancho: 1, largo: 1, ox: 0, oy: 0 };
 
   /* La capa se esconde para medir: sus propios cuadraditos cuentan para el
@@ -58,9 +63,64 @@ const val GUION_NOTAS = """
     };
   }
 
+  /* Dónde va la nota, en coordenadas del documento. Primero se busca su
+     ancla; si no está —porque cambió el cuadernillo— se cae a la fracción,
+     que es peor pero no la pierde. */
+  function lugar(n){
+    if (n.ancla) {
+      var el = document.getElementById(n.ancla);
+      if (el) {
+        var r = el.getBoundingClientRect();
+        /* Un ancla plegada no mide nada: la nota se esconde con ella. */
+        if (!r.width && !r.height) return null;
+        return { x: r.left + window.scrollX + n.dx, y: r.top + window.scrollY + n.dy };
+      }
+    }
+    return { x: (n.fx || 0.5) * med.ancho, y: (n.fy || 0) * med.largo };
+  }
+
   function colocar(el, n){
-    el.style.left = (n.fx * med.ancho - med.ox - MITAD) + 'px';
-    el.style.top  = (n.fy * med.largo - med.oy - MITAD) + 'px';
+    var p = lugar(n);
+    if (!p) { el.style.display = 'none'; return; }
+    el.style.display = '';
+    el.style.left = (p.x - med.ox - MITAD) + 'px';
+    el.style.top  = (p.y - med.oy - MITAD) + 'px';
+  }
+
+  function reubicarTodas(){
+    medir();
+    for (var i = 0; i < marcas.length; i++) colocar(marcas[i], notas[i]);
+  }
+
+  /* De qué elemento del cuadernillo se prende una nota que quedó en (cx,cy)
+     de la ventana. Se busca el ancestro con `id` más cercano —los
+     cuadernillos numeran todas sus secciones— y se anota la distancia. */
+  function prender(cx, cy){
+    capa.style.pointerEvents = 'none';
+    var bajo = document.elementFromPoint(cx, cy);
+    capa.style.pointerEvents = '';
+    var anc = bajo && bajo.closest ? bajo.closest('[id]') : null;
+    if (!anc || !anc.id) return null;
+    var r = anc.getBoundingClientRect();
+    return {
+      ancla: anc.id,
+      dx: (cx + window.scrollX) - (r.left + window.scrollX),
+      dy: (cy + window.scrollY) - (r.top + window.scrollY)
+    };
+  }
+
+  function avisarMovida(n, el){
+    var r = el.getBoundingClientRect();
+    var cx = r.left + MITAD, cy = r.top + MITAD;
+    var a = prender(cx, cy);
+    window.WordmedApp.moverNota(
+      n.id,
+      (cx + window.scrollX) / med.ancho,
+      (cy + window.scrollY) / med.largo,
+      a ? a.ancla : '',
+      a ? a.dx : 0,
+      a ? a.dy : 0
+    );
   }
 
   function preparar(el, n){
@@ -113,9 +173,7 @@ const val GUION_NOTAS = """
       if (arrastrando) {
         arrastrando = false;
         el.classList.remove('wm-agarrada');
-        var fx = (parseFloat(el.style.left) + MITAD + med.ox) / med.ancho;
-        var fy = (parseFloat(el.style.top) + MITAD + med.oy) / med.largo;
-        window.WordmedApp.moverNota(n.id, fx, fy);
+        avisarMovida(n, el);
       } else if (Math.abs(e.clientX - x0) < 8 && Math.abs(e.clientY - y0) < 8) {
         window.WordmedApp.abrirNota(n.id);
       }
@@ -131,40 +189,53 @@ const val GUION_NOTAS = """
     });
   }
 
-  function repintar(){
-    while (capa.firstChild) capa.removeChild(capa.firstChild);
-    medir();
-    for (var i = 0; i < notas.length; i++) {
-      var el = document.createElement('div');
-      el.className = 'wm-nota';
-      capa.appendChild(el);
-      colocar(el, notas[i]);
-      preparar(el, notas[i]);
-    }
-  }
-
   window.WordmedNotas = {
-    pintar: function(lista){ notas = lista || []; repintar(); },
+    pintar: function(lista){
+      notas = lista || [];
+      while (capa.firstChild) capa.removeChild(capa.firstChild);
+      marcas = [];
+      medir();
+      for (var i = 0; i < notas.length; i++) {
+        var el = document.createElement('div');
+        el.className = 'wm-nota';
+        capa.appendChild(el);
+        marcas.push(el);
+        colocar(el, notas[i]);
+        preparar(el, notas[i]);
+      }
+    },
     crearEnElCentro: function(){
       medir();
+      var cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+      var a = prender(cx, cy);
       window.WordmedApp.crearNota(
-        (window.scrollX + window.innerWidth / 2) / med.ancho,
-        (window.scrollY + window.innerHeight / 2) / med.largo
+        (cx + window.scrollX) / med.ancho,
+        (cy + window.scrollY) / med.largo,
+        a ? a.ancla : '',
+        a ? a.dx : 0,
+        a ? a.dy : 0
       );
     }
   };
 
-  /* El alto del documento cambia al girar el teléfono o al mover el tamaño
-     de letra, y con él la posición de cada nota. */
-  var pendiente = null;
-  window.addEventListener('resize', function(){
-    if (pendiente) clearTimeout(pendiente);
-    pendiente = setTimeout(repintar, 120);
-  });
+  /* El cuadernillo despliega y pliega secciones y fichas, y eso mueve todo
+     lo que tiene debajo. Con el observador la nota acompaña a su párrafo
+     cuadro a cuadro durante la animación, en vez de quedar flotando. Se
+     reubica nada más: no se recrea, que haría parpadear el dibujo. */
+  if (window.ResizeObserver) {
+    new ResizeObserver(function(){ if (marcas.length) reubicarTodas(); })
+      .observe(document.body);
+  }
+  window.addEventListener('resize', function(){ if (marcas.length) reubicarTodas(); });
+  window.addEventListener('load', function(){ if (marcas.length) reubicarTodas(); });
 })();
 """
 
+private fun escapar(s: String) = s.replace("\\", "\\\\").replace("\"", "\\\"")
+
 /** Las notas como arreglo de JavaScript, para pasárselas al guion. */
-fun notasEnJs(notas: List<Nota>) = notas
-    .filter { it.fx != null && it.fy != null }
-    .joinToString(",", "[", "]") { """{"id":"${it.id}","fx":${it.fx},"fy":${it.fy}}""" }
+fun notasEnJs(notas: List<Nota>) = notas.joinToString(",", "[", "]") { n ->
+    val ancla = n.ancla?.let { "\"${escapar(it)}\"" } ?: "null"
+    """{"id":"${n.id}","ancla":$ancla,"dx":${n.dx},"dy":${n.dy},""" +
+        """"fx":${n.fx ?: 0.5f},"fy":${n.fy ?: 0f}}"""
+}
