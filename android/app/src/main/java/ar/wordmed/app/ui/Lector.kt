@@ -203,9 +203,12 @@ fun Lector(
             hoja = hoja,
             alto = tamanoVista.height,
             desplazar = { paso ->
-                vista?.let {
-                    it.scrollBy(0, paso)
-                    hoja = it.medir()
+                val v = vista
+                if (v == null) 0 else {
+                    val antes = v.scrollY
+                    v.scrollBy(0, paso)
+                    hoja = v.medir()
+                    v.scrollY - antes
                 }
             },
             modifier = Modifier

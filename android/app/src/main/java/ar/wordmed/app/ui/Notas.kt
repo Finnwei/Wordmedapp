@@ -91,20 +91,14 @@ class EstadoNotas(
     }
 
     fun agregar(fx: Float, fy: Float) {
-        val nota = Nota(
-            id = UUID.randomUUID().toString(),
-            fx = fx.coerceIn(0f, 1f),
-            fy = fy.coerceIn(0f, 1f),
-        )
+        val nota = Nota(id = UUID.randomUUID().toString(), fx = enHoja(fx), fy = enHoja(fy))
         persistir(notas + nota)
         reciencreada = nota.id
         abierta = nota.id
     }
 
     fun mover(id: String, fx: Float, fy: Float) = persistir(
-        notas.map {
-            if (it.id == id) it.copy(fx = fx.coerceIn(0f, 1f), fy = fy.coerceIn(0f, 1f)) else it
-        }
+        notas.map { if (it.id == id) it.copy(fx = enHoja(fx), fy = enHoja(fy)) else it }
     )
 
     /**
@@ -151,6 +145,17 @@ class EstadoNotas(
     }
 
     fun archivoImagen(nombre: String): File = almacen.imagen(nombre)
+
+    private companion object {
+        /**
+         * La red que impide que una nota se pierda. Deja la posición dentro
+         * de la hoja, con un margen para que nunca quede medio cuerpo fuera
+         * del borde, y descarta lo que no sea un número: una división por
+         * cero en medio del arrastre daba NaN, y un NaN además de perder la
+         * nota rompía el archivo entero al guardarlo.
+         */
+        fun enHoja(f: Float) = if (f.isFinite()) f.coerceIn(0f, 0.985f) else 0.5f
+    }
 }
 
 @Composable
@@ -177,7 +182,7 @@ fun CapaNotas(
     estado: EstadoNotas,
     hoja: Hoja,
     alto: Int,
-    desplazar: (Int) -> Unit,
+    desplazar: (Int) -> Int,
     modifier: Modifier = Modifier,
 ) {
     Box(modifier.clipToBounds()) {
@@ -213,7 +218,7 @@ private fun Marca(
     nota: Nota,
     hoja: Hoja,
     alto: Int,
-    desplazar: (Int) -> Unit,
+    desplazar: (Int) -> Int,
     alAbrir: () -> Unit,
     alSoltar: (Float, Float) -> Unit,
 ) {
@@ -224,6 +229,15 @@ private fun Marca(
     /* -1 arriba, 1 abajo, 0 en el medio: hacia dónde correr la hoja cuando
        el dedo llega al borde. */
     var borde by remember { mutableIntStateOf(0) }
+
+    /* El gesto se arma una sola vez y dura mientras la nota exista, así que
+       si leyera `nota` y `hoja` directamente se quedaría con los valores del
+       momento en que se armó. Eso era el salto: al soltar por segunda vez
+       calculaba desde la posición vieja, no desde la de ahora, y la nota
+       volaba. Con esto siempre lee lo último. */
+    val notaAhora by rememberUpdatedState(nota)
+    val hojaAhora by rememberUpdatedState(hoja)
+    val altoAhora by rememberUpdatedState(alto)
 
     val lado = with(densidad) {
         (hoja.ancho * LADO).coerceIn(LADO_MIN.toPx(), LADO_MAX.toPx())
@@ -238,10 +252,12 @@ private fun Marca(
        llevarla a otra sección era imposible. */
     LaunchedEffect(borde) {
         if (borde == 0) return@LaunchedEffect
+        val paso = borde * with(densidad) { 6.dp.roundToPx() }
         while (true) {
-            val paso = borde * with(densidad) { 6.dp.toPx() }
-            desplazar(paso.roundToInt())
-            arrastre += Offset(0f, paso)
+            /* Se suma lo que la hoja se corrió de verdad, no lo que se le
+               pidió: al llegar al final del cuadernillo ya no se mueve, y
+               sumar igual haría que la nota se fuera sola hacia abajo. */
+            arrastre += Offset(0f, desplazar(paso).toFloat())
             delay(16)
         }
     }
@@ -264,7 +280,7 @@ private fun Marca(
             .pointerInput(nota.id) {
                 detectTapGestures { alAbrir() }
             }
-            .pointerInput(nota.id, hoja.ancho, hoja.largo, alto) {
+            .pointerInput(nota.id) {
                 /* La posición se escribe recién al soltar. Moverla en pleno
                    arrastre recrea el nodo y mata el gesto: es el mismo
                    problema que tuvieron las carpetas. */
@@ -273,17 +289,24 @@ private fun Marca(
                     onDrag = { cambio, delta ->
                         cambio.consume()
                         arrastre += delta
-                        val centro = y + arrastre.y + lado / 2f
+                        val h = hojaAhora
+                        val centro =
+                            (notaAhora.fy ?: 0f) * h.largo - h.corridoY + arrastre.y + lado / 2f
                         borde = when {
                             centro < margen -> -1
-                            centro > alto - margen -> 1
+                            centro > altoAhora - margen -> 1
                             else -> 0
                         }
                     },
                     onDragEnd = {
-                        alSoltar(
-                            (x + arrastre.x + hoja.corridoX) / hoja.ancho,
-                            (y + arrastre.y + hoja.corridoY) / hoja.largo,
+                        /* Lo arrastrado, medido en hojas: dónde estaba más
+                           cuánto se movió. No hace falta el scroll, porque
+                           `arrastre` ya incluye lo que la hoja se corrió
+                           sola mientras el dedo estaba contra el borde. */
+                        val h = hojaAhora
+                        if (h.ancho > 0 && h.largo > 0) alSoltar(
+                            (notaAhora.fx ?: 0f) + arrastre.x / h.ancho,
+                            (notaAhora.fy ?: 0f) + arrastre.y / h.largo,
                         )
                         arrastre = Offset.Zero
                         arrastrando = false
