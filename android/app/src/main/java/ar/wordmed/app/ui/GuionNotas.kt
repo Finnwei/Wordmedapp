@@ -24,8 +24,13 @@ const val GUION_NOTAS = """
 (function(){
   if (window.WordmedNotas) return;
 
-  var LADO = 20;      /* px CSS: al encogerse la página quedan unos 14 dp */
-  var MITAD = LADO / 2;
+  /* El cuadradito se ve chico pero se agarra grande: el elemento mide AGARRE
+     y es transparente, y el dibujo lo pone un ::before de LADO centrado
+     adentro. Así el dedo no tiene que acertarle justo. */
+  var LADO = 20;      /* px CSS: en pantalla son unos 7 dp de dibujo */
+  var AGARRE = 80;    /* la zona sensible: unos 29 dp, cuatro veces el dibujo */
+  var MITAD = AGARRE / 2;
+  var ESPERA = 200;   /* cuánto hay que sostener antes de poder arrastrar */
   var MARGEN = 80;    /* cuánto hay que acercarse al borde para que corra */
 
   var capa = document.createElement('div');
@@ -34,12 +39,18 @@ const val GUION_NOTAS = """
 
   var estilo = document.createElement('style');
   estilo.textContent =
-    '.wm-nota{position:absolute;box-sizing:border-box;' +
-    'width:' + LADO + 'px;height:' + LADO + 'px;' +
+    '.wm-nota{position:absolute;background:transparent;touch-action:none;' +
+    'width:' + AGARRE + 'px;height:' + AGARRE + 'px}' +
+    '.wm-nota::before{content:"";position:absolute;box-sizing:border-box;' +
+    'left:50%;top:50%;width:' + LADO + 'px;height:' + LADO + 'px;' +
+    'margin:' + (-LADO / 2) + 'px 0 0 ' + (-LADO / 2) + 'px;' +
     'border:2px solid;border-image:linear-gradient(135deg,' +
     '#27AE60,#8E44AD,#2980B9,#D4AC0D,#008CBA,#C0392B) 1;' +
-    'background:transparent;touch-action:none}' +
-    '.wm-nota.wm-agarrada{opacity:.55}';
+    'transition:transform .12s ease-out}' +
+    /* Apenas se toca crece un poco: avisa que el dedo le pegó. Al quedar
+       sostenido crece más, que es la señal de que ya se puede arrastrar. */
+    '.wm-nota.wm-tocada::before{transform:scale(1.2)}' +
+    '.wm-nota.wm-agarrada::before{transform:scale(1.5)}';
   document.head.appendChild(estilo);
 
   var notas = [];
@@ -135,6 +146,7 @@ const val GUION_NOTAS = """
     function soltarTodo(){
       if (temporizador) { clearTimeout(temporizador); temporizador = null; }
       if (bucle) { clearInterval(bucle); bucle = null; }
+      el.classList.remove('wm-tocada');
     }
 
     el.addEventListener('pointerdown', function(e){
@@ -142,8 +154,10 @@ const val GUION_NOTAS = """
       sy0 = window.scrollY;
       iz0 = parseFloat(el.style.left) || 0;
       ar0 = parseFloat(el.style.top) || 0;
+      el.classList.add('wm-tocada');
       temporizador = setTimeout(function(){
         arrastrando = true;
+        el.classList.remove('wm-tocada');
         el.classList.add('wm-agarrada');
         try { el.setPointerCapture(e.pointerId); } catch(err){}
         /* Contra el borde la hoja se corre sola y la nota acompaña, para
@@ -154,7 +168,7 @@ const val GUION_NOTAS = """
           else if (uy > window.innerHeight - MARGEN) paso = 14;
           if (paso) { window.scrollBy(0, paso); reubicar(); }
         }, 16);
-      }, 380);
+      }, ESPERA);
     });
 
     el.addEventListener('pointermove', function(e){
