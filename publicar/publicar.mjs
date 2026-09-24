@@ -186,12 +186,12 @@ function leerSecciones(cuerpo) {
    2. Se esconde el botón de tema del cuadernillo: en pantalla chica
       quedaba fuera de cuadro y se perdía al scrollear. La app pone el
       suyo en una barra fija.
-   3. Se esconde la barra de avance del cuadernillo. Es position:fixed
-      sobre una página maquetada a ~980 px y encogida para entrar, así que
-      sus 3 px quedaban en poco más de uno y según el zoom desaparecían.
-      La app dibuja la misma barra por fuera, con el mismo degradado, donde
-      mide siempre lo mismo. En la web la del cuadernillo anda bien y
-      queda como está. */
+   3. Se engruesa la barra de avance. La página se maqueta a ~980 px y el
+      WebView la encoge para que entre en la pantalla —encoge todo, la
+      barra incluida—, así que sus 3 px terminaban en poco más de uno y
+      según el zoom no se veían. Con 8 px de origen quedan unos 3 en
+      pantalla, que es el grosor que tiene en la web. Es la misma barra del
+      cuadernillo, sólo más gruesa de salida. */
 const PUENTE_CABECERA = `
 (function(){
   var enApp = typeof window.WordmedApp !== "undefined";
@@ -208,7 +208,7 @@ const PUENTE_CABECERA = `
      mano. Sacar el meta despues de parsearlo no reencuadra nada, por eso
      directamente no se emite. */
   var s = document.createElement("style");
-  s.textContent = ".tema,.progreso{display:none !important}";
+  s.textContent = ".tema{display:none !important}.progreso{height:8px !important}";
   document.head.appendChild(s);
 })();
 `;

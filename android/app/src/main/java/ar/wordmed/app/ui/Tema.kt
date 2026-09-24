@@ -32,30 +32,18 @@ data class Tinta(
     val tinta: Color,
     val tintaMedia: Color,
     val tintaTenue: Color,
-    /** El espectro de las secciones, en orden: general, fisiopatología,
-     *  clínica, diagnóstico, tratamiento, importante. Es el degradado con el
-     *  que el cuadernillo pinta su barra de avance. */
-    val espectro: List<Color>,
 )
 
 val TINTA_CLARA = Tinta(
     papel = Color(0xFFF5F7F9), hoja = Color(0xFFFFFFFF), hojaAlt = Color(0xFFFAFBFC),
     hojaHund = Color(0xFFEFF3F6), linea = Color(0xFFDFE5EB), lineaFuerte = Color(0xFFC2CBD5),
     tinta = Color(0xFF323232), tintaMedia = Color(0xFF5A6472), tintaTenue = Color(0xFF7C8797),
-    espectro = listOf(
-        Color(0xFF27AE60), Color(0xFF8E44AD), Color(0xFF2980B9),
-        Color(0xFFD4AC0D), Color(0xFF008CBA), Color(0xFFC0392B),
-    ),
 )
 
 val TINTA_OSCURA = Tinta(
     papel = Color(0xFF14171B), hoja = Color(0xFF1B1F25), hojaAlt = Color(0xFF20252C),
     hojaHund = Color(0xFF111418), linea = Color(0xFF2D343D), lineaFuerte = Color(0xFF414A56),
     tinta = Color(0xFFDDE3EA), tintaMedia = Color(0xFFA3ADBA), tintaTenue = Color(0xFF7F8B99),
-    espectro = listOf(
-        Color(0xFF4ED88A), Color(0xFFC387E8), Color(0xFF62B4EE),
-        Color(0xFFE8C63C), Color(0xFF3FC2EC), Color(0xFFF2705F),
-    ),
 )
 
 val LocalTinta = staticCompositionLocalOf { TINTA_CLARA }

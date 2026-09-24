@@ -1,7 +1,6 @@
 package ar.wordmed.app.ui
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
@@ -29,14 +28,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
@@ -77,7 +74,6 @@ fun Lector(
     val t = LocalTinta.current
     var panelLetra by remember { mutableStateOf(false) }
     var barraVisible by remember { mutableStateOf(true) }
-    var avance by remember { mutableFloatStateOf(0f) }
 
     BackHandler {
         when {
@@ -114,7 +110,7 @@ fun Lector(
                     )
                     .build()
 
-                VistaCuadernillo(c).apply {
+                WebView(c).apply {
                     settings.javaScriptEnabled = true
                     settings.domStorageEnabled = true
                     settings.allowFileAccess = false
@@ -135,12 +131,6 @@ fun Lector(
                     isVerticalScrollBarEnabled = true
 
                     addJavascriptInterface(PuenteLector(alProgreso), "WordmedApp")
-
-                    /* De acá sale el avance que pinta la barra de arriba. */
-                    setOnScrollChangeListener { _, _, y, _, _ ->
-                        val rango = rangoVertical() - height
-                        avance = if (rango > 0) (y.toFloat() / rango).coerceIn(0f, 1f) else 0f
-                    }
 
                     webViewClient = object : WebViewClient() {
                         override fun shouldInterceptRequest(
@@ -173,23 +163,6 @@ fun Lector(
                 .background(t.papel)
                 .onGloballyPositioned { altoBarra = it.size.height }
         ) {
-
-        /* El avance de lectura, con el mismo degradado de secciones que pinta
-           el cuadernillo. Va acá y no adentro del WebView porque ahí es
-           position:fixed sobre una página maquetada a 980px y encogida para
-           entrar: a esa escala los 3px quedaban en poco más de uno y según
-           el zoom desaparecían. Dibujada por fuera, mide siempre lo mismo.
-           Queda arriba del pliegue, así que tampoco se va con la barra. */
-        Box(Modifier.fillMaxWidth().height(3.dp)) {
-            if (avance > 0f) {
-                Box(
-                    Modifier
-                        .fillMaxHeight()
-                        .fillMaxWidth(avance)
-                        .background(Brush.horizontalGradient(t.espectro))
-                )
-            }
-        }
 
         /* --- barra fija, arriba del nombre de la materia --- */
         AnimatedVisibility(
@@ -275,15 +248,6 @@ fun Lector(
             )
         }
     }
-}
-
-/**
- * El WebView del cuadernillo, con una sola cosa de más: saber cuánto mide el
- * documento entero. `computeVerticalScrollRange` —lo que usa la propia barra
- * de scroll— es protegido, así que hay que abrirlo desde una subclase.
- */
-private class VistaCuadernillo(contexto: Context) : WebView(contexto) {
-    fun rangoVertical() = computeVerticalScrollRange()
 }
 
 private fun guionTema(oscuro: Boolean) =
