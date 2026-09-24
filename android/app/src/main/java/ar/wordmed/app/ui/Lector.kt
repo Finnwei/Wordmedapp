@@ -15,6 +15,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,21 +25,26 @@ import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.NoteAdd
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -61,6 +67,7 @@ import java.io.File
 @Composable
 fun Lector(
     ruta: String,
+    clave: String,
     titulo: String,
     materia: String,
     oscuro: Boolean,
@@ -75,8 +82,19 @@ fun Lector(
     var panelLetra by remember { mutableStateOf(false) }
     var barraVisible by remember { mutableStateOf(true) }
 
+    val notas = recordarNotas(clave)
+
+    /* Dónde está parado el cuadernillo. Las notas guardan su lugar en
+       coordenadas del documento, así que para dibujarlas hace falta saber
+       cuánto se scrolleó y con qué zoom se está viendo. */
+    var desplazamientoX by remember { mutableIntStateOf(0) }
+    var desplazamientoY by remember { mutableIntStateOf(0) }
+    var escala by remember { mutableFloatStateOf(1f) }
+    var tamanoVista by remember { mutableStateOf(IntSize.Zero) }
+
     BackHandler {
         when {
+            notas.abierta != null -> notas.abierta = null
             panelLetra -> panelLetra = false
             !barraVisible -> barraVisible = true
             else -> alVolver()
@@ -132,6 +150,13 @@ fun Lector(
 
                     addJavascriptInterface(PuenteLector(alProgreso), "WordmedApp")
 
+                    /* De acá salen las dos mitades de la cuenta que ubica
+                       las notas: el scroll y, más abajo, el zoom. */
+                    setOnScrollChangeListener { _, x, y, _, _ ->
+                        desplazamientoX = x
+                        desplazamientoY = y
+                    }
+
                     webViewClient = object : WebViewClient() {
                         override fun shouldInterceptRequest(
                             view: WebView, request: WebResourceRequest,
@@ -145,6 +170,15 @@ fun Lector(
 
                         override fun onPageFinished(view: WebView, url: String) {
                             view.evaluateJavascript(guionTema(oscuro), null)
+                            /* Al terminar de cargar, el WebView ya sabe a qué
+                               escala entró la página: sin esto las notas se
+                               dibujan en el lugar equivocado hasta el primer
+                               pellizco. */
+                            escala = view.scale
+                        }
+
+                        override fun onScaleChanged(view: WebView, vieja: Float, nueva: Float) {
+                            escala = nueva
                         }
                     }
 
@@ -155,6 +189,21 @@ fun Lector(
                 v.settings.textZoom = tamanoLetra
                 v.evaluateJavascript(guionTema(oscuro), null)
             },
+        )
+
+        /* Los cuadraditos van después del AndroidView para quedar por
+           encima de él, y ocupan su mismo rectángulo: la cuenta que los
+           ubica es relativa a la esquina del cuadernillo, no a la del
+           teléfono. */
+        CapaNotas(
+            estado = notas,
+            escala = escala,
+            desplazamientoX = desplazamientoX,
+            desplazamientoY = desplazamientoY,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = with(densidad) { altoBarra.toDp() })
+                .onGloballyPositioned { tamanoVista = it.size },
         )
 
         Column(
@@ -190,6 +239,22 @@ fun Lector(
                     titulo, fontFamily = Titulo, fontWeight = FontWeight.Bold,
                     fontSize = 15.sp, lineHeight = 18.sp, color = t.tinta,
                     maxLines = 1, overflow = TextOverflow.Ellipsis,
+                )
+            }
+            /* La nota nace en el medio de lo que se está viendo, traducido
+               a coordenadas del documento; de ahí se arrastra a donde vaya.
+               Se le resta medio cuadradito para que el dedo la encuentre
+               centrada y no corrida hacia abajo y a la derecha. */
+            BotonVisor({
+                val medio = with(densidad) { 13.dp.toPx() }
+                notas.agregar(
+                    x = (tamanoVista.width / 2f + desplazamientoX) / escala - medio,
+                    y = (tamanoVista.height / 2f + desplazamientoY) / escala - medio,
+                )
+            }) {
+                Icon(
+                    Icons.Default.NoteAdd, "Agregar una nota",
+                    tint = t.tintaMedia, modifier = Modifier.size(21.dp),
                 )
             }
             BotonVisor({ panelLetra = !panelLetra }) {
@@ -246,6 +311,32 @@ fun Lector(
                 tint = t.tintaTenue.copy(alpha = 0.75f),
                 modifier = Modifier.size(22.dp),
             )
+        }
+
+        /* La nota abierta, por encima de todo. El velo de atrás la cierra
+           al tocarlo, y `imePadding` la levanta cuando sale el teclado. */
+        notas.notas.firstOrNull { it.id == notas.abierta }?.let { abierta ->
+            Box(
+                Modifier
+                    .matchParentSize()
+                    .background(t.tinta.copy(alpha = 0.32f))
+                    .pointerInput(abierta.id) {
+                        detectTapGestures { notas.abierta = null }
+                    },
+                contentAlignment = Alignment.Center,
+            ) {
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .imePadding()
+                        /* Sin esto, tocar adentro de la nota la cerraría:
+                           el toque llegaría al velo. */
+                        .pointerInput(abierta.id) { detectTapGestures { } }
+                ) {
+                    PanelNota(estado = notas, nota = abierta)
+                }
+            }
         }
     }
 }

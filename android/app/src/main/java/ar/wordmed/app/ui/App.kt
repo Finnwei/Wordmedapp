@@ -68,6 +68,7 @@ fun App(estado: Estado, alAbrirRecurso: (String) -> Unit) {
     (ruta as? Ruta.Leyendo)?.let { r ->
         Lector(
             ruta = r.ruta,
+            clave = r.clave,
             titulo = r.titulo,
             materia = estado.manifiesto?.materia(r.materia)?.nombre ?: "",
             oscuro = esOscuro,

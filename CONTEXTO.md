@@ -677,3 +677,33 @@ materia y enlaza a la sección, los 112 colores y los 8 estilos se aplican y per
 - [ ] `git init`, primer commit y push — **esperando el nombre de usuario y del repo**.
 - [ ] Conectar Cloudflare Pages con directorio de salida `contenido`.
 - [ ] Cargar `Obstetricia/`.
+
+## 15. Notas sobre el cuadernillo (2026-09-23)
+
+Andrés puede pegar apuntes propios encima de un cuadernillo, como post-its.
+
+**Cómo se ven.** Cerrada, la nota es un cuadradito hueco de 26 dp con el
+filo multicolor —el mismo espectro de secciones que usa la barra de avance—
+y el centro transparente, para no tapar el texto de abajo. Abierta deja de
+ser multicolor: pasa a ser una hoja blanca con el color sólo en el filo
+izquierdo, igual que la pestaña de cada sección.
+
+**Cómo se usan.** El botón de la barra del visor crea una en el medio de lo
+que se está viendo. Un toque la abre; mantener apretado y arrastrar la
+mueve. Abierta arranca en modo lectura —sin teclado—; el lápiz pasa a
+edición y OK vuelve a fijarla. Se pueden pegar imágenes del portapapeles.
+
+**Dónde se anclan.** Al texto, no a la pantalla: la posición se guarda en
+coordenadas del documento (píxeles CSS), y al dibujarlas se traduce con el
+zoom y el scroll del WebView. Así la nota queda al lado del párrafo que
+anota aunque cambie el zoom, el tamaño de letra o el teléfono. De ahí que
+el visor tenga que seguir `setOnScrollChangeListener` y `onScaleChanged`.
+
+**Dónde viven.** En `filesDir/notas/`, **fuera de `contenido/`**, que la
+sincronización borra entero cada vez que cambia el material. Un archivo
+JSON por cuadernillo y las imágenes aparte, nombradas por su contenido para
+no duplicar la misma foto. Son lo único del teléfono que no se puede volver
+a bajar de ningún lado.
+
+**Lo que no hacen.** No se sincronizan con la web ni entre teléfonos: viven
+en el aparato. Para compartirlas haría falta un servidor, que hoy no hay.
