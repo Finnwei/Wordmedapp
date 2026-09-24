@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
@@ -42,14 +43,29 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ar.wordmed.app.datos.Nota
 import ar.wordmed.app.datos.Notas
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.UUID
 import kotlin.math.roundToInt
 
-/** El lado del cuadradito, y el grosor de su filo de color. */
-private val LADO = 26.dp
-private val FILO = 2.5.dp
+/**
+ * El lado del cuadradito, como fracción del ancho de la hoja. Va en fracción
+ * y no en dp para que se agrande y se achique con el zoom, igual que todo lo
+ * que está dibujado en la página: con un tamaño fijo, al alejarse quedaba
+ * enorme al lado del texto.
+ */
+private const val LADO = 0.038f
+
+/** Topes, para que no desaparezca ni tape media pantalla. */
+private val LADO_MIN = 9.dp
+private val LADO_MAX = 46.dp
+
+/** El grosor del filo, también proporcional al lado. */
+private const val FILO = 0.11f
+
+/** Cuánto hay que acercarse al borde para que la hoja empiece a correrse. */
+private val BORDE = 56.dp
 
 /**
  * Las notas del cuadernillo abierto: la lista, cuál está abierta, y las
@@ -74,15 +90,46 @@ class EstadoNotas(
         enSegundoPlano { almacen.guardar(clave, nuevas) }
     }
 
-    fun agregar(x: Float, y: Float) {
-        val nota = Nota(id = UUID.randomUUID().toString(), x = x, y = y)
+    fun agregar(fx: Float, fy: Float) {
+        val nota = Nota(
+            id = UUID.randomUUID().toString(),
+            fx = fx.coerceIn(0f, 1f),
+            fy = fy.coerceIn(0f, 1f),
+        )
         persistir(notas + nota)
         reciencreada = nota.id
         abierta = nota.id
     }
 
-    fun mover(id: String, x: Float, y: Float) =
-        persistir(notas.map { if (it.id == id) it.copy(x = x, y = y) else it })
+    fun mover(id: String, fx: Float, fy: Float) = persistir(
+        notas.map {
+            if (it.id == id) it.copy(fx = fx.coerceIn(0f, 1f), fy = fy.coerceIn(0f, 1f)) else it
+        }
+    )
+
+    /**
+     * Pasa las notas del formato viejo —píxeles CSS— a fracciones de la hoja.
+     * Corre una sola vez, cuando el cuadernillo ya sabe cuánto mide.
+     *
+     * La conversión es aproximada porque el zoom con el que se guardaron no
+     * quedó anotado en ningún lado, así que sólo se respeta la altura, que es
+     * lo que sirve para encontrar el párrafo, y se centran horizontalmente.
+     * Sin esto una nota guardada fuera de la hoja no se veía nunca más.
+     */
+    fun migrar(rangoVertical: Int, escala: Float) {
+        if (rangoVertical <= 0 || escala <= 0f) return
+        if (notas.none { it.fx == null }) return
+        persistir(
+            notas.map { n ->
+                if (n.fx != null) n
+                else n.copy(
+                    fx = 0.5f,
+                    fy = ((n.y ?: 0f) * escala / rangoVertical).coerceIn(0f, 1f),
+                    x = null, y = null,
+                )
+            }
+        )
+    }
 
     fun escribir(id: String, texto: String) =
         persistir(notas.map { if (it.id == id) it.copy(texto = texto) else it })
@@ -128,56 +175,96 @@ fun recordarNotas(clave: String): EstadoNotas {
 @Composable
 fun CapaNotas(
     estado: EstadoNotas,
-    escala: Float,
-    desplazamientoX: Int,
-    desplazamientoY: Int,
+    hoja: Hoja,
+    alto: Int,
+    desplazar: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(modifier.clipToBounds()) {
+        if (hoja.ancho <= 0 || hoja.largo <= 0) return@Box
         for (nota in estado.notas) {
+            if (nota.fx == null || nota.fy == null) continue
             key(nota.id) {
                 Marca(
                     nota = nota,
-                    escala = escala,
-                    desplazamientoX = desplazamientoX,
-                    desplazamientoY = desplazamientoY,
+                    hoja = hoja,
+                    alto = alto,
+                    desplazar = desplazar,
                     alAbrir = { estado.abierta = nota.id },
-                    alSoltar = { x, y -> estado.mover(nota.id, x, y) },
+                    alSoltar = { fx, fy -> estado.mover(nota.id, fx, fy) },
                 )
             }
         }
     }
 }
 
+/** Cuánto mide el cuadernillo ahora mismo y por dónde va, todo en píxeles
+ *  de pantalla. Sale del propio WebView, así que ya viene con el zoom
+ *  aplicado y no hay que multiplicar por nada. */
+data class Hoja(
+    val ancho: Int = 0,
+    val largo: Int = 0,
+    val corridoX: Int = 0,
+    val corridoY: Int = 0,
+)
+
 @Composable
 private fun Marca(
     nota: Nota,
-    escala: Float,
-    desplazamientoX: Int,
-    desplazamientoY: Int,
+    hoja: Hoja,
+    alto: Int,
+    desplazar: (Int) -> Unit,
     alAbrir: () -> Unit,
     alSoltar: (Float, Float) -> Unit,
 ) {
     val t = LocalTinta.current
+    val densidad = LocalDensity.current
     var arrastre by remember { mutableStateOf(Offset.Zero) }
     var arrastrando by remember { mutableStateOf(false) }
+    /* -1 arriba, 1 abajo, 0 en el medio: hacia dónde correr la hoja cuando
+       el dedo llega al borde. */
+    var borde by remember { mutableIntStateOf(0) }
 
-    val x = (nota.x * escala).roundToInt() - desplazamientoX
-    val y = (nota.y * escala).roundToInt() - desplazamientoY
+    val lado = with(densidad) {
+        (hoja.ancho * LADO).coerceIn(LADO_MIN.toPx(), LADO_MAX.toPx())
+    }
+    val margen = with(densidad) { BORDE.toPx() }
+
+    val x = (nota.fx!! * hoja.ancho).roundToInt() - hoja.corridoX
+    val y = (nota.fy!! * hoja.largo).roundToInt() - hoja.corridoY
+
+    /* Mientras el dedo está contra un borde, la hoja se corre sola y la nota
+       lo acompaña: sin esto sólo se podía mover dentro de lo que se veía, y
+       llevarla a otra sección era imposible. */
+    LaunchedEffect(borde) {
+        if (borde == 0) return@LaunchedEffect
+        while (true) {
+            val paso = borde * with(densidad) { 6.dp.toPx() }
+            desplazar(paso.roundToInt())
+            arrastre += Offset(0f, paso)
+            delay(16)
+        }
+    }
 
     Box(
         Modifier
             .offset {
                 IntOffset(x + arrastre.x.roundToInt(), y + arrastre.y.roundToInt())
             }
-            .size(LADO)
+            .size(with(densidad) { lado.toDp() })
             /* Hueco: sólo el filo lleva color, el centro deja ver el texto
                que hay debajo. */
-            .border(BorderStroke(FILO, Brush.linearGradient(t.espectro)), RoundedCornerShape(5.dp))
+            .border(
+                BorderStroke(
+                    with(densidad) { (lado * FILO).toDp() },
+                    Brush.linearGradient(t.espectro),
+                ),
+                RoundedCornerShape(with(densidad) { (lado * 0.2f).toDp() }),
+            )
             .pointerInput(nota.id) {
                 detectTapGestures { alAbrir() }
             }
-            .pointerInput(nota.id) {
+            .pointerInput(nota.id, hoja.ancho, hoja.largo, alto) {
                 /* La posición se escribe recién al soltar. Moverla en pleno
                    arrastre recrea el nodo y mata el gesto: es el mismo
                    problema que tuvieron las carpetas. */
@@ -186,18 +273,26 @@ private fun Marca(
                     onDrag = { cambio, delta ->
                         cambio.consume()
                         arrastre += delta
+                        val centro = y + arrastre.y + lado / 2f
+                        borde = when {
+                            centro < margen -> -1
+                            centro > alto - margen -> 1
+                            else -> 0
+                        }
                     },
                     onDragEnd = {
                         alSoltar(
-                            nota.x + arrastre.x / escala,
-                            nota.y + arrastre.y / escala,
+                            (x + arrastre.x + hoja.corridoX) / hoja.ancho,
+                            (y + arrastre.y + hoja.corridoY) / hoja.largo,
                         )
                         arrastre = Offset.Zero
                         arrastrando = false
+                        borde = 0
                     },
                     onDragCancel = {
                         arrastre = Offset.Zero
                         arrastrando = false
+                        borde = 0
                     },
                 )
             }

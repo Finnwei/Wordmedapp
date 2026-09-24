@@ -12,15 +12,22 @@ import java.io.File
 /**
  * Una nota pegada sobre un cuadernillo.
  *
- * `x` e `y` son coordenadas del documento en píxeles CSS, no de la pantalla.
- * Guardadas así, la nota sigue al lado del párrafo que anota aunque cambie
- * el zoom, el tamaño de letra o el teléfono.
+ * `fx` y `fy` son la posición como **fracción de la hoja**: 0 es el borde de
+ * arriba o el de la izquierda, 1 el de abajo o el de la derecha. Guardada
+ * así, la nota no depende del zoom para nada.
+ *
+ * El formato viejo —`x` e `y` en píxeles CSS— sí dependía: había que
+ * convertirlos con el zoom del momento, que el WebView informa tarde y mal,
+ * y una nota podía terminar guardada fuera de la hoja y no verse nunca más.
+ * Se convierten solos la primera vez que se abre el cuadernillo.
  */
 @Serializable
 data class Nota(
     val id: String,
-    val x: Float,
-    val y: Float,
+    val fx: Float? = null,
+    val fy: Float? = null,
+    val x: Float? = null,
+    val y: Float? = null,
     val texto: String = "",
     val imagenes: List<String> = emptyList(),
 )

@@ -1,6 +1,7 @@
 package ar.wordmed.app.ui
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
@@ -84,13 +85,14 @@ fun Lector(
 
     val notas = recordarNotas(clave)
 
-    /* Dónde está parado el cuadernillo. Las notas guardan su lugar en
-       coordenadas del documento, así que para dibujarlas hace falta saber
-       cuánto se scrolleó y con qué zoom se está viendo. */
-    var desplazamientoX by remember { mutableIntStateOf(0) }
-    var desplazamientoY by remember { mutableIntStateOf(0) }
-    var escala by remember { mutableFloatStateOf(1f) }
+    /* Cuánto mide el cuadernillo y por dónde va, en píxeles de pantalla.
+       Las notas se ubican con esto y no con el zoom: el WebView informa el
+       zoom tarde y a veces mal, y con un valor equivocado la nota se
+       guardaba fuera de la hoja y no se veía nunca más. El largo, en
+       cambio, siempre está al día. */
+    var hoja by remember { mutableStateOf(Hoja()) }
     var tamanoVista by remember { mutableStateOf(IntSize.Zero) }
+    var vista by remember { mutableStateOf<VistaCuadernillo?>(null) }
 
     BackHandler {
         when {
@@ -128,7 +130,7 @@ fun Lector(
                     )
                     .build()
 
-                WebView(c).apply {
+                VistaCuadernillo(c).apply {
                     settings.javaScriptEnabled = true
                     settings.domStorageEnabled = true
                     settings.allowFileAccess = false
@@ -150,12 +152,9 @@ fun Lector(
 
                     addJavascriptInterface(PuenteLector(alProgreso), "WordmedApp")
 
-                    /* De acá salen las dos mitades de la cuenta que ubica
-                       las notas: el scroll y, más abajo, el zoom. */
-                    setOnScrollChangeListener { _, x, y, _, _ ->
-                        desplazamientoX = x
-                        desplazamientoY = y
-                    }
+                    vista = this
+
+                    setOnScrollChangeListener { _, _, _, _, _ -> hoja = medir() }
 
                     webViewClient = object : WebViewClient() {
                         override fun shouldInterceptRequest(
@@ -170,15 +169,19 @@ fun Lector(
 
                         override fun onPageFinished(view: WebView, url: String) {
                             view.evaluateJavascript(guionTema(oscuro), null)
-                            /* Al terminar de cargar, el WebView ya sabe a qué
-                               escala entró la página: sin esto las notas se
-                               dibujan en el lugar equivocado hasta el primer
-                               pellizco. */
-                            escala = view.scale
+                            /* El largo del documento recién existe cuando
+                               terminó de maquetar; sin esto las notas no
+                               tendrían dónde pararse al abrir el tema. */
+                            (view as VistaCuadernillo).let { hoja = it.medir() }
+                            /* Las notas viejas, en píxeles, se pasan acá a
+                               fracciones de la hoja. */
+                            notas.migrar(hoja.largo, view.scale)
                         }
 
+                        /* Al pellizcar cambia el largo del documento entero,
+                           no sólo el scroll. */
                         override fun onScaleChanged(view: WebView, vieja: Float, nueva: Float) {
-                            escala = nueva
+                            (view as VistaCuadernillo).let { hoja = it.medir() }
                         }
                     }
 
@@ -197,9 +200,14 @@ fun Lector(
            teléfono. */
         CapaNotas(
             estado = notas,
-            escala = escala,
-            desplazamientoX = desplazamientoX,
-            desplazamientoY = desplazamientoY,
+            hoja = hoja,
+            alto = tamanoVista.height,
+            desplazar = { paso ->
+                vista?.let {
+                    it.scrollBy(0, paso)
+                    hoja = it.medir()
+                }
+            },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = with(densidad) { altoBarra.toDp() })
@@ -241,15 +249,14 @@ fun Lector(
                     maxLines = 1, overflow = TextOverflow.Ellipsis,
                 )
             }
-            /* La nota nace en el medio de lo que se está viendo, traducido
-               a coordenadas del documento; de ahí se arrastra a donde vaya.
-               Se le resta medio cuadradito para que el dedo la encuentre
-               centrada y no corrida hacia abajo y a la derecha. */
+            /* La nota nace en el medio de lo que se está viendo, expresado
+               como fracción de la hoja entera; de ahí se arrastra a donde
+               vaya. Para llevarla lejos conviene scrollear primero y
+               crearla ahí. */
             BotonVisor({
-                val medio = with(densidad) { 13.dp.toPx() }
-                notas.agregar(
-                    x = (tamanoVista.width / 2f + desplazamientoX) / escala - medio,
-                    y = (tamanoVista.height / 2f + desplazamientoY) / escala - medio,
+                if (hoja.ancho > 0 && hoja.largo > 0) notas.agregar(
+                    fx = (tamanoVista.width / 2f + hoja.corridoX) / hoja.ancho,
+                    fy = (tamanoVista.height / 2f + hoja.corridoY) / hoja.largo,
                 )
             }) {
                 Icon(
@@ -339,6 +346,23 @@ fun Lector(
             }
         }
     }
+}
+
+/**
+ * El WebView del cuadernillo, con una sola cosa de más: saber cuánto mide el
+ * documento. `computeVerticalScrollRange` —lo que usa la propia barra de
+ * scroll— es protegido, así que hay que abrirlo desde una subclase.
+ *
+ * Viene ya con el zoom aplicado, y por eso las notas se ubican con esto y no
+ * con `scale`, que el WebView informa tarde y a veces mal.
+ */
+private class VistaCuadernillo(contexto: Context) : WebView(contexto) {
+    fun medir() = Hoja(
+        ancho = computeHorizontalScrollRange(),
+        largo = computeVerticalScrollRange(),
+        corridoX = scrollX,
+        corridoY = scrollY,
+    )
 }
 
 private fun guionTema(oscuro: Boolean) =

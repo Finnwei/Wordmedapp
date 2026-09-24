@@ -693,11 +693,21 @@ que se está viendo. Un toque la abre; mantener apretado y arrastrar la
 mueve. Abierta arranca en modo lectura —sin teclado—; el lápiz pasa a
 edición y OK vuelve a fijarla. Se pueden pegar imágenes del portapapeles.
 
-**Dónde se anclan.** Al texto, no a la pantalla: la posición se guarda en
-coordenadas del documento (píxeles CSS), y al dibujarlas se traduce con el
-zoom y el scroll del WebView. Así la nota queda al lado del párrafo que
-anota aunque cambie el zoom, el tamaño de letra o el teléfono. De ahí que
-el visor tenga que seguir `setOnScrollChangeListener` y `onScaleChanged`.
+**Dónde se anclan.** Al texto, no a la pantalla: la posición se guarda como
+**fracción de la hoja** —0 es el borde de arriba o el de la izquierda, 1 el
+de abajo o el de la derecha— y al dibujarlas se multiplica por lo que mide
+el documento ahora mismo, que sale de `computeVerticalScrollRange` y su par
+horizontal. Eso ya viene con el zoom aplicado, así que no hay que consultar
+`scale` para nada.
+
+Antes se guardaban en píxeles CSS y se convertían con `scale`. El WebView lo
+informa tarde y a veces mal, y con un valor equivocado la nota se guardaba
+fuera de la hoja: quedaba invisible para siempre. Pasó de verdad.
+
+**El tamaño también es fraccionario**, para que el cuadradito se agrande y se
+achique con el zoom como todo lo dibujado en la página; con un tamaño fijo en
+dp, al alejarse quedaba enorme al lado del texto. Lleva topes para que no
+desaparezca ni tape media pantalla.
 
 **Dónde viven.** En `filesDir/notas/`, **fuera de `contenido/`**, que la
 sincronización borra entero cada vez que cambia el material. Un archivo
