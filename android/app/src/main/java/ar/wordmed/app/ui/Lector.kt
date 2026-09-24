@@ -1,6 +1,7 @@
 package ar.wordmed.app.ui
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
@@ -28,6 +29,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -74,11 +76,14 @@ fun Lector(
     val t = LocalTinta.current
     var panelLetra by remember { mutableStateOf(false) }
     var barraVisible by remember { mutableStateOf(true) }
+    var avance by remember { mutableFloatStateOf(0f) }
 
+    /* Atrás sale del cuadernillo. Antes también servía para devolver la
+       barra, pero ahora la barra se esconde sola todo el tiempo: con esa
+       regla, atrás casi nunca habría salido del tema. */
     BackHandler {
         when {
             panelLetra -> panelLetra = false
-            !barraVisible -> barraVisible = true
             else -> alVolver()
         }
     }
@@ -89,6 +94,12 @@ fun Lector(
        arriba, y el WebView arranca más abajo por el padding. */
     var altoBarra by remember { mutableStateOf(0) }
     val densidad = LocalDensity.current
+
+    /* Cuánto hay que arrastrar para que la barra se decida. Sin umbral, el
+       temblor del pulso y el frenado de un impulso la hacían parpadear. */
+    val umbral = with(densidad) { 16.dp.roundToPx() }
+    /* Arriba de todo la barra se ve siempre, aunque se haya escondido. */
+    val margenArriba = with(densidad) { 24.dp.roundToPx() }
 
     Box(
         Modifier
@@ -110,7 +121,7 @@ fun Lector(
                     )
                     .build()
 
-                WebView(c).apply {
+                VistaCuadernillo(c).apply {
                     settings.javaScriptEnabled = true
                     settings.domStorageEnabled = true
                     settings.allowFileAccess = false
@@ -131,6 +142,30 @@ fun Lector(
                     isVerticalScrollBarEnabled = true
 
                     addJavascriptInterface(PuenteLector(alProgreso), "WordmedApp")
+
+                    /* Un solo oyente para las dos cosas: cuánto se leyó y
+                       para dónde va el dedo. El desplazamiento se acumula y
+                       se compara contra el umbral; cuando el dedo cambia de
+                       sentido, la cuenta arranca de cero. */
+                    var acumulado = 0
+                    setOnScrollChangeListener { _, _, y, _, viejoY ->
+                        val rango = rangoVertical() - height
+                        avance = if (rango > 0) (y.toFloat() / rango).coerceIn(0f, 1f) else 0f
+
+                        if (y <= margenArriba) {
+                            acumulado = 0
+                            barraVisible = true
+                            return@setOnScrollChangeListener
+                        }
+
+                        val paso = y - viejoY
+                        if ((paso > 0) != (acumulado > 0)) acumulado = 0
+                        acumulado += paso
+                        when {
+                            acumulado > umbral -> { barraVisible = false; acumulado = 0 }
+                            acumulado < -umbral -> { barraVisible = true; acumulado = 0 }
+                        }
+                    }
 
                     webViewClient = object : WebViewClient() {
                         override fun shouldInterceptRequest(
@@ -163,6 +198,19 @@ fun Lector(
                 .background(t.papel)
                 .onGloballyPositioned { altoBarra = it.size.height }
         ) {
+
+        /* El avance de lectura va pegado al borde de arriba y no se esconde
+           nunca: con la barra plegada es lo único que dice cuánto queda. */
+        Box(Modifier.fillMaxWidth().height(3.dp).background(t.linea)) {
+            if (avance > 0f) {
+                Box(
+                    Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(avance)
+                        .background(t.tintaMedia)
+                )
+            }
+        }
 
         /* --- barra fija, arriba del nombre de la materia --- */
         AnimatedVisibility(
@@ -248,6 +296,16 @@ fun Lector(
             )
         }
     }
+}
+
+/**
+ * El WebView del cuadernillo, con una sola cosa de más: saber cuánto mide
+ * el documento entero. `computeVerticalScrollRange` —lo que usa la propia
+ * barra de scroll— es protegido, así que desde afuera no se puede preguntar
+ * y hay que abrirlo desde una subclase.
+ */
+private class VistaCuadernillo(contexto: Context) : WebView(contexto) {
+    fun rangoVertical() = computeVerticalScrollRange()
 }
 
 private fun guionTema(oscuro: Boolean) =
