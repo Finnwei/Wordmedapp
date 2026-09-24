@@ -55,7 +55,15 @@ class Notas(private val ctx: Context) {
     suspend fun de(clave: String): List<Nota> = withContext(Dispatchers.IO) {
         val f = archivo(clave)
         if (!f.exists()) return@withContext emptyList()
-        runCatching { json.decodeFromString<List<Nota>>(f.readText()) }.getOrDefault(emptyList())
+        runCatching { json.decodeFromString<List<Nota>>(f.readText()) }
+            .getOrDefault(emptyList())
+            .map { n ->
+                /* Las del formato viejo no se pueden ubicar: dependían del
+                   zoom del momento, que no quedó anotado. Se plantan arriba
+                   y a la vista, que es mejor que perderlas. */
+                if (n.fx != null && n.fy != null) n
+                else n.copy(fx = 0.5f, fy = 0.02f, x = null, y = null)
+            }
     }
 
     suspend fun guardar(clave: String, notas: List<Nota>) = withContext(Dispatchers.IO) {

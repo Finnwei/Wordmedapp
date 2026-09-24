@@ -1,7 +1,8 @@
 package ar.wordmed.app.ui
 
 import android.annotation.SuppressLint
-import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
@@ -30,6 +31,7 @@ import androidx.compose.material.icons.filled.NoteAdd
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -85,14 +87,10 @@ fun Lector(
 
     val notas = recordarNotas(clave)
 
-    /* Cuánto mide el cuadernillo y por dónde va, en píxeles de pantalla.
-       Las notas se ubican con esto y no con el zoom: el WebView informa el
-       zoom tarde y a veces mal, y con un valor equivocado la nota se
-       guardaba fuera de la hoja y no se veía nunca más. El largo, en
-       cambio, siempre está al día. */
-    var hoja by remember { mutableStateOf(Hoja()) }
-    var tamanoVista by remember { mutableStateOf(IntSize.Zero) }
-    var vista by remember { mutableStateOf<VistaCuadernillo?>(null) }
+    /* Los cuadraditos de las notas los dibuja la propia página —ver
+       GuionNotas—, así que de este lado sólo hace falta poder hablarle. */
+    var vista by remember { mutableStateOf<WebView?>(null) }
+    var paginaLista by remember { mutableStateOf(false) }
 
     BackHandler {
         when {
@@ -130,7 +128,7 @@ fun Lector(
                     )
                     .build()
 
-                VistaCuadernillo(c).apply {
+                WebView(c).apply {
                     settings.javaScriptEnabled = true
                     settings.domStorageEnabled = true
                     settings.allowFileAccess = false
@@ -150,11 +148,17 @@ fun Lector(
                     settings.textZoom = tamanoLetra
                     isVerticalScrollBarEnabled = true
 
-                    addJavascriptInterface(PuenteLector(alProgreso), "WordmedApp")
+                    addJavascriptInterface(
+                        PuenteLector(
+                            alProgreso = alProgreso,
+                            alAbrirNota = { notas.abierta = it },
+                            alMoverNota = notas::mover,
+                            alCrearNota = notas::agregar,
+                        ),
+                        "WordmedApp",
+                    )
 
                     vista = this
-
-                    setOnScrollChangeListener { _, _, _, _, _ -> hoja = medir() }
 
                     webViewClient = object : WebViewClient() {
                         override fun shouldInterceptRequest(
@@ -169,19 +173,8 @@ fun Lector(
 
                         override fun onPageFinished(view: WebView, url: String) {
                             view.evaluateJavascript(guionTema(oscuro), null)
-                            /* El largo del documento recién existe cuando
-                               terminó de maquetar; sin esto las notas no
-                               tendrían dónde pararse al abrir el tema. */
-                            (view as VistaCuadernillo).let { hoja = it.medir() }
-                            /* Las notas viejas, en píxeles, se pasan acá a
-                               fracciones de la hoja. */
-                            notas.migrar(hoja.largo, view.scale)
-                        }
-
-                        /* Al pellizcar cambia el largo del documento entero,
-                           no sólo el scroll. */
-                        override fun onScaleChanged(view: WebView, vieja: Float, nueva: Float) {
-                            (view as VistaCuadernillo).let { hoja = it.medir() }
+                            view.evaluateJavascript(GUION_NOTAS, null)
+                            paginaLista = true
                         }
                     }
 
@@ -194,28 +187,13 @@ fun Lector(
             },
         )
 
-        /* Los cuadraditos van después del AndroidView para quedar por
-           encima de él, y ocupan su mismo rectángulo: la cuenta que los
-           ubica es relativa a la esquina del cuadernillo, no a la del
-           teléfono. */
-        CapaNotas(
-            estado = notas,
-            hoja = hoja,
-            alto = tamanoVista.height,
-            desplazar = { paso ->
-                val v = vista
-                if (v == null) 0 else {
-                    val antes = v.scrollY
-                    v.scrollBy(0, paso)
-                    hoja = v.medir()
-                    v.scrollY - antes
-                }
-            },
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = with(densidad) { altoBarra.toDp() })
-                .onGloballyPositioned { tamanoVista = it.size },
-        )
+        /* Cada vez que cambia la lista, la página se entera y redibuja sus
+           cuadraditos. Es lo único que cruza la frontera. */
+        LaunchedEffect(notas.notas, paginaLista) {
+            if (paginaLista) vista?.evaluateJavascript(
+                "window.WordmedNotas&&WordmedNotas.pintar(${notasEnJs(notas.notas)})", null,
+            )
+        }
 
         Column(
             Modifier
@@ -252,14 +230,12 @@ fun Lector(
                     maxLines = 1, overflow = TextOverflow.Ellipsis,
                 )
             }
-            /* La nota nace en el medio de lo que se está viendo, expresado
-               como fracción de la hoja entera; de ahí se arrastra a donde
-               vaya. Para llevarla lejos conviene scrollear primero y
-               crearla ahí. */
+            /* La nota nace en el medio de lo que se está viendo; el centro
+               lo calcula la propia página, que es la que sabe dónde está
+               parada. De ahí se arrastra a donde vaya. */
             BotonVisor({
-                if (hoja.ancho > 0 && hoja.largo > 0) notas.agregar(
-                    fx = (tamanoVista.width / 2f + hoja.corridoX) / hoja.ancho,
-                    fy = (tamanoVista.height / 2f + hoja.corridoY) / hoja.largo,
+                vista?.evaluateJavascript(
+                    "window.WordmedNotas&&WordmedNotas.crearEnElCentro()", null,
                 )
             }) {
                 Icon(
@@ -351,23 +327,6 @@ fun Lector(
     }
 }
 
-/**
- * El WebView del cuadernillo, con una sola cosa de más: saber cuánto mide el
- * documento. `computeVerticalScrollRange` —lo que usa la propia barra de
- * scroll— es protegido, así que hay que abrirlo desde una subclase.
- *
- * Viene ya con el zoom aplicado, y por eso las notas se ubican con esto y no
- * con `scale`, que el WebView informa tarde y a veces mal.
- */
-private class VistaCuadernillo(contexto: Context) : WebView(contexto) {
-    fun medir() = Hoja(
-        ancho = computeHorizontalScrollRange(),
-        largo = computeVerticalScrollRange(),
-        corridoX = scrollX,
-        corridoY = scrollY,
-    )
-}
-
 private fun guionTema(oscuro: Boolean) =
     "document.documentElement.setAttribute('data-theme','${if (oscuro) "dark" else "light"}');"
 
@@ -383,7 +342,31 @@ private fun BotonVisor(alTocar: () -> Unit, contenido: @Composable () -> Unit) {
  * Lo que el cuadernillo puede llamar desde JavaScript. El puente que va
  * dentro del envoltorio busca justamente `window.WordmedApp`.
  */
-class PuenteLector(private val alProgreso: (String, Int, Int) -> Unit) {
+class PuenteLector(
+    private val alProgreso: (String, Int, Int) -> Unit,
+    private val alAbrirNota: (String) -> Unit,
+    private val alMoverNota: (String, Float, Float) -> Unit,
+    private val alCrearNota: (Float, Float) -> Unit,
+) {
+    /* Todo esto llega desde el hilo de JavaScript, y del otro lado hay
+       estado de Compose, que sólo se toca desde el principal. */
+    private val principal = Handler(Looper.getMainLooper())
+
     @JavascriptInterface
     fun progreso(clave: String, pct: Int, y: Int) = alProgreso(clave, pct, y)
+
+    @JavascriptInterface
+    fun abrirNota(id: String) {
+        principal.post { alAbrirNota(id) }
+    }
+
+    @JavascriptInterface
+    fun moverNota(id: String, fx: Double, fy: Double) {
+        principal.post { alMoverNota(id, fx.toFloat(), fy.toFloat()) }
+    }
+
+    @JavascriptInterface
+    fun crearNota(fx: Double, fy: Double) {
+        principal.post { alCrearNota(fx.toFloat(), fy.toFloat()) }
+    }
 }

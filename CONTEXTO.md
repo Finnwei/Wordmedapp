@@ -693,21 +693,28 @@ que se está viendo. Un toque la abre; mantener apretado y arrastrar la
 mueve. Abierta arranca en modo lectura —sin teclado—; el lápiz pasa a
 edición y OK vuelve a fijarla. Se pueden pegar imágenes del portapapeles.
 
-**Dónde se anclan.** Al texto, no a la pantalla: la posición se guarda como
-**fracción de la hoja** —0 es el borde de arriba o el de la izquierda, 1 el
-de abajo o el de la derecha— y al dibujarlas se multiplica por lo que mide
-el documento ahora mismo, que sale de `computeVerticalScrollRange` y su par
-horizontal. Eso ya viene con el zoom aplicado, así que no hay que consultar
-`scale` para nada.
+**Dónde se dibujan: adentro de la página.** El cuadradito es un `<div>`
+que la app inyecta en el cuadernillo al terminar de cargar. No toca el
+archivo —existe sólo mientras la página está abierta— pero para el WebView
+es un elemento más del documento.
 
-Antes se guardaban en píxeles CSS y se convertían con `scale`. El WebView lo
-informa tarde y a veces mal, y con un valor equivocado la nota se guardaba
-fuera de la hoja: quedaba invisible para siempre. Pasó de verdad.
+Antes lo dibujaba Compose encima del WebView y se lo movía siguiendo el
+scroll. Eso no puede quedar pegado: el WebView scrollea en su propio hilo y
+avisa después, así que la marca iba un paso atrás, se despegaba en los
+tirones rápidos y flotaba en el rebote del final. Siendo parte de la página
+no hay nada que sincronizar, y de paso crece y se achica sola con el zoom.
 
-**El tamaño también es fraccionario**, para que el cuadradito se agrande y se
-achique con el zoom como todo lo dibujado en la página; con un tamaño fijo en
-dp, al alejarse quedaba enorme al lado del texto. Lleva topes para que no
-desaparezca ni tape media pantalla.
+**Dónde se anclan.** La posición se guarda como **fracción de la hoja** —0 es
+el borde de arriba o el de la izquierda, 1 el de abajo o el de la derecha— y
+el guion la multiplica por lo que mide el documento. Nunca en píxeles: el
+formato viejo los convertía con el zoom que informaba el WebView, que llega
+tarde y con valores que cambian después de cargar, y una nota podía quedar
+guardada fuera de la hoja y no verse nunca más. Pasó de verdad.
+
+**Qué cruza la frontera.** Sólo cuatro cosas, todas por `window.WordmedApp`:
+la página avisa que tocaron una nota, que la soltaron en otro lado, o que
+hay que crear una en el centro; y la app le manda la lista cuando cambia.
+Lo demás —el panel, el teclado, las imágenes, el disco— es nativo.
 
 **Dónde viven.** En `filesDir/notas/`, **fuera de `contenido/`**, que la
 sincronización borra entero cada vez que cambia el material. Un archivo
