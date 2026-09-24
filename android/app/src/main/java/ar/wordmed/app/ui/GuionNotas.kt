@@ -28,7 +28,7 @@ const val GUION_NOTAS = """
      y es transparente, y el dibujo lo pone un ::before de LADO centrado
      adentro. Así el dedo no tiene que acertarle justo. */
   var LADO = 20;      /* px CSS: en pantalla son unos 7 dp de dibujo */
-  var AGARRE = 80;    /* la zona sensible: unos 29 dp, cuatro veces el dibujo */
+  var AGARRE = 100;   /* la zona sensible: responde hasta 55 px del centro */
   var MITAD = AGARRE / 2;
   var ESPERA = 200;   /* cuánto hay que sostener antes de poder arrastrar */
   var MARGEN = 80;    /* cuánto hay que acercarse al borde para que corra */
@@ -39,7 +39,10 @@ const val GUION_NOTAS = """
 
   var estilo = document.createElement('style');
   estilo.textContent =
-    '.wm-nota{position:absolute;background:transparent;touch-action:none;' +
+    /* Sin `touch-action:none`: encima del cuadradito la página se desliza
+       como en cualquier otro lado. El arrastre se gana sosteniendo, y recién
+       ahí se le saca el gesto al scroll. */
+    '.wm-nota{position:absolute;background:transparent;' +
     'width:' + AGARRE + 'px;height:' + AGARRE + 'px}' +
     '.wm-nota::before{content:"";position:absolute;box-sizing:border-box;' +
     'left:50%;top:50%;width:' + LADO + 'px;height:' + LADO + 'px;' +
@@ -170,6 +173,15 @@ const val GUION_NOTAS = """
         }, 16);
       }, ESPERA);
     });
+
+    /* Mientras la nota está agarrada hay que frenar el scroll, y eso sólo lo
+       hace un touchmove no pasivo. Se puede frenar porque el dedo estuvo
+       quieto los 200 ms: el navegador todavía no empezó a deslizar, así que
+       el evento sigue siendo cancelable. Si el dedo se hubiera movido antes,
+       el arrastre nunca arranca y el scroll queda intacto. */
+    el.addEventListener('touchmove', function(e){
+      if (arrastrando && e.cancelable) e.preventDefault();
+    }, { passive: false });
 
     el.addEventListener('pointermove', function(e){
       ux = e.clientX; uy = e.clientY;
