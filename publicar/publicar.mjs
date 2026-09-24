@@ -185,7 +185,13 @@ function leerSecciones(cuerpo) {
       viewport puesto quedaba a ancho de teléfono.
    2. Se esconde el botón de tema del cuadernillo: en pantalla chica
       quedaba fuera de cuadro y se perdía al scrollear. La app pone el
-      suyo en una barra fija. */
+      suyo en una barra fija.
+   3. Se esconde la barra de avance del cuadernillo. Es position:fixed
+      sobre una página maquetada a ~980 px y encogida para entrar, así que
+      sus 3 px quedaban en poco más de uno y según el zoom desaparecían.
+      La app dibuja la misma barra por fuera, con el mismo degradado, donde
+      mide siempre lo mismo. En la web la del cuadernillo anda bien y
+      queda como está. */
 const PUENTE_CABECERA = `
 (function(){
   var enApp = typeof window.WordmedApp !== "undefined";
@@ -202,7 +208,7 @@ const PUENTE_CABECERA = `
      mano. Sacar el meta despues de parsearlo no reencuadra nada, por eso
      directamente no se emite. */
   var s = document.createElement("style");
-  s.textContent = ".tema{display:none !important}";
+  s.textContent = ".tema,.progreso{display:none !important}";
   document.head.appendChild(s);
 })();
 `;

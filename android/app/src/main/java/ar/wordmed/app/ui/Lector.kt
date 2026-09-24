@@ -36,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
@@ -78,12 +79,10 @@ fun Lector(
     var barraVisible by remember { mutableStateOf(true) }
     var avance by remember { mutableFloatStateOf(0f) }
 
-    /* Atrás sale del cuadernillo. Antes también servía para devolver la
-       barra, pero ahora la barra se esconde sola todo el tiempo: con esa
-       regla, atrás casi nunca habría salido del tema. */
     BackHandler {
         when {
             panelLetra -> panelLetra = false
+            !barraVisible -> barraVisible = true
             else -> alVolver()
         }
     }
@@ -94,12 +93,6 @@ fun Lector(
        arriba, y el WebView arranca más abajo por el padding. */
     var altoBarra by remember { mutableStateOf(0) }
     val densidad = LocalDensity.current
-
-    /* Cuánto hay que arrastrar para que la barra se decida. Sin umbral, el
-       temblor del pulso y el frenado de un impulso la hacían parpadear. */
-    val umbral = with(densidad) { 16.dp.roundToPx() }
-    /* Arriba de todo la barra se ve siempre, aunque se haya escondido. */
-    val margenArriba = with(densidad) { 24.dp.roundToPx() }
 
     Box(
         Modifier
@@ -143,28 +136,10 @@ fun Lector(
 
                     addJavascriptInterface(PuenteLector(alProgreso), "WordmedApp")
 
-                    /* Un solo oyente para las dos cosas: cuánto se leyó y
-                       para dónde va el dedo. El desplazamiento se acumula y
-                       se compara contra el umbral; cuando el dedo cambia de
-                       sentido, la cuenta arranca de cero. */
-                    var acumulado = 0
-                    setOnScrollChangeListener { _, _, y, _, viejoY ->
+                    /* De acá sale el avance que pinta la barra de arriba. */
+                    setOnScrollChangeListener { _, _, y, _, _ ->
                         val rango = rangoVertical() - height
                         avance = if (rango > 0) (y.toFloat() / rango).coerceIn(0f, 1f) else 0f
-
-                        if (y <= margenArriba) {
-                            acumulado = 0
-                            barraVisible = true
-                            return@setOnScrollChangeListener
-                        }
-
-                        val paso = y - viejoY
-                        if ((paso > 0) != (acumulado > 0)) acumulado = 0
-                        acumulado += paso
-                        when {
-                            acumulado > umbral -> { barraVisible = false; acumulado = 0 }
-                            acumulado < -umbral -> { barraVisible = true; acumulado = 0 }
-                        }
                     }
 
                     webViewClient = object : WebViewClient() {
@@ -199,15 +174,19 @@ fun Lector(
                 .onGloballyPositioned { altoBarra = it.size.height }
         ) {
 
-        /* El avance de lectura va pegado al borde de arriba y no se esconde
-           nunca: con la barra plegada es lo único que dice cuánto queda. */
-        Box(Modifier.fillMaxWidth().height(3.dp).background(t.linea)) {
+        /* El avance de lectura, con el mismo degradado de secciones que pinta
+           el cuadernillo. Va acá y no adentro del WebView porque ahí es
+           position:fixed sobre una página maquetada a 980px y encogida para
+           entrar: a esa escala los 3px quedaban en poco más de uno y según
+           el zoom desaparecían. Dibujada por fuera, mide siempre lo mismo.
+           Queda arriba del pliegue, así que tampoco se va con la barra. */
+        Box(Modifier.fillMaxWidth().height(3.dp)) {
             if (avance > 0f) {
                 Box(
                     Modifier
                         .fillMaxHeight()
                         .fillMaxWidth(avance)
-                        .background(t.tintaMedia)
+                        .background(Brush.horizontalGradient(t.espectro))
                 )
             }
         }
@@ -299,10 +278,9 @@ fun Lector(
 }
 
 /**
- * El WebView del cuadernillo, con una sola cosa de más: saber cuánto mide
- * el documento entero. `computeVerticalScrollRange` —lo que usa la propia
- * barra de scroll— es protegido, así que desde afuera no se puede preguntar
- * y hay que abrirlo desde una subclase.
+ * El WebView del cuadernillo, con una sola cosa de más: saber cuánto mide el
+ * documento entero. `computeVerticalScrollRange` —lo que usa la propia barra
+ * de scroll— es protegido, así que hay que abrirlo desde una subclase.
  */
 private class VistaCuadernillo(contexto: Context) : WebView(contexto) {
     fun rangoVertical() = computeVerticalScrollRange()
