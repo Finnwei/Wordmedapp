@@ -1,0 +1,2248 @@
+<title>Enfermedades Reemergentes</title>
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-bloque:1.95rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+
+  /* Que la barra de desplazamiento y los controles nativos acompanen al tema */
+  color-scheme: light dark;
+}
+
+/* Eleccion explicita de claro: solo hace falta para el color-scheme, los
+   tokens claros ya son la base sin estampar. */
+:root[data-theme="light"]{ color-scheme: light; }
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* Interruptor de tema claro / oscuro.
+   El estampado `data-theme` en la raíz ya lo respetan los bloques de tokens de
+   arriba; este botón sólo lo pone y lo guarda. Sin elección estampada mandan
+   las preferencias del sistema, que es el comportamiento por defecto. */
+.tema{
+  position:fixed; top:.7rem; right:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.tema:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.tema__icono{ width:1.15rem; height:1.15rem; display:block; }
+
+/* Se muestra el icono del tema al que se va a cambiar, no el actual.
+   Mismo escalonado que los tokens: base clara · sistema oscuro · elección explícita. */
+.tema__sol{ display:none; }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .tema__sol{ display:block; }
+  :root:not([data-theme="light"]) .tema__luna{ display:none; }
+}
+:root[data-theme="dark"] .tema__sol{ display:block; }
+:root[data-theme="dark"] .tema__luna{ display:none; }
+:root[data-theme="light"] .tema__sol{ display:none; }
+:root[data-theme="light"] .tema__luna{ display:block; }
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índices ---------- */
+/* Dos piezas complementarias y deliberadamente redundantes:
+   · .indice        — barra lateral fija, sólo en pantalla ancha, navegación permanente.
+   · .indice-rapido — tarjeta compacta al principio del cuerpo, visible en TODO ancho.
+   La lateral desaparece por debajo de 64rem, que es justo el ancho del panel de
+   Artifacts y del celular; sin la compacta el cuadernillo publicado se queda sin
+   índice. Las dos apuntan a los mismos anclajes y se resaltan juntas al desplazar. */
+
+/* 6.1 · Barra lateral */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+/* Rótulo de bloque intercalado en la lista lateral: no es un enlace, sólo
+   separa grupos de secciones para que 30 entradas no sean una tira plana. */
+.indice__bloque{
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+  margin:.9rem 0 .2rem; padding:0 .55rem;
+}
+.indice__bloque:first-child{ margin-top:0; }
+
+/* 6.2 · Índice compacto (va después de la portada, dentro del cuerpo) */
+.indice-rapido{
+  background:var(--hoja-hund);
+  border:1px solid var(--linea);
+  border-radius:var(--radio);
+  padding:1.1rem 1.2rem 1.2rem;
+}
+.indice-rapido__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .85rem;
+}
+/* auto-fit: una columna en el panel angosto, dos o tres en pantalla ancha */
+.indice-rapido__bloques{
+  list-style:none; margin:0; padding:0;
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(15rem, 1fr));
+  gap:1rem 2rem; align-items:start;
+}
+.ir-bloque{
+  display:block; margin-bottom:.4rem;
+  font-family:var(--f-titulo); font-size:.98rem; font-weight:700; line-height:1.3;
+  color:var(--tinta); text-decoration:none;
+  padding-bottom:.3rem; border-bottom:1px solid var(--linea-fuerte);
+}
+.ir-bloque:hover{ color:var(--cli-t); }
+.ir-secciones{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.05rem; }
+.ir-link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.55rem 1fr; align-items:baseline; gap:.4rem;
+  padding:.2rem .35rem; border-radius:2px;
+  font-size:.86rem; line-height:1.4; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.ir-link > b{
+  font-family:var(--f-dato); font-size:.76rem; font-weight:700;
+  font-variant-numeric:tabular-nums; color:var(--ct); opacity:.85;
+}
+.ir-link:hover{ background:var(--hoja); color:var(--tinta); }
+.ir-link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Título de bloque y ficha de sección ---------- */
+
+/* Anuncia un grupo de secciones. Neutro en color a propósito: los siete colores
+   tienen significado clínico fijo y un bloque agrupa secciones de varios. La
+   regla de abajo lleva el degradado completo de la paleta, igual que la pestaña
+   de repaso y la cabecera de la ficha relámpago.
+   Sin <svg> adentro: el exportador a Word aparea los diagramas con las figuras
+   por contador posicional sobre el HTML crudo (ver exportar_docx.py). */
+.bloque{
+  margin:1.4rem 0 0; padding:0;
+  text-align:center; scroll-margin-top:2.5rem;
+  display:flex; flex-direction:column; align-items:center; gap:.3rem;
+  font-weight:400;
+}
+.bloque:first-child{ margin-top:0; }
+.bloque__rotulo{
+  font-family:var(--f-texto);
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+}
+.bloque__nombre{
+  font-family:var(--f-titulo); font-size:var(--t-bloque); font-weight:700; line-height:1.15;
+  letter-spacing:-.01em; color:var(--tinta); text-wrap:balance; max-width:32ch;
+}
+.bloque::after{
+  content:""; width:7rem; height:2.5px; margin-top:.5rem; border-radius:2px;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+}
+
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.5rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-column:1; grid-row:1; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+/* El icono ocupa la columna 1 y NADA MAS. Todo el resto del contenido se
+   apila en la columna 2, una fila por elemento, sin importar cuantos
+   parrafos haya.
+
+   Sin esta regla la caja solo funciona con un unico <p>: a partir del
+   segundo, la autocolocacion del grid empieza a repartir contenido en la
+   columna del icono, que es `auto` y por lo tanto se ensancha hasta abarcar
+   el parrafo que le toco. La columna `1fr` queda entonces reducida a una
+   tira angosta, el texto se parte en dos columnas desbalanceadas y la caja
+   crece hasta volverse ilegible. */
+.importante > :not(.importante__icono){ grid-column:2; }
+.importante__titulo{
+  grid-row:1;
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante ul, .importante ol{ margin:0; padding-left:1.15rem; }
+.importante li + li{ margin-top:.3rem; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso, .tema{ display:none !important; }
+  /* La lateral no se imprime, pero la compacta sí: en papel es la tabla de
+     contenidos del cuadernillo. */
+  .indice-rapido{ display:block; break-inside:avoid; page-break-inside:avoid; margin-bottom:1.2rem; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .bloque{
+    margin:1.6rem 0 1rem;
+    break-after:avoid; page-break-after:avoid;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+
+<script>
+/* Aplica el tema guardado antes de pintar. Va aca arriba a proposito: si
+   esperara al script del final, el documento parpadearia en el tema del
+   sistema antes de corregirse. */
+(function(){
+  try {
+    var guardado = localStorage.getItem('wordmed-tema');
+    if (guardado === 'dark' || guardado === 'light') {
+      document.documentElement.setAttribute('data-theme', guardado);
+    }
+  } catch (e) { /* almacenamiento bloqueado: manda el sistema */ }
+})();
+</script>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<button class="tema" id="tema" type="button" aria-pressed="false" aria-label="Cambiar a modo oscuro">
+  <svg class="tema__icono tema__sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.2"></circle>
+    <path d="M12 2.6v2.1M12 19.3v2.1M5.1 5.1l1.5 1.5M17.4 17.4l1.5 1.5M2.6 12h2.1M19.3 12h2.1M5.1 18.9l1.5-1.5M17.4 6.6l1.5-1.5"></path>
+  </svg>
+  <svg class="tema__icono tema__luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20.4 14.2A8.6 8.6 0 0 1 9.8 3.6a8.6 8.6 0 1 0 10.6 10.6z"></path>
+  </svg>
+</button>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li class="indice__bloque">A · Arbovirus</li>
+      <li><a class="indice__link i-generalidades"  href="#definiciones">Reemergentes y emergentes</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#arbovirus">Qué es un arbovirus</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#transmision">Transmisión y reemergencia</a></li>
+      <li><a class="indice__link i-generalidades"  href="#vector">El vector y su vigilancia</a></li>
+
+      <li class="indice__bloque">B · Dengue</li>
+      <li><a class="indice__link i-generalidades"  href="#dengue-epi">Epidemiología</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#dengue-fases">Serotipos y fases</a></li>
+      <li><a class="indice__link i-clinica"        href="#dengue-clinica">Formas clínicas</a></li>
+      <li><a class="indice__link i-importantes"    href="#dengue-alarma">Signos de alarma</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#dengue-caso">Definición de caso</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#dengue-dx">Laboratorio</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#dengue-manejo">Manejo por grupos</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#dengue-vacuna">Vacuna</a></li>
+      <li><a class="indice__link i-importantes"    href="#dengue-vector">Control del vector</a></li>
+
+      <li class="indice__bloque">C · Zika</li>
+      <li><a class="indice__link i-generalidades"  href="#zika">Generalidades</a></li>
+      <li><a class="indice__link i-importantes"    href="#zika-sexual">Transmisión sexual</a></li>
+      <li><a class="indice__link i-clinica"        href="#zika-clinica">Clínica</a></li>
+      <li><a class="indice__link i-clinica"        href="#zika-embarazo">Embarazo y Zika congénito</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#zika-dx">Diagnóstico</a></li>
+
+      <li class="indice__bloque">D · Chikungunya</li>
+      <li><a class="indice__link i-generalidades"  href="#chik">Virus y epidemiología</a></li>
+      <li><a class="indice__link i-clinica"        href="#chik-clinica">Clínica y artralgias</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#chik-dx">Definiciones y laboratorio</a></li>
+
+      <li class="indice__bloque">E · Fiebre amarilla</li>
+      <li><a class="indice__link i-fisiopatologia" href="#fa-ciclos">Los dos ciclos</a></li>
+      <li><a class="indice__link i-clinica"        href="#fa-clinica">Los tres períodos</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#fa-sospecha">Cuándo sospecharla</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#fa-dx">Laboratorio</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#fa-prevencion">Conducta y vacuna</a></li>
+
+      <li class="indice__bloque">Cierre</li>
+      <li><a class="indice__link i-diferenciales"  href="#comparacion">Los cuatro, lado a lado</a></li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Infectología · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Enfermedades Reemergentes</h1>
+      <p class="portada__bajada">Cuatro arbovirosis que comparten el mismo mosquito, el mismo tratamiento y las mismas medidas de prevención, y se separan por su gravedad. Del ciclo del virus dentro del vector a la conducta frente al paciente febril que vuelve de una zona de riesgo.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">27 secciones</span>
+        <span class="etiqueta s-clinica">Dengue · Zika · Chikungunya</span>
+        <span class="etiqueta s-importantes">Signos de alarma</span>
+        <span class="etiqueta s-diagnostico">Fiebre amarilla</span>
+      </div>
+    </header>
+
+    <nav class="indice-rapido" aria-label="Contenido del cuadernillo">
+      <p class="indice-rapido__rotulo">Contenido</p>
+      <ol class="indice-rapido__bloques">
+        <li>
+          <a class="ir-bloque" href="#bloque-a">Bloque A · Arbovirus: el marco común</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades"  href="#definiciones"><b>01</b> Reemergentes, emergentes y endémicas</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#arbovirus"><b>02</b> Qué es un arbovirus</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#transmision"><b>03</b> Transmisión biológica y reemergencia</a></li>
+            <li><a class="ir-link i-generalidades"  href="#vector"><b>04</b> El vector y su vigilancia</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-b">Bloque B · Dengue</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades"  href="#dengue-epi"><b>05</b> Epidemiología en la Argentina</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#dengue-fases"><b>06</b> Serotipos, incubación y las tres fases</a></li>
+            <li><a class="ir-link i-clinica"        href="#dengue-clinica"><b>07</b> Formas clínicas</a></li>
+            <li><a class="ir-link i-importantes"    href="#dengue-alarma"><b>08</b> Signos de alarma y gravedad</a></li>
+            <li><a class="ir-link i-diagnostico"    href="#dengue-caso"><b>09</b> Definición de caso sospechoso</a></li>
+            <li><a class="ir-link i-diagnostico"    href="#dengue-dx"><b>10</b> Laboratorio y ventana diagnóstica</a></li>
+            <li><a class="ir-link i-tratamiento"    href="#dengue-manejo"><b>11</b> Manejo por grupos A, B y C</a></li>
+            <li><a class="ir-link i-tratamiento"    href="#dengue-vacuna"><b>12</b> Vacuna contra el dengue</a></li>
+            <li><a class="ir-link i-importantes"    href="#dengue-vector"><b>13</b> Control del vector</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-c">Bloque C · Zika</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades"  href="#zika"><b>14</b> Generalidades y transmisión</a></li>
+            <li><a class="ir-link i-importantes"    href="#zika-sexual"><b>15</b> Transmisión sexual y plazos</a></li>
+            <li><a class="ir-link i-clinica"        href="#zika-clinica"><b>16</b> Clínica y evolución</a></li>
+            <li><a class="ir-link i-clinica"        href="#zika-embarazo"><b>17</b> Embarazo y síndrome congénito</a></li>
+            <li><a class="ir-link i-diagnostico"    href="#zika-dx"><b>18</b> Diagnóstico</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-d">Bloque D · Chikungunya</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades"  href="#chik"><b>19</b> Virus, vector y epidemiología</a></li>
+            <li><a class="ir-link i-clinica"        href="#chik-clinica"><b>20</b> Clínica y evolución de las artralgias</a></li>
+            <li><a class="ir-link i-diagnostico"    href="#chik-dx"><b>21</b> Definiciones de caso y laboratorio</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-e">Bloque E · Fiebre amarilla</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-fisiopatologia" href="#fa-ciclos"><b>22</b> Los dos ciclos y la transmisibilidad</a></li>
+            <li><a class="ir-link i-clinica"        href="#fa-clinica"><b>23</b> Los tres períodos</a></li>
+            <li><a class="ir-link i-diagnostico"    href="#fa-sospecha"><b>24</b> Cuándo sospecharla y diferenciales</a></li>
+            <li><a class="ir-link i-diagnostico"    href="#fa-dx"><b>25</b> Laboratorio</a></li>
+            <li><a class="ir-link i-tratamiento"    href="#fa-prevencion"><b>26</b> Conducta, vacuna y prevención</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-f">Cierre</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-diferenciales"  href="#comparacion"><b>27</b> Los cuatro arbovirus, lado a lado</a></li>
+            <li><a class="ir-link i-clinica"        href="#repaso"><b>·</b> Repaso activo</a></li>
+            <li><a class="ir-link i-importantes"    href="#relampago"><b>⚡</b> Ficha Relámpago</a></li>
+          </ul>
+        </li>
+      </ol>
+    </nav>
+
+    <h2 class="bloque" id="bloque-a">
+      <span class="bloque__rotulo">Bloque A</span>
+      <span class="bloque__nombre">Arbovirus: el marco común</span>
+    </h2>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="definiciones">
+      <span class="seccion__pestana"><b>01</b> Base</span>
+      <h2 class="seccion__titulo">Reemergentes, emergentes y endémicas</h2>
+
+      <p>Las tres palabras describen <strong>comportamientos epidemiológicos distintos</strong>, no gravedades distintas. Conviene tenerlas separadas desde el principio, porque la conducta de vigilancia que exige cada grupo es diferente.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Categoría</th><th>Definición</th><th>Ejemplos</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Reemergentes</strong></td><td>Volvieron a aparecer después de que su incidencia <strong>había disminuido significativamente</strong></td><td><strong>Dengue, Zika, chikungunya y fiebre amarilla</strong></td></tr>
+            <tr><td><strong>Regionales o endémicas</strong></td><td>Afectan de forma <strong>permanente</strong>, o en determinados períodos, a una región, <strong>sin fluctuaciones importantes</strong></td><td>Chagas, brucelosis, hidatidosis, triquinosis y fiebre hemorrágica argentina</td></tr>
+            <tr><td><strong>Emergentes</strong></td><td>Su incidencia <strong>aumentó en los últimos 20 años</strong></td><td>Sida: el VIH se desconocía hasta principios de los años ochenta y desde entonces se difundió por todo el mundo</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>El dengue es el ejemplo que ordena la categoría: era una enfermedad común, su incidencia se redujo considerablemente durante los años sesenta y setenta, y <strong>en los ochenta el mosquito regresó con todo su ímpetu</strong>. Lo que había desaparecido no era el virus sino el vector; cuando volvió el vector, volvió la enfermedad.</p>
+
+      <p>Este cuadernillo desarrolla las <strong>cuatro reemergentes transmitidas por el mismo mosquito</strong>. Comparten vector, tratamiento sintomático y medidas de prevención; <strong>la diferencia marcada está en la gravedad</strong>, sobre todo en la fiebre amarilla y el dengue.</p>
+
+      <p class="cita">Clase «Enfermedades reemergentes», 1.ª y 2.ª parte, Dra. Cristina Salvador, Enfermedades Infecciosas, Facultad de Ciencias Médicas, Universidad de Mendoza, San Rafael.</p>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-fisiopatologia" id="arbovirus">
+      <span class="seccion__pestana"><b>02</b> Mecanismo</span>
+      <h2 class="seccion__titulo">Qué es un arbovirus</h2>
+
+      <p><strong>Arbovirus</strong> es una categoría ecológica, no taxonómica: son los <strong>virus transmitidos por artrópodos</strong>, especialmente insectos —moscas y mosquitos— y arácnidos —garrapatas—. Por eso bajo el mismo nombre conviven familias distintas.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Virus</th><th>Familia</th><th>Género</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Dengue, Zika y fiebre amarilla</strong></td><td><em>Flaviviridae</em></td><td><em>Flavivirus</em></td></tr>
+            <tr><td><strong>Chikungunya</strong></td><td><em>Togaviridae</em></td><td><em>Alphavirus</em></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Que tres de los cuatro sean <strong>flavivirus</strong> explica el problema diagnóstico que atraviesa todo el cuadernillo: <strong>sus serologías reaccionan de forma cruzada entre sí</strong>.</p>
+
+      <h3>Estructura</h3>
+      <ul>
+        <li>Cápside de <strong>estructura icosaédrica</strong>.</li>
+        <li><strong>Envoltura lipídica</strong> con proyecciones de superficie: <strong>proteína M</strong> y <strong>proteína E</strong>.</li>
+        <li><strong>Proteínas no estructurales (NS)</strong>: no forman la partícula pero se producen durante la replicación. De ahí sale un recurso diagnóstico concreto, el <strong>antígeno NS1</strong> del dengue.</li>
+        <li>Genoma de <strong>ARN monocatenario</strong>, de una sola cadena.</li>
+      </ul>
+
+      <h3>Qué consecuencias tiene esa estructura sobre el diagnóstico</h3>
+      <p>La clase lo plantea como cuatro implicaciones, y cada una explica una limitación concreta del laboratorio:</p>
+      <ul>
+        <li><strong>Los virus envueltos son menos estables</strong>, lo que afecta el aislamiento viral: la muestra mal conservada deja de ser útil.</li>
+        <li><strong>El ARN monocatenario es químicamente lábil</strong> y se degrada con facilidad.</li>
+        <li><strong>La variabilidad genética de los virus ARN</strong> afecta el diagnóstico molecular: el cebador puede dejar de reconocer la variante circulante.</li>
+        <li>Dentro de cada familia hay <strong>similitudes y diferencias estructurales y genéticas</strong> que condicionan la capacidad de detectar cada virus de forma específica.</li>
+      </ul>
+
+      <p class="cita">Recomendaciones para la detección y el diagnóstico por laboratorio de infecciones por arbovirus en la Región de las Américas, OPS, 2022.</p>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-fisiopatologia" id="transmision">
+      <span class="seccion__pestana"><b>03</b> Mecanismo</span>
+      <h2 class="seccion__titulo">Transmisión biológica y reemergencia</h2>
+
+      <p>Se llama <strong>transmisión biológica</strong> porque el mosquito no es una jeringa que traslada sangre: <strong>el virus se replica dentro de él</strong>. Eso impone dos condiciones. Primero, que el huésped vertebrado tenga una <strong>viremia alta</strong> en el momento de la picadura. Segundo, que pase el tiempo necesario para que el virus recorra el cuerpo del insecto.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 780 330" role="img" aria-label="Ciclo del virus dentro del mosquito: ingiere sangre de una persona virémica, el virus infecta el intestino medio, pasa al hemocele y llega a las glándulas salivales, desde donde se transmite a una persona susceptible">
+          <defs>
+            <marker id="ar-vec" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="30" y="30" width="200" height="48" rx="6" fill="var(--c)" fill-opacity="0.20" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="130" y="59" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Persona virémica</text>
+
+          <line x1="230" y1="54" x2="286" y2="54" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar-vec)"></line>
+          <text x="258" y="44" text-anchor="middle" font-size="11" fill="currentColor">pica</text>
+
+          <rect x="292" y="30" width="220" height="48" rx="6" fill="var(--c)" fill-opacity="0.10" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="402" y="59" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Intestino medio</text>
+
+          <line x1="402" y1="78" x2="402" y2="108" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar-vec)"></line>
+
+          <rect x="292" y="110" width="220" height="44" rx="6" fill="var(--c)" fill-opacity="0.10" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="402" y="137" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Hemocele</text>
+
+          <line x1="402" y1="154" x2="402" y2="184" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar-vec)"></line>
+
+          <rect x="292" y="186" width="220" height="48" rx="6" fill="var(--c)" fill-opacity="0.22" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="402" y="215" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Glándulas salivales</text>
+
+          <text x="530" y="124" font-size="11.5" fill="currentColor">
+            <tspan x="530" dy="0" font-weight="700">Ciclo extrínseco</tspan>
+            <tspan x="530" dy="15">9 a 12 días en la</tspan>
+            <tspan x="530" dy="15">fiebre amarilla</tspan>
+          </text>
+
+          <line x1="512" y1="210" x2="572" y2="210" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar-vec)"></line>
+
+          <rect x="574" y="186" width="186" height="48" rx="6" fill="var(--c)" fill-opacity="0.20" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="667" y="215" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Persona susceptible</text>
+
+          <rect x="90" y="262" width="580" height="52" rx="6" fill="none" stroke="currentColor" stroke-width="1.1" stroke-dasharray="5 4"></rect>
+          <text x="380" y="282" text-anchor="middle" font-size="11.5" fill="currentColor">
+            <tspan x="380" dy="0" font-weight="700">Caso autóctono = virus + mosquito + personas susceptibles.</tspan>
+            <tspan x="380" dy="16">Una vez infectado, el mosquito lo queda por el resto de su vida adulta.</tspan>
+          </text>
+        </svg>
+        <figcaption>El artrópodo se infecta al ingerir sangre con virus; el virus infecta las células del intestino medio, pasa al hemocele y desde allí a diversos tejidos, entre ellos las glándulas salivales, que son la vía de salida hacia el próximo huésped. Si falta cualquiera de los tres elementos del recuadro, no hay transmisión autóctona.</figcaption>
+      </figure>
+
+      <h3>Qué favorece la reemergencia</h3>
+      <ul>
+        <li><strong>Factores ambientales, en especial la temperatura, y el cambio climático.</strong> Se asocian a una <strong>mayor dispersión de los vectores</strong> y por eso se consideran un factor de peso en la reemergencia.</li>
+        <li><strong>Zonas rurales cercanas a bosques, caza, deforestación y minería</strong>: actividades que ponen a personas no inmunizadas en contacto con los ciclos selváticos.</li>
+      </ul>
+
+      <p>Una idea que conviene fijar desde acá: <strong>dengue, chikungunya, Zika y fiebre amarilla comparten el vector, el tratamiento y las medidas preventivas</strong>. Todo lo que se haga contra el <em>Aedes</em> sirve para las cuatro, y ninguna tiene antiviral específico.</p>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-generalidades" id="vector">
+      <span class="seccion__pestana"><b>04</b> Base</span>
+      <h2 class="seccion__titulo">El vector y su vigilancia</h2>
+
+      <h3><em>Aedes aegypti</em></h3>
+      <ul>
+        <li>Es una <strong>especie diurna</strong>, con mayor actividad de picadura <strong>dos horas después de la puesta de sol y varias horas antes del amanecer</strong>.</li>
+        <li><strong>Vive y deposita sus huevos dentro y alrededor de las casas</strong>, en recipientes de almacenamiento de agua, jarrones, tarros, neumáticos viejos y cualquier objeto que haga las veces de envase.</li>
+        <li>Su <strong>capacidad de vuelo es de unos 100 metros</strong>. De ahí la frase que resume toda la prevención domiciliaria: <strong>el mosquito que pica es el mismo que uno crió</strong>.</li>
+      </ul>
+      <p>Esa última característica es la que vuelve eficaz el descacharrado: no sirve de nada fumigar la plaza si el criadero está en el patio, porque el vector no viaja.</p>
+
+      <p>La <strong>incidencia acumulada más elevada</strong> se observa entre los <strong>20 y 29 años</strong>, seguida por el grupo de 30 a 39 y el de 10 a 19: la distribución sigue a la población económicamente activa, que es la que más se expone.</p>
+
+      <h3>Vigilancia entomológica por sensores de oviposición</h3>
+      <p>Las <strong>ovitrampas</strong> son recipientes que el mosquito usa para poner huevos y que permiten medir el riesgo <strong>antes</strong> de que aparezcan los casos. Se usan dos indicadores:</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Indicador</th><th>Qué mide</th><th>Interpretación</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Índice de Positividad de Ovitrampas (IPO)</strong></td><td>Relación entre sensores positivos y examinados; estima el <strong>riesgo entomológico</strong></td><td>Riesgo <strong>bajo</strong> con IPO menor de 40 %, <strong>moderado</strong> entre 40 y 70 %, <strong>alto</strong> por encima de 70 %</td></tr>
+            <tr><td><strong>Índice de Densidad de Huevos (IDH)</strong></td><td>Relación entre la cantidad de huevos y los sensores positivos; informa de manera indirecta sobre la <strong>densidad del vector</strong></td><td>Permite identificar las temporadas de mayor y menor actividad reproductiva</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Los dos se leen juntos: el IPO dice <strong>en cuántos lugares hay mosquito</strong> y el IDH, <strong>cuánto mosquito hay</strong> en cada uno.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-b">
+      <span class="bloque__rotulo">Bloque B</span>
+      <span class="bloque__nombre">Dengue</span>
+    </h2>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-generalidades" id="dengue-epi">
+      <span class="seccion__pestana"><b>05</b> Base</span>
+      <h2 class="seccion__titulo">Epidemiología en la Argentina</h2>
+
+      <p>El dengue <strong>reemergió en la Argentina en 1997</strong>. Desde entonces, las temporadas <strong>2023 y 2024 fueron las de mayor magnitud registradas</strong>: entre las dos concentran alrededor del <span class="dato">82 %</span> de todos los casos de la serie histórica.</p>
+
+      <h3>La temporada 2023-2024</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Indicador</th><th>Valor</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Casos notificados, del 30 de julio de 2023 al 27 de julio de 2024</td><td><span class="dato">583.297</span>, el <span class="dato">95 %</span> autóctonos</td></tr>
+            <tr><td>Concentración temporal</td><td><span class="dato">566.015</span> casos, el <span class="dato">97 %</span>, ocurrieron en 2024</td></tr>
+            <tr><td>Comparación</td><td>Más de <strong>tres veces</strong> la temporada anterior y más de <strong>ocho veces</strong> la de 2019-2020</td></tr>
+            <tr><td>Distribución regional</td><td>Centro <span class="dato">60,2 %</span>, NOA <span class="dato">27,7 %</span>, NEA <span class="dato">10 %</span>, Cuyo y Sur <span class="dato">2,2 %</span></td></tr>
+            <tr><td>Dengue grave</td><td><span class="dato">1.638</span> casos, el <span class="dato">0,28 %</span> del total</td></tr>
+            <tr><td>Fallecidos</td><td><span class="dato">419</span>, con una letalidad global del <span class="dato">0,072 %</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Esos dos últimos números explican por qué el dengue se vigila como se vigila: <strong>la letalidad es bajísima, pero se aplica sobre cientos de miles de casos</strong>. Con esa aritmética, lo que cambia el resultado no es un tratamiento sino la <strong>detección temprana del paciente que se está yendo a la forma grave</strong>.</p>
+
+      <h3>Qué está pasando ahora</h3>
+      <ul>
+        <li><strong>Región de las Américas, semana epidemiológica 29 de 2025:</strong> <span class="dato">3.558.860</span> casos sospechosos, una <strong>disminución del 69 %</strong> respecto del mismo período de 2024 y del <strong>11 %</strong> respecto del promedio de los últimos cinco años.</li>
+        <li><strong>Subregión Cono Sur:</strong> <span class="dato">18.507</span> casos nuevos, con un descenso del <strong>69 %</strong> frente a 2024 y del <strong>9 %</strong> frente al promedio quinquenal.</li>
+        <li><strong>Semana 36 de 2026:</strong> el número de casos se mantiene en niveles bajos, sin cambios respecto de la temporada anterior y muy por debajo de los máximos de los años epidémicos.</li>
+      </ul>
+      <p>La lectura oficial es prudente: la tendencia en descenso de 2025 y 2026 <strong>sugiere una interrupción de la transmisión viral sostenida</strong> en el territorio nacional, pero <strong>persiste la necesidad de vigilancia intensificada</strong>, sobre todo donde las condiciones favorecen la transmisión. El vector no se fue: sólo bajó la circulación del virus.</p>
+
+      <p class="cita">Boletín Epidemiológico Nacional, Ministerio de Salud de la Nación, y actualizaciones epidemiológicas de la OPS, citados en la clase.</p>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-fisiopatologia" id="dengue-fases">
+      <span class="seccion__pestana"><b>06</b> Mecanismo</span>
+      <h2 class="seccion__titulo">Serotipos, incubación y las tres fases</h2>
+
+      <h3>Los cuatro serotipos</h3>
+      <ul>
+        <li>Existen <strong>cuatro serotipos: DENV 1, 2, 3 y 4</strong>. La infección deja inmunidad duradera <strong>sólo para el serotipo que la causó</strong>, así que <strong>se puede tener dengue hasta cuatro veces</strong>; en la práctica se han visto hasta tres infecciones en un mismo individuo.</li>
+        <li>La <strong>enfermedad hemorrágica grave y mortal se asocia con más frecuencia a los serotipos DENV 2 y 3</strong>.</li>
+        <li><strong>Período de incubación: 5 a 7 días</strong>, con un rango de 3 a 14.</li>
+      </ul>
+
+      <h3>Las tres fases</h3>
+      <p>La OPS describe la enfermedad en tres fases, y entenderlas es lo que permite anticiparse: <strong>el paciente no se agrava cuando está peor, sino cuando parece que empieza a mejorar</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 350" role="img" aria-label="Las tres fases del dengue a lo largo de diez días: fase febril con viremia alta, fase crítica que empieza cuando cae la fiebre y concentra la fuga de plasma y los signos de alarma, y fase de recuperación con reabsorción del líquido">
+          <defs>
+            <marker id="ar-fas" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="55" y="52" width="235" height="162" rx="6" fill="var(--c)" fill-opacity="0.16"></rect>
+          <rect x="290" y="52" width="245" height="162" rx="6" fill="var(--c)" fill-opacity="0.30"></rect>
+          <rect x="535" y="52" width="235" height="162" rx="6" fill="var(--c)" fill-opacity="0.10"></rect>
+
+          <text x="172" y="72" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Fase febril</text>
+          <text x="412" y="72" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Fase crítica</text>
+          <text x="652" y="72" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Fase de recuperación</text>
+
+          <polyline points="75,110 150,102 225,106 300,168 375,186 450,188 525,190 600,192 675,193 745,194" fill="none" stroke="currentColor" stroke-width="2.4"></polyline>
+          <text x="95" y="96" font-size="11" font-style="italic" fill="currentColor">temperatura</text>
+
+          <line x1="55" y1="222" x2="790" y2="222" stroke="currentColor" stroke-width="1.3" marker-end="url(#ar-fas)"></line>
+          <text x="75" y="240" text-anchor="middle" font-size="11" fill="currentColor">1</text>
+          <text x="225" y="240" text-anchor="middle" font-size="11" fill="currentColor">3</text>
+          <text x="375" y="240" text-anchor="middle" font-size="11" fill="currentColor">5</text>
+          <text x="525" y="240" text-anchor="middle" font-size="11" fill="currentColor">7</text>
+          <text x="675" y="240" text-anchor="middle" font-size="11" fill="currentColor">9</text>
+          <text x="760" y="240" text-anchor="middle" font-size="11" font-style="italic" fill="currentColor">días</text>
+
+          <text x="172" y="268" text-anchor="middle" font-size="11.5" fill="currentColor">
+            <tspan x="172" dy="0">Fiebre alta, cefalea,</tspan>
+            <tspan x="172" dy="15">dolor retroocular y muscular</tspan>
+            <tspan x="172" dy="15" font-weight="700">Viremia máxima:</tspan>
+            <tspan x="172" dy="15" font-weight="700">pruebas directas</tspan>
+          </text>
+          <text x="412" y="268" text-anchor="middle" font-size="11.5" fill="currentColor">
+            <tspan x="412" dy="0">Cae la fiebre y empieza</tspan>
+            <tspan x="412" dy="15">la fuga de plasma</tspan>
+            <tspan x="412" dy="15" font-weight="700">Hematocrito que sube,</tspan>
+            <tspan x="412" dy="15" font-weight="700">plaquetas que bajan</tspan>
+          </text>
+          <text x="652" y="268" text-anchor="middle" font-size="11.5" fill="currentColor">
+            <tspan x="652" dy="0">Se reabsorbe el líquido</tspan>
+            <tspan x="652" dy="15">extravasado y mejora</tspan>
+            <tspan x="652" dy="15" font-weight="700">Riesgo de sobrecarga</tspan>
+            <tspan x="652" dy="15" font-weight="700">si se sigue hidratando</tspan>
+          </text>
+
+          <text x="412" y="340" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">Los signos de alarma aparecen al final de la etapa febril, cuando el paciente parece mejorar.</text>
+        </svg>
+        <figcaption>La defervescencia no es la curación: marca el ingreso a la fase crítica, que es donde se juega el pronóstico. Por eso el control clínico se intensifica justo cuando baja la fiebre, y por eso la ventana de las pruebas directas se cierra más o menos cuando empieza el riesgo.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-clinica" id="dengue-clinica">
+      <span class="seccion__pestana"><b>07</b> Clínica</span>
+      <h2 class="seccion__titulo">Formas clínicas</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Forma</th><th>Qué se ve</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Asintomática</strong></td><td>La más frecuente, y la que sostiene la transmisión silenciosa</td></tr>
+            <tr><td><strong>Fiebre del dengue</strong> o dengue clásico</td><td>Cuadro febril de <strong>2 a 7 días</strong>, con cefalea, dolor retroocular, mialgias, artralgias y exantema</td></tr>
+            <tr><td><strong>Fiebre hemorrágica del dengue</strong></td><td>Sangrado de <strong>encías y nariz</strong>, <strong>hematuria</strong> y sangrado debajo de la piel en forma de hematomas</td></tr>
+            <tr><td><strong>Fiebre hemorrágica con síndrome de choque</strong></td><td><strong>Pérdida de plasma</strong> por aumento de la permeabilidad vascular, con <strong>aumento del hematocrito</strong> y <strong>líquido en cavidades serosas</strong> —derrame pleural, ascitis y derrame pericárdico—, que puede llevar al <strong>shock</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>El mecanismo que une las dos últimas formas es uno solo: <strong>el endotelio se vuelve permeable y el plasma se va del vaso al tercer espacio</strong>. Por eso el hematocrito sube mientras el paciente se descompensa, y por eso <strong>el daño no viene principalmente del sangrado sino de la hipovolemia</strong>. El sangrado acompaña; la fuga mata.</p>
+
+      <p>Esta nomenclatura clásica —dengue clásico, hemorrágico, con choque— convive en el teórico con la <strong>clasificación operativa vigente</strong>, que es la que se usa para decidir conducta y que organiza a los pacientes en <strong>dengue sin signos de alarma, con signos de alarma y grave</strong>. Es la de la sección siguiente.</p>
+    </section>
+
+    <!-- ============ 8 ============ -->
+    <section class="seccion s-importantes" id="dengue-alarma">
+      <span class="seccion__pestana"><b>08</b> Clave</span>
+      <h2 class="seccion__titulo">Signos de alarma y gravedad</h2>
+
+      <p>La Guía de Práctica Clínica nacional sugiere <strong>usar los signos de alarma para identificar a los pacientes con riesgo incrementado de evolucionar a dengue grave</strong>. Son siete, y vale la pena aprenderlos con la precisión con que están escritos, porque varios traen su propio umbral.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Signo de alarma</th><th>Cómo se define</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Dolor abdominal</strong></td><td>Progresivo hasta ser persistente o sostenido e intenso, en cualquier momento de la infección, <strong>particularmente al final de la etapa febril</strong>, o de inicio temprano en pediatría</td></tr>
+            <tr><td><strong>Trastorno del sensorio</strong></td><td><strong>Irritabilidad y somnolencia</strong></td></tr>
+            <tr><td><strong>Sangrado de mucosas</strong></td><td>Gingivorragia o epistaxis persistentes, sangrado vaginal no asociado a la menstruación o menstrual mayor de lo habitual, y hematuria</td></tr>
+            <tr><td><strong>Acumulación de líquidos</strong></td><td>Por clínica, por imágenes o por ambas, en cualquier momento y <strong>particularmente al final de la etapa febril</strong></td></tr>
+            <tr><td><strong>Hepatomegalia</strong></td><td>De <strong>instalación brusca</strong></td></tr>
+            <tr><td><strong>Vómitos persistentes</strong></td><td><strong>Tres o más en una hora, o cuatro en seis horas</strong></td></tr>
+            <tr><td><strong>Aumento progresivo del hematocrito</strong></td><td>En <strong>al menos dos mediciones consecutivas</strong> durante el seguimiento</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Criterios de hospitalización</h3>
+      <p>La misma guía sugiere internar al paciente con dengue que presente cualquiera de estos:</p>
+      <ul>
+        <li><strong>Dengue con signos de alarma</strong> o <strong>dengue grave</strong>.</li>
+        <li><strong>Intolerancia a la vía oral</strong> — sin vía oral no hay hidratación ambulatoria posible.</li>
+        <li><strong>Dificultad respiratoria.</strong></li>
+        <li><strong>Acortamiento de la presión de pulso</strong>, <strong>hipotensión arterial</strong> o <strong>aumento del tiempo de llenado capilar</strong>.</li>
+        <li><strong>Insuficiencia renal aguda</strong> o <strong>coagulopatía</strong>.</li>
+        <li><strong>Embarazo</strong> y <strong>menores de 6 meses</strong>.</li>
+      </ul>
+      <p>Sobre el embarazo la guía hace una salvedad práctica: en gestantes sin otro factor de riesgo, y especialmente en escenarios de brote o de saturación del sistema de salud, puede evaluarse el <strong>control ambulatorio diario</strong>.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>El paciente se agrava cuando baja la fiebre.</strong> Los signos de alarma se concentran <strong>al final de la etapa febril</strong>, justo cuando el enfermo y su familia interpretan que está mejorando y dejan de consultar. Por eso toda indicación ambulatoria tiene que incluir la lista de signos por los que hay que volver, y por eso el control clínico se intensifica <strong>el día que se cae la temperatura</strong>, no antes.</p>
+      </div>
+
+      <p class="cita">Guía de Práctica Clínica sobre diagnóstico y tratamiento del dengue, versión breve, Ministerio de Salud de la Nación, adaptación de la guía de la OPS. Recomendaciones 2 y 3.</p>
+    </section>
+
+    <!-- ============ 9 ============ -->
+    <section class="seccion s-diagnostico" id="dengue-caso">
+      <span class="seccion__pestana"><b>09</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">Definición de caso sospechoso</h2>
+
+      <p>El <strong>29 de noviembre de 2024</strong> se publicó la <strong>Guía de vigilancia epidemiológica y laboratorial de Dengue y otros Arbovirus</strong>, que entre otras modificaciones <strong>cambió la definición de caso sospechoso</strong>. Es la vigente, y la que hay que saber.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>Caso sospechoso de dengue en población general.</strong> Toda persona que <strong>viva o haya viajado en los últimos 14 días</strong> previos al inicio de los síntomas a <strong>zonas con transmisión de dengue o presencia del vector</strong>, y que presente <strong>fiebre aguda</strong>, habitualmente de <strong>2 a 7 días</strong> de evolución, <strong>más dos o más</strong> de las siguientes manifestaciones: náuseas o vómitos, exantema, cefalea o dolor retroorbitario, mialgia o artralgia, petequias o prueba del torniquete positiva, y leucopenia. Con o sin signo de alarma o manifestación de gravedad.</p>
+      </div>
+
+      <p>Tres detalles de esa definición que cambian la práctica: el <strong>nexo epidemiológico se amplió a las zonas con presencia del vector</strong>, no sólo a las que tienen transmisión documentada; alcanza con <strong>dos manifestaciones</strong>; y la <strong>leucopenia cuenta como una de ellas</strong>, de modo que un hemograma puede completar la definición.</p>
+
+      <h3>Qué hallazgos orientan a dengue frente a otras febriles</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Grado de sospecha</th><th>Hallazgos</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Alto</strong> — los que mejor lo diferencian</td><td><strong>Dolor retroocular</strong>, <strong>ausencia de tos y rinorrea</strong>, <strong>trombocitopenia</strong>, <strong>aumento progresivo del hematocrito</strong> y <strong>leucopenia</strong></td></tr>
+            <tr><td><strong>Moderado</strong> — probablemente lo diferencian</td><td>Dolor abdominal, vómitos, escalofríos, hemorragias en piel o mucosas, mialgias y dolor óseo, artralgias y erupción cutánea, sobre todo en pediatría</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La <strong>ausencia de tos y rinorrea</strong> es el dato más subestimado de la lista: un cuadro febril con síntomas respiratorios altos juega en contra del dengue, y eso en plena temporada separa muchos pacientes.</p>
+
+      <p class="cita">Guía de vigilancia epidemiológica y laboratorial de Dengue y otros Arbovirus, Ministerio de Salud de la Nación, 2024, y Guía de Práctica Clínica de dengue, recomendación 1.</p>
+    </section>
+
+    <!-- ============ 10 ============ -->
+    <section class="seccion s-diagnostico" id="dengue-dx">
+      <span class="seccion__pestana"><b>10</b> Laboratorio</span>
+      <h2 class="seccion__titulo">Laboratorio y ventana diagnóstica</h2>
+
+      <p>Lo que se pide no depende del cuadro sino de <strong>cuántos días lleva de evolución</strong>. El virus está en sangre al principio y los anticuerpos aparecen después, así que pedir la prueba equivocada en el momento equivocado da un negativo que no descarta nada.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Grupo</th><th>Técnica</th><th>Cuándo</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Directas</strong></td><td><strong>Aislamiento viral</strong></td><td>Muestra tomada <strong>dentro de los 5 días</strong> de iniciado el cuadro</td></tr>
+            <tr><td><strong>Directas</strong></td><td><strong>Detección del genoma viral por PCR</strong>, muy sensible; en sangre la limita la baja carga viral</td><td>Dentro de los 5 días</td></tr>
+            <tr><td><strong>Directas</strong></td><td><strong>Detección del antígeno NS1</strong></td><td>Dentro de los 5 días</td></tr>
+            <tr><td><strong>Indirectas</strong></td><td><strong>IgM específica por ELISA</strong></td><td><strong>Desde el sexto día</strong> y hasta 2 o 3 meses, tanto en infecciones primarias como secundarias</td></tr>
+            <tr><td><strong>Indirectas</strong></td><td><strong>IgG por ELISA</strong></td><td>Útil sobre todo para <strong>estudios seroepidemiológicos</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>La limitación de la serología es estructural y ya quedó explicada en la sección 02: <strong>hay amplia reactividad cruzada entre los serotipos de dengue y con otros flavivirus</strong>. Una IgM positiva en una zona donde circulan dengue, Zika y fiebre amarilla no identifica por sí sola de cuál se trata.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 340" role="img" aria-label="Ventana diagnóstica de los arbovirus según los días de evolución: métodos directos hasta el día cinco, PCR en orina para Zika del día cinco al veinte, IgM desde el sexto día y seroconversión de IgG en muestras pareadas desde la segunda semana">
+          <defs>
+            <marker id="ar-dxd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <text x="70" y="62" font-size="11.5" font-weight="700" fill="currentColor">Métodos directos: aislamiento, PCR en sangre y antígeno NS1</text>
+          <rect x="70" y="70" width="164" height="24" rx="4" fill="var(--c)" fill-opacity="0.45" stroke="currentColor" stroke-width="1"></rect>
+
+          <text x="234" y="127" font-size="11.5" font-weight="700" fill="currentColor">Zika: PCR en orina</text>
+          <rect x="234" y="135" width="493" height="24" rx="4" fill="var(--c)" fill-opacity="0.30" stroke="currentColor" stroke-width="1"></rect>
+
+          <text x="267" y="192" font-size="11.5" font-weight="700" fill="currentColor">Serología: IgM por ELISA</text>
+          <rect x="267" y="200" width="493" height="24" rx="4" fill="var(--c)" fill-opacity="0.22" stroke="currentColor" stroke-width="1"></rect>
+
+          <text x="530" y="257" font-size="11.5" font-weight="700" fill="currentColor">Muestras pareadas: seroconversión de IgG</text>
+          <rect x="530" y="265" width="230" height="24" rx="4" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1"></rect>
+
+          <line x1="70" y1="305" x2="775" y2="305" stroke="currentColor" stroke-width="1.3" marker-end="url(#ar-dxd)"></line>
+          <line x1="70" y1="301" x2="70" y2="309" stroke="currentColor" stroke-width="1.1"></line>
+          <line x1="169" y1="301" x2="169" y2="309" stroke="currentColor" stroke-width="1.1"></line>
+          <line x1="267" y1="301" x2="267" y2="309" stroke="currentColor" stroke-width="1.1"></line>
+          <line x1="366" y1="301" x2="366" y2="309" stroke="currentColor" stroke-width="1.1"></line>
+          <line x1="464" y1="301" x2="464" y2="309" stroke="currentColor" stroke-width="1.1"></line>
+          <line x1="563" y1="301" x2="563" y2="309" stroke="currentColor" stroke-width="1.1"></line>
+          <line x1="662" y1="301" x2="662" y2="309" stroke="currentColor" stroke-width="1.1"></line>
+          <line x1="760" y1="301" x2="760" y2="309" stroke="currentColor" stroke-width="1.1"></line>
+          <text x="70" y="324" text-anchor="middle" font-size="11" fill="currentColor">0</text>
+          <text x="169" y="324" text-anchor="middle" font-size="11" fill="currentColor">3</text>
+          <text x="267" y="324" text-anchor="middle" font-size="11" fill="currentColor">6</text>
+          <text x="366" y="324" text-anchor="middle" font-size="11" fill="currentColor">9</text>
+          <text x="464" y="324" text-anchor="middle" font-size="11" fill="currentColor">12</text>
+          <text x="563" y="324" text-anchor="middle" font-size="11" fill="currentColor">15</text>
+          <text x="662" y="324" text-anchor="middle" font-size="11" fill="currentColor">18</text>
+          <text x="760" y="324" text-anchor="middle" font-size="11" fill="currentColor">21</text>
+          <text x="790" y="324" text-anchor="middle" font-size="11" font-style="italic" fill="currentColor">días</text>
+
+          <text x="70" y="30" font-size="11.5" font-style="italic" fill="currentColor">El día de evolución, y no el cuadro clínico, es lo que elige la prueba.</text>
+        </svg>
+        <figcaption>El esquema vale para los cuatro virus del cuadernillo, con dos particularidades: el Zika se excreta en orina mucho más tiempo que lo que dura su viremia, y la IgM de la fiebre amarilla se detecta a partir del séptimo día. La franja entre el quinto y el sexto día es la zona ciega: demasiado tarde para la PCR en sangre y demasiado temprano para la IgM.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ============ 11 ============ -->
+    <section class="seccion s-tratamiento" id="dengue-manejo">
+      <span class="seccion__pestana"><b>11</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Manejo por grupos A, B y C</h2>
+
+      <p><strong>No hay antiviral.</strong> Todo el tratamiento es <strong>hidratación y manejo sintomático</strong>, y lo único que cambia entre un paciente y otro es <strong>dónde se lo trata y por qué vía se lo hidrata</strong>. De ahí la clasificación operativa en tres grupos.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 780 390" role="img" aria-label="Árbol de manejo del dengue en tres grupos: el grupo A se maneja de forma ambulatoria con hidratación oral, el grupo B se interna y recibe hidratación parenteral ante un signo de alarma, y el grupo C requiere cuidados críticos con reanimación con cristaloides">
+          <defs>
+            <marker id="ar-grp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="285" y="10" width="210" height="36" rx="6" fill="var(--c)" fill-opacity="0.18" stroke="currentColor" stroke-width="1.3"></rect>
+          <text x="390" y="33" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Caso sospechoso de dengue</text>
+
+          <polyline points="390,46 390,66 135,66 135,86" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar-grp)"></polyline>
+          <line x1="390" y1="66" x2="390" y2="86" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar-grp)"></line>
+          <polyline points="390,66 645,66 645,86" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar-grp)"></polyline>
+
+          <rect x="20" y="88" width="230" height="66" rx="6" fill="var(--c)" fill-opacity="0.10" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="135" y="110" text-anchor="middle" font-size="11.5" fill="currentColor">
+            <tspan x="135" dy="0" font-weight="700">Grupo A</tspan>
+            <tspan x="135" dy="16">Sin signos de alarma y sin</tspan>
+            <tspan x="135" dy="16">condiciones asociadas</tspan>
+          </text>
+
+          <rect x="275" y="88" width="230" height="66" rx="6" fill="var(--c)" fill-opacity="0.22" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="390" y="110" text-anchor="middle" font-size="11.5" fill="currentColor">
+            <tspan x="390" dy="0" font-weight="700">Grupo B</tspan>
+            <tspan x="390" dy="16">Signos de alarma, comorbilidad,</tspan>
+            <tspan x="390" dy="16">embarazo o menor de 6 meses</tspan>
+          </text>
+
+          <rect x="530" y="88" width="230" height="66" rx="6" fill="var(--c)" fill-opacity="0.35" stroke="currentColor" stroke-width="1.3"></rect>
+          <text x="645" y="110" text-anchor="middle" font-size="11.5" fill="currentColor">
+            <tspan x="645" dy="0" font-weight="700">Grupo C</tspan>
+            <tspan x="645" dy="16">Dengue grave: shock, distrés</tspan>
+            <tspan x="645" dy="16">o compromiso de órgano</tspan>
+          </text>
+
+          <line x1="135" y1="154" x2="135" y2="180" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar-grp)"></line>
+          <line x1="390" y1="154" x2="390" y2="180" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar-grp)"></line>
+          <line x1="645" y1="154" x2="645" y2="180" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar-grp)"></line>
+
+          <rect x="20" y="182" width="230" height="104" rx="6" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="135" y="204" text-anchor="middle" font-size="11.5" fill="currentColor">
+            <tspan x="135" dy="0" font-weight="700">Manejo ambulatorio</tspan>
+            <tspan x="135" dy="16">Hidratación oral intensa</tspan>
+            <tspan x="135" dy="16">Paracetamol o dipirona</tspan>
+            <tspan x="135" dy="16">Pautas de alarma por escrito</tspan>
+            <tspan x="135" dy="16">Control clínico diario</tspan>
+          </text>
+
+          <rect x="275" y="182" width="230" height="104" rx="6" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="390" y="204" text-anchor="middle" font-size="11.5" fill="currentColor">
+            <tspan x="390" dy="0" font-weight="700">Internación</tspan>
+            <tspan x="390" dy="16">Hidratación parenteral ante</tspan>
+            <tspan x="390" dy="16">al menos un signo de alarma</tspan>
+            <tspan x="390" dy="16">Hematocrito y plaquetas</tspan>
+            <tspan x="390" dy="16">seriados</tspan>
+          </text>
+
+          <rect x="530" y="182" width="230" height="104" rx="6" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="645" y="204" text-anchor="middle" font-size="11.5" fill="currentColor">
+            <tspan x="645" dy="0" font-weight="700">Cuidados críticos</tspan>
+            <tspan x="645" dy="16">Reanimación con cristaloides,</tspan>
+            <tspan x="645" dy="16">no con coloides</tspan>
+            <tspan x="645" dy="16">Reevaluación hemodinámica</tspan>
+            <tspan x="645" dy="16">periódica</tspan>
+          </text>
+
+          <rect x="90" y="312" width="600" height="62" rx="6" fill="none" stroke="currentColor" stroke-width="1.1" stroke-dasharray="5 4"></rect>
+          <text x="390" y="332" text-anchor="middle" font-size="11.5" fill="currentColor">
+            <tspan x="390" dy="0" font-weight="700">En los tres grupos: nada de antiinflamatorios, aspirina ni corticoides.</tspan>
+            <tspan x="390" dy="16">No se transfunden plaquetas ni plasma por el solo hecho de tener el recuento bajo,</tspan>
+            <tspan x="390" dy="16">cualquiera sea la cifra.</tspan>
+          </text>
+        </svg>
+        <figcaption>La clasificación operativa no describe la enfermedad: decide el lugar de atención y la vía de hidratación. El salto del grupo A al B lo produce un solo signo de alarma, y el del B al C, la aparición de shock o de compromiso grave de órgano.</figcaption>
+      </figure>
+
+      <h3>Qué dice la guía nacional, recomendación por recomendación</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Intervención</th><th>Contenido</th><th>Fuerza</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Hidratación oral intensa</strong></td><td>En todo paciente con dengue, para disminuir la progresión a formas graves. <strong>Adultos sanos: hasta <span class="dato">3000 ml por día</span></strong>. <strong>Pediatría: fórmula de Holliday-Segar más 5 %</strong> — 4 ml/kg/h para los primeros 10 kg, 2 ml/kg/h para los siguientes 10 kg y 1 ml/kg/h por cada kilo adicional. Idealmente con sales de rehidratación oral de la OMS</td><td>Fuerte a favor</td></tr>
+            <tr><td><strong>Hidratación parenteral</strong></td><td>En el paciente con dengue y <strong>al menos un signo de alarma</strong></td><td>Fuerte a favor</td></tr>
+            <tr><td><strong>Cristaloides, no coloides</strong></td><td>En el manejo inicial del paciente en <strong>choque por dengue</strong></td><td>Fuerte a favor</td></tr>
+            <tr><td><strong>Hemocomponentes</strong></td><td><strong>No transfundir</strong> concentrado de plaquetas ni plasma fresco congelado al paciente con dengue y trombocitopenia, <strong>cualquiera sea el recuento</strong>. No aplica a quien sangra o tiene otra condición que predisponga al sangrado</td><td>Fuerte en contra</td></tr>
+            <tr><td><strong>Manejo sintomático</strong></td><td><strong>Paracetamol o dipirona</strong> en lugar de antiinflamatorios no esteroideos, antihistamínicos o esteroides. En pediatría, <span class="dato">10 mg/kg por dosis cada 6 horas</span> para ambos. Los antihistamínicos pueden considerarse para el prurito</td><td>Condicional a favor</td></tr>
+            <tr><td><strong>Corticoides sistémicos</strong></td><td><strong>No administrarlos</strong> al paciente en choque por dengue</td><td>Condicional en contra</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Hay que tener presente que la <strong>deshidratación es una complicación de la fase febril</strong>: la hidratación oral intensa no es un consejo general, es la intervención que sostiene el volumen plasmático antes de que empiece la fuga. En cardiópatas, nefrópatas y edades extremas de la vida se hidrata con más precaución, por el riesgo de sobrecarga.</p>
+
+      <p class="cita">Guía de Práctica Clínica sobre diagnóstico y tratamiento del dengue, versión breve, Ministerio de Salud de la Nación. Recomendaciones 4 a 9.</p>
+    </section>
+
+    <!-- ============ 12 ============ -->
+    <section class="seccion s-tratamiento" id="dengue-vacuna">
+      <span class="seccion__pestana"><b>12</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Vacuna contra el dengue</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Dato</th><th>Detalle</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Aprobación</strong></td><td><strong>QDENGA</strong>, del laboratorio Takeda, aprobada por ANMAT en <strong>abril de 2023</strong>; se comercializa en el país desde octubre de ese año</td></tr>
+            <tr><td><strong>Edad</strong></td><td>Desde los <strong>4 y hasta los 60 años</strong></td></tr>
+            <tr><td><strong>Esquema</strong></td><td><strong>Dos dosis separadas por 3 meses</strong>, hayan tenido o no la enfermedad</td></tr>
+            <tr><td><strong>Tipo</strong></td><td><strong>Virus vivos atenuados</strong>, tetravalente: los componentes 1, 3 y 4 recombinados sobre el genoma de una <strong>cepa atenuada de DENV-2</strong></td></tr>
+            <tr><td><strong>Respuesta</strong></td><td>Genera <strong>memoria celular B tetravalente</strong>, para los cuatro serotipos</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Por tratarse de una vacuna a <strong>virus vivos atenuados</strong>, rigen las precauciones habituales de ese tipo de vacunas.</p>
+
+      <h3>Por qué no está en el calendario</h3>
+      <p>En <strong>abril de 2024 la Comisión Nacional de Inmunizaciones recomendó no incorporarla al Calendario Nacional de Vacunación</strong> ni implementarla en todas las jurisdicciones del país. En su lugar se adoptó una <strong>estrategia focalizada</strong>:</p>
+      <ul>
+        <li><strong>Objetivo:</strong> disminuir la morbilidad por dengue.</li>
+        <li><strong>Población objetivo:</strong> personas de <strong>15 a 39 años</strong> residentes en <strong>departamentos priorizados</strong> del NOA, el NEA y el Centro, <strong>empezando por el grupo de 15 a 19 años</strong>.</li>
+        <li><strong>Criterios de priorización de los departamentos:</strong> tasa de incidencia acumulada, densidad poblacional, determinantes sociales, acceso y calidad de la atención, entre otras variables.</li>
+        <li><strong>Meta:</strong> <strong>100 % de esquemas completos antes del momento de mayor circulación</strong> del virus — que es la razón por la que la campaña se adelanta a la temporada y no acompaña al brote.</li>
+      </ul>
+
+      <p class="cita">Estrategia de vacunación contra el dengue, Ministerio de Salud de la Nación, y recomendación de la Comisión Nacional de Inmunizaciones, abril de 2024.</p>
+    </section>
+
+    <!-- ============ 13 ============ -->
+    <section class="seccion s-importantes" id="dengue-vector">
+      <span class="seccion__pestana"><b>13</b> Clave</span>
+      <h2 class="seccion__titulo">Control del vector</h2>
+
+      <p>La clase es explícita y conviene citarla tal cual: <strong>la vacunación no es, ni debe ser, la única estrategia de prevención</strong>, aun cuando pudiera contarse con vacunas eficaces, seguras y económicas.</p>
+
+      <p>El argumento no es ideológico sino epidemiológico: <strong>el mismo <em>Aedes aegypti</em> transmite también el Zika y el chikungunya</strong>. Contra el <strong>Zika no hay vacuna</strong>; contra el <strong>chikungunya existe desde 2023 una vacuna a virus vivos atenuados aprobada para adultos</strong> —VLA1553, comercializada como IXCHIQ—, que <strong>no integra el calendario argentino</strong>. El teórico, anterior a esa aprobación, dice que no hay vacuna para ninguna de las dos; en la práctica el argumento se sostiene igual, porque <strong>la población no está vacunada contra ninguna de las dos</strong>. Una campaña contra el dengue deja intactos los otros dos problemas; eliminar criaderos los resuelve a los tres.</p>
+
+      <p>De las características del vector de la sección 04 se desprenden las medidas, y todas apuntan al mismo lugar:</p>
+      <ul>
+        <li><strong>Eliminar los recipientes que acumulan agua</strong> dentro y alrededor de la casa: ese es el criadero, y está a menos de 100 metros de quien se enferma.</li>
+        <li><strong>Proteger al paciente febril de las picaduras</strong> con mosquiteros y repelente: mientras está virémico, es la fuente que alimenta el ciclo.</li>
+        <li><strong>Sostener la vigilancia entomológica</strong> con ovitrampas, que anticipa el riesgo antes de que haya casos.</li>
+      </ul>
+
+      <p class="cita">Según PubMed: Chen LH y col. From bench to clinic: the development of VLA1553/IXCHIQ, a live-attenuated chikungunya vaccine. J Travel Med 2024;31(7).</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-c">
+      <span class="bloque__rotulo">Bloque C</span>
+      <span class="bloque__nombre">Zika</span>
+    </h2>
+
+    <!-- ============ 14 ============ -->
+    <section class="seccion s-generalidades" id="zika">
+      <span class="seccion__pestana"><b>14</b> Base</span>
+      <h2 class="seccion__titulo">Generalidades y transmisión</h2>
+
+      <p>De las <strong>enfermedades emergentes del siglo XXI</strong>, el Zika está entre las mayores preocupaciones para la salud pública mundial. No por su mortalidad, que es muy baja, sino por lo que le hace al feto.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Dato</th><th>Detalle</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Primer aislamiento</strong></td><td>En <strong>1947</strong>, en los bosques de Zika, Uganda</td></tr>
+            <tr><td><strong>En las Américas</strong></td><td>Circulación autóctona detectada <strong>desde 2014</strong></td></tr>
+            <tr><td><strong>Incubación extrínseca</strong>, dentro del mosquito</td><td>Alrededor de <strong>10 días</strong>, similar a los 8 a 12 del dengue</td></tr>
+            <tr><td><strong>Incubación en humanos</strong></td><td><strong>3 a 12 días</strong></td></tr>
+            <tr><td><strong>Período de transmisión</strong></td><td>Es el <strong>período de viremia</strong>: dura entre <strong>5 y 7 días</strong> después de la aparición de los síntomas</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Comparte el vector con el dengue y el chikungunya, así que todo lo dicho sobre el <em>Aedes</em> y su control vale igual. Lo que no comparte con ellos son <strong>dos vías de transmisión propias</strong>: la <strong>sexual</strong> y la <strong>vertical</strong>, que son las que organizan las dos secciones siguientes.</p>
+    </section>
+
+    <!-- ============ 15 ============ -->
+    <section class="seccion s-importantes" id="zika-sexual">
+      <span class="seccion__pestana"><b>15</b> Clave</span>
+      <h2 class="seccion__titulo">Transmisión sexual y plazos</h2>
+
+      <p>El virus persiste en el <strong>semen</strong> mucho más tiempo que en la sangre. Las concentraciones detectables van disminuyendo después de la infección, pero el <strong>período más largo de detección reportado fue de 188 días</strong> desde el inicio de los síntomas.</p>
+
+      <p>Con un matiz importante para no sobreinterpretar un resultado: <strong>la detección de ARN del virus en el semen no indica necesariamente la presencia de virus infeccioso</strong>, y por lo tanto tampoco el potencial real de transmisión sexual.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>Los plazos son asimétricos entre el hombre y la mujer, y hay que saberlos de memoria.</strong> Si hubo síntomas de infección, las medidas de prevención se mantienen <strong>al menos 6 meses en los hombres y 8 semanas en las mujeres</strong>. Para <strong>buscar un embarazo</strong>: la mujer que tuvo infección clínica o estuvo expuesta debe considerar <strong>esperar 8 semanas</strong>; si el que se infectó o estuvo expuesto fue el hombre, el plazo se amplía a <strong>6 meses</strong>. Es la única de las cuatro arbovirosis del cuadernillo en la que el consejo preconcepcional cambia por una vía no vectorial.</p>
+      </div>
+    </section>
+
+    <!-- ============ 16 ============ -->
+    <section class="seccion s-clinica" id="zika-clinica">
+      <span class="seccion__pestana"><b>16</b> Clínica</span>
+      <h2 class="seccion__titulo">Clínica y evolución</h2>
+
+      <p>El cuadro es <strong>leve y autolimitado</strong>. La mayoría de los infectados por picadura —adultos y niños por igual— <strong>no presenta síntomas o cursa una enfermedad leve</strong>. Es <strong>poco común que la gravedad requiera hospitalización</strong> y la <strong>muerte por infección por virus Zika en adultos es poco frecuente</strong>.</p>
+
+      <h3>Evolución habitual</h3>
+      <ul>
+        <li><strong>Incubación:</strong> 3 a 12 días desde la picadura.</li>
+        <li><strong>Fase sintomática:</strong> <strong>exantema maculopapular y pruriginoso</strong>, que es la manifestación dominante, con fiebre, conjuntivitis, artralgia, cefalea, dolor muscular y cansancio. Dura <strong>de 2 a 7 días</strong> y coincide con la viremia.</li>
+        <li><strong>Resolución:</strong> los síntomas ceden solos; en algunos casos <strong>el rash puede persistir hasta 15 días</strong>.</li>
+      </ul>
+
+      <h3>Qué lo distingue de las otras dos</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Hallazgo</th><th>En el Zika</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Edema de miembros</strong></td><td><strong>Más común</strong> que en el dengue y el chikungunya</td></tr>
+            <tr><td><strong>Conjuntivitis</strong></td><td><strong>Más común</strong> que en el dengue y el chikungunya</td></tr>
+            <tr><td><strong>Hepatomegalia</strong></td><td><strong>Menos común</strong></td></tr>
+            <tr><td><strong>Leucopenia y trombocitopenia</strong></td><td><strong>Menos comunes</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Ese contraste tiene una consecuencia práctica: <strong>el Zika es el que menos altera el laboratorio</strong>. Un febril con exantema, conjuntivitis y edema de miembros, con hemograma sin leucopenia ni plaquetopenia, se corre del dengue y se acerca al Zika.</p>
+    </section>
+
+    <!-- ============ 17 ============ -->
+    <section class="seccion s-clinica" id="zika-embarazo">
+      <span class="seccion__pestana"><b>17</b> Clínica</span>
+      <h2 class="seccion__titulo">Embarazo y síndrome congénito</h2>
+
+      <p>En la embarazada el cuadro es el mismo que en cualquier adulto y se resuelve igual. <strong>El verdadero riesgo no está en ella sino en el feto</strong>: anomalías del sistema nervioso central, <strong>restricción del crecimiento intrauterino</strong>, mortalidad fetal y abortos espontáneos como consecuencia de la infección congénita. La asociación observada con mayor frecuencia es la <strong>microcefalia</strong>, aunque también se describieron otras anomalías intracraneales y esqueléticas.</p>
+
+      <p>El riesgo de desarrollar el síndrome cuando la infección ocurre en el <strong>primer trimestre es del <span class="dato">1 al 13 %</span></strong>.</p>
+
+      <h3>Síndrome de infección congénita por virus Zika</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Dominio</th><th>Manifestaciones</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Craneofacial y general</strong></td><td><strong>Microcefalia</strong>, desproporción craneofacial, <strong>cuero cabelludo redundante con rugosidades</strong>, hipertonía o espasticidad, irritabilidad, secuelas cognitivas y crisis epilépticas</td></tr>
+            <tr><td><strong>Sistema nervioso central</strong></td><td>Hipoplasia cerebral, hipoplasia o <strong>agenesia del cuerpo calloso</strong>, <strong>calcificaciones cerebrales corticales y subcorticales</strong>, alteraciones de los ventrículos, anomalías de la fosa posterior y <strong>lisencefalia</strong></td></tr>
+            <tr><td><strong>Auditivo</strong></td><td><strong>Hipoacusia central</strong></td></tr>
+            <tr><td><strong>Ocular</strong></td><td>Alteraciones pigmentarias focales de la retina, <strong>atrofia coriorretiniana</strong> de predominio en el polo posterior y especialmente en la mácula, e hipoplasia del nervio óptico</td></tr>
+            <tr><td><strong>Osteoarticular</strong></td><td>Compromiso articular, que puede ser secundario al daño grave del sistema nervioso central o deberse a una acción directa del virus sobre los tejidos articulares y óseos</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>El Zika es hoy <strong>un nuevo miembro del grupo TORCHS</strong>, y sus manifestaciones clínicas y radiológicas se parecen a las de las otras infecciones congénitas de ese grupo. La diferencia que conviene retener: <strong>el síndrome de Zika congénito es neurológico, ocular y auditivo, con escasa repercusión sistémica</strong>. No tiene la hepatoesplenomegalia ni la púrpura que acompañan a la toxoplasmosis, al citomegalovirus o a la sífilis congénitas. Dos detalles más lo separan del resto: las <strong>calcificaciones son corticales y subcorticales</strong> —no periventriculares como en el citomegalovirus ni diseminadas como en la toxoplasmosis— y la <strong>lisencefalia</strong>, ese alisamiento de las circunvoluciones cerebrales, es prácticamente su firma.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 780 420" role="img" aria-label="Conducta ante la sospecha de Zika en el embarazo: confirmación según los días de evolución, ecografía fetal, y ante anomalías del sistema nervioso central, amniocentesis después de la semana dieciséis">
+          <defs>
+            <marker id="ar-zik" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="230" y="10" width="320" height="44" rx="6" fill="var(--c)" fill-opacity="0.18" stroke="currentColor" stroke-width="1.3"></rect>
+          <text x="390" y="30" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">
+            <tspan x="390" dy="0">Embarazada con exantema</tspan>
+            <tspan x="390" dy="16">y nexo epidemiológico</tspan>
+          </text>
+
+          <line x1="390" y1="54" x2="390" y2="78" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar-zik)"></line>
+
+          <rect x="160" y="80" width="460" height="48" rx="6" fill="var(--c)" fill-opacity="0.10" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="390" y="100" text-anchor="middle" font-size="11.5" fill="currentColor">
+            <tspan x="390" dy="0">Molecular: suero hasta el día 6, orina del día 5 al 15-20</tspan>
+            <tspan x="390" dy="16">Serología desde el día 6, confirmada por PRNT</tspan>
+          </text>
+
+          <line x1="390" y1="128" x2="390" y2="150" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar-zik)"></line>
+
+          <rect x="295" y="152" width="190" height="36" rx="6" fill="var(--c)" fill-opacity="0.18" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="390" y="175" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Ecografía fetal</text>
+
+          <polyline points="390,188 390,206 170,206 170,226" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar-zik)"></polyline>
+          <polyline points="390,188 390,206 600,206 600,226" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar-zik)"></polyline>
+
+          <rect x="40" y="228" width="260" height="50" rx="6" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="170" y="250" text-anchor="middle" font-size="11.5" fill="currentColor">
+            <tspan x="170" dy="0" font-weight="700">Sin anomalías</tspan>
+            <tspan x="170" dy="16">Seguimiento ecográfico</tspan>
+          </text>
+
+          <rect x="470" y="228" width="260" height="50" rx="6" fill="var(--c)" fill-opacity="0.22" stroke="currentColor" stroke-width="1.3"></rect>
+          <text x="600" y="250" text-anchor="middle" font-size="11.5" fill="currentColor">
+            <tspan x="600" dy="0" font-weight="700">Anomalías del sistema</tspan>
+            <tspan x="600" dy="16">nervioso central</tspan>
+          </text>
+
+          <line x1="600" y1="278" x2="600" y2="300" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar-zik)"></line>
+
+          <rect x="420" y="302" width="340" height="66" rx="6" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="590" y="322" text-anchor="middle" font-size="11.5" fill="currentColor">
+            <tspan x="590" dy="0" font-weight="700">Amniocentesis, sólo después de la semana 16</tspan>
+            <tspan x="590" dy="16">PCR en líquido amniótico, que puede ser positiva</tspan>
+            <tspan x="590" dy="16">con suero y orina maternos negativos, más cariotipo</tspan>
+          </text>
+
+          <rect x="20" y="302" width="380" height="66" rx="6" fill="none" stroke="currentColor" stroke-width="1.1" stroke-dasharray="5 4"></rect>
+          <text x="210" y="322" text-anchor="middle" font-size="11.5" fill="currentColor">
+            <tspan x="210" dy="0" font-weight="700">Ni la infección ni la microcefalia</tspan>
+            <tspan x="210" dy="16">son indicación de cesárea.</tspan>
+            <tspan x="210" dy="16">Tampoco se suspende la lactancia.</tspan>
+          </text>
+        </svg>
+        <figcaption>La amniocentesis tiene dos restricciones que conviene no olvidar: se realiza <strong>después de la semana 16</strong> para poder obtener un volumen de al menos 22 cc, y sirve tanto para buscar el virus como para determinar el cariotipo fetal, que descarta las anomalías cromosómicas que producen un cuadro parecido.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ============ 18 ============ -->
+    <section class="seccion s-diagnostico" id="zika-dx">
+      <span class="seccion__pestana"><b>18</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">Diagnóstico</h2>
+
+      <p>La elección del método depende del <strong>tiempo de evolución al momento de tomar la muestra</strong>, y detrás de eso, de la duración de la viremia, del tipo de muestra, de la excreción del virus y del inicio de la respuesta inmune.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Método</th><th>Muestra</th><th>Ventana</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Molecular</strong></td><td>Suero</td><td>Hasta el <strong>sexto día</strong> del inicio de los síntomas</td></tr>
+            <tr><td><strong>Molecular</strong></td><td><strong>Orina</strong></td><td>Del <strong>día 5 al 15-20</strong></td></tr>
+            <tr><td><strong>Serológico</strong></td><td>Suero</td><td><strong>A partir del sexto día</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La orina es la particularidad del Zika: <strong>se excreta mucho más tiempo que lo que dura la viremia</strong>, y por eso rescata los casos que llegan tarde a la consulta. Eso importa porque, como la enfermedad suele ser leve, <strong>los síntomas iniciales pueden pasar desapercibidos</strong> y se pierde la oportunidad de tomar la muestra en la ventana molecular del suero.</p>
+
+      <p>Sobre la serología hay un paso más que en el resto: el <strong>ELISA puede dar un resultado indeterminado</strong> por la reacción cruzada entre flavivirus, y entonces se confirma con <strong>PRNT</strong>, la prueba de neutralización por reducción de placas, que es la que distingue de verdad entre un flavivirus y otro. El esquema de ventanas de la sección 10 resume los plazos de las cuatro enfermedades.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-d">
+      <span class="bloque__rotulo">Bloque D</span>
+      <span class="bloque__nombre">Chikungunya</span>
+    </h2>
+
+    <!-- ============ 19 ============ -->
+    <section class="seccion s-generalidades" id="chik">
+      <span class="seccion__pestana"><b>19</b> Base</span>
+      <h2 class="seccion__titulo">Virus, vector y epidemiología</h2>
+
+      <ul>
+        <li>El <strong>virus chikungunya</strong> es una arbovirosis del <strong>género <em>Alphavirus</em>, familia <em>Togaviridae</em></strong>. Es el único de los cuatro que <strong>no es un flavivirus</strong>, así que no arrastra la reactividad cruzada que complica la serología del dengue, el Zika y la fiebre amarilla.</li>
+        <li>Su principal vector es el <strong><em>Aedes aegypti</em></strong>; también puede transmitirlo el <strong><em>Aedes albopictus</em></strong>, aunque es menos efectivo.</li>
+        <li><strong>Período de incubación: de 1 a 7 días</strong> tras la picadura — el más corto de las cuatro.</li>
+      </ul>
+
+      <h3>Situación epidemiológica</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Período</th><th>Situación</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>2024, semanas 1 a 32</strong></td><td><span class="dato">830</span> casos en la Argentina, con casos autóctonos en <strong>7 provincias</strong>: Buenos Aires, Córdoba y Santa Fe en el Centro; Chaco y Misiones en el NEA; Salta y Santiago del Estero</td></tr>
+            <tr><td><strong>2025</strong></td><td>La región de las Américas registró el <strong>mayor número de casos notificados a nivel mundial</strong>. A mediados de julio: Brasil <span class="dato">185.553</span>, Bolivia <span class="dato">4.721</span>, Argentina <span class="dato">2.836</span> y Perú <span class="dato">55</span>, con descenso en Paraguay y Brasil y aumento en Bolivia</td></tr>
+            <tr><td><strong>Primer semestre de 2026</strong></td><td>Brote que afectó principalmente al <strong>NOA</strong>, con predominio en <strong>Salta, Tucumán y Jujuy</strong>, pico de notificaciones en la semana 16 y descenso progresivo y sostenido</td></tr>
+            <tr><td><strong>Temporada 2026-2027</strong></td><td>Se inicia en la semana 31 de 2026: <span class="dato">83</span> casos sospechosos y <span class="dato">3</span> probables en <strong>Salta</strong> —Orán, General José de San Martín y Anta—, sin casos confirmados todavía</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La recomendación vigente, dado el antecedente reciente de circulación, es <strong>mantener la vigilancia intensificada y buscar activamente chikungunya entre los casos de síndrome febril agudo inespecífico</strong>, para detectar a tiempo nuevos focos de transmisión.</p>
+    </section>
+
+    <!-- ============ 20 ============ -->
+    <section class="seccion s-clinica" id="chik-clinica">
+      <span class="seccion__pestana"><b>20</b> Clínica</span>
+      <h2 class="seccion__titulo">Clínica y evolución de las artralgias</h2>
+
+      <p>El nombre lo describe mejor que cualquier definición: <strong>chikungunya significa «andar doblado»</strong> en el idioma kimakondé de la tribu Makonde, que vive entre el sudeste de Tanzania y el norte de Mozambique, donde se detectó el virus por primera vez. La postura antálgica del paciente le puso el nombre a la enfermedad.</p>
+
+      <h3>Fase aguda</h3>
+      <p>El cuadro tiene un <strong>inicio súbito</strong>, y eso ya lo separa de otras febriles:</p>
+      <ul>
+        <li><strong>Fiebre</strong> y escalofríos.</li>
+        <li><strong>Artralgias que pueden llegar a ser incapacitantes</strong>, el síntoma dominante y el que define la enfermedad.</li>
+        <li>Cefalalgia, anorexia y conjuntivitis.</li>
+        <li>En ocasiones, <strong>rash maculopapular</strong>.</li>
+      </ul>
+      <p>La enfermedad <strong>se resuelve de forma espontánea en 7 a 10 días</strong>.</p>
+
+      <h3>Lo que queda después</h3>
+      <p>Aunque el cuadro agudo ceda, <strong>las artralgias pueden persistir durante semanas o meses</strong>. Es la característica que lo distingue del dengue y del Zika: el paciente deja de tener fiebre, se va de alta, y sigue con dolor articular mucho tiempo. Esa persistencia es la principal carga de la enfermedad, porque afecta la capacidad de trabajar.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Rasgo</th><th>Chikungunya</th><th>Dengue</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Inicio</strong></td><td><strong>Súbito</strong></td><td>Agudo, con fiebre de 2 a 7 días</td></tr>
+            <tr><td><strong>Dolor dominante</strong></td><td><strong>Articular, incapacitante</strong></td><td>Muscular y <strong>retroocular</strong></td></tr>
+            <tr><td><strong>Laboratorio</strong></td><td>Menos marcado</td><td><strong>Leucopenia, trombocitopenia y hematocrito en ascenso</strong></td></tr>
+            <tr><td><strong>Después del cuadro agudo</strong></td><td><strong>Artralgias que persisten semanas o meses</strong></td><td>Fase crítica y luego recuperación</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ 21 ============ -->
+    <section class="seccion s-diagnostico" id="chik-dx">
+      <span class="seccion__pestana"><b>21</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">Definiciones de caso y laboratorio</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Categoría</th><th>Definición</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Caso sospechoso</strong></td><td>Paciente con <strong>inicio agudo de fiebre mayor de 38,5 °C</strong> y <strong>artralgias graves discapacitantes o artritis</strong> no explicadas por otra condición médica, que <strong>reside o visitó áreas endémicas dentro de las dos semanas previas</strong> al inicio de los síntomas</td></tr>
+            <tr><td><strong>Caso confirmado</strong></td><td>Caso sospechoso con al menos uno de estos resultados: <strong>seroconversión de IgM o IgG en muestras pareadas</strong>, <strong>aislamiento del virus</strong> o <strong>detección molecular del genoma viral</strong></td></tr>
+            <tr><td><strong>Confirmado por nexo epidemiológico</strong></td><td>En situación de brote, una vez confirmada la circulación del virus por laboratorio, los casos siguientes se confirman por <strong>criterios clínico-epidemiológicos</strong></td></tr>
+            <tr><td><strong>Caso descartado</strong></td><td>El que no reúne la definición de caso, o cuyos resultados de laboratorio fueron negativos</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Métodos</h3>
+      <ul>
+        <li><strong>Directos:</strong> aislamiento viral, <strong>RT-PCR</strong> —específica y genérica— y PCR en tiempo real.</li>
+        <li><strong>Indirectos o serológicos:</strong> <strong>ELISA para IgM e IgG</strong>, <strong>PRNT</strong> —neutralización por reducción de placas— e inhibición de la hemaglutinación.</li>
+      </ul>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 800 330" role="img" aria-label="Curva de viremia y de anticuerpos en el chikungunya: la viremia es máxima alrededor del primer día y cae hacia el octavo, la IgM aparece alrededor del cuarto día y la IgG a partir del séptimo">
+          <defs>
+            <marker id="ar-chk" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <path d="M70 215 C 110 110, 150 70, 190 68 C 240 66, 300 120, 360 180 C 400 212, 430 228, 450 234" fill="none" stroke="var(--c)" stroke-width="2.8"></path>
+          <text x="150" y="58" font-size="12" font-weight="700" fill="currentColor">Viremia</text>
+
+          <path d="M300 236 C 340 230, 370 150, 430 128 C 490 108, 560 112, 700 118" fill="none" stroke="currentColor" stroke-width="2.2"></path>
+          <text x="520" y="100" font-size="12" font-weight="700" fill="currentColor">IgM</text>
+
+          <path d="M420 236 C 470 232, 520 190, 580 172 C 640 156, 680 152, 720 150" fill="none" stroke="currentColor" stroke-width="2.2" stroke-dasharray="7 4"></path>
+          <text x="640" y="140" font-size="12" font-weight="700" fill="currentColor">IgG</text>
+
+          <line x1="60" y1="240" x2="760" y2="240" stroke="currentColor" stroke-width="1.3" marker-end="url(#ar-chk)"></line>
+          <line x1="70" y1="236" x2="70" y2="244" stroke="currentColor" stroke-width="1.1"></line>
+          <line x1="190" y1="236" x2="190" y2="244" stroke="currentColor" stroke-width="1.1"></line>
+          <line x1="310" y1="236" x2="310" y2="244" stroke="currentColor" stroke-width="1.1"></line>
+          <line x1="430" y1="236" x2="430" y2="244" stroke="currentColor" stroke-width="1.1"></line>
+          <line x1="550" y1="236" x2="550" y2="244" stroke="currentColor" stroke-width="1.1"></line>
+          <line x1="670" y1="236" x2="670" y2="244" stroke="currentColor" stroke-width="1.1"></line>
+          <text x="70" y="258" text-anchor="middle" font-size="11" fill="currentColor">0</text>
+          <text x="190" y="258" text-anchor="middle" font-size="11" fill="currentColor">2</text>
+          <text x="310" y="258" text-anchor="middle" font-size="11" fill="currentColor">4</text>
+          <text x="430" y="258" text-anchor="middle" font-size="11" fill="currentColor">6</text>
+          <text x="550" y="258" text-anchor="middle" font-size="11" fill="currentColor">8</text>
+          <text x="670" y="258" text-anchor="middle" font-size="11" fill="currentColor">10</text>
+          <text x="730" y="258" text-anchor="middle" font-size="11" font-style="italic" fill="currentColor">días</text>
+
+          <text x="70" y="290" font-size="11.5" font-weight="700" fill="currentColor">Métodos directos</text>
+          <text x="70" y="306" font-size="11.5" fill="currentColor">aislamiento, RT-PCR</text>
+          <text x="440" y="290" font-size="11.5" font-weight="700" fill="currentColor">Métodos serológicos</text>
+          <text x="440" y="306" font-size="11.5" fill="currentColor">ELISA, PRNT, inhibición de la hemaglutinación</text>
+
+          <line x1="300" y1="275" x2="300" y2="315" stroke="currentColor" stroke-width="1" stroke-dasharray="4 4"></line>
+        </svg>
+        <figcaption>Las dos ventanas casi no se superponen: mientras hay virus en sangre no hay anticuerpos, y cuando aparecen los anticuerpos el virus ya se fue. Una IgM positiva con IgG negativa indica infección reciente; la <strong>seroconversión de la IgG</strong> en una segunda muestra, tomada alrededor del mes, es la confirmación definitiva.</figcaption>
+      </figure>
+    </section>
+
+    <h2 class="bloque" id="bloque-e">
+      <span class="bloque__rotulo">Bloque E</span>
+      <span class="bloque__nombre">Fiebre amarilla</span>
+    </h2>
+
+    <!-- ============ 22 ============ -->
+    <section class="seccion s-fisiopatologia" id="fa-ciclos">
+      <span class="seccion__pestana"><b>22</b> Mecanismo</span>
+      <h2 class="seccion__titulo">Los dos ciclos y la transmisibilidad</h2>
+
+      <p>La fiebre amarilla es un <strong>arbovirus de la familia <em>Flaviviridae</em></strong> con una particularidad que define toda su epidemiología: <strong>tiene dos ciclos de transmisión distintos</strong>, con vectores y huéspedes diferentes, y lo que sirve para prevenir uno no alcanza para el otro.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 780 340" role="img" aria-label="Los dos ciclos de la fiebre amarilla: el selvático entre monos y mosquitos Haemagogus y Sabethes que alcanza al humano no vacunado que entra a la selva, y el urbano entre personas a través del Aedes aegypti">
+          <defs>
+            <marker id="ar-fa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="30" y="14" width="340" height="34" rx="6" fill="var(--c)" fill-opacity="0.22" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="200" y="37" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Ciclo selvático</text>
+
+          <rect x="410" y="14" width="340" height="34" rx="6" fill="var(--c)" fill-opacity="0.12" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="580" y="37" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Ciclo urbano</text>
+
+          <rect x="50" y="72" width="300" height="46" rx="6" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="200" y="100" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">Monos virémicos: epizootias</text>
+
+          <line x1="200" y1="118" x2="200" y2="142" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar-fa)"></line>
+
+          <rect x="50" y="144" width="300" height="46" rx="6" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="200" y="166" text-anchor="middle" font-size="11.5" fill="currentColor">
+            <tspan x="200" dy="0" font-weight="700">Mosquitos Haemagogus</tspan>
+            <tspan x="200" dy="16" font-weight="700">y Sabethes</tspan>
+          </text>
+
+          <line x1="200" y1="190" x2="200" y2="214" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar-fa)"></line>
+
+          <rect x="50" y="216" width="300" height="56" rx="6" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="200" y="238" text-anchor="middle" font-size="11.5" fill="currentColor">
+            <tspan x="200" dy="0" font-weight="700">Humano no vacunado</tspan>
+            <tspan x="200" dy="16">que ingresa al área selvática</tspan>
+          </text>
+
+          <rect x="430" y="72" width="300" height="46" rx="6" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="580" y="100" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">Persona virémica</text>
+
+          <line x1="580" y1="118" x2="580" y2="142" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar-fa)"></line>
+
+          <rect x="430" y="144" width="300" height="46" rx="6" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="580" y="166" text-anchor="middle" font-size="11.5" fill="currentColor">
+            <tspan x="580" dy="0" font-weight="700">Aedes aegypti</tspan>
+            <tspan x="580" dy="16">ciclo extrínseco de 9 a 12 días</tspan>
+          </text>
+
+          <line x1="580" y1="190" x2="580" y2="214" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar-fa)"></line>
+
+          <rect x="430" y="216" width="300" height="56" rx="6" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="580" y="238" text-anchor="middle" font-size="11.5" fill="currentColor">
+            <tspan x="580" dy="0" font-weight="700">Persona susceptible</tspan>
+            <tspan x="580" dy="16">en el ámbito doméstico</tspan>
+          </text>
+
+          <rect x="90" y="290" width="600" height="40" rx="6" fill="none" stroke="currentColor" stroke-width="1.1" stroke-dasharray="5 4"></rect>
+          <text x="390" y="315" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">No se transmite de persona a persona, ni por secreciones, ni por vehículos comunes.</text>
+        </svg>
+        <figcaption>La muerte de monos en una zona —la epizootia— precede a los casos humanos del ciclo selvático y funciona como alerta temprana. El ciclo urbano, en cambio, es el mismo circuito del dengue: personas virémicas, <em>Aedes</em> doméstico y personas susceptibles.</figcaption>
+      </figure>
+
+      <h3>Transmisibilidad</h3>
+      <ul>
+        <li><strong>La sangre del enfermo es infectante para los mosquitos desde 24 a 48 horas antes de que aparezca la fiebre y durante los 3 a 5 días posteriores</strong> al inicio del cuadro.</li>
+        <li>Por eso <strong>hay que evitar el contacto de los mosquitos con el paciente durante al menos 5 días</strong> desde el comienzo de la enfermedad: mosquiteros, en lo posible rociados con insecticida de acción residual, repelentes o mallas metálicas.</li>
+        <li>El <strong>ciclo extrínseco en el vector dura de 9 a 12 días</strong>, y el mosquito <strong>permanece infectado el resto de su vida adulta</strong>, que va de 4 días a más de 30 según las condiciones ambientales.</li>
+        <li>La enfermedad <strong>confiere inmunidad por largo tiempo y no se conocen segundos ataques</strong>. La inmunidad pasiva por anticuerpos maternos dura alrededor de <strong>6 meses</strong>.</li>
+      </ul>
+    </section>
+
+    <!-- ============ 23 ============ -->
+    <section class="seccion s-clinica" id="fa-clinica">
+      <span class="seccion__pestana"><b>23</b> Clínica</span>
+      <h2 class="seccion__titulo">Los tres períodos</h2>
+
+      <p>El espectro va desde las <strong>formas asintomáticas y leves</strong> hasta la <strong>fiebre hemorrágica clásica</strong>. En alrededor del <span class="dato">85 %</span> de los casos la enfermedad es <strong>autolimitada</strong>. En el <span class="dato">15 %</span> restante evoluciona a formas graves con manifestaciones hemorrágicas, y ahí <strong>la mortalidad puede llegar al 50 o 60 %</strong>. La forma maligna se manifiesta con fiebre, postración, <strong>compromiso hepatorrenal y cardíaco</strong>, manifestaciones hemorrágicas y shock.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 330" role="img" aria-label="Los tres períodos de la fiebre amarilla: infección con viremia y signo de Faget, remisión breve en la que ceden los síntomas, e intoxicación con insuficiencia hepática y renal en el quince a veinticinco por ciento de los casos">
+          <defs>
+            <marker id="ar-fap" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect x="55" y="40" width="300" height="110" rx="6" fill="var(--c)" fill-opacity="0.22"></rect>
+          <rect x="355" y="40" width="120" height="110" rx="6" fill="var(--c)" fill-opacity="0.08"></rect>
+          <rect x="475" y="40" width="290" height="110" rx="6" fill="var(--c)" fill-opacity="0.38"></rect>
+
+          <text x="205" y="62" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">1. Infección</text>
+          <text x="415" y="62" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">2. Remisión</text>
+          <text x="620" y="62" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">3. Intoxicación</text>
+
+          <text x="205" y="86" text-anchor="middle" font-size="11.5" fill="currentColor">
+            <tspan x="205" dy="0">3 a 6 días · paciente virémico</tspan>
+            <tspan x="205" dy="16">Fiebre mayor de 39 °C</tspan>
+            <tspan x="205" dy="16" font-weight="700">Signo de Faget</tspan>
+            <tspan x="205" dy="16">Transaminasas en ascenso</tspan>
+          </text>
+          <text x="415" y="86" text-anchor="middle" font-size="11.5" fill="currentColor">
+            <tspan x="415" dy="0">2 a 48 horas</tspan>
+            <tspan x="415" dy="16">Ceden los</tspan>
+            <tspan x="415" dy="16">síntomas</tspan>
+            <tspan x="415" dy="16">y la viremia</tspan>
+          </text>
+          <text x="620" y="86" text-anchor="middle" font-size="11.5" fill="currentColor">
+            <tspan x="620" dy="0">Insuficiencia hepática y renal</tspan>
+            <tspan x="620" dy="16">Ictericia y hemorragias</tspan>
+            <tspan x="620" dy="16" font-weight="700">Letalidad del 50 % en promedio</tspan>
+          </text>
+
+          <line x1="55" y1="170" x2="790" y2="170" stroke="currentColor" stroke-width="1.3" marker-end="url(#ar-fap)"></line>
+
+          <polyline points="415,170 415,196 215,196 215,222" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar-fap)"></polyline>
+          <polyline points="415,170 415,196 620,196 620,222" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar-fap)"></polyline>
+
+          <rect x="70" y="224" width="290" height="60" rx="6" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="215" y="246" text-anchor="middle" font-size="11.5" fill="currentColor">
+            <tspan x="215" dy="0" font-weight="700">La mayoría: recuperación</tspan>
+            <tspan x="215" dy="16">2 a 4 semanas de astenia</tspan>
+          </text>
+
+          <rect x="475" y="224" width="290" height="60" rx="6" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1.3"></rect>
+          <text x="620" y="246" text-anchor="middle" font-size="11.5" fill="currentColor">
+            <tspan x="620" dy="0" font-weight="700">15 a 25 %: los síntomas reaparecen</tspan>
+            <tspan x="620" dy="16">en forma más grave</tspan>
+          </text>
+
+          <text x="410" y="312" text-anchor="middle" font-size="11.5" font-style="italic" fill="currentColor">La mejoría de la remisión es real pero puede ser transitoria: es el momento de decidir si el paciente se va de alta o se vigila.</text>
+        </svg>
+        <figcaption>Igual que en el dengue, el período de mejoría aparente es el que define la conducta. La diferencia es el plazo: en la fiebre amarilla la remisión puede durar apenas dos horas.</figcaption>
+      </figure>
+
+      <h3>Período de infección</h3>
+      <ul>
+        <li>Aparece <strong>3 a 6 días después de la picadura</strong>, con <strong>inicio abrupto</strong>.</li>
+        <li><strong>Fiebre mayor de 39 °C</strong>, escalofríos, cefalea, náuseas, mareos, malestar general y dolor muscular, con <strong>congestión facial</strong>.</li>
+        <li><strong>Bradicardia relativa</strong>: la disociación entre el pulso y la temperatura que se conoce como <strong>signo de Faget</strong>. Es el hallazgo semiológico más característico, porque lo esperable con fiebre alta es taquicardia.</li>
+        <li><strong>Laboratorio:</strong> leucopenia con neutropenia relativa, <strong>aumento de las transaminasas</strong> y albuminuria.</li>
+        <li>Dura <strong>3 a 6 días</strong>, y durante todo ese tiempo el paciente <strong>está virémico</strong> y puede ser fuente de infección para los mosquitos.</li>
+      </ul>
+
+      <h3>Período de remisión</h3>
+      <p>Dura <strong>de 2 a 48 horas</strong>. Los síntomas ceden, el estado general mejora y <strong>desaparece la viremia</strong>. Si la enfermedad termina acá, empieza una recuperación de <strong>2 a 4 semanas</strong> en la que el paciente sólo se encuentra asténico.</p>
+
+      <h3>Período de intoxicación</h3>
+      <p>En el <strong>15 al 25 % de los casos los síntomas reaparecen de forma más grave</strong>. Predomina la <strong>insuficiencia hepática y renal</strong>, con necrosis hepática, colestasis y albuminuria:</p>
+      <ul>
+        <li><strong>Ictericia</strong> y <strong>dolor epigástrico</strong>.</li>
+        <li><strong>Manifestaciones hemorrágicas</strong>: epistaxis, gingivorragia, hematemesis y melena.</li>
+        <li><strong>Alteración de la función renal</strong>, con oliguria o anuria.</li>
+        <li>En los casos fatales, además de la hepatitis pueden aparecer <strong>miocarditis</strong> —con disfunción miocárdica y arritmias— y <strong>encefalitis</strong>, con distintos grados de alteración de la conciencia y episodios convulsivos.</li>
+      </ul>
+      <p>El compromiso hepático de este período es profundo: en el material de la cátedra las <strong>transaminasas superan las 1.000 UI/l</strong> con bilirrubina en ascenso y tiempo de Quick descendido. <strong>En el período de intoxicación la letalidad es del 50 % en promedio.</strong></p>
+    </section>
+
+    <!-- ============ 24 ============ -->
+    <section class="seccion s-diagnostico" id="fa-sospecha">
+      <span class="seccion__pestana"><b>24</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">Cuándo sospecharla y diferenciales</h2>
+
+      <p>La sospecha no nace de un signo sino de una <strong>combinación de tres cosas</strong>: un síndrome febril, una procedencia y una ausencia.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Elemento</th><th>Definición</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Síndrome febril inespecífico</strong></td><td>Persona de cualquier edad y sexo con <strong>fiebre de menos de 7 días</strong> de duración, acompañada de <strong>mialgias o cefalea</strong>, <strong>sin afección de las vías aéreas superiores</strong> y <strong>sin etiología definida</strong></td></tr>
+            <tr><td><strong>Procedencia</strong></td><td>De <strong>área de riesgo</strong> para fiebre amarilla o de ocurrencia de casos</td></tr>
+            <tr><td><strong>Ausencia</strong></td><td><strong>Sin vacuna antiamarílica previa</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>El cuadro es <strong>más sospechoso aún en presencia de ictericia, signos de sangrado o insuficiencia renal</strong>. En esos casos se solicita inmediatamente <strong>hemograma, hepatograma y función renal</strong>.</p>
+
+      <h3>Diagnósticos diferenciales</h3>
+      <p>Las formas clínicas de la fiebre amarilla se superponen con otras febriles que evolucionan con <strong>ictericia y signos de sangrado</strong>:</p>
+      <ul>
+        <li><strong>Dengue</strong> y otras fiebres hemorrágicas.</li>
+        <li><strong>Leptospirosis.</strong></li>
+        <li><strong>Paludismo.</strong></li>
+        <li><strong>Hepatitis virales</strong> y <strong>sepsis</strong>, que completan el diferencial del febril con hepatograma alterado.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>El dato que dispara la sospecha es el antecedente de viaje, no la clínica.</strong> Ante un síndrome febril en una persona <strong>sin vacuna antiamarílica</strong> con <strong>residencia o viaje en los 15 días previos a una zona de riesgo</strong>, la fiebre amarilla entra en el diferencial aunque el cuadro parezca un dengue —que es, de hecho, el diagnóstico con el que suelen rotularse estos pacientes al principio—. Hacen falta <strong>control estricto y alerta ante los signos de alarma</strong> —sangrado, ictericia y oliguria— para decidir la internación a tiempo: la letalidad es alta y no hay tratamiento específico.</p>
+      </div>
+    </section>
+
+    <!-- ============ 25 ============ -->
+    <section class="seccion s-diagnostico" id="fa-dx">
+      <span class="seccion__pestana"><b>25</b> Laboratorio</span>
+      <h2 class="seccion__titulo">Laboratorio</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Momento de la muestra</th><th>Qué se pide</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Dentro de los 5 días</strong> del inicio de los síntomas</td><td><strong>Aislamiento del virus</strong> y <strong>detección de secuencias genómicas virales</strong></td></tr>
+            <tr><td><strong>Más de 5 días</strong> después del inicio</td><td><strong>IgM</strong>: es la técnica más utilizada y difundida por su alta sensibilidad y especificidad. Se detecta <strong>a partir del séptimo día</strong> y perdura en circulación <strong>varios meses</strong>; el resultado debe confirmarse mediante una <strong>seroconversión</strong></td></tr>
+            <tr><td><strong>Muestras pareadas</strong></td><td><strong>IgG</strong>: aumento de <strong>al menos cuatro veces</strong> entre la muestra de fase aguda y la de convalecencia, tomada con <strong>más de 14 días</strong> de diferencia, en pacientes <strong>sin historia reciente de vacunación</strong> y descartando reacciones cruzadas con otros flavivirus</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Las dos salvedades de la IgG son las que más se olvidan y las dos invalidan el resultado: <strong>la vacuna antiamarílica también genera anticuerpos</strong>, y <strong>los otros flavivirus dan reacción cruzada</strong>. Sin ese doble descarte, una seroconversión no prueba infección.</p>
+    </section>
+
+    <!-- ============ 26 ============ -->
+    <section class="seccion s-tratamiento" id="fa-prevencion">
+      <span class="seccion__pestana"><b>26</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Conducta, vacuna y prevención</h2>
+
+      <h3>Qué hacer ante un caso sospechoso</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Situación</th><th>Conducta</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>En zona de riesgo</strong></td><td><strong>Vacunar a los no inmunizados</strong> y remarcar los métodos de prevención. <strong>Vigilar la aparición de casos de síndrome febril inespecífico</strong> y buscar los signos de alarma: <strong>sangrado, ictericia y oliguria</strong></td></tr>
+            <tr><td><strong>Fuera de zona de riesgo</strong></td><td><strong>Investigar los sitios a los que concurrió el paciente 3 a 6 días antes</strong> de la aparición de la enfermedad y mantener en vigilancia especial a las personas no inmunizadas. <strong>Informar al paciente, a la familia y a la comunidad</strong> sobre la enfermedad, el mosquito, el modo de transmisión y los métodos de prevención</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>A eso se suma, siempre, <strong>proteger al enfermo de las picaduras durante al menos 5 días</strong>: mientras está virémico es la fuente que puede iniciar un ciclo urbano.</p>
+
+      <h3>Vacuna antiamarílica</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Aspecto</th><th>Detalle</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>A quién</strong></td><td>A todas las personas que <strong>viven o viajan a zonas de riesgo</strong>, <strong>desde el año de vida y hasta los 60 años</strong> (Resolución 857/2007)</td></tr>
+            <tr><td><strong>Eficacia</strong></td><td><strong>Mayor al 95 %</strong>; es una vacuna segura</td></tr>
+            <tr><td><strong>Cuándo protege</strong></td><td><strong>A partir de los 10 días</strong> de aplicada — por eso el viaje se planifica con esa anticipación</td></tr>
+            <tr><td><strong>Mayores de 60 años</strong></td><td>Tienen <strong>mayor riesgo de reacciones adversas graves</strong>: la indicación se evalúa caso por caso</td></tr>
+            <tr><td><strong>Contraindicaciones</strong></td><td><strong>Menores de 6 meses</strong>, antecedente de <strong>alergia al huevo</strong>, pacientes <strong>timectomizados</strong>, con <strong>miastenia gravis</strong> o <strong>inmunocomprometidos</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>La división entre los dos ciclos también organiza la prevención: <strong>la fiebre amarilla selvática sólo puede prevenirse con la vacunación</strong>, porque no hay forma de controlar a los mosquitos del monte; para prevenir la <strong>fiebre amarilla urbana</strong>, en cambio, son útiles además los <strong>programas de control del vector</strong>, los mismos que valen para el dengue, el Zika y el chikungunya.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-f">
+      <span class="bloque__rotulo">Cierre</span>
+      <span class="bloque__nombre">Síntesis y repaso</span>
+    </h2>
+
+    <!-- ============ 27 ============ -->
+    <section class="seccion s-diferenciales" id="comparacion">
+      <span class="seccion__pestana"><b>27</b> Diferenciales</span>
+      <h2 class="seccion__titulo">Los cuatro arbovirus, lado a lado</h2>
+
+      <p>Comparten el vector, el tratamiento sintomático y la prevención. Esta es la tabla de lo que <strong>no</strong> comparten.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Rasgo</th><th>Dengue</th><th>Zika</th><th>Chikungunya</th><th>Fiebre amarilla</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Familia</strong></td><td><em>Flaviviridae</em></td><td><em>Flaviviridae</em></td><td><strong><em>Togaviridae</em></strong></td><td><em>Flaviviridae</em></td></tr>
+            <tr><td><strong>Incubación</strong></td><td>5 a 7 días, rango de 3 a 14</td><td>3 a 12 días</td><td><strong>1 a 7 días</strong></td><td>3 a 6 días</td></tr>
+            <tr><td><strong>Síntoma dominante</strong></td><td>Fiebre con dolor retroocular y mialgias</td><td><strong>Exantema pruriginoso</strong> y conjuntivitis</td><td><strong>Artralgia incapacitante</strong></td><td>Fiebre mayor de 39 °C con <strong>signo de Faget</strong></td></tr>
+            <tr><td><strong>Laboratorio</strong></td><td><strong>Leucopenia, plaquetopenia y hematocrito en ascenso</strong></td><td>Poco alterado</td><td>Poco alterado</td><td><strong>Transaminasas altas</strong>, leucopenia y albuminuria</td></tr>
+            <tr><td><strong>Qué lo hace grave</strong></td><td><strong>Fuga de plasma</strong> en la fase crítica</td><td><strong>Infección congénita</strong></td><td>Artralgias persistentes, que duran semanas o meses</td><td><strong>Insuficiencia hepatorrenal</strong> del período de intoxicación</td></tr>
+            <tr><td><strong>Letalidad</strong></td><td>Global del 0,072 % en la temporada 2023-2024</td><td>Muy baja en adultos</td><td>Muy baja</td><td><strong>50 % en el período de intoxicación</strong></td></tr>
+            <tr><td><strong>Otra vía de transmisión</strong></td><td>No</td><td><strong>Sexual y vertical</strong></td><td>No</td><td>No: tampoco por contacto ni secreciones</td></tr>
+            <tr><td><strong>Vacuna</strong></td><td><strong>QDENGA</strong>, 2 dosis separadas por 3 meses, fuera del calendario</td><td>No hay</td><td><strong>VLA1553 (IXCHIQ)</strong> para adultos desde 2023, fuera del calendario argentino</td><td><strong>Antiamarílica</strong>, eficacia mayor al 95 %</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Separar los tres que comparten vector en la guardia</h3>
+      <p>Cuando los tres circulan a la vez, estos son los hallazgos que inclinan la balanza:</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Hallazgo</th><th>Hacia dónde orienta</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Dolor retroocular, ausencia de tos y rinorrea, leucopenia, plaquetopenia, hematocrito en ascenso</strong></td><td><strong>Dengue</strong>, con alto grado de sospecha</td></tr>
+            <tr><td><strong>Artralgia grave y discapacitante de inicio súbito</strong>, con fiebre mayor de 38,5 °C</td><td><strong>Chikungunya</strong>: es la definición misma de caso sospechoso</td></tr>
+            <tr><td><strong>Exantema maculopapular pruriginoso, conjuntivitis y edema de miembros</strong>, con hemograma poco alterado</td><td><strong>Zika</strong></td></tr>
+            <tr><td><strong>Ictericia, sangrado u oliguria</strong> en alguien sin vacuna que viene de área de riesgo</td><td><strong>Fiebre amarilla</strong>: dejar de pensar en dengue</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Y la regla que atraviesa el cuadernillo: <strong>ninguna de las cuatro tiene antiviral</strong>. Lo que cambia el pronóstico es <strong>detectar a tiempo al que se está agravando</strong>, hidratarlo bien, no darle antiinflamatorios y, en las dos que tienen vacuna, haberla dado antes.</p>
+    </section>
+
+    <!-- ============ Repaso activo ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>¿Qué diferencia a una enfermedad reemergente de una emergente y de una endémica?</summary>
+          <div class="fc__r"><strong>Reemergente</strong>: volvió después de que su incidencia había bajado mucho (dengue, Zika, chikungunya, fiebre amarilla). <strong>Emergente</strong>: su incidencia aumentó en los últimos 20 años (sida). <strong>Endémica o regional</strong>: permanente en una región, sin fluctuaciones (Chagas, hidatidosis, fiebre hemorrágica argentina).</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Por qué la serología de dengue, Zika y fiebre amarilla se confunde entre sí, y cuál queda afuera?</summary>
+          <div class="fc__r">Porque los tres son <strong>flavivirus</strong> y tienen <strong>amplia reactividad cruzada</strong>. El <strong>chikungunya</strong> queda afuera: es un <em>Alphavirus</em> de la familia <em>Togaviridae</em>. Cuando el ELISA no alcanza, se confirma con <strong>PRNT</strong>.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué recorrido hace el virus dentro del mosquito y qué hace falta para que haya un caso autóctono?</summary>
+          <div class="fc__r">Ingresa con la sangre, infecta las <strong>células del intestino medio</strong>, pasa al <strong>hemocele</strong> y llega a las <strong>glándulas salivales</strong>. Para un caso autóctono hacen falta las tres cosas juntas: <strong>virus + mosquito + personas susceptibles</strong>.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Por qué se dice que el mosquito que pica es el mismo que uno crió?</summary>
+          <div class="fc__r">Porque el <em>Aedes aegypti</em> tiene una <strong>capacidad de vuelo de unos 100 metros</strong> y <strong>pone sus huevos dentro y alrededor de las casas</strong>, en cualquier recipiente con agua. El criadero está en el propio domicilio: por eso el descacharrado funciona.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Un municipio informa un IPO del 75 %. ¿Qué significa?</summary>
+          <div class="fc__r"><strong>Riesgo entomológico alto</strong>: el Índice de Positividad de Ovitrampas mide la relación entre sensores positivos y examinados, y por encima del <strong>70 %</strong> es alto (bajo, menos del 40 %; moderado, entre 40 y 70 %). El <strong>IDH</strong> agrega cuánta densidad de vector hay.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Temporada 2023-2024 de dengue en la Argentina: ¿cuántos casos, cuánta letalidad y por qué importa esa cifra?</summary>
+          <div class="fc__r"><strong>583.297 casos</strong>, 95 % autóctonos, con <strong>419 fallecidos</strong> y una letalidad del <strong>0,072 %</strong>. Importa porque una letalidad bajísima aplicada a cientos de miles de casos produce cientos de muertes: lo que las evita es <strong>detectar temprano al que se agrava</strong>.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Cuántas veces se puede tener dengue y qué serotipos se asocian a las formas graves?</summary>
+          <div class="fc__r">Hasta <strong>cuatro veces</strong>, una por serotipo, aunque sólo se vieron hasta <strong>tres infecciones</strong> en un mismo individuo. La enfermedad hemorrágica grave y mortal se asocia más a <strong>DENV 2 y 3</strong>.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Cuál es la fase peligrosa del dengue y cómo se la reconoce?</summary>
+          <div class="fc__r">La <strong>fase crítica</strong>, que empieza <strong>cuando cae la fiebre</strong>, entre el tercer y el séptimo día. Es donde se produce la <strong>fuga de plasma</strong>: el hematocrito sube y las plaquetas bajan. El paciente parece mejorar justo cuando más riesgo tiene.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué mata en el dengue grave: el sangrado o la fuga de plasma?</summary>
+          <div class="fc__r">La <strong>fuga de plasma</strong>. El aumento de la permeabilidad vascular lleva el líquido al tercer espacio —derrame pleural, ascitis, derrame pericárdico—, sube el hematocrito y lleva al <strong>shock hipovolémico</strong>. El sangrado acompaña, pero no es el mecanismo principal.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>Nombrá cinco de los siete signos de alarma del dengue, con su umbral.</summary>
+          <div class="fc__r"><strong>Dolor abdominal</strong> intenso y sostenido · <strong>vómitos persistentes</strong>: 3 o más en una hora o 4 en seis horas · <strong>sangrado de mucosas</strong> · <strong>acumulación de líquidos</strong> · <strong>hepatomegalia de instalación brusca</strong> · <strong>trastorno del sensorio</strong> · <strong>hematocrito en aumento</strong> en al menos dos mediciones consecutivas.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿A quién se interna con dengue, además del que tiene signos de alarma?</summary>
+          <div class="fc__r">Al que tiene <strong>intolerancia a la vía oral</strong>, <strong>dificultad respiratoria</strong>, <strong>acortamiento de la presión de pulso</strong>, <strong>hipotensión</strong>, <strong>relleno capilar enlentecido</strong>, <strong>insuficiencia renal aguda</strong> o <strong>coagulopatía</strong>, y a las <strong>embarazadas</strong> y los <strong>menores de 6 meses</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Definición vigente de caso sospechoso de dengue: ¿qué hace falta?</summary>
+          <div class="fc__r"><strong>Vivir o haber viajado en los últimos 14 días</strong> a zona con transmisión o con presencia del vector, más <strong>fiebre aguda</strong> de 2 a 7 días, más <strong>dos o más</strong> de: náuseas o vómitos, exantema, cefalea o dolor retroorbitario, mialgia o artralgia, petequias o torniquete positivo, y <strong>leucopenia</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Paciente con fiebre de 3 días: ¿qué pedís? ¿Y si lleva 8 días?</summary>
+          <div class="fc__r">Con <strong>3 días</strong>: métodos directos —<strong>PCR, antígeno NS1</strong> o aislamiento—, que sirven <strong>hasta el quinto día</strong>. Con <strong>8 días</strong>: <strong>serología IgM</strong>, que se detecta <strong>desde el sexto</strong> y dura 2 a 3 meses. Entre el quinto y el sexto está la zona ciega.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Dengue sin signos de alarma en un adulto sano: ¿dónde se trata y con qué?</summary>
+          <div class="fc__r"><strong>Grupo A: ambulatorio.</strong> <strong>Hidratación oral intensa, hasta 3000 ml por día</strong> en el adulto sano, idealmente con sales de rehidratación oral; <strong>paracetamol o dipirona</strong>; <strong>pautas de alarma por escrito</strong> y <strong>control clínico diario</strong>.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Qué está contraindicado en el dengue y qué no se transfunde?</summary>
+          <div class="fc__r">Nada de <strong>antiinflamatorios no esteroideos, aspirina ni corticoides</strong> —tampoco esteroides en el choque—. Y <strong>no se transfunden plaquetas ni plasma</strong> por el solo recuento bajo, <strong>cualquiera sea la cifra</strong>, salvo que el paciente sangre o tenga otra condición que predisponga al sangrado.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Cuándo pasa de hidratación oral a parenteral, y con qué se reanima el choque?</summary>
+          <div class="fc__r">Con <strong>al menos un signo de alarma</strong> se indica <strong>hidratación parenteral</strong> (recomendación fuerte). En el <strong>choque</strong>, <strong>cristaloides y no coloides</strong>, con reevaluación hemodinámica periódica.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>QDENGA: edad, esquema, tipo de vacuna y por qué no está en el calendario.</summary>
+          <div class="fc__r">De <strong>4 a 60 años</strong>, <strong>dos dosis separadas por 3 meses</strong>, hayan tenido o no dengue. Es <strong>tetravalente a virus vivos atenuados</strong>, construida sobre una cepa atenuada de <strong>DENV-2</strong>. La <strong>CoNaIn no la incorporó al calendario</strong>: se aplica de forma focalizada a los <strong>15 a 39 años</strong> de departamentos priorizados del NOA, NEA y Centro.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Cuánto dura la viremia del Zika y cuánto puede durar el virus en el semen?</summary>
+          <div class="fc__r">La <strong>viremia dura 5 a 7 días</strong> desde el inicio de los síntomas. En el semen, el período más largo de detección reportado fue de <strong>188 días</strong>, aunque detectar ARN no equivale a que haya virus infeccioso.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>Pareja que tuvo Zika y quiere buscar un embarazo: ¿cuánto esperan?</summary>
+          <div class="fc__r">Si la infectada o expuesta fue <strong>ella: 8 semanas</strong>. Si fue <strong>él: 6 meses</strong>. Los mismos plazos valen para sostener las medidas de prevención si hubo síntomas.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué hallazgos son más frecuentes en el Zika que en el dengue y el chikungunya, y cuáles menos?</summary>
+          <div class="fc__r"><strong>Más frecuentes: edema de miembros y conjuntivitis.</strong> <strong>Menos frecuentes: hepatomegalia, leucopenia y trombocitopenia.</strong> Es el que menos altera el laboratorio.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué define al síndrome de Zika congénito y qué riesgo tiene una infección del primer trimestre?</summary>
+          <div class="fc__r"><strong>Microcefalia</strong> con desproporción craneofacial y cuero cabelludo redundante, <strong>calcificaciones corticales y subcorticales</strong>, <strong>lisencefalia</strong>, hipoacusia central y atrofia coriorretiniana, con <strong>escasa repercusión sistémica</strong>. Riesgo del <strong>1 al 13 %</strong> si la infección es del primer trimestre.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Embarazada con Zika confirmado y microcefalia fetal: ¿cambia la vía de parto? ¿Y la lactancia?</summary>
+          <div class="fc__r"><strong>No y no.</strong> Ni la infección por Zika ni la microcefalia son, por sí mismas, indicación de cesárea, y <strong>no está indicado suspender la lactancia</strong>. La amniocentesis, si hace falta, se realiza <strong>después de la semana 16</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Por qué la orina es clave en el diagnóstico del Zika?</summary>
+          <div class="fc__r">Porque el virus <strong>se excreta en orina del día 5 al 15-20</strong>, mucho más que lo que dura la viremia —que en suero permite la PCR <strong>hasta el sexto día</strong>—. Como el cuadro es leve y la consulta suele ser tardía, la orina rescata los casos que llegan fuera de la ventana del suero.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué significa «chikungunya» y qué queda después del cuadro agudo?</summary>
+          <div class="fc__r">Significa <strong>«andar doblado»</strong> en kimakondé, por la postura antálgica. El cuadro agudo se resuelve solo en <strong>7 a 10 días</strong>, pero las <strong>artralgias pueden persistir semanas o meses</strong>: ésa es su principal carga.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Caso sospechoso de chikungunya: ¿qué exige la definición?</summary>
+          <div class="fc__r"><strong>Inicio agudo de fiebre mayor de 38,5 °C</strong> más <strong>artralgias graves discapacitantes o artritis</strong> no explicadas por otra causa, en alguien que <strong>reside o visitó áreas endémicas en las dos semanas previas</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>IgM positiva con IgG negativa para chikungunya: ¿qué significa y cómo se confirma?</summary>
+          <div class="fc__r">Indica <strong>infección reciente</strong>. La confirmación definitiva es la <strong>seroconversión de IgG</strong> en una segunda muestra tomada alrededor del mes, o el aislamiento o la detección molecular del genoma.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué separa el ciclo selvático del urbano en la fiebre amarilla?</summary>
+          <div class="fc__r"><strong>Selvático</strong>: mosquitos <strong>Haemagogus y Sabethes</strong>, precedido por <strong>epizootias en monos</strong>; afecta a hombres jóvenes no vacunados que entran a la selva. <strong>Urbano</strong>: <strong><em>Aedes aegypti</em></strong>, entre personas virémicas y susceptibles. El selvático <strong>sólo se previene vacunando</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué es el signo de Faget y en qué período aparece?</summary>
+          <div class="fc__r">La <strong>bradicardia relativa</strong>: disociación entre el pulso y la temperatura, cuando lo esperable con fiebre alta sería taquicardia. Aparece en el <strong>período de infección</strong>, junto con fiebre mayor de 39 °C, congestión facial, leucopenia y transaminasas en ascenso.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Paciente con fiebre amarilla que mejora al cuarto día: ¿se va de alta?</summary>
+          <div class="fc__r">Con cuidado: esa mejoría puede ser el <strong>período de remisión</strong>, que dura <strong>de 2 a 48 horas</strong>. En el <strong>15 a 25 %</strong> de los casos los síntomas <strong>reaparecen más graves</strong> en el período de intoxicación, cuya <strong>letalidad es del 50 %</strong>.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Vacuna antiamarílica: edad, eficacia, cuándo protege y contraindicaciones.</summary>
+          <div class="fc__r"><strong>Del año a los 60</strong> en quienes viven o viajan a zona de riesgo; <strong>eficacia mayor al 95 %</strong>; <strong>protege a partir de los 10 días</strong>. Contraindicada en <strong>menores de 6 meses</strong>, <strong>alergia al huevo</strong>, <strong>timectomizados</strong>, <strong>miastenia gravis</strong> e <strong>inmunocomprometidos</strong>; los mayores de 60 tienen más riesgo de reacciones graves.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Triada clave del abordaje</dt>
+        <dd><strong>Fiebre + nexo epidemiológico + el síntoma que define a cada una.</strong> <strong>Dengue</strong>: dolor retroocular, sin tos ni rinorrea, con leucopenia y plaquetopenia. <strong>Chikungunya</strong>: fiebre mayor de 38,5 °C con artralgia incapacitante de inicio súbito. <strong>Zika</strong>: exantema pruriginoso, conjuntivitis y edema de miembros, con laboratorio poco alterado. <strong>Fiebre amarilla</strong>: fiebre mayor de 39 °C con signo de Faget, y después ictericia, sangrado u oliguria en alguien sin vacunar.</dd>
+
+        <dt class="r-gold">Estudio de elección</dt>
+        <dd><strong>Lo elige el día de evolución, no el cuadro.</strong> Hasta el <strong>día 5</strong>: métodos directos —aislamiento, PCR y antígeno <strong>NS1</strong> en el dengue—. Desde el <strong>día 6</strong>: <strong>IgM</strong> por ELISA, que en la fiebre amarilla aparece recién el <strong>día 7</strong>. <strong>Zika</strong>: suero hasta el día 6 y <strong>orina del día 5 al 15-20</strong>. Confirmación entre flavivirus: <strong>PRNT</strong>. Confirmación tardía: <strong>seroconversión en muestras pareadas</strong>, con al menos 14 días entre ellas.</dd>
+
+        <dt class="r-tto">Tratamiento de 1ª línea</dt>
+        <dd><strong>Ninguna tiene antiviral.</strong> <strong>Dengue</strong>: hidratación oral intensa —adultos sanos hasta <span class="dato">3000 ml/día</span>, pediatría Holliday-Segar más 5 %— y <strong>paracetamol o dipirona</strong> (<span class="dato">10 mg/kg por dosis cada 6 h</span> en pediatría); <strong>parenteral ante un signo de alarma</strong>; <strong>cristaloides</strong> en el choque. Nunca <strong>AINE, aspirina ni corticoides</strong>, y <strong>no transfundir plaquetas</strong> por el recuento. <strong>Prevención</strong>: control del vector para las cuatro, <strong>QDENGA</strong> en dos dosis separadas por 3 meses y <strong>vacuna antiamarílica</strong>, que protege a los 10 días.</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd><strong>El dengue se agrava cuando cae la fiebre</strong>: dolor abdominal sostenido, vómitos persistentes, sangrado de mucosas, acumulación de líquidos, hepatomegalia brusca, somnolencia o irritabilidad, y hematocrito que sube en dos mediciones. <strong>Fiebre amarilla</strong>: síndrome febril sin vacuna con viaje a zona de riesgo en los 15 días previos, y más aún con <strong>ictericia, sangrado u oliguria</strong>. <strong>Zika</strong>: embarazo y plazos preconcepcionales de <strong>8 semanas en la mujer y 6 meses en el hombre</strong>.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir de la clase «Enfermedades reemergentes», primera y segunda parte, de la Dra. Cristina Salvador (Enfermedades Infecciosas, Facultad de Ciencias Médicas, Universidad de Mendoza, San Rafael); de la Guía de Práctica Clínica sobre diagnóstico y tratamiento del dengue y de la Guía de vigilancia epidemiológica y laboratorial de Dengue y otros Arbovirus del Ministerio de Salud de la Nación; de las recomendaciones de la OPS para la detección y el diagnóstico por laboratorio de arbovirus en las Américas (2022); y de los boletines epidemiológicos nacionales y de la OPS citados en cada sección. Material de estudio: no reemplaza el criterio clínico ni la guía institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+
+  // ---- Tema claro / oscuro ----
+  // Sin eleccion estampada manda el sistema; el boton la estampa y la guarda.
+  var raiz = document.documentElement;
+  var boton = document.getElementById('tema');
+
+  function temaActual(){
+    var estampado = raiz.getAttribute('data-theme');
+    if (estampado) return estampado;
+    return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+
+  if (boton){
+    var rotular = function(){
+      var actual = temaActual();
+      boton.setAttribute('aria-pressed', actual === 'dark' ? 'true' : 'false');
+      boton.setAttribute('aria-label', actual === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+    };
+    boton.addEventListener('click', function(){
+      var nuevo = temaActual() === 'dark' ? 'light' : 'dark';
+      raiz.setAttribute('data-theme', nuevo);
+      try { localStorage.setItem('wordmed-tema', nuevo); } catch (e) { /* sin persistencia */ }
+      rotular();
+    });
+    rotular();
+  }
+
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link, .ir-link'));
+
+  // Devuelve TODOS los enlaces al ancla: la misma seccion figura en el indice
+  // lateral y en el compacto, y los dos tienen que encenderse juntos.
+  function porMeta(hash){
+    return enlaces.filter(function(l){ return l.getAttribute('href') === '#' + hash; });
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var activos = porMeta(e.target.id);
+        if (!activos.length) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          activos.forEach(function(l){ l.setAttribute('aria-current', 'true'); });
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>
