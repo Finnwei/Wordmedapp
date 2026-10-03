@@ -74,6 +74,33 @@ class Estado(app: Application) : AndroidViewModel(app) {
 
     fun restablecerTamanoLetra() = fijarTamanoLetra(Deposito.LETRA_ORIGINAL)
 
+    /* ---------- powers ---------- */
+
+    /** Qué power se está bajando y por dónde va, para que la fila lo muestre. */
+    var bajando by mutableStateOf<Map<String, Int>>(emptyMap()); private set
+
+    fun powerListo(p: Power) = deposito.powerGuardado(p)
+
+    /**
+     * Abre el power. La primera vez lo baja; después abre la copia. Si el
+     * archivo no está —lo borró el sistema por falta de lugar, o quedó a
+     * medias— lo vuelve a bajar solo.
+     */
+    fun abrirPower(p: Power, alAbrir: (java.io.File) -> Unit) = viewModelScope.launch {
+        if (bajando.containsKey(p.archivo)) return@launch
+        if (deposito.powerGuardado(p)) { alAbrir(deposito.powerLocal(p)); return@launch }
+
+        bajando = bajando + (p.archivo to 0)
+        val r = runCatching {
+            deposito.bajarPower(p) { pct -> bajando = bajando + (p.archivo to pct) }
+        }
+        bajando = bajando - p.archivo
+        r.onSuccess(alAbrir).onFailure { falloPower = p.nombre }
+    }
+
+    /** El nombre del último power que no se pudo bajar, para avisar. */
+    var falloPower by mutableStateOf<String?>(null)
+
     fun fijarColor(slug: String, color: String) = guardarCarpeta(slug) { it.copy(color = color) }
     fun fijarEstilo(slug: String, estilo: String) = guardarCarpeta(slug) { it.copy(estilo = estilo) }
 

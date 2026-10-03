@@ -52,9 +52,26 @@ data class Tema(
     val secciones: Int = 0,
     val bytes: Long = 0,
     val hash: String = "",
+    val powers: List<Power> = emptyList(),
 ) {
     fun clave(materia: String) = "$materia/$slug"
 }
+
+/**
+ * La presentación del profesor de la que salió el tema.
+ *
+ * No entra en `archivos()`: pesan y casi nunca se miran, así que no se bajan
+ * con el resto del material. La app se trae la que le piden, la primera vez
+ * que se la piden, y después abre la copia guardada.
+ */
+@Serializable
+data class Power(
+    val nombre: String,
+    val archivo: String,
+    val tipo: String = "pptx",
+    val bytes: Long = 0,
+    val hash: String = "",
+)
 
 @Serializable
 data class Recurso(

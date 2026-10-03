@@ -333,6 +333,7 @@ async function generadosAntes() {
     return new Set(
       m.materias.flatMap((x) => [
         ...x.temas.map((t) => t.archivo),
+        ...x.temas.flatMap((t) => (t.powers || []).map((p) => p.archivo)),
         ...x.recursos.map((r) => r.archivo),
       ])
     );
@@ -346,7 +347,7 @@ async function buscarAjenos() {
   if (conocidos === null) return [];
 
   const ajenos = [];
-  for (const sub of ["temas", "recursos"]) {
+  for (const sub of ["temas", "recursos", "powers"]) {
     const dir = join(DESTINO, sub);
     if (!existsSync(dir)) continue;
     const entradas = await readdir(dir, { recursive: true, withFileTypes: true });
@@ -502,6 +503,53 @@ async function main() {
       if (secciones.length === 0) avisos.push(`sin secciones detectadas: ${relativo}`);
     }
 
+    /* --- powers: las presentaciones del profesor ---
+       Van en la subcarpeta `powers` de la materia, con el mismo prefijo que
+       el tema al que pertenecen. El prefijo es lo único que los engancha,
+       así no hay que mantener ninguna lista a mano. Un tema puede tener
+       varios: `1a.`, `1b.` —la letra no entra en el prefijo, así que los
+       dos caen en el tema 1—.
+
+       No se bajan con el resto del contenido: pesan y casi nunca se miran.
+       La app se trae el que le pidan, cuando se lo pidan. */
+    const dirPowers = join(dirOrigen, "powers");
+    if (existsSync(dirPowers)) {
+      const sueltos = (await readdir(dirPowers, { withFileTypes: true }))
+        .filter((d) => d.isFile() && extname(d.name).toLowerCase() !== ".md")
+        .map((d) => d.name)
+        .sort((a, b) => a.localeCompare(b, "es"));
+
+      for (const archivo of sueltos) {
+        const base = basename(archivo, extname(archivo));
+        const etiqueta = leerPrefijo(base).etiqueta;
+        const duenio = temas.find((t) => t.orden === etiqueta);
+        if (!duenio) {
+          avisos.push(`power sin tema: ${nombreMateria}/powers/${archivo}`);
+          continue;
+        }
+
+        const ext = extname(archivo).toLowerCase();
+        const salida = `${slug(base)}${ext}`;
+        const dir = join(DESTINO, "powers", materiaSlug);
+        await mkdir(dir, { recursive: true });
+        await copyFile(join(dirPowers, archivo), join(dir, salida));
+
+        const datos = await readFile(join(dirPowers, archivo));
+        if (datos.length > 25 * 1024 * 1024) {
+          avisos.push(
+            `power de más de 25 MB, el host lo va a rechazar: ${nombreMateria}/powers/${archivo}`
+          );
+        }
+        (duenio.powers ??= []).push({
+          nombre: base.replace(/^[A-Za-z]?\s*[0-9]+(?:\.[0-9]+)*[a-z]?\.?\s*/, "").trim() || base,
+          archivo: `powers/${materiaSlug}/${salida}`,
+          tipo: ext.slice(1),
+          bytes: datos.length,
+          hash: hash(datos),
+        });
+      }
+    }
+
     temas.sort((a, b) => compararPrefijos(a._prefijo, b._prefijo));
 
     /* colisiones de orden: dos temas con el mismo prefijo */
@@ -531,6 +579,7 @@ async function main() {
   const huellas = materias
     .flatMap((m) => [
       ...m.temas.map((t) => `${t.archivo}:${t.hash}`),
+      ...m.temas.flatMap((t) => (t.powers || []).map((p) => `${p.archivo}:${p.hash}`)),
       ...m.recursos.map((r) => `${r.archivo}:${r.hash}`),
     ])
     .sort()

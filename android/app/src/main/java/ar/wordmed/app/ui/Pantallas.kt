@@ -8,6 +8,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FileDownload
+import androidx.compose.material.icons.filled.Slideshow
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.*
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -28,6 +34,7 @@ import androidx.compose.ui.zIndex
 import ar.wordmed.app.datos.Deposito
 import ar.wordmed.app.datos.Estado
 import ar.wordmed.app.datos.Materia
+import ar.wordmed.app.datos.Power
 import ar.wordmed.app.datos.Tema
 
 /* ============================================================
@@ -393,6 +400,7 @@ fun PantallaTemas(
                     color = cb,
                     pct = estado.progreso[tema.clave(materia.slug)]?.pct,
                     actualizado = estado.temaActualizado(materia.slug, tema),
+                    estado = estado,
                     alTocar = { alLeer(tema) },
                 )
             }
@@ -452,7 +460,8 @@ private fun CabeceraMateria(materia: Materia, color: Color, alAbrirRecurso: (Str
 
 @Composable
 private fun FilaTema(
-    tema: Tema, color: Color, pct: Int?, actualizado: Boolean, alTocar: () -> Unit,
+    tema: Tema, color: Color, pct: Int?, actualizado: Boolean,
+    estado: Estado, alTocar: () -> Unit,
 ) {
     val t = LocalTinta.current
     val forma = RoundedCornerShape(3.dp)
@@ -463,7 +472,7 @@ private fun FilaTema(
             .background(t.hoja)
             .border(1.dp, t.linea, forma)
             .clickable(onClick = alTocar)
-            .padding(13.dp, 8.dp)
+            .padding(start = 13.dp, end = 4.dp, top = 8.dp, bottom = 8.dp)
             .defaultMinSize(minHeight = 52.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(11.dp),
@@ -503,6 +512,52 @@ private fun FilaTema(
                 fontSize = 11.sp, color = t.tintaTenue,
             )
         }
+
+        /* El power del profesor, uno por botón. Fuera del clickable de la
+           fila, que si no abriría el cuadernillo. */
+        for (p in tema.powers) key(p.archivo) { BotonPower(p, estado, color) }
+    }
+}
+
+/**
+ * El botón del power: lo baja la primera vez y después lo abre.
+ *
+ * Mientras baja muestra el avance en el mismo lugar, sin cartel aparte:
+ * son archivos de menos de un mega y el viaje dura un parpadeo.
+ */
+@Composable
+private fun BotonPower(p: Power, estado: Estado, color: Color) {
+    val t = LocalTinta.current
+    val ctx = LocalContext.current
+    val pct = estado.bajando[p.archivo]
+    val guardado = estado.powerListo(p)
+
+    Box(
+        Modifier
+            .size(40.dp)
+            .clip(RoundedCornerShape(50))
+            .clickable(enabled = pct == null) {
+                estado.abrirPower(p) { f -> abrirConOtraApp(ctx, f) }
+            },
+        contentAlignment = Alignment.Center,
+    ) {
+        when {
+            pct != null -> CircularProgressIndicator(
+                progress = { pct / 100f },
+                modifier = Modifier.size(20.dp),
+                strokeWidth = 2.dp,
+                color = color,
+                trackColor = t.linea,
+            )
+            guardado -> Icon(
+                Icons.Default.Slideshow, "Abrir ${p.nombre}",
+                tint = color, modifier = Modifier.size(21.dp),
+            )
+            else -> Icon(
+                Icons.Default.FileDownload, "Bajar ${p.nombre}",
+                tint = t.tintaTenue, modifier = Modifier.size(21.dp),
+            )
+        }
     }
 }
 
@@ -525,4 +580,25 @@ fun textoDelPaso(p: Deposito.Paso): String = when (p) {
     is Deposito.Paso.Listo -> "Listo."
     is Deposito.Paso.SinCambios -> p.motivo
     is Deposito.Paso.Falla -> p.motivo
+}
+
+/**
+ * Entrega el archivo al visor que el usuario ya tenga —PowerPoint, Drive,
+ * WPS—. Android no muestra pptx por su cuenta.
+ */
+fun abrirConOtraApp(ctx: android.content.Context, f: java.io.File) {
+    val uri = androidx.core.content.FileProvider.getUriForFile(
+        ctx, "${ctx.packageName}.archivos", f,
+    )
+    val tipo = when (f.extension.lowercase()) {
+        "pptx" -> "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+        "ppt" -> "application/vnd.ms-powerpoint"
+        "pdf" -> "application/pdf"
+        else -> "*/*"
+    }
+    val i = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
+        setDataAndType(uri, tipo)
+        addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    }
+    runCatching { ctx.startActivity(android.content.Intent.createChooser(i, "Abrir con")) }
 }
