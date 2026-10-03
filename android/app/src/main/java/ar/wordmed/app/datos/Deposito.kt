@@ -84,8 +84,14 @@ class Deposito(private val ctx: Context) {
             return@withContext
         }
 
+        /* El hash global dice si cambió el material, pero no si está todo
+           guardado: una versión nueva de la app puede necesitar archivos que
+           la anterior ni miraba —pasó con los powers—, y entonces el atajo
+           daba "al día" sobre una carpeta incompleta. Son medio centenar de
+           comprobaciones de existencia, no cuesta nada. */
         val hashLocal = leer(kHashGlobal)
-        if (hashLocal == remoto.hash_global && hayContenido()) {
+        val completo = remoto.archivos().all { archivoLocal(it.ruta).exists() }
+        if (hashLocal == remoto.hash_global && hayContenido() && completo) {
             alAvanzar(Paso.SinCambios("al día"))
             return@withContext
         }
