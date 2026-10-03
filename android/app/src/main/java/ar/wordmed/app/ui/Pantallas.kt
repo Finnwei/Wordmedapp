@@ -9,9 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.Slideshow
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -520,44 +518,31 @@ private fun FilaTema(
 }
 
 /**
- * El botón del power: lo baja la primera vez y después lo abre.
+ * El botón del power. El archivo ya está en el teléfono —bajó junto con el
+ * cuadernillo—, así que tocarlo lo abre y listo.
  *
- * Mientras baja muestra el avance en el mismo lugar, sin cartel aparte:
- * son archivos de menos de un mega y el viaje dura un parpadeo.
+ * Apagado quiere decir que falta: se cortó la sincronización, o el sistema
+ * liberó espacio. Tocarlo entonces dispara una sincronización, que lo trae.
  */
 @Composable
 private fun BotonPower(p: Power, estado: Estado, color: Color) {
     val t = LocalTinta.current
     val ctx = LocalContext.current
-    val pct = estado.bajando[p.archivo]
-    val guardado = estado.powerListo(p)
+    val listo = estado.powerListo(p)
 
     Box(
         Modifier
             .size(40.dp)
             .clip(RoundedCornerShape(50))
-            .clickable(enabled = pct == null) {
-                estado.abrirPower(p) { f -> abrirConOtraApp(ctx, f) }
-            },
+            .clickable { estado.abrirPower(p) { f -> abrirConOtraApp(ctx, f) } },
         contentAlignment = Alignment.Center,
     ) {
-        when {
-            pct != null -> CircularProgressIndicator(
-                progress = { pct / 100f },
-                modifier = Modifier.size(20.dp),
-                strokeWidth = 2.dp,
-                color = color,
-                trackColor = t.linea,
-            )
-            guardado -> Icon(
-                Icons.Default.Slideshow, "Abrir ${p.nombre}",
-                tint = color, modifier = Modifier.size(21.dp),
-            )
-            else -> Icon(
-                Icons.Default.FileDownload, "Bajar ${p.nombre}",
-                tint = t.tintaTenue, modifier = Modifier.size(21.dp),
-            )
-        }
+        Icon(
+            Icons.Default.Slideshow,
+            if (listo) "Abrir ${p.nombre}" else "Falta bajar ${p.nombre}",
+            tint = if (listo) color else t.linea,
+            modifier = Modifier.size(21.dp),
+        )
     }
 }
 

@@ -76,30 +76,17 @@ class Estado(app: Application) : AndroidViewModel(app) {
 
     /* ---------- powers ---------- */
 
-    /** Qué power se está bajando y por dónde va, para que la fila lo muestre. */
-    var bajando by mutableStateOf<Map<String, Int>>(emptyMap()); private set
-
-    fun powerListo(p: Power) = deposito.powerGuardado(p)
-
     /**
-     * Abre el power. La primera vez lo baja; después abre la copia. Si el
-     * archivo no está —lo borró el sistema por falta de lugar, o quedó a
-     * medias— lo vuelve a bajar solo.
+     * Abre el power. Ya está en el teléfono: bajó junto con el cuadernillo.
+     * Si falta —se cortó la sincronización, o el sistema liberó espacio—
+     * se dispara una sincronización, que lo vuelve a traer.
      */
-    fun abrirPower(p: Power, alAbrir: (java.io.File) -> Unit) = viewModelScope.launch {
-        if (bajando.containsKey(p.archivo)) return@launch
-        if (deposito.powerGuardado(p)) { alAbrir(deposito.powerLocal(p)); return@launch }
-
-        bajando = bajando + (p.archivo to 0)
-        val r = runCatching {
-            deposito.bajarPower(p) { pct -> bajando = bajando + (p.archivo to pct) }
-        }
-        bajando = bajando - p.archivo
-        r.onSuccess(alAbrir).onFailure { falloPower = p.nombre }
+    fun abrirPower(p: Power, alAbrir: (java.io.File) -> Unit) {
+        val f = deposito.powerLocal(p)
+        if (f.exists()) alAbrir(f) else sincronizar()
     }
 
-    /** El nombre del último power que no se pudo bajar, para avisar. */
-    var falloPower by mutableStateOf<String?>(null)
+    fun powerListo(p: Power) = deposito.powerLocal(p).exists()
 
     fun fijarColor(slug: String, color: String) = guardarCarpeta(slug) { it.copy(color = color) }
     fun fijarEstilo(slug: String, estilo: String) = guardarCarpeta(slug) { it.copy(estilo = estilo) }

@@ -748,17 +748,12 @@ a mano. Un tema puede tener varios —`1a.`, `1b.`—: la letra no entra en el
 prefijo, así que los dos caen en el tema 1. Un power cuyo prefijo no
 coincide con ningún tema no se publica y sale avisado, en vez de perderse.
 
-**No se bajan con el resto.** Pesan mucho más que los cuadernillos y casi
-nunca se miran, así que quedan fuera de `archivos()` del manifiesto: la
-sincronización no los toca. La app se trae el que le piden, la primera vez
-que se lo piden, y después abre la copia.
-
-**Dónde quedan en el teléfono.** En `filesDir/powers/`, fuera de
-`contenido/`, que la sincronización rehace entero cada vez que cambia el
-material. Se bajan a un archivo aparte y recién al final se renombra: si se
-corta la conexión, lo que queda es nada en vez de un archivo trunco que no
-abre. Si el archivo no está, o no pesa lo que dice el manifiesto, se vuelve
-a bajar solo.
+**Viajan con el resto.** Entran en `archivos()` y se bajan en la misma
+sincronización que los cuadernillos, a `contenido/powers/`. Se probó
+primero al revés —bajo demanda, para ahorrar datos— y Andrés lo pidió
+explícitamente así: prefiere tener todo encima, también sin conexión, antes
+que ahorrarse la bajada. Como son archivos más del montón, el hash por
+archivo ya se encarga de todo: si falta o cambió, la sincronización lo trae.
 
 **Cómo se abren.** Android no muestra pptx, así que se le pasa el archivo
 por el FileProvider al visor que el usuario ya tenga —PowerPoint, Drive,

@@ -174,55 +174,10 @@ class Deposito(private val ctx: Context) {
 
     /* ---------- powers ---------- */
 
-    /* Fuera de `contenido/`, que la sincronización rehace cada vez que
-       cambia el material: el power se bajó una sola vez y no hay razón
-       para volver a traerlo. */
-    private val raizPowers = File(ctx.filesDir, "powers")
-
-    fun powerLocal(p: Power) = File(raizPowers, p.archivo.removePrefix("powers/"))
-
-    /** Está bajado si existe y además pesa lo que dice el manifiesto. */
-    fun powerGuardado(p: Power): Boolean =
-        powerLocal(p).let { it.exists() && it.length() == p.bytes }
-
-    /**
-     * Trae el power y devuelve el archivo. Si ya estaba, no baja nada.
-     *
-     * Escribe en un archivo aparte y recién al final lo renombra: si se
-     * corta la conexión a la mitad, lo que queda es nada en vez de un
-     * archivo trunco que después no abre.
-     */
-    suspend fun bajarPower(p: Power, alAvanzar: (Int) -> Unit = {}): File =
-        withContext(Dispatchers.IO) {
-            val destino = powerLocal(p)
-            if (powerGuardado(p)) return@withContext destino
-
-            destino.parentFile?.mkdirs()
-            val parcial = File(destino.parentFile, "${destino.name}.bajando")
-            try {
-                abrir(p.archivo).use { entrada ->
-                    parcial.outputStream().use { salida ->
-                        val buf = ByteArray(64 * 1024)
-                        var hechos = 0L
-                        while (true) {
-                            val n = entrada.read(buf)
-                            if (n < 0) break
-                            salida.write(buf, 0, n)
-                            hechos += n
-                            if (p.bytes > 0) {
-                                alAvanzar(((hechos * 100) / p.bytes).toInt().coerceIn(0, 100))
-                            }
-                        }
-                    }
-                }
-                destino.delete()
-                if (!parcial.renameTo(destino)) throw java.io.IOException("no se pudo guardar")
-                destino
-            } catch (e: Throwable) {
-                parcial.delete()
-                throw e
-            }
-        }
+    /* Viajan con el resto del material, así que viven en `contenido/` y los
+       maneja la misma sincronización: no hay nada especial que hacer con
+       ellos más que saber dónde quedaron. */
+    fun powerLocal(p: Power) = archivoLocal(p.archivo)
 
     /* ---------- preferencias ---------- */
 

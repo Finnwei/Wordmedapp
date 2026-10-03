@@ -23,7 +23,10 @@ data class Manifiesto(
     /** Todos los archivos que la app tiene que tener guardados. */
     fun archivos(): List<ArchivoRemoto> = buildList {
         for (m in materias) {
-            for (t in m.temas) add(ArchivoRemoto(t.archivo, t.hash))
+            for (t in m.temas) {
+                add(ArchivoRemoto(t.archivo, t.hash))
+                for (p in t.powers) add(ArchivoRemoto(p.archivo, p.hash))
+            }
             for (r in m.recursos) add(ArchivoRemoto(r.archivo, r.hash))
         }
     }
@@ -60,9 +63,9 @@ data class Tema(
 /**
  * La presentación del profesor de la que salió el tema.
  *
- * No entra en `archivos()`: pesan y casi nunca se miran, así que no se bajan
- * con el resto del material. La app se trae la que le piden, la primera vez
- * que se la piden, y después abre la copia guardada.
+ * Viaja con el resto del material: entra en `archivos()` y se baja en la
+ * misma sincronización que los cuadernillos. Cuesta datos la primera vez,
+ * pero después el power está siempre, también sin conexión.
  */
 @Serializable
 data class Power(
