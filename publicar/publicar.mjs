@@ -333,7 +333,7 @@ async function generadosAntes() {
     return new Set(
       m.materias.flatMap((x) => [
         ...x.temas.map((t) => t.archivo),
-        ...x.temas.flatMap((t) => (t.powers || []).map((p) => p.archivo)),
+        ...x.temas.flatMap((t) => (t.powers || []).filter((p) => p.archivo).map((p) => p.archivo)),
         ...x.recursos.map((r) => r.archivo),
       ])
     );
@@ -529,6 +529,24 @@ async function main() {
         }
 
         const ext = extname(archivo).toLowerCase();
+        const nombre =
+          base.replace(/^[A-Za-z]?\s*[0-9]+(?:\.[0-9]+)*[a-z]?\.?\s*/, "").trim() || base;
+
+        /* Algunos powers no son un archivo sino una página —Prezi, por
+           ejemplo—. Van como un `.url` con el enlace adentro, con el mismo
+           prefijo que cualquier otro, y el botón abre el navegador en vez
+           de un visor. */
+        if (ext === ".url" || ext === ".link") {
+          const texto = await readFile(join(dirPowers, archivo), "utf8");
+          const enlace = /https?:\/\/\S+/.exec(texto)?.[0];
+          if (!enlace) {
+            avisos.push(`enlace vacío: ${nombreMateria}/powers/${archivo}`);
+            continue;
+          }
+          (duenio.powers ??= []).push({ nombre, url: enlace });
+          continue;
+        }
+
         const salida = `${slug(base)}${ext}`;
         const dir = join(DESTINO, "powers", materiaSlug);
         await mkdir(dir, { recursive: true });
@@ -541,7 +559,7 @@ async function main() {
           );
         }
         (duenio.powers ??= []).push({
-          nombre: base.replace(/^[A-Za-z]?\s*[0-9]+(?:\.[0-9]+)*[a-z]?\.?\s*/, "").trim() || base,
+          nombre,
           archivo: `powers/${materiaSlug}/${salida}`,
           tipo: ext.slice(1),
           bytes: datos.length,
@@ -579,7 +597,7 @@ async function main() {
   const huellas = materias
     .flatMap((m) => [
       ...m.temas.map((t) => `${t.archivo}:${t.hash}`),
-      ...m.temas.flatMap((t) => (t.powers || []).map((p) => `${p.archivo}:${p.hash}`)),
+      ...m.temas.flatMap((t) => (t.powers || []).map((p) => p.url ? `url:${p.url}` : `${p.archivo}:${p.hash}`)),
       ...m.recursos.map((r) => `${r.archivo}:${r.hash}`),
     ])
     .sort()

@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Slideshow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -534,12 +535,19 @@ private fun BotonPower(p: Power, estado: Estado, color: Color) {
         Modifier
             .size(40.dp)
             .clip(RoundedCornerShape(50))
-            .clickable { estado.abrirPower(p) { f -> abrirConOtraApp(ctx, f) } },
+            .clickable {
+                if (p.esEnlace) abrirEnlace(ctx, p.url)
+                else estado.abrirPower(p) { f -> abrirConOtraApp(ctx, f) }
+            },
         contentAlignment = Alignment.Center,
     ) {
         Icon(
-            Icons.Default.Slideshow,
-            if (listo) "Abrir ${p.nombre}" else "Falta bajar ${p.nombre}",
+            if (p.esEnlace) Icons.AutoMirrored.Filled.OpenInNew else Icons.Default.Slideshow,
+            when {
+                p.esEnlace -> "Abrir ${p.nombre} en el navegador"
+                listo -> "Abrir ${p.nombre}"
+                else -> "Falta bajar ${p.nombre}"
+            },
             tint = if (listo) color else t.linea,
             modifier = Modifier.size(21.dp),
         )
@@ -586,4 +594,12 @@ fun abrirConOtraApp(ctx: android.content.Context, f: java.io.File) {
         addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
     runCatching { ctx.startActivity(android.content.Intent.createChooser(i, "Abrir con")) }
+}
+
+/** Algunos powers son una página —un Prezi—: van al navegador. */
+fun abrirEnlace(ctx: android.content.Context, url: String) {
+    val i = android.content.Intent(
+        android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url),
+    )
+    runCatching { ctx.startActivity(i) }
 }

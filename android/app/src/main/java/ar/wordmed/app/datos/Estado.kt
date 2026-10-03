@@ -77,16 +77,18 @@ class Estado(app: Application) : AndroidViewModel(app) {
     /* ---------- powers ---------- */
 
     /**
-     * Abre el power. Ya está en el teléfono: bajó junto con el cuadernillo.
-     * Si falta —se cortó la sincronización, o el sistema liberó espacio—
-     * se dispara una sincronización, que lo vuelve a traer.
+     * Abre el power. El archivo ya está en el teléfono: bajó junto con el
+     * cuadernillo. Si falta —se cortó la sincronización, o el sistema liberó
+     * espacio— se dispara una sincronización, que lo vuelve a traer.
      */
     fun abrirPower(p: Power, alAbrir: (java.io.File) -> Unit) {
+        if (p.esEnlace) return
         val f = deposito.powerLocal(p)
         if (f.exists()) alAbrir(f) else sincronizar()
     }
 
-    fun powerListo(p: Power) = deposito.powerLocal(p).exists()
+    /** Un enlace siempre está listo: no hay nada que bajar. */
+    fun powerListo(p: Power) = p.esEnlace || deposito.powerLocal(p).exists()
 
     fun fijarColor(slug: String, color: String) = guardarCarpeta(slug) { it.copy(color = color) }
     fun fijarEstilo(slug: String, estilo: String) = guardarCarpeta(slug) { it.copy(estilo = estilo) }

@@ -25,7 +25,7 @@ data class Manifiesto(
         for (m in materias) {
             for (t in m.temas) {
                 add(ArchivoRemoto(t.archivo, t.hash))
-                for (p in t.powers) add(ArchivoRemoto(p.archivo, p.hash))
+                for (p in t.powers) if (!p.esEnlace) add(ArchivoRemoto(p.archivo, p.hash))
             }
             for (r in m.recursos) add(ArchivoRemoto(r.archivo, r.hash))
         }
@@ -63,18 +63,25 @@ data class Tema(
 /**
  * La presentación del profesor de la que salió el tema.
  *
- * Viaja con el resto del material: entra en `archivos()` y se baja en la
- * misma sincronización que los cuadernillos. Cuesta datos la primera vez,
- * pero después el power está siempre, también sin conexión.
+ * Casi siempre es un archivo, y viaja con el resto del material: entra en
+ * `archivos()` y se baja en la misma sincronización que los cuadernillos.
+ * Cuesta datos la primera vez, pero después está siempre, también sin
+ * conexión.
+ *
+ * Algunos no son un archivo sino una página —un Prezi—. Esos llevan `url`
+ * en vez de `archivo`, no se bajan, y el botón abre el navegador.
  */
 @Serializable
 data class Power(
     val nombre: String,
-    val archivo: String,
+    val archivo: String = "",
+    val url: String = "",
     val tipo: String = "pptx",
     val bytes: Long = 0,
     val hash: String = "",
-)
+) {
+    val esEnlace: Boolean get() = url.isNotBlank()
+}
 
 @Serializable
 data class Recurso(
