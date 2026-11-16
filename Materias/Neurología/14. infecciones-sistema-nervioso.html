@@ -1,0 +1,2352 @@
+<title>Infecciones del Sistema Nervioso</title>
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-bloque:1.95rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+
+  /* Que la barra de desplazamiento y los controles nativos acompanen al tema */
+  color-scheme: light dark;
+}
+
+/* Eleccion explicita de claro: solo hace falta para el color-scheme, los
+   tokens claros ya son la base sin estampar. */
+:root[data-theme="light"]{ color-scheme: light; }
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* Interruptor de tema claro / oscuro.
+   El estampado `data-theme` en la raíz ya lo respetan los bloques de tokens de
+   arriba; este botón sólo lo pone y lo guarda. Sin elección estampada mandan
+   las preferencias del sistema, que es el comportamiento por defecto. */
+.tema{
+  position:fixed; top:.7rem; right:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.tema:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.tema__icono{ width:1.15rem; height:1.15rem; display:block; }
+
+/* Se muestra el icono del tema al que se va a cambiar, no el actual.
+   Mismo escalonado que los tokens: base clara · sistema oscuro · elección explícita. */
+.tema__sol{ display:none; }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .tema__sol{ display:block; }
+  :root:not([data-theme="light"]) .tema__luna{ display:none; }
+}
+:root[data-theme="dark"] .tema__sol{ display:block; }
+:root[data-theme="dark"] .tema__luna{ display:none; }
+:root[data-theme="light"] .tema__sol{ display:none; }
+:root[data-theme="light"] .tema__luna{ display:block; }
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índices ---------- */
+/* Dos piezas complementarias y deliberadamente redundantes:
+   · .indice        — barra lateral fija, sólo en pantalla ancha, navegación permanente.
+   · .indice-rapido — tarjeta compacta al principio del cuerpo, visible en TODO ancho.
+   La lateral desaparece por debajo de 64rem, que es justo el ancho del panel de
+   Artifacts y del celular; sin la compacta el cuadernillo publicado se queda sin
+   índice. Las dos apuntan a los mismos anclajes y se resaltan juntas al desplazar. */
+
+/* 6.1 · Barra lateral */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+/* Rótulo de bloque intercalado en la lista lateral: no es un enlace, sólo
+   separa grupos de secciones para que 30 entradas no sean una tira plana. */
+.indice__bloque{
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+  margin:.9rem 0 .2rem; padding:0 .55rem;
+}
+.indice__bloque:first-child{ margin-top:0; }
+
+/* 6.2 · Índice compacto (va después de la portada, dentro del cuerpo) */
+.indice-rapido{
+  background:var(--hoja-hund);
+  border:1px solid var(--linea);
+  border-radius:var(--radio);
+  padding:1.1rem 1.2rem 1.2rem;
+}
+.indice-rapido__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .85rem;
+}
+/* auto-fit: una columna en el panel angosto, dos o tres en pantalla ancha */
+.indice-rapido__bloques{
+  list-style:none; margin:0; padding:0;
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(15rem, 1fr));
+  gap:1rem 2rem; align-items:start;
+}
+.ir-bloque{
+  display:block; margin-bottom:.4rem;
+  font-family:var(--f-titulo); font-size:.98rem; font-weight:700; line-height:1.3;
+  color:var(--tinta); text-decoration:none;
+  padding-bottom:.3rem; border-bottom:1px solid var(--linea-fuerte);
+}
+.ir-bloque:hover{ color:var(--cli-t); }
+.ir-secciones{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.05rem; }
+.ir-link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.55rem 1fr; align-items:baseline; gap:.4rem;
+  padding:.2rem .35rem; border-radius:2px;
+  font-size:.86rem; line-height:1.4; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.ir-link > b{
+  font-family:var(--f-dato); font-size:.76rem; font-weight:700;
+  font-variant-numeric:tabular-nums; color:var(--ct); opacity:.85;
+}
+.ir-link:hover{ background:var(--hoja); color:var(--tinta); }
+.ir-link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Título de bloque y ficha de sección ---------- */
+
+/* Anuncia un grupo de secciones. Neutro en color a propósito: los siete colores
+   tienen significado clínico fijo y un bloque agrupa secciones de varios. La
+   regla de abajo lleva el degradado completo de la paleta, igual que la pestaña
+   de repaso y la cabecera de la ficha relámpago.
+   Sin <svg> adentro: el exportador a Word aparea los diagramas con las figuras
+   por contador posicional sobre el HTML crudo (ver exportar_docx.py). */
+.bloque{
+  margin:1.4rem 0 0; padding:0;
+  text-align:center; scroll-margin-top:2.5rem;
+  display:flex; flex-direction:column; align-items:center; gap:.3rem;
+  font-weight:400;
+}
+.bloque:first-child{ margin-top:0; }
+.bloque__rotulo{
+  font-family:var(--f-texto);
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+}
+.bloque__nombre{
+  font-family:var(--f-titulo); font-size:var(--t-bloque); font-weight:700; line-height:1.15;
+  letter-spacing:-.01em; color:var(--tinta); text-wrap:balance; max-width:32ch;
+}
+.bloque::after{
+  content:""; width:7rem; height:2.5px; margin-top:.5rem; border-radius:2px;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+}
+
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.5rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-column:1; grid-row:1; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+/* El icono ocupa la columna 1 y NADA MAS. Todo el resto del contenido se
+   apila en la columna 2, una fila por elemento, sin importar cuantos
+   parrafos haya.
+
+   Sin esta regla la caja solo funciona con un unico <p>: a partir del
+   segundo, la autocolocacion del grid empieza a repartir contenido en la
+   columna del icono, que es `auto` y por lo tanto se ensancha hasta abarcar
+   el parrafo que le toco. La columna `1fr` queda entonces reducida a una
+   tira angosta, el texto se parte en dos columnas desbalanceadas y la caja
+   crece hasta volverse ilegible. */
+.importante > :not(.importante__icono){ grid-column:2; }
+.importante__titulo{
+  grid-row:1;
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante ul, .importante ol{ margin:0; padding-left:1.15rem; }
+.importante li + li{ margin-top:.3rem; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso, .tema{ display:none !important; }
+  /* La lateral no se imprime, pero la compacta sí: en papel es la tabla de
+     contenidos del cuadernillo. */
+  .indice-rapido{ display:block; break-inside:avoid; page-break-inside:avoid; margin-bottom:1.2rem; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .bloque{
+    margin:1.6rem 0 1rem;
+    break-after:avoid; page-break-after:avoid;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+
+<script>
+/* Aplica el tema guardado antes de pintar. Va aca arriba a proposito: si
+   esperara al script del final, el documento parpadearia en el tema del
+   sistema antes de corregirse. */
+(function(){
+  try {
+    var guardado = localStorage.getItem('wordmed-tema');
+    if (guardado === 'dark' || guardado === 'light') {
+      document.documentElement.setAttribute('data-theme', guardado);
+    }
+  } catch (e) { /* almacenamiento bloqueado: manda el sistema */ }
+})();
+</script>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<button class="tema" id="tema" type="button" aria-pressed="false" aria-label="Cambiar a modo oscuro">
+  <svg class="tema__icono tema__sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.2"></circle>
+    <path d="M12 2.6v2.1M12 19.3v2.1M5.1 5.1l1.5 1.5M17.4 17.4l1.5 1.5M2.6 12h2.1M19.3 12h2.1M5.1 18.9l1.5-1.5M17.4 6.6l1.5-1.5"></path>
+  </svg>
+  <svg class="tema__icono tema__luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20.4 14.2A8.6 8.6 0 0 1 9.8 3.6a8.6 8.6 0 1 0 10.6 10.6z"></path>
+  </svg>
+</button>
+
+<div class="marco">
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li class="indice__bloque">A · Generalidades</li>
+      <li><a class="indice__link i-generalidades"  href="#intro">Clasificación</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#meninges">Meninges y LCR normal</a></li>
+      <li><a class="indice__link i-importantes"    href="#lcr">LCR comparativo</a></li>
+
+      <li class="indice__bloque">B · Bacterianas</li>
+      <li><a class="indice__link i-generalidades"  href="#meningitis">Meningitis: etiología</a></li>
+      <li><a class="indice__link i-clinica"        href="#clinica-mb">Clínica y formas</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#dx-mb">Diagnóstico y algoritmo</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#tto-mb">Tratamiento empírico</a></li>
+      <li><a class="indice__link i-clinica"        href="#tbc">Meningitis tuberculosa</a></li>
+      <li><a class="indice__link i-clinica"        href="#sifilis">Neurosífilis</a></li>
+      <li><a class="indice__link i-clinica"        href="#lyme">Lyme</a></li>
+      <li><a class="indice__link i-clinica"        href="#absceso">Absceso cerebral</a></li>
+      <li><a class="indice__link i-clinica"        href="#empiema">Empiema y absceso epidural</a></li>
+
+      <li class="indice__bloque">C · Virales</li>
+      <li><a class="indice__link i-fisiopatologia" href="#virales">Meningitis virales</a></li>
+      <li><a class="indice__link i-clinica"        href="#encefalitis">Encefalitis</a></li>
+      <li><a class="indice__link i-clinica"        href="#herpes">Herpes simple</a></li>
+      <li><a class="indice__link i-clinica"        href="#vvz-cmv">Varicela, CMV y VEB</a></li>
+      <li><a class="indice__link i-clinica"        href="#polio-arbo">Polio y arbovirus</a></li>
+      <li><a class="indice__link i-clinica"        href="#rabia">Rabia</a></li>
+      <li><a class="indice__link i-clinica"        href="#sarampion">Sarampión y afines</a></li>
+      <li><a class="indice__link i-clinica"        href="#otros-virus">Gripe, COVID y otros</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#lmp">Virus JC y LMP</a></li>
+      <li><a class="indice__link i-clinica"        href="#vih">VIH</a></li>
+      <li><a class="indice__link i-clinica"        href="#htlv">HTLV-1</a></li>
+      <li><a class="indice__link i-clinica"        href="#priones">Priones</a></li>
+
+      <li class="indice__bloque">D · Parasitarias</li>
+      <li><a class="indice__link i-clinica"        href="#cisticercosis">Neurocisticercosis</a></li>
+      <li><a class="indice__link i-clinica"        href="#hidatidosis">Hidatidosis</a></li>
+      <li><a class="indice__link i-clinica"        href="#toxo">Toxoplasmosis</a></li>
+      <li><a class="indice__link i-clinica"        href="#chagas">Chagas, malaria y triquinosis</a></li>
+
+      <li class="indice__bloque">E · Micóticas</li>
+      <li><a class="indice__link i-tratamiento"    href="#micosis">Micosis del SNC</a></li>
+
+      <li class="indice__bloque">Cierre</li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Neurología · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Infecciones del Sistema Nervioso</h1>
+      <p class="portada__bajada">Las meninges y el LCR, y cómo leerlo; la meningitis bacteriana completa (etiología por edad, clínica por períodos, algoritmo y tratamiento empírico); tuberculosis, sífilis, Lyme, absceso y empiema; las meningitis y encefalitis virales, del herpes a la rabia; VIH, LMP, HTLV-1 y priones; y las infecciones parasitarias y micóticas del SNC.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">29 secciones</span>
+        <span class="etiqueta s-importantes">LCR comparativo</span>
+        <span class="etiqueta s-diagnostico">Algoritmo de meningitis</span>
+        <span class="etiqueta s-tratamiento">Neurosífilis según CDC 2021</span>
+      </div>
+    </header>
+
+    <nav class="indice-rapido" aria-label="Contenido del cuadernillo">
+      <p class="indice-rapido__rotulo">Contenido</p>
+      <ol class="indice-rapido__bloques">
+        <li>
+          <a class="ir-bloque" href="#bloque-a">Bloque A · Generalidades</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades"  href="#intro"><b>01</b> Concepto y clasificación</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#meninges"><b>02</b> Meninges y LCR normal</a></li>
+            <li><a class="ir-link i-importantes"    href="#lcr"><b>03</b> El LCR en cada cuadro</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-b">Bloque B · Infecciones bacterianas</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades"  href="#meningitis"><b>04</b> Meningitis bacteriana: concepto y etiología</a></li>
+            <li><a class="ir-link i-clinica"        href="#clinica-mb"><b>05</b> Clínica por períodos y formas clínicas</a></li>
+            <li><a class="ir-link i-diagnostico"    href="#dx-mb"><b>06</b> Diagnóstico y algoritmo</a></li>
+            <li><a class="ir-link i-tratamiento"    href="#tto-mb"><b>07</b> Tratamiento empírico y dexametasona</a></li>
+            <li><a class="ir-link i-clinica"        href="#tbc"><b>08</b> Meningitis tuberculosa</a></li>
+            <li><a class="ir-link i-clinica"        href="#sifilis"><b>09</b> Neurosífilis</a></li>
+            <li><a class="ir-link i-clinica"        href="#lyme"><b>10</b> Enfermedad de Lyme</a></li>
+            <li><a class="ir-link i-clinica"        href="#absceso"><b>11</b> Absceso cerebral</a></li>
+            <li><a class="ir-link i-clinica"        href="#empiema"><b>12</b> Empiema subdural y absceso epidural espinal</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-c">Bloque C · Infecciones virales</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-fisiopatologia" href="#virales"><b>13</b> Meningitis virales y fisiopatología</a></li>
+            <li><a class="ir-link i-clinica"        href="#encefalitis"><b>14</b> Encefalitis</a></li>
+            <li><a class="ir-link i-clinica"        href="#herpes"><b>15</b> Encefalitis herpética y VHS neonatal</a></li>
+            <li><a class="ir-link i-clinica"        href="#vvz-cmv"><b>16</b> Varicela-zóster, citomegalovirus y Epstein-Barr</a></li>
+            <li><a class="ir-link i-clinica"        href="#polio-arbo"><b>17</b> Poliomielitis y arbovirus</a></li>
+            <li><a class="ir-link i-clinica"        href="#rabia"><b>18</b> Rabia</a></li>
+            <li><a class="ir-link i-clinica"        href="#sarampion"><b>19</b> Sarampión, parotiditis y rubéola</a></li>
+            <li><a class="ir-link i-clinica"        href="#otros-virus"><b>20</b> Gripe, COVID-19, arenavirus, filovirus y hepatitis</a></li>
+            <li><a class="ir-link i-diagnostico"    href="#lmp"><b>21</b> Virus JC y leucoencefalopatía multifocal progresiva</a></li>
+            <li><a class="ir-link i-clinica"        href="#vih"><b>22</b> Manifestaciones neurológicas del VIH</a></li>
+            <li><a class="ir-link i-clinica"        href="#htlv"><b>23</b> HTLV-1: paraparesia espástica tropical</a></li>
+            <li><a class="ir-link i-clinica"        href="#priones"><b>24</b> Priones: Creutzfeldt-Jakob</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-d">Bloque D · Infecciones parasitarias</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-clinica" href="#cisticercosis"><b>25</b> Neurocisticercosis</a></li>
+            <li><a class="ir-link i-clinica" href="#hidatidosis"><b>26</b> Hidatidosis cerebral</a></li>
+            <li><a class="ir-link i-clinica" href="#toxo"><b>27</b> Toxoplasmosis</a></li>
+            <li><a class="ir-link i-clinica" href="#chagas"><b>28</b> Chagas, malaria y triquinosis</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-e">Bloque E · Infecciones micóticas</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-tratamiento" href="#micosis"><b>29</b> Criptococosis, candidiasis y otras micosis</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#repaso">Cierre</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-clinica"     href="#repaso">Repaso activo</a></li>
+            <li><a class="ir-link i-importantes" href="#relampago">Ficha de Repaso Relámpago</a></li>
+          </ul>
+        </li>
+      </ol>
+    </nav>
+
+    <h2 class="bloque" id="bloque-a">
+      <span class="bloque__rotulo">Bloque A</span>
+      <span class="bloque__nombre">Generalidades</span>
+    </h2>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="intro">
+      <span class="seccion__pestana"><b>01</b> Generalidades</span>
+      <h2 class="seccion__titulo">Concepto y clasificación</h2>
+
+      <p>Las infecciones del sistema nervioso son <strong>frecuentes, tratables y potencialmente curables</strong>: el pronóstico depende de que el diagnóstico y el tratamiento sean oportunos. La evolución de cada cuadro depende de cuatro factores:</p>
+      <ul>
+        <li>el <strong>estado inmunológico</strong> del paciente;</li>
+        <li>la <strong>patogenicidad del agente</strong>: bacteria, virus, hongo o parásito;</li>
+        <li>si la afección es <strong>difusa o focal</strong>;</li>
+        <li>el <strong>grupo etario</strong>: neonato, niño, adulto o anciano.</li>
+      </ul>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Agente</th><th>Cuadros que se estudian</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Bacterias</strong></td><td>Meningitis bacteriana · meningitis tuberculosa · neurosífilis · enfermedad de Lyme · absceso cerebral · empiema subdural y epidural · absceso epidural espinal</td></tr>
+            <tr><td><strong>Virus</strong></td><td>Meningitis y encefalitis virales · manifestaciones neurológicas del sida · paraparesia espástica tropical (HTLV-1) · enfermedad por priones (Creutzfeldt-Jakob)</td></tr>
+            <tr><td><strong>Hongos</strong></td><td>Criptococosis · candidiasis · aspergilosis · mucormicosis · histoplasmosis</td></tr>
+            <tr><td><strong>Parásitos</strong></td><td>Neurocisticercosis · hidatidosis · toxoplasmosis · Chagas · malaria · triquinosis</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>La lámina de clasificación llama «paraparesia espástica <strong>familiar</strong>» al cuadro por HTLV-1. El nombre correcto, y el que usa la propia clase más adelante, es <strong>paraparesia espástica tropical</strong>. La familiar es una enfermedad hereditaria y figura entre sus diagnósticos diferenciales.</p>
+
+      <p class="cita">Clase «Infecciones del sistema nervioso», Dr. Gustavo Grilli: generalidades y clasificación.</p>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-fisiopatologia" id="meninges">
+      <span class="seccion__pestana"><b>02</b> Fisiopatología</span>
+      <h2 class="seccion__titulo">Meninges y LCR normal</h2>
+
+      <p>De afuera hacia adentro, debajo del hueso están la duramadre, el espacio subdural, las dos hojas de la aracnoides, el espacio subaracnoideo (por donde circula el LCR) y la piamadre, pegada a la corteza. Se agrupan en dos capas, y el nombre de la inflamación depende de cuál se afecte.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 780 310" role="img" aria-label="Capas meníngeas de afuera hacia adentro: hueso, duramadre, espacio subdural, hoja parietal de la aracnoides, hoja visceral de la aracnoides, espacio subaracnoideo con LCR, piamadre y corteza. Duramadre y hoja parietal forman la paquimeninge, cuya inflamación es la paquimeningitis; hoja visceral, espacio subaracnoideo y piamadre forman las leptomeninges, cuya inflamación es la meningitis o leptomeningitis">
+          <rect x="40" y="20" width="400" height="34" fill="var(--c)" fill-opacity="0.55" stroke="currentColor" stroke-width="1"></rect>
+          <text x="240" y="42" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Hueso</text>
+          <rect x="40" y="54" width="400" height="34" fill="var(--c)" fill-opacity="0.4" stroke="currentColor" stroke-width="1"></rect>
+          <text x="240" y="76" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Duramadre</text>
+          <rect x="40" y="88" width="400" height="34" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="4 3"></rect>
+          <text x="240" y="110" text-anchor="middle" font-size="12" fill="currentColor">Espacio subdural</text>
+          <rect x="40" y="122" width="400" height="34" fill="var(--c)" fill-opacity="0.25" stroke="currentColor" stroke-width="1"></rect>
+          <text x="240" y="144" text-anchor="middle" font-size="12" fill="currentColor">Aracnoides: hoja parietal</text>
+          <rect x="40" y="156" width="400" height="34" fill="var(--c)" fill-opacity="0.18" stroke="currentColor" stroke-width="1"></rect>
+          <text x="240" y="178" text-anchor="middle" font-size="12" fill="currentColor">Aracnoides: hoja visceral</text>
+          <rect x="40" y="190" width="400" height="34" fill="none" stroke="currentColor" stroke-width="1"></rect>
+          <text x="240" y="212" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Espacio subaracnoideo (LCR)</text>
+          <rect x="40" y="224" width="400" height="34" fill="var(--c)" fill-opacity="0.12" stroke="currentColor" stroke-width="1"></rect>
+          <text x="240" y="246" text-anchor="middle" font-size="12" fill="currentColor">Piamadre</text>
+          <rect x="40" y="258" width="400" height="34" fill="var(--c)" fill-opacity="0.06" stroke="currentColor" stroke-width="1"></rect>
+          <text x="240" y="280" text-anchor="middle" font-size="12" fill="currentColor">Corteza cerebral</text>
+
+          <path d="M452 56 H468 V154 H452" fill="none" stroke="currentColor" stroke-width="1.6"></path>
+          <text x="480" y="98" font-size="13" font-weight="700" fill="currentColor">Paquimeninge</text>
+          <text x="480" y="118" font-size="11.5" fill="currentColor">inflamación: paquimeningitis</text>
+
+          <path d="M452 158 H468 V256 H452" fill="none" stroke="currentColor" stroke-width="1.6"></path>
+          <text x="480" y="196" font-size="13" font-weight="700" fill="currentColor">Leptomeninges</text>
+          <text x="480" y="214" font-size="11.5" fill="currentColor">(meninges blandas)</text>
+          <text x="480" y="234" font-size="11.5" fill="currentColor">inflamación: meningitis</text>
+          <text x="480" y="250" font-size="11.5" fill="currentColor">o leptomeningitis</text>
+        </svg>
+        <figcaption>Basado en el dibujo de la clase. La duramadre y la hoja parietal de la aracnoides forman la <strong>paquimeninge</strong>. La hoja visceral de la aracnoides, el espacio subaracnoideo y la piamadre forman las <strong>leptomeninges</strong>, que es donde asienta la meningitis.</figcaption>
+      </figure>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Parámetro</th><th>LCR normal</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Presión (manometría)</strong></td><td>Recién nacido 3-8 cm H₂O · niño 5-10 cm H₂O · adulto 8-12 cm H₂O</td></tr>
+            <tr><td><strong>Aspecto</strong></td><td><strong>Cristal de roca</strong></td></tr>
+            <tr><td><strong>Densidad · pH</strong></td><td>1003-1008 · 7,35</td></tr>
+            <tr><td><strong>Células</strong></td><td>Mononucleares: recién nacido 0-30, niño 0-20, <strong>adulto 0-5 por mm³</strong></td></tr>
+            <tr><td><strong>Proteínas</strong></td><td>Recién nacido 20-100 mg% · adulto <strong>20-45 mg%</strong></td></tr>
+            <tr><td><strong>Glucosa</strong></td><td><strong>50-60 % de la glucemia</strong></td></tr>
+            <tr><td><strong>Cloruros</strong></td><td>700-750 mg% (120-130 mEq/l)</td></tr>
+            <tr><td><strong>Bacteriológico</strong></td><td>Directo y cultivo negativos</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>En la punción lumbar se recolectan <strong>3 tubos</strong>: uno para el bacteriológico directo, otro para el citoquímico y el tercero para métodos indirectos.</p>
+
+      <p class="cita">Clase «Infecciones del sistema nervioso», Dr. Gustavo Grilli: meninges (dibujo) y valores normales del LCR.</p>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-importantes" id="lcr">
+      <span class="seccion__pestana"><b>03</b> Importantes</span>
+      <h2 class="seccion__titulo">El LCR en cada cuadro</h2>
+
+      <p>Es la tabla que más se pregunta. La <strong>presión está aumentada en todos</strong> los cuadros de la tabla. El <strong>coágulo</strong> (la red de fibrina que se forma en el tubo) aparece en la bacteriana y en la tuberculosa.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Cuadro</th><th>Aspecto</th><th>Proteínas</th><th>Glucosa</th><th>Cloruros</th><th>Células por mm³</th><th>Predominio</th><th>Directo y cultivo</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Meningitis bacteriana</strong></td><td>Turbio, purulento</td><td>↑↑ 100-700 mg%</td><td><strong>↓↓ menos de 20 mg%</strong></td><td>↓ (600 mg%)</td><td><strong>Más de 1000</strong> (500-10.000)</td><td><strong>Neutrófilos</strong></td><td>Habitualmente +</td></tr>
+            <tr><td><strong>Meningitis tuberculosa</strong></td><td>Claro</td><td>↑ (menos que en la bacteriana)</td><td><strong>↓ 20-40 mg%</strong></td><td>↓ (menos de 500 mg%)</td><td>300-1000 (25-500)</td><td>Linfocitos (neutrófilos al principio)</td><td>Habitualmente −</td></tr>
+            <tr><td><strong>Meningitis viral</strong></td><td>Claro</td><td>↑ leve, al comienzo</td><td><strong>Normal</strong> o apenas ↓</td><td>Normales</td><td>200-400</td><td>Linfocitos (neutrófilos al principio)</td><td>−</td></tr>
+            <tr><td><strong>Meningitis micótica</strong></td><td>Claro, xantocrómico o turbio</td><td>↑</td><td>↓ o normal</td><td>↑</td><td>200-300</td><td>Linfocitos (neutrófilos al principio)</td><td>Pueden ser +</td></tr>
+            <tr><td><strong>Meningismo</strong></td><td>Cristal de roca</td><td>Normal</td><td>Normal</td><td>Normales</td><td>1-3</td><td>Linfocitos</td><td>−</td></tr>
+            <tr><td><strong>Hemorragia meníngea</strong></td><td>Sanguinolento</td><td>Variable (↑)</td><td>Variable</td><td>Variable</td><td>Variable</td><td>Hematíes</td><td>−</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Cómo leerlo</h3>
+      <ul>
+        <li><strong>Mirá primero la glucosa.</strong> Si está muy baja con neutrófilos, es bacteriana. Si está baja con linfocitos, pensá en tuberculosis o en hongos. Si es normal con linfocitos, el cuadro es viral.</li>
+        <li><strong>Las proteínas</strong> suben porque la inflamación rompe la barrera hematoencefálica. Por eso suben mucho en la bacteriana y en la tuberculosa, y poco en la viral.</li>
+        <li><strong>La glucosa baja</strong> en la bacteriana porque la consumen las bacterias y los neutrófilos, y porque la inflamación altera su paso desde la sangre. Por eso siempre se compara con la glucemia del mismo momento.</li>
+        <li><strong>Los neutrófilos del principio</strong> pueden confundir. Las virales y la tuberculosa pueden empezar con neutrófilos y virar después a linfocitos: una punción repetida lo aclara.</li>
+        <li><strong>Meningismo</strong> es un síndrome meníngeo con LCR normal, por ejemplo en un foco infeccioso vecino o en una infección general.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Si el LCR es turbio y tiene <strong>más de 50.000 células</strong>, hay que pensar en un <strong>absceso cerebral abierto a las meninges</strong>. La tabla de la clase marca además que la glucosa puede estar <strong>aumentada</strong> en la poliomielitis y en la encefalitis epidémica.</p>
+      </div>
+
+      <p class="cita">Clase «Infecciones del sistema nervioso», Dr. Gustavo Grilli: tabla manuscrita de LCR.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-b">
+      <span class="bloque__rotulo">Bloque B</span>
+      <span class="bloque__nombre">Infecciones bacterianas</span>
+    </h2>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-generalidades" id="meningitis">
+      <span class="seccion__pestana"><b>04</b> Generalidades</span>
+      <h2 class="seccion__titulo">Meningitis bacteriana: concepto y etiología</h2>
+
+      <p>La meningitis es una <strong>inflamación de las leptomeninges</strong> que compromete el LCR y las estructuras vecinas. Forma parte de las infecciones difusas del SNC. Es una <strong>urgencia infectológica</strong>: su mortalidad es variable y a veces deja secuelas neurológicas graves.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Aspecto</th><th>Meningitis</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Incidencia</strong></td><td><span class="dato">1-2,5 cada 100.000 habitantes por año</span> en países desarrollados</td></tr>
+            <tr><td><strong>De qué depende el germen</strong></td><td>Grupo etario · estado inmunitario · vacunas que recibió el paciente</td></tr>
+            <tr><td><strong>Comorbilidades facilitadoras</strong></td><td>Inmunodepresión congénita o adquirida, embarazo, alcoholismo, diabetes, nefropatías, TEC, <strong>fístulas de LCR</strong>, esplenectomía</td></tr>
+            <tr><td><strong>Clasificación por etiología</strong></td><td>Infecciosas: bacterianas y no bacterianas (virales, micóticas, parasitarias, por espiroquetas y por priones) · no infecciosas: físicas y químicas</td></tr>
+            <tr><td><strong>Clasificación por el LCR</strong></td><td>De <strong>LCR claro</strong> o de <strong>LCR turbio</strong> (purulento)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Etiología según la edad</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Edad</th><th>Gérmenes</th><th>Por qué</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Recién nacido hasta 2 meses</strong></td><td>Enterobacterias gramnegativas (<em>E. coli</em>, <em>Salmonella</em>, <em>Klebsiella</em>, <em>Proteus</em>), <strong><em>Listeria monocytogenes</em></strong>, <strong>estreptococo beta hemolítico</strong></td><td>Son gérmenes que el bebé adquiere en el <strong>canal del parto</strong></td></tr>
+            <tr><td><strong>3 meses a 5 años</strong></td><td>Neumococo · meningococo · bacilo de Koch · <em>Haemophilus influenzae</em></td><td><em>Haemophilus</em> aparece en esta franja; las vacunas cambian cuánto pesa cada germen</td></tr>
+            <tr><td><strong>6 a 40 años</strong></td><td><strong>Meningococo</strong> · neumococo · bacilo de Koch</td><td>Es la edad de los brotes por meningococo</td></tr>
+            <tr><td><strong>Mayores de 40 años</strong></td><td><strong>Neumococo</strong> · meningococo · <strong><em>Listeria</em></strong> · bacilo de Koch · enterobacterias</td><td><em>Listeria</em> vuelve a aparecer cuando decae la inmunidad celular, igual que en el inmunodeprimido</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>El <strong>meningococo</strong> (<em>Neisseria meningitidis</em>) es el único germen que produce <strong>brotes epidémicos</strong>: la meningitis cerebroespinal epidémica. Por eso hay que <strong>tratar a los contactos</strong>.</p>
+
+      <h3>Puerta de entrada</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Vía</th><th>Origen</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Hematógena</strong></td><td>Focos pulmonares, urinarios, digestivos, endocarditis, rinofaringe</td></tr>
+            <tr><td><strong>Por contigüidad</strong></td><td>Sinusitis, otitis media, mastoiditis, ruptura de un absceso cerebral, fractura de la lámina cribosa del etmoides</td></tr>
+            <tr><td><strong>Linfática</strong></td><td>Foco bucofaríngeo o amigdalino</td></tr>
+            <tr><td><strong>Inoculación directa</strong></td><td>Fractura de base de cráneo o vertebral, punción lumbar iatrogénica, derivación ventrículo-peritoneal</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «Infecciones del sistema nervioso», Dr. Gustavo Grilli: meningitis, clasificación, etiología por edad y puerta de entrada.</p>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-clinica" id="clinica-mb">
+      <span class="seccion__pestana"><b>05</b> Clínica</span>
+      <h2 class="seccion__titulo">Clínica por períodos y formas clínicas</h2>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 250" role="img" aria-label="Períodos de la meningitis bacteriana: incubación de 24 a 72 horas; período prodrómico con síndrome infeccioso inespecífico en el 90 por ciento; período de estado de comienzo brusco con deterioro de conciencia y síndrome meníngeo">
+          <defs>
+            <marker id="inf-fas" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <rect x="10" y="20" width="200" height="210" rx="8" fill="var(--c)" fill-opacity="0.12" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="110" y="46" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">1 · Incubación</text>
+          <text x="110" y="80" text-anchor="middle" font-size="22" font-weight="700" fill="currentColor">24-72 h</text>
+          <text x="110" y="112" text-anchor="middle" font-size="11" fill="currentColor">sin síntomas</text>
+
+          <line x1="212" y1="125" x2="252" y2="125" stroke="currentColor" stroke-width="1.6" marker-end="url(#inf-fas)"></line>
+
+          <rect x="256" y="20" width="230" height="210" rx="8" fill="var(--c)" fill-opacity="0.25" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="371" y="46" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">2 · Prodrómico</text>
+          <text x="371" y="72" text-anchor="middle" font-size="11" fill="currentColor">en el 90 %: síndrome</text>
+          <text x="371" y="88" text-anchor="middle" font-size="11" fill="currentColor">infeccioso inespecífico</text>
+          <text x="272" y="118" font-size="11" fill="currentColor">fiebre</text>
+          <text x="272" y="138" font-size="11" fill="currentColor">decaimiento</text>
+          <text x="272" y="158" font-size="11" fill="currentColor">rinofaringitis</text>
+          <text x="272" y="178" font-size="11" fill="currentColor">otalgia</text>
+
+          <line x1="488" y1="125" x2="528" y2="125" stroke="currentColor" stroke-width="1.6" marker-end="url(#inf-fas)"></line>
+
+          <rect x="532" y="20" width="278" height="210" rx="8" fill="var(--c)" fill-opacity="0.45" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="671" y="46" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">3 · Estado</text>
+          <text x="671" y="68" text-anchor="middle" font-size="11" fill="currentColor">brusco y de intensidad creciente</text>
+          <text x="548" y="96" font-size="11" fill="currentColor">fiebre alta · cefalea intensa</text>
+          <text x="548" y="116" font-size="11" fill="currentColor">vómitos en chorro, sin náuseas</text>
+          <text x="548" y="136" font-size="11" fill="currentColor">rigidez de nuca · Kernig · Brudzinski</text>
+          <text x="548" y="156" font-size="11" fill="currentColor">fotofobia · hiperestesia</text>
+          <text x="548" y="176" font-size="11" fill="currentColor">convulsiones · petequias</text>
+          <text x="548" y="196" font-size="11" font-weight="700" fill="currentColor">deterioro de la conciencia</text>
+        </svg>
+        <figcaption>Los tres períodos de la meningitis bacteriana. El período de estado combina el <strong>síndrome meníngeo</strong> con el <strong>deterioro de la conciencia</strong>.</figcaption>
+      </figure>
+
+      <h3>Período de estado, signo por signo</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Signo</th><th>Cómo es</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Fiebre</strong></td><td>Brusca y alta. Puede faltar en lactantes y ancianos</td></tr>
+            <tr><td><strong>Cefalea</strong></td><td>Intensa, generalizada, <strong>no calma con AINE</strong></td></tr>
+            <tr><td><strong>Vómitos</strong></td><td><strong>En chorro</strong>, sin náuseas previas</td></tr>
+            <tr><td><strong>Contracturas</strong></td><td>Rigidez de nuca, posición en <strong>gatillo de fusil</strong>, signos de <strong>Kernig y Brudzinski</strong>, línea meníngea de Trousseau</td></tr>
+            <tr><td><strong>Otros</strong></td><td>Convulsiones, fotofobia, hiperestesia cutánea y muscular, <strong>petequias y púrpura</strong></td></tr>
+            <tr><td><strong>Neonatos y ancianos</strong></td><td>Irritabilidad, rechazo del alimento, flaccidez; puede no haber fiebre o incluso haber <strong>hipotermia</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Formas clínicas</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Forma</th><th>Características</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>A · Sobreaguda o fulminante</strong> (síndrome de <strong>Waterhouse-Friderichsen</strong>)</td><td>Excitación psicomotriz, fiebre alta, taquicardia, taquipnea, hipotensión, cianosis, <strong>exantema petequial</strong>, coma y muerte. <strong>El síndrome meníngeo no llega a instalarse.</strong> La dan el meningococo, el neumococo y <em>Haemophilus influenzae</em></td></tr>
+            <tr><td><strong>B · Aguda</strong></td><td>La más común: es la descripta arriba</td></tr>
+            <tr><td><strong>C · Prolongada o arrastrada</strong></td><td>Responde mal al tratamiento y aparecen <strong>complicaciones intracraneanas supuradas</strong></td></tr>
+            <tr><td><strong>D · Abortiva</strong></td><td>Evolución corta: los síntomas retroceden solos en 3-4 días</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «Infecciones del sistema nervioso», Dr. Gustavo Grilli: clínica y formas clínicas de la meningitis bacteriana.</p>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-diagnostico" id="dx-mb">
+      <span class="seccion__pestana"><b>06</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">Diagnóstico y algoritmo</h2>
+
+      <p>El diagnóstico es <strong>clínico-epidemiológico</strong> y se apoya en el laboratorio completo con <strong>hemocultivos</strong>, el ECG, la radiografía de tórax, la TC de cerebro y la <strong>punción lumbar</strong>, que es la que confirma. La pregunta clave es <strong>si se puede punzar antes de la tomografía</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 470" role="img" aria-label="Algoritmo ante sospecha de meningitis bacteriana. Si no hay inmunodepresión, antecedente de infección del SNC, primera crisis, papiledema, menor nivel de conciencia ni déficit focal: hemocultivos y punción lumbar, luego dexametasona y antibiótico empírico; si el LCR sugiere meningitis bacteriana y la tinción de Gram es positiva, dexametasona y antibiótico dirigido; si el Gram es negativo, mantener dexametasona y antibiótico empírico; si el LCR no es sugestivo, considerar alternativas. Si hay alguno de esos datos: hemocultivos, dexametasona y antibiótico empírico, tomografía de cerebro; si no hay contraindicación de punción, se punza y se sigue la rama del LCR; si la hay, mantener el tratamiento o considerar alternativas">
+          <defs>
+            <marker id="inf-alg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <rect x="280" y="10" width="260" height="32" rx="6" fill="var(--c)" fill-opacity="0.5" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="410" y="31" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">Sospecha de meningitis bacteriana</text>
+          <line x1="410" y1="42" x2="410" y2="58" stroke="currentColor" stroke-width="1.4" marker-end="url(#inf-alg)"></line>
+
+          <rect x="140" y="60" width="540" height="50" rx="6" fill="var(--c)" fill-opacity="0.25" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="410" y="80" text-anchor="middle" font-size="12" fill="currentColor">¿Inmunodeprimido, infección previa del SNC, primera crisis,</text>
+          <text x="410" y="98" text-anchor="middle" font-size="12" fill="currentColor">papiledema, menor nivel de conciencia o déficit focal?</text>
+
+          <path d="M410 110 V124 H200 V138" fill="none" stroke="currentColor" stroke-width="1.4" marker-end="url(#inf-alg)"></path>
+          <path d="M410 124 H620 V138" fill="none" stroke="currentColor" stroke-width="1.4" marker-end="url(#inf-alg)"></path>
+          <text x="176" y="121" font-size="12" font-weight="700" fill="currentColor">NO</text>
+          <text x="630" y="121" font-size="12" font-weight="700" fill="currentColor">SÍ</text>
+
+          <rect x="50" y="140" width="300" height="32" rx="5" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="200" y="161" text-anchor="middle" font-size="12" fill="currentColor">Hemocultivos y punción lumbar</text>
+          <line x1="200" y1="172" x2="200" y2="188" stroke="currentColor" stroke-width="1.4" marker-end="url(#inf-alg)"></line>
+          <rect x="50" y="190" width="300" height="32" rx="5" fill="var(--c)" fill-opacity="0.15" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="200" y="211" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Dexametasona + ATB empírico</text>
+          <line x1="200" y1="222" x2="200" y2="238" stroke="currentColor" stroke-width="1.4" marker-end="url(#inf-alg)"></line>
+          <rect x="50" y="240" width="300" height="40" rx="5" fill="var(--c)" fill-opacity="0.25" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="200" y="265" text-anchor="middle" font-size="12" fill="currentColor">¿LCR sugestivo de meningitis bacteriana?</text>
+
+          <path d="M200 280 V300 H85 V318" fill="none" stroke="currentColor" stroke-width="1.4" marker-end="url(#inf-alg)"></path>
+          <path d="M200 300 H300 V318" fill="none" stroke="currentColor" stroke-width="1.4" marker-end="url(#inf-alg)"></path>
+          <text x="62" y="296" font-size="12" font-weight="700" fill="currentColor">NO</text>
+          <text x="310" y="296" font-size="12" font-weight="700" fill="currentColor">SÍ</text>
+
+          <rect x="10" y="320" width="150" height="40" rx="5" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="85" y="345" text-anchor="middle" font-size="12" fill="currentColor">Considerar alternativas</text>
+          <rect x="220" y="320" width="160" height="40" rx="5" fill="var(--c)" fill-opacity="0.25" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="300" y="345" text-anchor="middle" font-size="12" fill="currentColor">¿Gram positivo?</text>
+
+          <path d="M300 360 V385 H240 V408" fill="none" stroke="currentColor" stroke-width="1.4" marker-end="url(#inf-alg)"></path>
+          <path d="M300 385 H410 V408" fill="none" stroke="currentColor" stroke-width="1.4" marker-end="url(#inf-alg)"></path>
+          <text x="216" y="381" font-size="12" font-weight="700" fill="currentColor">NO</text>
+          <text x="420" y="381" font-size="12" font-weight="700" fill="currentColor">SÍ</text>
+
+          <rect x="150" y="410" width="180" height="46" rx="5" fill="var(--c)" fill-opacity="0.15" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="240" y="429" text-anchor="middle" font-size="11.5" fill="currentColor">Mantener dexametasona</text>
+          <text x="240" y="446" text-anchor="middle" font-size="11.5" fill="currentColor">+ ATB empírico</text>
+          <rect x="345" y="410" width="130" height="46" rx="5" fill="var(--c)" fill-opacity="0.45" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="410" y="429" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">Dexametasona</text>
+          <text x="410" y="446" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">+ ATB dirigido</text>
+
+          <rect x="480" y="140" width="280" height="32" rx="5" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="620" y="161" text-anchor="middle" font-size="12" fill="currentColor">Hemocultivos</text>
+          <line x1="620" y1="172" x2="620" y2="188" stroke="currentColor" stroke-width="1.4" marker-end="url(#inf-alg)"></line>
+          <rect x="480" y="190" width="280" height="32" rx="5" fill="var(--c)" fill-opacity="0.15" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="620" y="211" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Dexametasona + ATB empírico</text>
+          <line x1="620" y1="222" x2="620" y2="238" stroke="currentColor" stroke-width="1.4" marker-end="url(#inf-alg)"></line>
+          <rect x="480" y="240" width="280" height="32" rx="5" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="620" y="261" text-anchor="middle" font-size="12" fill="currentColor">TC de cerebro</text>
+          <line x1="620" y1="272" x2="620" y2="288" stroke="currentColor" stroke-width="1.4" marker-end="url(#inf-alg)"></line>
+          <rect x="480" y="290" width="280" height="32" rx="5" fill="var(--c)" fill-opacity="0.25" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="620" y="311" text-anchor="middle" font-size="12" fill="currentColor">¿Contraindicación de punción lumbar?</text>
+
+          <path d="M620 322 V338 H560 V358" fill="none" stroke="currentColor" stroke-width="1.4" marker-end="url(#inf-alg)"></path>
+          <path d="M620 338 H730 V358" fill="none" stroke="currentColor" stroke-width="1.4" marker-end="url(#inf-alg)"></path>
+          <text x="532" y="334" font-size="12" font-weight="700" fill="currentColor">NO</text>
+          <text x="740" y="334" font-size="12" font-weight="700" fill="currentColor">SÍ</text>
+
+          <rect x="500" y="360" width="120" height="32" rx="5" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="560" y="381" text-anchor="middle" font-size="12" fill="currentColor">Punción lumbar</text>
+          <rect x="645" y="360" width="165" height="46" rx="5" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="727" y="379" text-anchor="middle" font-size="11.5" fill="currentColor">Mantener tratamiento</text>
+          <text x="727" y="396" text-anchor="middle" font-size="11.5" fill="currentColor">o considerar alternativas</text>
+
+          <path d="M500 376 H440 V260 H352" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#inf-alg)"></path>
+        </svg>
+        <figcaption>Algoritmo de la clase redibujado. Si hay algún dato que haga temer una lesión con efecto de masa, primero van <strong>hemocultivos, dexametasona y antibiótico</strong>, después la TC y recién entonces la punción. <strong>El antibiótico nunca espera a la tomografía.</strong> La línea punteada indica que, una vez hecha la punción, se sigue la rama del LCR.</figcaption>
+      </figure>
+
+      <h3>Por qué este orden</h3>
+      <ul>
+        <li>Los datos de la pregunta inicial (déficit focal, papiledema, menor nivel de conciencia, primera crisis, inmunodepresión) sugieren <strong>hipertensión endocraneana o una masa</strong>. Punzar en esas condiciones puede desencadenar una herniación: por eso primero va la TC.</li>
+        <li>La TC demora, y la meningitis bacteriana no puede esperar. Por eso, en esa rama, los <strong>hemocultivos</strong> se sacan antes y el tratamiento empieza <strong>antes de la imagen</strong>.</li>
+        <li>La tinción de <strong>Gram</strong> permite pasar del antibiótico empírico al <strong>dirigido</strong>.</li>
+      </ul>
+
+      <p class="cita">Clase «Infecciones del sistema nervioso», Dr. Gustavo Grilli: diagnóstico y algoritmo ante sospecha de meningitis.</p>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-tratamiento" id="tto-mb">
+      <span class="seccion__pestana"><b>07</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Tratamiento empírico y dexametasona</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Entidad</th><th>Gérmenes</th><th>Antibióticos</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Meningitis aguda</strong>, menor de 50 años sin factores de riesgo para <em>Listeria</em></td><td><em>S. pneumoniae</em>, <em>N. meningitidis</em></td><td><strong>Vancomicina + ceftriaxona</strong> (o cefotaxima o cefepime)</td></tr>
+            <tr><td><strong>Mayor de 50 años</strong> o con factores de riesgo para <em>Listeria</em></td><td>Los anteriores + <em>Listeria</em></td><td>Lo anterior <strong>+ ampicilina</strong></td></tr>
+            <tr><td><strong>Foco otorrinolaringológico</strong></td><td>Los anteriores + anaerobios</td><td>Lo anterior <strong>+ metronidazol</strong></td></tr>
+            <tr><td><strong>Absceso cerebral</strong></td><td><em>S. aureus</em>, estreptococos, anaerobios (<em>Bacteroides</em>), <em>Nocardia</em></td><td>Vancomicina + ceftriaxona (o cefotaxima o cefepime) + metronidazol; <strong>trimetoprima-sulfametoxazol</strong> si se sospecha <em>Nocardia</em></td></tr>
+            <tr><td><strong>Absceso epidural espinal</strong></td><td>Estafilococos, estreptococos, bacilos gramnegativos entéricos</td><td>Vancomicina + ceftriaxona (o cefotaxima o cefepime)</td></tr>
+            <tr><td><strong>Meningitis crónica</strong></td><td><em>Mycobacterium tuberculosis</em> (alta sospecha)</td><td>Isoniazida + rifampicina + pirazinamida + etambutol</td></tr>
+            <tr><td><strong>Neurosífilis</strong></td><td><em>Treponema pallidum</em></td><td><strong>Penicilina G acuosa intravenosa</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Por qué cada antibiótico</h3>
+      <ul>
+        <li>La <strong>ceftriaxona</strong> cubre neumococo y meningococo; la <strong>vancomicina</strong> se suma por el neumococo resistente.</li>
+        <li><em>Listeria</em> es <strong>resistente a las cefalosporinas</strong>: por eso, en el mayor de 50 años o el inmunodeprimido, se agrega <strong>ampicilina</strong>.</li>
+        <li>Un foco de oído o de senos arrastra <strong>anaerobios</strong>: por eso se agrega <strong>metronidazol</strong>.</li>
+      </ul>
+
+      <h3>Dexametasona</h3>
+      <p>Dosis de la clase: <strong>dexametasona 0,15 mg/kg cada 6 h por 72 h</strong>. Se da porque, al matar a las bacterias, el antibiótico libera sus componentes y dispara una <strong>respuesta inflamatoria</strong> en el espacio subaracnoideo. El corticoide amortigua esa respuesta. Por eso se indica <strong>antes o junto con la primera dosis de antibiótico</strong>, como marca el algoritmo.</p>
+      <p>Según PubMed, en el ensayo de De Gans y Van de Beek (301 adultos) la dexametasona dada 15-20 minutos antes o junto con el primer antibiótico redujo la mortalidad (riesgo relativo 0,48) y los resultados desfavorables. El beneficio fue mayor en la <strong>meningitis neumocócica</strong>: 26 % de resultados desfavorables contra 52 % con placebo. Tampoco aumentó el sangrado digestivo.</p>
+
+      <p class="cita">Clase «Infecciones del sistema nervioso», Dr. Gustavo Grilli: tratamiento empírico. Según PubMed: De Gans J, Van de Beek D, N Engl J Med 2002;347(20):1549-56 (<a href="https://doi.org/10.1056/NEJMoa021334">DOI</a>).</p>
+    </section>
+
+    <!-- ============ 8 ============ -->
+    <section class="seccion s-clinica" id="tbc">
+      <span class="seccion__pestana"><b>08</b> Clínica</span>
+      <h2 class="seccion__titulo">Meningitis tuberculosa</h2>
+
+      <p>La tuberculosis compromete el cerebro en forma <strong>difusa, focal o ambas</strong>. Llega por <strong>vía hematógena</strong> y es <strong>más frecuente en inmunodeprimidos</strong>. Tiene tres formas clínicas.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Forma</th><th>Qué es</th><th>Qué produce</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>1 · Meningitis tuberculosa</strong></td><td>Afectación <strong>basal</strong> con un <strong>exudado gelatinoso</strong></td><td><strong>Hidrocefalia</strong> (el exudado bloquea la circulación del LCR) y <strong>compromiso de pares craneanos</strong></td></tr>
+            <tr><td><strong>2 · Tuberculoma</strong> (granuloma)</td><td>Centro <strong>caseoso</strong> rodeado de células gigantes y mononucleares</td><td>Lesión en la sustancia blanca periventricular que <strong>realza con contraste</strong></td></tr>
+            <tr><td><strong>3 · Absceso tuberculoso</strong></td><td>Contiene caseum, la pared tiene infiltrado de polimorfonucleares</td><td>Se ven <strong>BAAR</strong> en el directo o en el cultivo</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Diagnóstico</h3>
+      <ul>
+        <li>Requiere <strong>aislar el BAAR</strong>: tinción de <strong>Ziehl-Neelsen</strong> o cultivo en <strong>Löwenstein-Jensen</strong>. Se piden también hemocultivos.</li>
+        <li><strong>LCR</strong>: pleocitosis <strong>linfocitaria</strong>, <strong>hiperproteinorraquia</strong> e <strong>hipoglucorraquia</strong>, con cloruros bajos y coágulo. Sobre el aspecto, la clase dice «turbio» en una lámina y «claro» en la tabla de LCR.</li>
+      </ul>
+
+      <h3>Tratamiento</h3>
+      <p>Tratamiento específico de la tuberculosis: <strong>isoniazida + rifampicina + pirazinamida + etambutol</strong>. Según la tabla de la clase, se empieza en forma empírica ante una meningitis crónica con alta sospecha.</p>
+
+      <p class="cita">Clase «Infecciones del sistema nervioso», Dr. Gustavo Grilli: meningitis tuberculosa.</p>
+    </section>
+
+    <!-- ============ 9 ============ -->
+    <section class="seccion s-clinica" id="sifilis">
+      <span class="seccion__pestana"><b>09</b> Clínica</span>
+      <h2 class="seccion__titulo">Neurosífilis</h2>
+
+      <p>Es la infección del SNC por <em>Treponema pallidum</em>. Tiene <strong>cuatro formas clínicas y una congénita</strong>. Las formas meníngea y meningovascular son las primeras en aparecer. La <strong>parálisis general progresiva</strong> y la <strong>tabes dorsal</strong> son manifestaciones <strong>tardías</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Forma</th><th>Clínica</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>1 · Meningitis granulomatosa</strong></td><td>Predominio <strong>basal</strong>: pares craneales (<strong>V y VII</strong>), síndrome meníngeo, convulsiones, deterioro mental, hidrocefalia. LCR con hiperproteinorraquia, pleocitosis y aislamiento del germen</td></tr>
+            <tr><td><strong>2 · Meningovascular</strong> (arteritis luética de Heubner)</td><td>La arteritis produce <strong>ACV</strong></td></tr>
+            <tr><td><strong>3 · Parálisis general progresiva</strong> (tardía)</td><td>Atrofia frontal, hidrocefalia, temblor, <strong>demencia</strong>, pupila de <strong>Argyll Robertson</strong></td></tr>
+            <tr><td><strong>4 · Tabes dorsal</strong> (tardía)</td><td>Engrosamiento leptomeníngeo de las <strong>raíces dorsales</strong> + degeneración de los <strong>cordones posteriores</strong>. Da <strong>crisis tabéticas</strong> (dolores paroxísticos en los miembros inferiores y viscerales), <strong>marcha tabética</strong> por pérdida de la propiocepción, <strong>artropatía de Charcot</strong> y úlceras cutáneas indoloras</td></tr>
+            <tr><td><strong>5 · Congénita</strong></td><td>Queratitis, sordera, <strong>dientes de Hutchinson</strong>, retraso mental, meningitis, parálisis general progresiva</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>La <strong>pupila de Argyll Robertson</strong> tiene <strong>abolido el reflejo fotomotor</strong> y <strong>conservada la acomodación</strong>: no reacciona a la luz, pero sí se contrae al mirar de cerca.</p>
+
+      <h3>Diagnóstico</h3>
+      <p>Pruebas serológicas en <strong>sangre y en LCR</strong>: <strong>VDRL</strong> (no treponémica) y <strong>FTA-Abs</strong> (treponémica).</p>
+
+      <h3>Tratamiento: lo que dice la clase y lo que dice la guía</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Situación</th><th>Lámina de la clase</th><th>CDC 2021 (actual)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>De elección</strong></td><td>Penicilina G benzatínica IM 2,4 millones de UI cada 4 días por 8 aplicaciones, o penicilina G sódica «IM» 24 millones de UI por 15 días</td><td><strong>Penicilina G acuosa cristalina IV 18-24 millones de UI por día</strong> (3-4 millones cada 4 h o en infusión continua) por <strong>10-14 días</strong></td></tr>
+            <tr><td><strong>Alternativa</strong></td><td>—</td><td>Penicilina G procaínica IM 2,4 millones de UI por día + probenecid 500 mg 4 veces por día, ambos por 10-14 días, si se asegura el cumplimiento</td></tr>
+            <tr><td><strong>Después del esquema</strong></td><td>—</td><td>Puede agregarse penicilina benzatínica IM 2,4 millones de UI por semana durante 1-3 semanas, para igualar la duración total del tratamiento de la sífilis latente</td></tr>
+            <tr><td><strong>Alergia a la penicilina</strong></td><td>Tetraciclina o eritromicina 2 g por 30 días</td><td><strong>Ceftriaxona 1-2 g por día IM o IV por 10-14 días</strong> (datos limitados). Si hay dudas, prueba cutánea y <strong>desensibilización</strong>. Los otros esquemas no fueron bien evaluados en la neurosífilis</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>La clase se contradice. La lámina de neurosífilis propone penicilina <strong>benzatínica</strong> y penicilina sódica por vía <strong>IM</strong>, pero su propia tabla de tratamiento empírico indica <strong>penicilina G acuosa intravenosa</strong>. Esto último es lo correcto: la neurosífilis se trata con penicilina <strong>cristalina IV</strong>. La benzatínica sola no se usa como tratamiento de la neurosífilis; la guía la admite sólo como complemento al terminar el esquema IV. Además, a toda persona con neurosífilis hay que pedirle el <strong>test de VIH</strong>.</p>
+      </div>
+
+      <h3>Reacción de Jarisch-Herxheimer</h3>
+      <p>Aparece al empezar el tratamiento, por la <strong>destrucción masiva de treponemas</strong>. Da hipertermia, convulsiones y confusión. Según la clase, se corrige con <strong>metilprednisolona 60 mg/día</strong>.</p>
+
+      <p class="cita">Clase «Infecciones del sistema nervioso», Dr. Gustavo Grilli: neurosífilis. Según PubMed: Workowski KA y col., «Sexually Transmitted Infections Treatment Guidelines, 2021», MMWR Recomm Rep 2021;70(4):1-187 (<a href="https://doi.org/10.15585/mmwr.rr7004a1">DOI</a>); Wu S y col., Front Neurol 2024;14:1340321 (<a href="https://doi.org/10.3389/fneur.2023.1340321">DOI</a>).</p>
+    </section>
+
+    <!-- ============ 10 ============ -->
+    <section class="seccion s-clinica" id="lyme">
+      <span class="seccion__pestana"><b>10</b> Clínica</span>
+      <h2 class="seccion__titulo">Enfermedad de Lyme</h2>
+
+      <p>La produce <em>Borrelia burgdorferi</em> y se transmite por la <strong>picadura de garrapatas</strong>. Evoluciona en dos fases.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Fase</th><th>Manifestaciones</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Aguda</strong></td><td><strong>Eritema migratorio</strong></td></tr>
+            <tr><td><strong>Tardía (neurológica)</strong></td><td>Meningitis linfocitaria aguda o recurrente · <strong>meningorradiculitis</strong> linfocitaria · <strong>parálisis facial</strong> · ataxia · encefalomielitis con paraparesia espástica · deterioro cognitivo</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>Diagnóstico</strong>: anticuerpos específicos por <strong>ELISA</strong> o inmunoblot. <strong>Tratamiento</strong>: <strong>ceftriaxona 2 g/día</strong>.</p>
+
+      <p class="cita">Clase «Infecciones del sistema nervioso», Dr. Gustavo Grilli: enfermedad de Lyme.</p>
+    </section>
+
+    <!-- ============ 11 ============ -->
+    <section class="seccion s-clinica" id="absceso">
+      <span class="seccion__pestana"><b>11</b> Clínica</span>
+      <h2 class="seccion__titulo">Absceso cerebral</h2>
+
+      <p>Es una <strong>colección purulenta encapsulada</strong> en el parénquima cerebral. Puede ser única o múltiple, con o sin tabiques.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Aspecto</th><th>Absceso cerebral</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Vía hematógena</strong></td><td>Infecciones pulmonares, <strong>cardiopatías congénitas cianóticas</strong>, endocarditis</td></tr>
+            <tr><td><strong>Por contigüidad</strong></td><td>Infecciones dentarias, otomastoideas o rinosinusales</td></tr>
+            <tr><td><strong>Postraumático o posquirúrgico</strong></td><td>Fracturas que comprometen los senos aéreos</td></tr>
+            <tr><td><strong>Agentes bacterianos</strong></td><td>Estreptococos, <em>S. aureus</em> y <em>S. epidermidis</em>, enterobacterias, flora mixta</td></tr>
+            <tr><td><strong>Agentes no bacterianos</strong></td><td>Toxoplasma, <em>Nocardia</em>, tuberculosis, actinomices, Chagas, aspergillus</td></tr>
+            <tr><td><strong>Estériles</strong></td><td>Hasta el <span class="dato">25 %</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Fases</h3>
+      <figure class="esquema">
+        <svg viewBox="0 0 820 250" role="img" aria-label="Cuatro fases del absceso cerebral: cerebritis precoz de 1 a 3 días, mal delimitada; cerebritis tardía de 4 a 9 días, con comienzo de necrosis y matriz de colágeno; cápsula precoz de 10 a 14 días, con centro necrótico y red vascularizada; cápsula tardía después del día 14, con cápsula fibrosa e interior purulento">
+          <defs>
+            <marker id="inf-abs" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <circle cx="102" cy="80" r="44" fill="var(--c)" fill-opacity="0.18" stroke="currentColor" stroke-width="1.2" stroke-dasharray="3 4"></circle>
+          <circle cx="102" cy="80" r="26" fill="var(--c)" fill-opacity="0.14" stroke="none"></circle>
+
+          <line x1="156" y1="80" x2="250" y2="80" stroke="currentColor" stroke-width="1.4" marker-end="url(#inf-abs)"></line>
+
+          <circle cx="307" cy="80" r="44" fill="var(--c)" fill-opacity="0.12" stroke="currentColor" stroke-width="1.2" stroke-dasharray="3 4"></circle>
+          <circle cx="307" cy="80" r="24" fill="var(--c)" fill-opacity="0.4" stroke="currentColor" stroke-width="1" stroke-dasharray="2 3"></circle>
+
+          <line x1="361" y1="80" x2="455" y2="80" stroke="currentColor" stroke-width="1.4" marker-end="url(#inf-abs)"></line>
+
+          <circle cx="512" cy="80" r="50" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="4 4"></circle>
+          <circle cx="512" cy="80" r="34" fill="var(--c)" fill-opacity="0.4" stroke="currentColor" stroke-width="3"></circle>
+
+          <line x1="566" y1="80" x2="660" y2="80" stroke="currentColor" stroke-width="1.4" marker-end="url(#inf-abs)"></line>
+
+          <circle cx="717" cy="80" r="36" fill="var(--c)" fill-opacity="0.55" stroke="currentColor" stroke-width="7"></circle>
+          <text x="717" y="85" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">pus</text>
+
+          <text x="102" y="160" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">1 · Cerebritis precoz</text>
+          <text x="102" y="180" text-anchor="middle" font-size="11.5" fill="currentColor">días 1-3</text>
+          <text x="102" y="200" text-anchor="middle" font-size="11" fill="currentColor">inflamación mal delimitada</text>
+          <text x="102" y="218" text-anchor="middle" font-size="11" fill="currentColor">se aíslan gérmenes</text>
+
+          <text x="307" y="160" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">2 · Cerebritis tardía</text>
+          <text x="307" y="180" text-anchor="middle" font-size="11.5" fill="currentColor">días 4-9</text>
+          <text x="307" y="200" text-anchor="middle" font-size="11" fill="currentColor">empieza la necrosis</text>
+          <text x="307" y="218" text-anchor="middle" font-size="11" fill="currentColor">y la matriz de colágeno</text>
+
+          <text x="512" y="160" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">3 · Cápsula precoz</text>
+          <text x="512" y="180" text-anchor="middle" font-size="11.5" fill="currentColor">días 10-14</text>
+          <text x="512" y="200" text-anchor="middle" font-size="11" fill="currentColor">centro necrótico</text>
+          <text x="512" y="218" text-anchor="middle" font-size="11" fill="currentColor">con red vascularizada</text>
+
+          <text x="717" y="160" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">4 · Cápsula tardía</text>
+          <text x="717" y="180" text-anchor="middle" font-size="11.5" fill="currentColor">después del día 14</text>
+          <text x="717" y="200" text-anchor="middle" font-size="11" fill="currentColor">cápsula fibrosa</text>
+          <text x="717" y="218" text-anchor="middle" font-size="11" fill="currentColor">síntomas de LOE</text>
+        </svg>
+        <figcaption>Las cuatro fases del absceso, desde una cerebritis difusa hasta una cápsula fibrosa con pus en el interior. Recién cuando se forma la cápsula el absceso se comporta como una <strong>lesión ocupante de espacio</strong>. La clase muestra cada fase en TC y RMN.</figcaption>
+      </figure>
+
+      <h3>Clínica</h3>
+      <p>Sólo el <strong>50 %</strong> de los pacientes tiene fiebre y mal estado general. Lo demás es la clínica de cualquier <strong>lesión ocupante de espacio (LOE)</strong>:</p>
+      <ul>
+        <li><strong>síndrome de hipertensión endocraneana</strong>: cefalea, náuseas y vómitos, deterioro de la conciencia;</li>
+        <li><strong>convulsiones</strong> focales o generalizadas;</li>
+        <li><strong>signos de déficit</strong> según la localización.</li>
+      </ul>
+
+      <h3>Diagnóstico</h3>
+      <ul>
+        <li><strong>Laboratorio</strong>: signos de infección, inespecíficos. De la muestra obtenida se piden tinción de Gram, BAAR y hongos, y cultivo para aerobios, anaerobios, BAAR y hongos.</li>
+        <li><strong>Imágenes</strong>: TC y RMN con contraste muestran el <strong>refuerzo en anillo</strong>. Hay que diferenciarlo de tumores como los <strong>gliomas</strong>; según la clase, en ellos el anillo es incompleto. La <strong>espectroscopía</strong> ayuda a separarlos.</li>
+      </ul>
+
+      <h3>Tratamiento</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Médico</th><th>Quirúrgico</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Manejo vital, anticonvulsivantes y antibiótico empírico: <strong>ceftriaxona + metronidazol + vancomicina</strong></td><td><strong>Punción-aspiración neuroguiada</strong> o <strong>exéresis a cielo abierto</strong>. <strong>Siempre biopsiar la pared</strong></td></tr>
+            <tr><td>Sólo antibióticos en: <strong>cerebritis precoz</strong>, abscesos <strong>menores de 3 cm</strong>, <strong>múltiples</strong>, en <strong>área elocuente o tronco</strong>, y en el posquirúrgico de la evacuación</td><td>Después, antibiótico específico por <strong>6-8 semanas</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «Infecciones del sistema nervioso», Dr. Gustavo Grilli: absceso cerebral, fases, clínica, diagnóstico y tratamiento.</p>
+    </section>
+
+    <!-- ============ 12 ============ -->
+    <section class="seccion s-clinica" id="empiema">
+      <span class="seccion__pestana"><b>12</b> Clínica</span>
+      <h2 class="seccion__titulo">Empiema subdural y absceso epidural espinal</h2>
+
+      <h3>Empiema subdural</h3>
+      <p>Es una <strong>colección piógena en el espacio subdural</strong>. Es una <strong>urgencia neuroquirúrgica</strong>: el <span class="dato">60 %</span> deja secuelas, sobre todo <strong>epilepsia</strong>.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Aspecto</th><th>Empiema subdural</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Vía</strong></td><td>Infecciones extracerebrales que se extienden por <strong>drenaje venoso retrógrado</strong>: otitis supuradas, <strong>sinusitis frontal</strong>, osteomielitis craneal</td></tr>
+            <tr><td><strong>Epidemiología</strong></td><td>Más frecuente en hombres (3:1). El <strong>80 % en la convexidad</strong> y el 20 % interhemisférico</td></tr>
+            <tr><td><strong>Agentes</strong></td><td>Estreptococos aerobios y anaerobios, estafilococos, gramnegativos, <em>Bacteroides</em></td></tr>
+            <tr><td><strong>Clínica</strong></td><td>Fiebre, síndrome de hipertensión endocraneana, déficit neurológico, convulsiones. Lo típico es la <strong>asociación de meningismo y hemiparesia</strong></td></tr>
+            <tr><td><strong>Tratamiento</strong></td><td><strong>Evacuación neuroquirúrgica</strong> + antibiótico específico por <strong>6-8 semanas</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Absceso epidural espinal</h3>
+      <p>Es un absceso en el <strong>espacio epidural</strong> de algún nivel de la columna.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Aspecto</th><th>Absceso epidural espinal</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Factores de riesgo</strong></td><td>Diabetes, inmunodeficiencias, drogas por vía parenteral, alcohol, cirugía o trauma espinal, infecciones locales o a distancia (<strong>espondilitis, discitis</strong>)</td></tr>
+            <tr><td><strong>Gérmenes</strong></td><td><strong><em>S. aureus</em> (50-60 %)</strong>, estafilococos coagulasa negativos, bacilos gramnegativos entéricos, estreptococos. Siempre considerar la <strong>tuberculosis</strong>: un mal de Pott puede dar un <strong>absceso frío del psoas</strong></td></tr>
+            <tr><td><strong>Clínica</strong></td><td><strong>Dolor lumbar</strong>, con o sin afectación radicular · <strong>fiebre</strong> · focalidad neurológica con <strong>incontinencia esfinteriana</strong></td></tr>
+            <tr><td><strong>Diagnóstico</strong></td><td><strong>RMN con contraste</strong></td></tr>
+            <tr><td><strong>Tratamiento</strong></td><td><strong>Evacuación neuroquirúrgica</strong> + antibiótico específico (empírico: vancomicina + ceftriaxona, cefotaxima o cefepime)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La clínica suele avanzar en el orden de la tabla: primero el <strong>dolor lumbar</strong>, después la <strong>irradiación radicular</strong> y por último el <strong>déficit con trastorno esfinteriano</strong>. Por eso, un dolor de espalda con fiebre en un paciente con factores de riesgo pide una RMN <strong>antes</strong> de que aparezca el déficit.</p>
+
+      <p class="cita">Clase «Infecciones del sistema nervioso», Dr. Gustavo Grilli: empiema subdural y absceso epidural espinal.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-c">
+      <span class="bloque__rotulo">Bloque C</span>
+      <span class="bloque__nombre">Infecciones virales</span>
+    </h2>
+
+    <!-- ============ 13 ============ -->
+    <section class="seccion s-fisiopatologia" id="virales">
+      <span class="seccion__pestana"><b>13</b> Fisiopatología</span>
+      <h2 class="seccion__titulo">Meningitis virales y fisiopatología</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Tipo</th><th>Virus</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Primarias</strong> (el virus ataca directamente)</td><td>Enterovirus: <strong>polio, echo, coxsackie</strong> · parotiditis · herpesvirus: <strong>VHS 1, 2, 6, 7 y 8</strong>, CMV, VZV, VEB · arenavirus: coriomeningitis linfocitaria · arbovirus: encefalitis equina del este y del oeste · rabdovirus: <strong>rabia</strong></td></tr>
+            <tr><td><strong>Secundarias</strong> (complican una virosis general)</td><td><strong>Influenza</strong> · parotiditis · <strong>sarampión</strong> · VZV y VEB · arbovirus: fiebre amarilla, dengue, encefalitis de San Luis · arenavirus: fiebre hemorrágica argentina</td></tr>
+            <tr><td><strong>Subagudas o lentas</strong></td><td>Por agentes no convencionales: <strong>kuru</strong> (canibalismo ritual en Nueva Guinea) · por virus convencionales: <strong>panencefalitis esclerosante subaguda</strong> (sarampión, rubéola) y <strong>leucoencefalopatía multifocal progresiva</strong> (papovavirus, hoy virus JC)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Cómo llegan los virus al sistema nervioso</h3>
+      <ul>
+        <li><strong>Vía hemática</strong>: la de la mayoría de los virus neurotropos.</li>
+        <li><strong>Vía neural</strong>: el virus viaja por los nervios. Es la vía del <strong>herpes simple, la rabia y la polio</strong>.</li>
+        <li><strong>Mecanismo inmune</strong>: las meningoencefalitis <strong>postinfecciosas</strong> se deben a reacciones de hipersensibilidad. La <strong>encefalomielitis postvacunal o postinfecciosa</strong> produce desmielinización perivenosa.</li>
+      </ul>
+      <p>La clase agrupa además dos cuadros lentos. La <strong>leucoencefalopatía multifocal progresiva</strong> es desmielinizante y aparece en inmunodeprimidos. La <strong>panencefalitis esclerosante subaguda</strong> es una infección viral lenta con gliosis severa.</p>
+
+      <p class="cita">Clase «Infecciones del sistema nervioso», Dr. Gustavo Grilli: meningitis virales, clasificación y fisiopatología.</p>
+    </section>
+
+    <!-- ============ 14 ============ -->
+    <section class="seccion s-clinica" id="encefalitis">
+      <span class="seccion__pestana"><b>14</b> Clínica</span>
+      <h2 class="seccion__titulo">Encefalitis</h2>
+
+      <p>Es una <strong>inflamación difusa del encéfalo</strong> por agresión directa o indirecta de bacterias, virus, hongos, parásitos o toxinas. Suele acompañarse de cambios inflamatorios en el LCR. Su incidencia es de <span class="dato">1,5-7 casos cada 100.000 habitantes por año</span>.</p>
+
+      <h3>Clínica por fases</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Fase</th><th>Manifestaciones</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Inicio</strong></td><td>Cuadro general: <strong>fiebre</strong>, cefalea, anorexia, constipación, náuseas y vómitos</td></tr>
+            <tr><td><strong>Síndrome encefálico</strong></td><td><strong>Alteración de la conciencia</strong> (somnolencia, estupor, coma) · síndrome de <strong>hipertensión endocraneana</strong> · <strong>convulsiones</strong> · signos deficitarios: motores, sensitivos, afasia</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Lo que distingue a la encefalitis de la meningitis es que el parénquima está afectado. Por eso aparecen la <strong>alteración de la conciencia, las convulsiones y el foco</strong>, y no sólo el síndrome meníngeo.</p>
+
+      <h3>Encefalitis primarias y secundarias</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Aspecto</th><th>Primarias</th><th>Secundarias</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Mecanismo</strong></td><td>El virus lesiona directamente la <strong>sustancia gris</strong></td><td>Agresión directa o indirecta durante la invasión, el estado o la declinación de otra enfermedad infecciosa</td></tr>
+            <tr><td><strong>Anatomía patológica</strong></td><td><strong>Necrosis neuronal</strong> y manguitos perivasculares</td><td><strong>Desmielinización</strong>, infiltrado perivascular de linfocitos y plasmocitos; base inmune (antígeno-anticuerpo)</td></tr>
+            <tr><td><strong>Agentes</strong></td><td>Enterovirus (polio, coxsackie, echo) · arbovirus por mosquitos (japonesa B, San Luis, equina) y por garrapatas (rusa de primavera-verano, centroeuropea, louping ill) · rabia · encefalitis letárgica de <strong>Von Economo</strong></td><td><strong>Postvacunal</strong> (cualquier vacuna) · tras infecciones bacterianas (neumonía, disentería, fiebre tifoidea, tifus exantemático, coqueluche) · tras parasitosis (triquinosis, toxoplasmosis) · tras virosis (varicela, sarampión, rubéola, dengue, gripe, mononucleosis)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La encefalitis letárgica de Von Economo se atribuye a un virus que nunca se aisló. Produce oftalmoplejía, trastornos del sueño y, como secuela, <strong>parkinsonismo</strong>.</p>
+
+      <h3>Diagnóstico y tratamiento</h3>
+      <p>El diagnóstico es clínico-epidemiológico, con laboratorio, TC o RMN y punción lumbar. Algunas encefalitis virales, sobre todo la <strong>herpética</strong>, responden al <strong>aciclovir 10 mg/kg cada 8 h por 14-21 días</strong>.</p>
+
+      <p class="cita">Clase «Infecciones del sistema nervioso», Dr. Gustavo Grilli: encefalitis, cuadro clínico, etiología (esquema manuscrito), diagnóstico y tratamiento.</p>
+    </section>
+
+    <!-- ============ 15 ============ -->
+    <section class="seccion s-clinica" id="herpes">
+      <span class="seccion__pestana"><b>15</b> Clínica</span>
+      <h2 class="seccion__titulo">Encefalitis herpética y VHS neonatal</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Aspecto</th><th>Encefalitis herpética</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Agente</strong></td><td><strong>VHS-1</strong>: la causa más frecuente de <strong>encefalitis grave</strong></td></tr>
+            <tr><td><strong>Incidencia</strong></td><td><span class="dato">2-4 por 1.000.000 de habitantes por año</span></td></tr>
+            <tr><td><strong>VHS-2</strong></td><td>Sólo el 10 % de las encefalitis herpéticas, pero es la <strong>primera causa de meningitis viral</strong> y de <strong>meningoencefalitis neonatal</strong>. Los dos tipos pueden dar mielitis</td></tr>
+            <tr><td><strong>Pronóstico</strong></td><td>El <strong>aciclovir</strong> demostró reducir la morbimortalidad</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Clínica por fases</h3>
+      <ul>
+        <li><strong>Comienzo</strong>: fiebre y cefalea.</li>
+        <li><strong>Compromiso temporal</strong>: <strong>cambios de conducta</strong>, <strong>déficit mnésico</strong>, <strong>afasia</strong>, convulsiones focales o generalizadas.</li>
+        <li><strong>Progresión</strong>: alteración del estado de conciencia y déficit motor.</li>
+      </ul>
+
+      <h3>Diagnóstico y tratamiento</h3>
+      <ul>
+        <li>Se confirma con <strong>PCR para VHS en el LCR</strong>.</li>
+        <li><strong>TC y RMN</strong>: la clase muestra lesiones del lóbulo temporal. <strong>EEG</strong>: descargas temporales.</li>
+        <li><strong>Aciclovir 10 mg/kg cada 8 h por 14-21 días</strong>. Los corticoides figuran en la clase con signo de pregunta: su papel no está definido.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Fiebre con <strong>cambios de conducta, afasia o crisis temporales</strong> es una encefalitis herpética hasta que se demuestre lo contrario. El aciclovir es lo único que cambia el pronóstico: se empieza ante la sospecha, sin esperar la PCR.</p>
+      </div>
+
+      <h3>Meningoencefalitis neonatal por VHS</h3>
+      <p>La causa el <strong>VHS-2 adquirido en el canal del parto</strong>. Puede ser una <strong>enfermedad diseminada</strong> con lesiones cutaneomucosas o una <strong>infección aislada del SNC</strong>. Las dos son graves y requieren tratamiento urgente: <strong>aciclovir 20 mg/kg cada 8 h por 14-21 días</strong>.</p>
+
+      <p class="cita">Clase «Infecciones del sistema nervioso», Dr. Gustavo Grilli: encefalitis herpética y meningoencefalitis neonatal por VHS.</p>
+    </section>
+
+    <!-- ============ 16 ============ -->
+    <section class="seccion s-clinica" id="vvz-cmv">
+      <span class="seccion__pestana"><b>16</b> Clínica</span>
+      <h2 class="seccion__titulo">Varicela-zóster, citomegalovirus y Epstein-Barr</h2>
+
+      <h3>Virus varicela-zóster</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Momento</th><th>Qué puede dar</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Primoinfección</strong></td><td>Meningitis y encefalitis en inmunodeprimidos. En niños es típica la <strong>cerebelitis autolimitada</strong>. Puede seguirle una encefalomielitis postinfecciosa</td></tr>
+            <tr><td><strong>Reactivación</strong></td><td>Meningitis, mielitis y encefalitis en niños mayores y adultos</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>El <span class="dato">95 %</span> de los adultos ya se infectó. El diagnóstico se confirma con <strong>PCR en LCR</strong>, con <strong>IgM en sangre</strong> o demostrando síntesis intratecal de IgG contra el virus. Tratamiento: <strong>aciclovir 10-20 mg/kg cada 8 h por 7-14 días + prednisona 60-80 mg/día por 3-5 días</strong>.</p>
+
+      <h3>Citomegalovirus</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Situación</th><th>Clínica</th><th>Diagnóstico y tratamiento</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Inmunocompetente</strong></td><td>Asintomático, síndrome símil mononucleosis, meningitis aséptica o Guillain-Barré</td><td>—</td></tr>
+            <tr><td><strong>CMV congénito</strong></td><td>El 75 % por primoinfección materna en el embarazo. Mortalidad del 10-30 %. <strong>Polimicrogiria</strong>, hidrocefalia, <strong>calcificaciones</strong> en la TC, retinitis con atrofia óptica y cicatrices hiperpigmentadas. El 90 % de los que sobreviven queda con secuelas graves: retraso psicomotor, epilepsia, atrofia óptica, retinitis, <strong>hipoacusia</strong>. Las formas sutiles se manifiestan tarde con retraso mental y sordera neurosensorial</td><td>PCR en orina, saliva o LCR. <strong>Ganciclovir IV y después valganciclovir oral por 6 meses</strong>: mejora el pronóstico cognitivo y auditivo</td></tr>
+            <tr><td><strong>Inmunodeprimido</strong> (trasplante, VIH con <strong>menos de 50 CD4</strong>)</td><td><strong>Encefalitis</strong> · <strong>polirradiculoneuritis lumbosacra</strong> con síndrome de cola de caballo</td><td>Clínica, imagen y PCR en sangre o LCR. <strong>Ganciclovir 5 mg/kg cada 12 h por 2-3 semanas</strong>, después <strong>valganciclovir 900 mg/día por 4 semanas más</strong>. En el VIH, lo fundamental es el antirretroviral</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Virus de Epstein-Barr</h3>
+      <p>Puede ser asintomático o dar mononucleosis. En el SNC, la manifestación <strong>más frecuente es la meningitis</strong>; la encefalitis es rara. También puede dar mielitis, mielorradiculitis, parálisis flácida aguda símil polio, cerebelitis, neuropatía craneal y Guillain-Barré. Se diagnostica con la clínica, la <strong>PCR en LCR</strong> y la serología de infección aguda (IgM contra la cápside). El tratamiento es empírico, con <strong>ganciclovir o foscarnet</strong>.</p>
+
+      <p class="cita">Clase «Infecciones del sistema nervioso», Dr. Gustavo Grilli: virus varicela-zóster, citomegalovirus y Epstein-Barr.</p>
+    </section>
+
+    <!-- ============ 17 ============ -->
+    <section class="seccion s-clinica" id="polio-arbo">
+      <span class="seccion__pestana"><b>17</b> Clínica</span>
+      <h2 class="seccion__titulo">Poliomielitis y arbovirus</h2>
+
+      <h3>Poliomielitis anterior aguda</h3>
+      <p>Es una enfermedad paralítica por <strong>destrucción de las motoneuronas</strong> de la médula y del tronco. Está prácticamente erradicada en los países desarrollados y es más frecuente en África y Asia. Hay dos vacunas: la <strong>Salk</strong> (virus inactivado, inyectable) y la <strong>Sabin</strong> (virus atenuado, oral).</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Forma</th><th>Clínica</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Meningitis aséptica</strong> (99 %)</td><td>Cuadro meníngeo sin parálisis</td></tr>
+            <tr><td><strong>Poliomielitis paralítica</strong> (1 %)</td><td>Síndrome de <strong>asta anterior</strong> con <strong>paresia flácida asimétrica</strong>, neuropatías craneales, debilidad diafragmática, paresia facial aislada, cerebelitis, mielitis</td></tr>
+            <tr><td><strong>Secuela</strong></td><td>El 50 % queda con secuelas motoras: <strong>síndrome pospolio</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Diagnóstico</strong>: clínica, PCR en LCR y RMN con hiperintensidad centromedular y de las astas anteriores en T2. <strong>Tratamiento</strong>: soporte ventilatorio y sintomático.</p>
+
+      <h3>Arbovirus (mosquitos y garrapatas)</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Virus</th><th>Clínica neurológica</th><th>Diagnóstico y manejo</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Nilo Occidental</strong></td><td>Encefalitis con <strong>parkinsonismo</strong>, mioclonías y parálisis flácida aguda «símil polio»</td><td>RMN: ganglios basales, tálamo, tronco y cerebelo. PCR en LCR. Sin tratamiento específico</td></tr>
+            <tr><td><strong>Encefalitis de San Luis</strong></td><td>Similar a la del Nilo Occidental</td><td>—</td></tr>
+            <tr><td><strong>Encefalitis japonesa</strong></td><td>La encefalitis por mosquito más común (sudeste asiático, Pacífico, norte de Australia); mortalidad del 30 %. Cefalea febril, meningitis aséptica o meningoencefalomielitis grave con alteración del estado mental, convulsiones, hipomimia, rigidez, temblor y movimientos involuntarios, ataxia</td><td>RMN: tálamo y ganglios de la base en T2. Anticuerpos en sangre o LCR, PCR. <strong>Prevención con vacuna</strong>; secuelas: parkinsonismo, epilepsia, trastornos neuropsiquiátricos</td></tr>
+            <tr><td><strong>Dengue</strong></td><td><em>Aedes</em>. Fiebre con artromialgias («fiebre rompehuesos»), hemorrágica en la reinfección. Complicaciones neurológicas en el 0,5-18 %: meningitis, encefalitis, mielitis, Guillain-Barré, ADEM, hematomas</td><td>RT-PCR o serología. Soporte. <strong>Salicilatos contraindicados</strong> (sangrado y síndrome de Reye). Hay vacuna</td></tr>
+            <tr><td><strong>Zika</strong></td><td>Fiebre, rash y artralgias. <strong>Guillain-Barré</strong> y <strong>microcefalia</strong> por transmisión vertical</td><td>—</td></tr>
+            <tr><td><strong>Chikungunya</strong></td><td>Como el Zika pero más doloroso («doblado por el dolor»); puede quedar una poliartritis crónica. Encefalitis, mielitis, Guillain-Barré, ADEM, sobre todo si hay coinfección con Zika o dengue</td><td>La infección neonatal puede ser grave</td></tr>
+            <tr><td><strong>Fiebre amarilla</strong></td><td>Similar al dengue (Sudamérica y África subsahariana)</td><td>La vacuna atenuada puede dar encefalitis: <strong>contraindicada en menores de 6 meses</strong></td></tr>
+            <tr><td><strong>Grupo California, equina, por garrapatas</strong></td><td>Brotes de encefalitis en EE. UU. (La Crosse, Cañón de Jamestown) · encefalitis equina (alfavirus) · encefalitis por garrapata <em>Ixodes</em> en Europa central y Rusia</td><td>Hay vacuna para la encefalitis por garrapata</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «Infecciones del sistema nervioso», Dr. Gustavo Grilli: poliovirus y arbovirus.</p>
+    </section>
+
+    <!-- ============ 18 ============ -->
+    <section class="seccion s-clinica" id="rabia">
+      <span class="seccion__pestana"><b>18</b> Clínica</span>
+      <h2 class="seccion__titulo">Rabia</h2>
+
+      <p>Es una encefalitis con una <strong>letalidad cercana al 100 %</strong>. Los reservorios son los <strong>murciélagos</strong> y los cánidos y felinos, salvajes o domésticos, no vacunados. Se transmite por contacto directo (mordedura, arañazo) o por aerosoles, como en las cuevas de murciélagos. Es de <strong>denuncia obligatoria</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Fase</th><th>Clínica</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Incubación</strong></td><td><strong>1-3 meses</strong>, aunque puede durar años: el virus avanza por <strong>transporte axonal retrógrado</strong> hacia el SNC</td></tr>
+            <tr><td><strong>Pródromo</strong></td><td>Fiebre, cefalea, <strong>parestesias y dolor en el sitio de inoculación</strong></td></tr>
+            <tr><td><strong>Encefalitis furiosa</strong></td><td>Encefalopatía rápidamente progresiva con hiperactividad motora, alucinaciones, disautonomía con hipertermia, crisis. Hasta el <strong>80 %</strong> tiene <strong>hidrofobia o aerofobia</strong>: espasmos de los músculos faríngeos y del cuello al intentar tragar</td></tr>
+            <tr><td><strong>Forma paralítica</strong> (20 %)</td><td>Paresia flácida que empieza en el miembro mordido y progresa hasta la <strong>tetraplejía</strong></td></tr>
+            <tr><td><strong>Final</strong></td><td>Descenso progresivo de la conciencia hasta el <strong>coma y la muerte</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>Diagnóstico</strong>: PCR en saliva; <strong>cuerpos de Negri</strong> en la biopsia. <strong>Tratamiento</strong>: cuidado de la herida + <strong>vacuna + suero antirrábico</strong>, porque una vez que aparecen los síntomas no hay tratamiento eficaz.</p>
+
+      <p class="cita">Clase «Infecciones del sistema nervioso», Dr. Gustavo Grilli: rabia.</p>
+    </section>
+
+    <!-- ============ 19 ============ -->
+    <section class="seccion s-clinica" id="sarampion">
+      <span class="seccion__pestana"><b>19</b> Clínica</span>
+      <h2 class="seccion__titulo">Sarampión, parotiditis y rubéola</h2>
+
+      <p>El sarampión es extremadamente contagioso y causa mortalidad y ceguera. Da brotes esporádicos y forma parte de la <strong>triple viral</strong> (sarampión, rubéola, parotiditis). Tiene tres complicaciones neurológicas, que aparecen en distintos momentos.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Cuadro</th><th>Cuándo</th><th>Clínica y diagnóstico</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Encefalitis aguda y encefalomielitis postinfecciosa</strong></td><td>En la fase aguda; la encefalomielitis, semanas después (1 de cada 1000)</td><td>Fiebre, rash maculopapular, tos, coriza, <strong>manchas de Koplik</strong>. LCR con pleocitosis y EEG con enlentecimiento difuso</td></tr>
+            <tr><td><strong>Encefalitis por cuerpos de inclusión</strong></td><td>1-9 meses después, en <strong>inmunodeficiencia celular</strong></td><td>Demencia rápidamente progresiva, cambios de conducta, mioclonías, crisis refractarias, coma y muerte. <strong>Sin fiebre y con LCR normal</strong>. PCR en LCR o tejido. Soporte, restituir la inmunidad, inmunoterapia pasiva</td></tr>
+            <tr><td><strong>Panencefalitis esclerosante subaguda</strong></td><td>Tardía: empieza alrededor de los <strong>8 años</strong></td><td>Ver abajo</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Panencefalitis esclerosante subaguda</h3>
+      <p>Es una infección <strong>persistente</strong> de neuronas y glía, más frecuente en <strong>varones que se infectaron antes de los 2 años</strong>. La clínica progresa por etapas:</p>
+      <ul>
+        <li><strong>Inicio</strong>: cambios de conducta y dificultades de aprendizaje.</li>
+        <li><strong>Etapa motora</strong>: <strong>mioclonías</strong>, crisis, espasticidad, coreoatetosis o balismo, ataxia, coriorretinitis, atrofia óptica.</li>
+        <li><strong>Etapa final</strong>: tetraparesia, disautonomía, <strong>mutismo acinético</strong>, coma y muerte en pocos años.</li>
+      </ul>
+      <p>En el LCR hay <strong>títulos altos de anticuerpos contra el sarampión</strong>, con un índice LCR/suero que indica síntesis intratecal. La RMN muestra hiperintensidad en T2 de la corteza y la sustancia blanca subcortical posterior. En fases avanzadas, el EEG muestra <strong>complejos periódicos de Radermecker</strong>. La anatomía patológica muestra cuerpos de inclusión en neuronas y glía. No hay tratamiento etiológico probado: se ensayaron interferón alfa con isoprinosina o ribavirina, y algunos casos se estabilizan.</p>
+
+      <h3>Parotiditis y rubéola</h3>
+      <ul>
+        <li><strong>Parotiditis</strong>: antes de la vacuna era una causa común de <strong>meningitis</strong>. La encefalitis es rara y puede seguirle una encefalomielitis postinfecciosa símil ADEM.</li>
+        <li><strong>Rubéola</strong>: suele ser un exantema febril leve. En 1 de cada 6000 casos produce una encefalomielitis postinfecciosa. La <strong>rubéola gestacional</strong>, sobre todo en el primer trimestre, da hasta un <strong>80 %</strong> de rubéola congénita: retraso mental, microcefalia, sordera neurosensorial, cataratas, retinitis pigmentaria y cardiopatía congénita.</li>
+      </ul>
+
+      <p class="cita">Clase «Infecciones del sistema nervioso», Dr. Gustavo Grilli: sarampión, panencefalitis esclerosante subaguda, parotiditis y rubéola. La lámina dice «isopristona»: el fármaco es la isoprinosina (inosina pranobex).</p>
+    </section>
+
+    <!-- ============ 20 ============ -->
+    <section class="seccion s-clinica" id="otros-virus">
+      <span class="seccion__pestana"><b>20</b> Clínica</span>
+      <h2 class="seccion__titulo">Gripe, COVID-19, arenavirus, filovirus y hepatitis</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Virus</th><th>Complicaciones neurológicas</th><th>Diagnóstico y tratamiento</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Influenza</strong></td><td>1,2 cada 100.000 casos. <strong>Niños</strong>: encefalopatía y convulsiones; raras, la encefalopatía necrotizante aguda (ganglios de la base, tálamo, tronco) y la leucoencefalopatía hemorrágica aguda. <strong>Adultos no vacunados</strong>: encefalitis focal, ADEM, PRES, lesión reversible del esplenio. También miositis y síndrome de Reye</td><td>RT-PCR o cultivo de hisopado nasofaríngeo. <strong>Oseltamivir</strong>, zanamivir o peramivir, aunque no probaron eficacia en lo neurológico; corticoides si se presume mecanismo inmune</td></tr>
+            <tr><td><strong>COVID-19</strong></td><td>Hasta el <strong>35 %</strong>. Por la enfermedad sistémica: encefalopatía del paciente crítico con polineuromiopatía, <strong>ictus</strong> entre 1 y 3 semanas después (hipercoagulabilidad), trombosis venosa y hemorragia. Por el virus: encefalitis, trastornos del movimiento, ataxia, <strong>anosmia</strong>. Inmunomediados: ADEM, encefalopatía necrotizante, Guillain-Barré, Miller Fisher. Además, cefaleas y quejas de memoria («post-COVID»)</td><td>El LCR suele ser normal o inespecífico, sin material genético viral</td></tr>
+            <tr><td><strong>Arenavirus</strong> (transmitidos por ratas)</td><td>Coriomeningitis linfocitaria: meningitis aséptica leve o encefalomielitis grave con afectación bulbar, parkinsonismo, hipoacusia e <strong>hidrocefalia</strong> por ependimitis. Grave para el feto. Incluye la <strong>fiebre hemorrágica argentina</strong> y la fiebre de Lassa</td><td>RT-PCR en sangre o LCR, serología. <strong>Ribavirina</strong></td></tr>
+            <tr><td><strong>Filovirus</strong> (ébola, Marburgo)</td><td>Fiebre hemorrágica con falla multiorgánica. Delirium, mioclonías, alteraciones oculomotoras, lesiones de sustancia blanca; formas inmunomediadas hasta 9 meses después</td><td>RT-PCR. Inmunoterapia pasiva y antivirales; hay vacuna</td></tr>
+            <tr><td><strong>Hepatitis</strong></td><td><strong>B</strong>: poliarteritis nodosa, crioglobulinemia, mielitis. <strong>C</strong>: ictus (ateromatosis, vasculitis, antifosfolípido), encefalitis, mielitis, neuropatías. <strong>E</strong>: Guillain-Barré, neuralgia amiotrófica</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «Infecciones del sistema nervioso», Dr. Gustavo Grilli: influenza, COVID-19, arenavirus, filovirus y virus de la hepatitis.</p>
+    </section>
+
+    <!-- ============ 21 ============ -->
+    <section class="seccion s-diagnostico" id="lmp">
+      <span class="seccion__pestana"><b>21</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">Virus JC y leucoencefalopatía multifocal progresiva</h2>
+
+      <p>La leucoencefalopatía multifocal progresiva (LMP) es una enfermedad <strong>desmielinizante</strong> causada por el <strong>virus JC</strong>, un poliomavirus, en pacientes inmunodeprimidos.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Factor de riesgo</th><th>Ejemplos</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>VIH</strong></td><td>Con <strong>menos de 200 CD4 por mm³</strong></td></tr>
+            <tr><td><strong>Neoplasias hematológicas</strong></td><td>Leucemias, Hodgkin, linfoma no Hodgkin, Waldenström, mieloma múltiple, policitemia vera</td></tr>
+            <tr><td><strong>Fármacos</strong></td><td>Quimioterápicos, inmunosupresores, <strong>anticuerpos monoclonales</strong></td></tr>
+            <tr><td><strong>Trasplantes</strong></td><td>Por la inmunosupresión para evitar el rechazo</td></tr>
+            <tr><td><strong>Otros</strong></td><td>Lupus, inmunodeficiencias primarias, enfermedades crónicas</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Clínica</h3>
+      <p>Tiene un curso <strong>subagudo y progresivo</strong>. Suele empezar con <strong>cambios de personalidad y de carácter</strong> y alteración del estado mental. Después se agregan, según dónde estén las lesiones, déficit sensitivo-motor, dismetría, ataxia de la marcha y trastornos visuales: defectos campimétricos o diplopía. Aunque las lesiones son subcorticales, también da <strong>síntomas corticales</strong> como afasia, negligencia o convulsiones.</p>
+
+      <h3>Estudios</h3>
+      <ul>
+        <li><strong>RMN</strong>: áreas hiperintensas en T2 y FLAIR, <strong>subcorticales, multifocales y que tienden a confluir</strong>, sobre todo en la sustancia blanca frontoparietooccipital. <strong>No tienen efecto de masa ni toman contraste.</strong></li>
+        <li><strong>Laboratorio</strong>: CD4 por debajo de 200, LCR con unas 20 células y proteínas moderadamente elevadas, <strong>PCR para virus JC</strong>.</li>
+        <li><strong>Anatomía patológica</strong>: <strong>desmielinización multifocal</strong>, oligodendrocitos con núcleos grandes e hipercromáticos y astrocitos atípicos. El virus se ve en los oligodendrocitos por inmunohistoquímica, PCR o microscopía electrónica. La lámina dice «mielinización multifocal»: es desmielinización.</li>
+      </ul>
+
+      <h3>Criterios diagnósticos</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Vía diagnóstica</th><th>LMP definitiva</th><th>LMP probable</th><th>LMP posible</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Neuropatología</strong> (tríada: desmielinización, astrocitos atípicos, oligodendrocitos agrandados; proteínas del virus JC por inmunohistoquímica o microscopía; ADN por PCR en tejido)</td><td>Tríada + proteínas o ADN del virus JC</td><td>Tríada sola</td><td>Proteínas del virus JC solas</td></tr>
+            <tr><td><strong>Clínica + imagen + laboratorio</strong> (síntomas progresivos, RM compatible, PCR para virus JC en LCR)</td><td><strong>PCR + en LCR + imagen + clínica</strong> compatibles</td><td>PCR + en LCR + imagen <strong>o</strong> clínica</td><td>Imagen + clínica, o sólo PCR + en LCR</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Tratamiento</h3>
+      <p>En el VIH: <strong>antirretrovirales</strong>. En pacientes sin VIH: <strong>retirar el inmunosupresor</strong>. Lo que mejora la LMP es que se recupere la inmunidad.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>La lámina indica «retirar el inmunosupresor y dar <strong>natalizumab</strong>, nivolumab o pembrolizumab». El natalizumab <strong>no es un tratamiento sino una causa de LMP</strong>: es un anticuerpo monoclonal de la esclerosis múltiple, y ante una LMP se <strong>suspende</strong>. Los que se ensayaron para reforzar la respuesta T contra el virus son los bloqueantes de PD-1: <strong>pembrolizumab y nivolumab</strong>. Según PubMed, en el estudio de Cortese (8 pacientes), el pembrolizumab bajó la carga viral en el LCR y estabilizó o mejoró a 5 de ellos. Es un tratamiento todavía experimental.</p>
+      </div>
+
+      <p class="cita">Clase «Infecciones del sistema nervioso», Dr. Gustavo Grilli: poliomavirus JC y LMP, criterios diagnósticos. Según PubMed: Kleinschmidt-DeMasters BK, Tyler KL, N Engl J Med 2005;353(4):369-74 (<a href="https://doi.org/10.1056/NEJMoa051782">DOI</a>); Cortese I y col., N Engl J Med 2019;380(17):1597-1605 (<a href="https://doi.org/10.1056/NEJMoa1815039">DOI</a>).</p>
+    </section>
+
+    <!-- ============ 22 ============ -->
+    <section class="seccion s-clinica" id="vih">
+      <span class="seccion__pestana"><b>22</b> Clínica</span>
+      <h2 class="seccion__titulo">Manifestaciones neurológicas del VIH</h2>
+
+      <p>El VIH es un retrovirus ARN del grupo de los <strong>lentivirus</strong>; el HTLV-1 y el HTLV-2 son oncornavirus. El VIH destruye los <strong>linfocitos T CD4+</strong>, que son justamente los que deberían combatirlo.</p>
+
+      <h3>Evolución por fases</h3>
+      <ul>
+        <li><strong>Respuesta inicial</strong>: es parcialmente eficaz.</li>
+        <li><strong>Infección crónica</strong>: el virus se acantona, con replicación variable y activación policlonal del sistema inmune.</li>
+        <li><strong>Sida</strong>: tras unos <strong>10 años</strong> en promedio, el virus sobrepasa al sistema inmune. Con <strong>menos de 200 CD4 por mm³</strong> aparecen las complicaciones del propio VIH, las infecciones oportunistas del SNC y las neoplasias.</li>
+      </ul>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 215" role="img" aria-label="Escala de linfocitos T CD4 por milímetro cúbico de 500 a 0: por debajo de 200 aparecen la leucoencefalopatía multifocal progresiva, las infecciones oportunistas y las neoplasias; por debajo de 100, la toxoplasmosis y el Chagas cerebral; por debajo de 50, la encefalitis y la polirradiculopatía por citomegalovirus">
+          <text x="60" y="34" font-size="12.5" font-weight="700" fill="currentColor">Linfocitos T CD4 por mm³</text>
+          <rect x="60" y="80" width="432" height="26" fill="var(--c)" fill-opacity="0.1" stroke="currentColor" stroke-width="1"></rect>
+          <rect x="492" y="80" width="144" height="26" fill="var(--c)" fill-opacity="0.28" stroke="currentColor" stroke-width="1"></rect>
+          <rect x="636" y="80" width="72" height="26" fill="var(--c)" fill-opacity="0.45" stroke="currentColor" stroke-width="1"></rect>
+          <rect x="708" y="80" width="72" height="26" fill="var(--c)" fill-opacity="0.65" stroke="currentColor" stroke-width="1"></rect>
+          <text x="72" y="98" font-size="11" fill="currentColor">inmunidad todavía conservada</text>
+          <text x="60" y="72" text-anchor="middle" font-size="11.5" fill="currentColor">500</text>
+          <text x="492" y="72" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">200</text>
+          <text x="636" y="72" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">100</text>
+          <text x="708" y="72" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">50</text>
+          <text x="780" y="72" text-anchor="middle" font-size="11.5" fill="currentColor">0</text>
+          <line x1="492" y1="106" x2="492" y2="136" stroke="currentColor" stroke-width="1.2" stroke-dasharray="3 3"></line>
+          <text x="484" y="142" text-anchor="end" font-size="11.5" fill="currentColor">menos de 200: LMP, infecciones oportunistas y neoplasias</text>
+          <line x1="636" y1="106" x2="636" y2="162" stroke="currentColor" stroke-width="1.2" stroke-dasharray="3 3"></line>
+          <text x="628" y="168" text-anchor="end" font-size="11.5" fill="currentColor">menos de 100: toxoplasmosis y Chagas</text>
+          <line x1="708" y1="106" x2="708" y2="188" stroke="currentColor" stroke-width="1.2" stroke-dasharray="3 3"></line>
+          <text x="700" y="194" text-anchor="end" font-size="11.5" fill="currentColor">menos de 50: CMV (encefalitis, polirradiculopatía)</text>
+        </svg>
+        <figcaption>Cuanto más bajan los CD4, más oportunistas aparecen. Los umbrales son los que da la clase para cada infección.</figcaption>
+      </figure>
+
+      <h3>Tres mecanismos</h3>
+      <ul>
+        <li><strong>Efecto directo del VIH</strong>: meningitis aséptica, deterioro neurocognitivo.</li>
+        <li><strong>VIH no controlado</strong>: infecciones oportunistas y neoplasias.</li>
+        <li><strong>Respuesta inmune aberrante al iniciar los antirretrovirales</strong>: el <strong>síndrome de reconstitución inmune</strong>.</li>
+      </ul>
+
+      <h3>Complicaciones según dónde asientan</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Nivel</th><th>Cuadros</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Cerebro, cuadro difuso</strong></td><td><strong>Complejo demencia-sida</strong> (encefalitis subaguda o crónica por VIH), encefalitis aguda por VIH, CMV, varicela-zóster, herpes simple, encefalopatía metabólica</td></tr>
+            <tr><td><strong>Cerebro, lesión focal</strong></td><td><strong>Toxoplasmosis</strong>, <strong>linfoma primario del SNC</strong>, <strong>LMP</strong>, criptococoma, absceso o tuberculoma, neurosífilis, ACV por vasculitis</td></tr>
+            <tr><td><strong>Meninges</strong></td><td>Meningitis aséptica por VIH, <strong>criptococo</strong>, tuberculosis, sífilis, <em>Listeria</em>, linfomatosa</td></tr>
+            <tr><td><strong>Médula</strong></td><td><strong>Mielopatía vacuolar</strong>, mielitis por herpes simple o zóster, mielopatía por CMV o por HTLV-1</td></tr>
+            <tr><td><strong>Nervio y raíz</strong></td><td><strong>Polineuropatía distal sensitiva dolorosa</strong>, polineuropatías desmielinizantes aguda y crónica, mononeuritis múltiple, polirradiculopatía lumbosacra por CMV, neuropatía tóxica por antirretrovirales, parálisis de Bell</td></tr>
+            <tr><td><strong>Músculo</strong></td><td>Polimiositis y otras miopatías, incluidas las tóxicas por fármacos</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Otras causas de meningitis en el VIH son <em>Salmonella typhi</em>, neumococo, <em>Nocardia</em>, <em>Bartonella</em> e histoplasma. También pueden darla causas no infecciosas: meningitis carcinomatosa y fármacos (AINE, trimetoprima-sulfametoxazol, inmunoglobulinas).</p>
+
+      <p><strong>Diagnóstico de la infección</strong>: anticuerpos por <strong>ELISA</strong>, proteínas virales por <strong>Western blot</strong> o secuenciación del genoma. <strong>Tratamiento</strong>: antirretroviral más el tratamiento específico de cada complicación.</p>
+
+      <p class="cita">Clase «Infecciones del sistema nervioso», Dr. Gustavo Grilli: manifestaciones neurológicas del sida y tablas de complicaciones del VIH.</p>
+    </section>
+
+    <!-- ============ 23 ============ -->
+    <section class="seccion s-clinica" id="htlv">
+      <span class="seccion__pestana"><b>23</b> Clínica</span>
+      <h2 class="seccion__titulo">HTLV-1: paraparesia espástica tropical</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Aspecto</th><th>Paraparesia espástica tropical</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Agente</strong></td><td><strong>HTLV-1</strong>, retrovirus del grupo de los oncornavirus</td></tr>
+            <tr><td><strong>Transmisión</strong></td><td><strong>Leche materna</strong>, contacto sexual, hemoderivados, trasplante, drogas endovenosas</td></tr>
+            <tr><td><strong>Dónde</strong></td><td>Endémica en <strong>Argentina (Salta y Jujuy)</strong>, el Caribe, EE. UU. y África</td></tr>
+            <tr><td><strong>Lesión</strong></td><td>Mielitis con degeneración y necrosis de los <strong>cordones posteriores</strong> y del <strong>haz corticoespinal</strong> (degeneración axonal de la vía piramidal)</td></tr>
+            <tr><td><strong>Diagnóstico</strong></td><td>ELISA, Western blot, PCR en suero</td></tr>
+            <tr><td><strong>Diferenciales</strong></td><td>Paraparesia espástica familiar, mielopatía por VIH, enfermedades de la motoneurona superior</td></tr>
+            <tr><td><strong>Tratamiento</strong></td><td><strong>No tiene tratamiento específico</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Clínica</h3>
+      <p>Es una mielopatía de evolución lenta. Empieza con <strong>parestesias en los miembros inferiores</strong> y pérdida de la sensibilidad vibratoria, por los cordones posteriores. Después aparecen el <strong>síndrome piramidal</strong> con trastorno de la marcha y, más tarde, el compromiso <strong>esfinteriano</strong>.</p>
+
+      <p class="cita">Clase «Infecciones del sistema nervioso», Dr. Gustavo Grilli: paraparesia espástica tropical.</p>
+    </section>
+
+    <!-- ============ 24 ============ -->
+    <section class="seccion s-clinica" id="priones">
+      <span class="seccion__pestana"><b>24</b> Clínica</span>
+      <h2 class="seccion__titulo">Priones: Creutzfeldt-Jakob</h2>
+
+      <p>La causa una <strong>proteína priónica con capacidad infectiva</strong>. El gen del prion, <strong>PRNP</strong>, está en el cromosoma 20 (el codón 129 es el polimorfismo clave). Hay formas <strong>esporádica, familiar e iatrogénica</strong>; un ejemplo de esta última es el trasplante de córnea. Es <strong>progresiva y fatal</strong>, sin tratamiento específico.</p>
+
+      <h3>Clínica</h3>
+      <ul>
+        <li><strong>Inicio</strong>: <strong>demencia rápidamente progresiva</strong>. Es el diagnóstico diferencial con el Alzheimer, que avanza en años y no en meses.</li>
+        <li><strong>Desarrollo</strong>: <strong>mioclonías</strong>, ataxia, ceguera cortical, liberación de reflejos primitivos.</li>
+        <li><strong>Final</strong>: <strong>mutismo acinético</strong> y muerte.</li>
+      </ul>
+
+      <h3>Estudios</h3>
+      <ul>
+        <li><strong>EEG</strong>: <strong>ondas agudas lentas periódicas</strong> sobre un ritmo de base lento.</li>
+        <li><strong>TC y RMN</strong>: atrofia cortical; hiperintensidad en T2 en el pulvinar y en los ganglios basales.</li>
+      </ul>
+
+      <p>La clase junta dos signos que corresponden a formas distintas. Según PubMed, la hiperintensidad bilateral del <strong>pulvinar</strong> («signo del pulvinar») es característica de la <strong>variante</strong> de Creutzfeldt-Jakob, la ligada a la encefalopatía espongiforme bovina. Zeidler y col. le encontraron una sensibilidad del 78 % y una especificidad del 100 %, y Collie y col. lo vieron en el 100 % de las imágenes FLAIR. En la forma <strong>esporádica</strong>, la más frecuente, lo habitual es la afectación de los <strong>ganglios basales</strong>.</p>
+
+      <p class="cita">Clase «Infecciones del sistema nervioso», Dr. Gustavo Grilli: enfermedad de Creutzfeldt-Jakob. Según PubMed: Zeidler M y col., Lancet 2000;355(9213):1412-8 (<a href="https://doi.org/10.1016/s0140-6736(00)02140-1">DOI</a>); Collie DA y col., AJNR Am J Neuroradiol 2003;24(8):1560-9 (PMID 13679271, sin DOI).</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-d">
+      <span class="bloque__rotulo">Bloque D</span>
+      <span class="bloque__nombre">Infecciones parasitarias</span>
+    </h2>
+
+    <!-- ============ 25 ============ -->
+    <section class="seccion s-clinica" id="cisticercosis">
+      <span class="seccion__pestana"><b>25</b> Clínica</span>
+      <h2 class="seccion__titulo">Neurocisticercosis</h2>
+
+      <p>La causa la <strong>larva de <em>Taenia solium</em></strong>. Se presenta con <strong>convulsiones</strong>, síndrome de hipertensión endocraneana o déficit focal. Las lesiones suelen ser <strong>múltiples, de unos 10 mm</strong>, en los hemisferios, los ganglios basales, las cisternas basales o los ventrículos.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 240" role="img" aria-label="Cuatro etapas de la neurocisticercosis en las imágenes: vesicular, quiste de líquido claro con el escólex visible y sin captación de contraste; coloidal, líquido turbio, cápsula más gruesa, edema y realce; granular, cápsula más gruesa y sin edema; calcificada, nódulo calcificado">
+          <defs>
+            <marker id="inf-ncc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <circle cx="102" cy="78" r="40" fill="none" stroke="currentColor" stroke-width="1.2"></circle>
+          <circle cx="124" cy="64" r="7" fill="currentColor"></circle>
+          <text x="102" y="134" text-anchor="middle" font-size="10.5" fill="currentColor">escólex</text>
+
+          <line x1="152" y1="78" x2="250" y2="78" stroke="currentColor" stroke-width="1.4" marker-end="url(#inf-ncc)"></line>
+
+          <circle cx="307" cy="78" r="52" fill="var(--c)" fill-opacity="0.1" stroke="currentColor" stroke-width="1" stroke-dasharray="4 4"></circle>
+          <circle cx="307" cy="78" r="36" fill="var(--c)" fill-opacity="0.35" stroke="currentColor" stroke-width="3"></circle>
+          <text x="307" y="146" text-anchor="middle" font-size="10.5" fill="currentColor">edema alrededor</text>
+
+          <line x1="364" y1="78" x2="455" y2="78" stroke="currentColor" stroke-width="1.4" marker-end="url(#inf-ncc)"></line>
+
+          <circle cx="512" cy="78" r="24" fill="var(--c)" fill-opacity="0.45" stroke="currentColor" stroke-width="5"></circle>
+
+          <line x1="560" y1="78" x2="660" y2="78" stroke="currentColor" stroke-width="1.4" marker-end="url(#inf-ncc)"></line>
+
+          <circle cx="717" cy="78" r="11" fill="currentColor"></circle>
+
+          <text x="102" y="168" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">1 · Vesicular</text>
+          <text x="102" y="188" text-anchor="middle" font-size="11" fill="currentColor">líquido claro, larva visible</text>
+          <text x="102" y="206" text-anchor="middle" font-size="11" fill="currentColor">no capta contraste</text>
+
+          <text x="307" y="168" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">2 · Coloidal</text>
+          <text x="307" y="188" text-anchor="middle" font-size="11" fill="currentColor">líquido turbio, cápsula gruesa</text>
+          <text x="307" y="206" text-anchor="middle" font-size="11" fill="currentColor">edema · realza con contraste</text>
+
+          <text x="512" y="168" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">3 · Granular</text>
+          <text x="512" y="188" text-anchor="middle" font-size="11" fill="currentColor">cápsula más gruesa</text>
+          <text x="512" y="206" text-anchor="middle" font-size="11" fill="currentColor">desaparece el edema</text>
+
+          <text x="717" y="168" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">4 · Calcificada</text>
+          <text x="717" y="188" text-anchor="middle" font-size="11" fill="currentColor">nódulo cálcico</text>
+          <text x="717" y="206" text-anchor="middle" font-size="11" fill="currentColor">residual</text>
+        </svg>
+        <figcaption>Las cuatro etapas de la neurocisticercosis en las imágenes. La larva va muriendo: el quiste pierde su líquido claro, se inflama (en la etapa coloidal hay edema y realce) y termina como una calcificación.</figcaption>
+      </figure>
+
+      <h3>Diagnóstico y tratamiento</h3>
+      <ul>
+        <li><strong>Diagnóstico</strong>: eosinofilia, ELISA y hemaglutinación en el laboratorio; TC, RMN y biopsia.</li>
+        <li><strong>Tratamiento</strong>: <strong>albendazol + corticoides</strong>. Los corticoides se dan porque, al morir, la larva libera antígenos y el edema que provoca puede empeorar los síntomas.</li>
+      </ul>
+      <p>La lámina indica albendazol <strong>30 mg/kg/día</strong>. Según PubMed, la dosis estándar de los ensayos es de <strong>15 mg/kg/día por 10 días</strong>. En el ensayo de Garcia y col., la combinación con praziquantel (50 mg/kg/día) resolvió más quistes que el albendazol solo: 64 % contra 37 % en pacientes con quistes viables.</p>
+
+      <p class="cita">Clase «Infecciones del sistema nervioso», Dr. Gustavo Grilli: neurocisticercosis. Según PubMed: Garcia HH y col., Lancet Infect Dis 2014;14(8):687-95 (<a href="https://doi.org/10.1016/S1473-3099(14)70779-0">DOI</a>); guía IDSA/ASTMH: White AC y col., Clin Infect Dis 2018;66(8):e49-e75 (<a href="https://doi.org/10.1093/cid/cix1084">DOI</a>).</p>
+    </section>
+
+    <!-- ============ 26 ============ -->
+    <section class="seccion s-clinica" id="hidatidosis">
+      <span class="seccion__pestana"><b>26</b> Clínica</span>
+      <h2 class="seccion__titulo">Hidatidosis cerebral</h2>
+
+      <p>La causa la larva de <em>Echinococcus granulosus</em> o <em>multilocularis</em>. Suele ser un <strong>quiste único de 5 cm o más</strong>, generalmente parietal o frontal. Afecta sobre todo a <strong>varones jóvenes de zonas rurales</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Capa del quiste</th><th>Qué es</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Cuticular externa</strong></td><td>La respuesta del huésped: células normales modificadas</td></tr>
+            <tr><td><strong>Cuticular interna</strong></td><td>De 2 mm, friable y acelular</td></tr>
+            <tr><td><strong>Germinativa</strong></td><td>Donde se producen los <strong>escólex</strong></td></tr>
+            <tr><td><strong>Líquido</strong></td><td>Parecido al LCR, de pH neutro, <strong>muy antigénico</strong>. Contiene la <strong>arenilla hidatídica</strong>, que son escólex</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Clínica, diagnóstico y tratamiento</h3>
+      <ul>
+        <li><strong>Clínica</strong>: síndrome de hipertensión endocraneana, convulsiones, déficit focal. Si es orbitario, da una <strong>proptosis unilateral indolora</strong>, no reductible, no pulsátil y no fluctuante.</li>
+        <li><strong>Diagnóstico</strong>: clínico-epidemiológico, serología (ELISA, test de Casoni). En la TC y la RMN se ve una imagen <strong>esférica y bien delimitada</strong>, con líquido similar al LCR, <strong>sin edema y sin captación de contraste</strong>.</li>
+        <li><strong>Tratamiento</strong>: <strong>extirpación del quiste entero</strong> con la técnica de <strong>Dowling-Carrea</strong>, recibiéndolo en solución salina hipertónica. Antes de operar se da albendazol.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Romper el quiste durante la cirugía es una <strong>complicación catastrófica</strong>. Su líquido es muy antigénico y puede dar un <strong>shock anafiláctico</strong>, además de sembrar miles de escólex. Por eso se saca entero y nunca se punza.</p>
+      </div>
+
+      <p class="cita">Clase «Infecciones del sistema nervioso», Dr. Gustavo Grilli: hidatidosis cerebral.</p>
+    </section>
+
+    <!-- ============ 27 ============ -->
+    <section class="seccion s-clinica" id="toxo">
+      <span class="seccion__pestana"><b>27</b> Clínica</span>
+      <h2 class="seccion__titulo">Toxoplasmosis</h2>
+
+      <p>La causa <em>Toxoplasma gondii</em>, que se adquiere por contacto con <strong>gatos</strong> infectados o por alimentos contaminados.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Forma</th><th>Características</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Congénita</strong> (TORCH)</td><td>Coriorretinitis, encefalomielitis, micro o hidrocefalia</td></tr>
+            <tr><td><strong>Adquirida</strong></td><td>Habitualmente en VIH con <strong>menos de 100 CD4</strong>. Puede dar meningoencefalitis, encefalopatía fulminante o, lo más frecuente, <strong>abscesos múltiples</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Cada absceso tiene un núcleo de necrosis rodeado de células inflamatorias con <strong>taquizoítos</strong>. Se ubican en los <strong>ganglios basales</strong>, la interfase entre la sustancia gris y la blanca, la sustancia blanca, el hipotálamo y la hipófisis.</p>
+
+      <h3>Clínica</h3>
+      <ul>
+        <li><strong>Comienzo agudo</strong>: deterioro rápido del sensorio.</li>
+        <li><strong>Comienzo insidioso</strong>: cefalea, déficit focal, convulsiones, extrapiramidalismo, fiebre, astenia. Por la afectación hipotalámica e hipofisaria: SIHAD, <strong>hiponatremia</strong> y panhipopituitarismo.</li>
+      </ul>
+
+      <h3>Diagnóstico y tratamiento</h3>
+      <p>El diagnóstico es clínico-epidemiológico, con laboratorio y punción lumbar. En la TC y la RMN se ven lesiones <strong>múltiples y bilaterales</strong>, con centro hipodenso, <strong>refuerzo en anillo y edema</strong>. Tratamiento: <strong>pirimetamina + sulfadiazina</strong>.</p>
+
+      <p class="cita">Clase «Infecciones del sistema nervioso», Dr. Gustavo Grilli: toxoplasmosis.</p>
+    </section>
+
+    <!-- ============ 28 ============ -->
+    <section class="seccion s-clinica" id="chagas">
+      <span class="seccion__pestana"><b>28</b> Clínica</span>
+      <h2 class="seccion__titulo">Chagas, malaria y triquinosis</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Aspecto</th><th>Chagas</th><th>Malaria cerebral</th><th>Triquinosis</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Agente</strong></td><td><em>Trypanosoma cruzi</em>, por picadura de vinchuca</td><td><em>Plasmodium falciparum</em></td><td><em>Trichinella spiralis</em>, por comer carne de cerdo cruda o mal cocida</td></tr>
+            <tr><td><strong>Quién</strong></td><td>Inmunodeprimidos con <strong>menos de 100 CD4</strong> (reactivación)</td><td>La forma cerebral es la complicación más frecuente</td><td>—</td></tr>
+            <tr><td><strong>Clínica</strong></td><td>Meningoencefalitis o <strong>chagoma cerebral</strong></td><td>Hipertonía, opistótonos, bruxismo, oftalmoplejía internuclear, rigidez de descerebración, <strong>coma</strong></td><td><strong>Dolor muscular</strong> (maseteros, diafragma, intercostales), encefalopatía por <strong>microtrombos</strong> que dan infartos, déficit focal</td></tr>
+            <tr><td><strong>Diagnóstico</strong></td><td><strong>Parásitos en sangre</strong>: gota gruesa, triple centrifugado</td><td>Parásitos en sangre periférica; descartar LOE y hacer punción lumbar</td><td>Clínico-epidemiológico, <strong>eosinofilia</strong>, CPK elevada, biopsia muscular</td></tr>
+            <tr><td><strong>Tratamiento</strong></td><td><strong>Nifurtimox o benznidazol</strong></td><td><strong>Quinina</strong></td><td><strong>Mebendazol</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Chagoma o toxoplasmosis</h3>
+      <p>En un paciente con VIH y lesiones en anillo, el chagoma es el que se confunde con la toxoplasmosis. Según la clase, los chagomas son <strong>algo más grandes</strong>, tienen un <strong>anillo más grueso</strong> y pueden tener <strong>sangre</strong> en su interior. Lo que define el diagnóstico es encontrar el parásito en la sangre.</p>
+
+      <p class="cita">Clase «Infecciones del sistema nervioso», Dr. Gustavo Grilli: Chagas, paludismo y triquinosis.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-e">
+      <span class="bloque__rotulo">Bloque E</span>
+      <span class="bloque__nombre">Infecciones micóticas</span>
+    </h2>
+
+    <!-- ============ 29 ============ -->
+    <section class="seccion s-tratamiento" id="micosis">
+      <span class="seccion__pestana"><b>29</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Criptococosis, candidiasis y otras micosis</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Aspecto</th><th>Criptococosis</th><th>Candidiasis</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Agente</strong></td><td><em>Cryptococcus neoformans</em>: la <strong>micosis cerebral más común</strong></td><td><em>Candida albicans</em></td></tr>
+            <tr><td><strong>Quién</strong></td><td>Inmunodeprimidos; se adquiere por <strong>inhalación</strong></td><td>Inmunodeprimidos, diabéticos, quemados, antibioticoterapia prolongada; compromiso meníngeo en neonatos</td></tr>
+            <tr><td><strong>Clínica</strong></td><td>Meningoencefalitis aguda, subaguda o crónica. <strong>Criptococomas</strong>: quistes parenquimatosos bilaterales que crecen rápido y se vuelven multiquísticos</td><td><strong>Microabscesos</strong> parenquimatosos y ependimitis</td></tr>
+            <tr><td><strong>Diagnóstico</strong></td><td>Hemocultivos, <strong>tinta china</strong>, punción lumbar. RMN: realce meníngeo nodular, quistes en ganglios basales, tálamo y plexos coroideos</td><td>Hemocultivos y punción lumbar. RMN: microabscesos en los territorios de las cerebrales media y anterior</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>Aspergilosis, mucormicosis e histoplasmosis</strong> pueden dar cuadros meningoencefalíticos o granulomas.</p>
+
+      <h3>Tratamiento</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Entidad</th><th>Tratamiento</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Criptococosis en VIH</strong></td><td><strong>Inducción</strong>: anfotericina B liposomal (o fluconazol) + <strong>flucitosina</strong> por 2 semanas · <strong>consolidación</strong>: fluconazol oral por 8 semanas · <strong>mantenimiento</strong>: fluconazol oral. Corticoides no, salvo reconstitución inmune. <strong>Retrasar los antirretrovirales 4-6 semanas</strong></td></tr>
+            <tr><td><strong>Candidiasis</strong></td><td>Inducción: anfotericina B liposomal + flucitosina · después fluconazol oral hasta que se normalicen la imagen y el LCR. Retirar los dispositivos del SNC si los hay; si no se puede, anfotericina B a través del dispositivo</td></tr>
+            <tr><td><strong>Aspergilosis</strong></td><td>De elección: <strong>voriconazol</strong>. Otros: anfotericina B liposomal, isavuconazol, posaconazol, equinocandinas. Considerar desbridamiento quirúrgico. Los corticoides no tienen papel</td></tr>
+            <tr><td><strong>Histoplasmosis</strong></td><td>Inducción: anfotericina B liposomal por 4-6 semanas · después itraconazol oral hasta que se normalice la imagen y se negativice el antígeno en LCR</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>En la criptococosis con VIH se <strong>retrasan los antirretrovirales</strong> porque, si la inmunidad se recupera de golpe con la infección todavía activa, puede aparecer el <strong>síndrome de reconstitución inmune</strong>.</p>
+
+      <p class="cita">Clase «Infecciones del sistema nervioso», Dr. Gustavo Grilli: infecciones micóticas y tabla de tratamiento antifúngico.</p>
+    </section>
+
+    <!-- ============ REPASO ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué capas forman la paquimeninge y cuáles las leptomeninges?</summary>
+          <div class="fc__r"><strong>Paquimeninge</strong>: duramadre + hoja parietal de la aracnoides. <strong>Leptomeninges</strong>: hoja visceral de la aracnoides + espacio subaracnoideo + piamadre. La meningitis es una leptomeningitis.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>LCR con glucosa muy baja, más de 1000 células y neutrófilos. ¿Qué es?</summary>
+          <div class="fc__r"><strong>Meningitis bacteriana</strong>: LCR turbio, proteínas de 100-700 mg%, glucosa menor de 20 mg%, cultivo habitualmente positivo.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Cómo se diferencian en el LCR la meningitis tuberculosa y la viral?</summary>
+          <div class="fc__r">Las dos tienen linfocitos. La <strong>tuberculosa</strong> tiene <strong>glucosa baja</strong> (20-40 mg%), proteínas altas, cloruros bajos y coágulo. La <strong>viral</strong> tiene la <strong>glucosa normal</strong> y las proteínas apenas elevadas.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>LCR turbio con más de 50.000 células: ¿qué hay que sospechar?</summary>
+          <div class="fc__r">Un <strong>absceso cerebral abierto a las meninges</strong>.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Gérmenes de la meningitis bacteriana en el recién nacido y en el mayor de 40 años.</summary>
+          <div class="fc__r"><strong>Recién nacido</strong>: enterobacterias (<em>E. coli</em>), <em>Listeria</em>, estreptococo beta hemolítico, del canal del parto. <strong>Mayor de 40</strong>: neumococo, meningococo, <em>Listeria</em>, bacilo de Koch, enterobacterias.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Qué germen da brotes epidémicos de meningitis y qué implica?</summary>
+          <div class="fc__r">El <strong>meningococo</strong>: da la meningitis cerebroespinal epidémica. Hay que <strong>tratar a los contactos</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Cuáles son los períodos de la meningitis bacteriana?</summary>
+          <div class="fc__r"><strong>Incubación</strong> de 24-72 h → <strong>prodrómico</strong> (90 %: fiebre, decaimiento, rinofaringitis, otalgia) → <strong>estado</strong>: comienzo brusco con síndrome meníngeo y deterioro de la conciencia.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué es el síndrome de Waterhouse-Friderichsen?</summary>
+          <div class="fc__r">La forma <strong>fulminante</strong>: shock, cianosis, exantema petequial, coma y muerte <strong>sin que llegue a instalarse el síndrome meníngeo</strong>. Meningococo, neumococo o <em>Haemophilus</em>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Cuándo se pide TC antes de la punción lumbar y qué se hace mientras tanto?</summary>
+          <div class="fc__r">En el inmunodeprimido, con infección previa del SNC, primera crisis, papiledema, menor nivel de conciencia o déficit focal. Antes van <strong>hemocultivos + dexametasona + antibiótico empírico</strong>, y después la TC.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Tratamiento empírico de la meningitis en un paciente de 65 años.</summary>
+          <div class="fc__r"><strong>Vancomicina + ceftriaxona + ampicilina</strong>: la ampicilina cubre <em>Listeria</em>, resistente a las cefalosporinas. Más <strong>dexametasona 0,15 mg/kg cada 6 h por 72 h</strong>.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Por qué y cuándo se da la dexametasona?</summary>
+          <div class="fc__r">Para frenar la inflamación que provoca la lisis bacteriana. Se da <strong>antes o junto con la primera dosis de antibiótico</strong>. Su beneficio fue mayor en la meningitis neumocócica.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Tres formas de la tuberculosis del SNC.</summary>
+          <div class="fc__r"><strong>Meningitis basal</strong> con exudado gelatinoso (hidrocefalia, pares craneanos) · <strong>tuberculoma</strong> · <strong>absceso tuberculoso</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué es la pupila de Argyll Robertson y en qué forma aparece?</summary>
+          <div class="fc__r">Fotomotor <strong>abolido</strong> con acomodación <strong>conservada</strong>. Aparece en la <strong>parálisis general progresiva</strong>, una forma tardía de neurosífilis.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Tratamiento actual de la neurosífilis.</summary>
+          <div class="fc__r"><strong>Penicilina G acuosa cristalina IV 18-24 millones de UI/día por 10-14 días</strong> (CDC 2021). Si hay alergia, ceftriaxona 1-2 g/día por 10-14 días o desensibilización.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Fases del absceso cerebral y sus días.</summary>
+          <div class="fc__r"><strong>Cerebritis precoz</strong> (1-3) → <strong>cerebritis tardía</strong> (4-9) → <strong>cápsula precoz</strong> (10-14) → <strong>cápsula tardía</strong> (después del día 14).</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Cuándo se trata un absceso cerebral sólo con antibióticos?</summary>
+          <div class="fc__r">En la cerebritis precoz, si mide menos de 3 cm, si es múltiple o si está en un área elocuente o en el tronco. El tratamiento antibiótico dura <strong>6-8 semanas</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué asociación clínica sugiere un empiema subdural?</summary>
+          <div class="fc__r"><strong>Meningismo + hemiparesia</strong> con fiebre, en un paciente con sinusitis frontal u otitis. Es una urgencia neuroquirúrgica.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Cuál es la causa más frecuente de encefalitis grave y cómo se trata?</summary>
+          <div class="fc__r"><strong>VHS-1</strong>. Se confirma con PCR en LCR y se trata con <strong>aciclovir 10 mg/kg cada 8 h por 14-21 días</strong>, desde la sospecha.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué diferencia una encefalitis primaria de una secundaria?</summary>
+          <div class="fc__r"><strong>Primaria</strong>: el virus lesiona la sustancia gris (necrosis neuronal, manguitos perivasculares). <strong>Secundaria</strong>: mecanismo inmune postinfeccioso o postvacunal, con <strong>desmielinización</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>CMV en un paciente con VIH: ¿con cuántos CD4 aparece y qué da?</summary>
+          <div class="fc__r">Con <strong>menos de 50 CD4</strong>: encefalitis y polirradiculoneuritis lumbosacra con cola de caballo. Ganciclovir 5 mg/kg cada 12 h por 2-3 semanas, después valganciclovir.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Fases de la rabia.</summary>
+          <div class="fc__r">Incubación de 1-3 meses → pródromo con dolor y parestesias en la mordedura → encefalitis con <strong>hidrofobia</strong> (80 %) o forma paralítica (20 %) → coma y muerte.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué EEG es típico de la panencefalitis esclerosante subaguda y del Creutzfeldt-Jakob?</summary>
+          <div class="fc__r">Panencefalitis: <strong>complejos periódicos de Radermecker</strong>. Creutzfeldt-Jakob: <strong>ondas agudas periódicas</strong> sobre un ritmo de base lento.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>RMN de la LMP.</summary>
+          <div class="fc__r">Lesiones de sustancia blanca <strong>subcorticales, multifocales y confluentes</strong>, hiperintensas en T2, <strong>sin efecto de masa y sin realce</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Por qué está mal la indicación de natalizumab en la LMP?</summary>
+          <div class="fc__r">Porque el natalizumab <strong>causa</strong> LMP: ante la enfermedad se suspende. Los que se ensayaron como tratamiento son el pembrolizumab y el nivolumab.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Paraparesia espástica tropical: agente, dónde es endémica en Argentina y cómo empieza.</summary>
+          <div class="fc__r"><strong>HTLV-1</strong>, endémico en <strong>Salta y Jujuy</strong>. Empieza con parestesias en las piernas y pérdida de la vibratoria; después el síndrome piramidal y los esfínteres.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Etapas de la neurocisticercosis en las imágenes.</summary>
+          <div class="fc__r"><strong>Vesicular</strong> (líquido claro, sin realce) → <strong>coloidal</strong> (edema y realce) → <strong>granular</strong> (sin edema) → <strong>calcificada</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Cómo se ve un quiste hidatídico y cómo se opera?</summary>
+          <div class="fc__r">Esférico, bien delimitado, líquido como el LCR, <strong>sin edema ni realce</strong>. Se extirpa entero con la técnica de <strong>Dowling-Carrea</strong>: si se rompe, puede dar anafilaxia.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Lesiones en anillo, múltiples, en ganglios basales de un paciente con VIH y 80 CD4: ¿qué es y cómo se trata?</summary>
+          <div class="fc__r">Primero <strong>toxoplasmosis</strong>: <strong>pirimetamina + sulfadiazina</strong>. El diferencial es el chagoma: más grande, de anillo más grueso y a veces con sangre.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Tratamiento de la criptococosis meníngea en el VIH.</summary>
+          <div class="fc__r">Inducción con <strong>anfotericina B liposomal + flucitosina</strong> por 2 semanas, consolidación con fluconazol por 8 semanas y mantenimiento con fluconazol. Los antirretrovirales se retrasan 4-6 semanas.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ RELÁMPAGO ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Triada clave</dt>
+        <dd><strong>Meningitis</strong>: fiebre + cefalea + rigidez de nuca, con vómitos en chorro y deterioro de la conciencia. <strong>Encefalitis</strong>: fiebre + alteración de la conciencia + convulsiones o foco. <strong>Absceso</strong>: clínica de LOE (hipertensión endocraneana, crisis, déficit), con fiebre sólo en la mitad de los casos.</dd>
+
+        <dt class="r-gold">Estudio de elección</dt>
+        <dd><strong>Punción lumbar</strong>. Glucosa muy baja con neutrófilos: bacteriana. Glucosa baja con linfocitos: tuberculosis u hongos. Glucosa normal con linfocitos: viral. <strong>PCR en LCR</strong> para herpes, virus JC y enterovirus. <strong>RMN con contraste</strong> para las lesiones en anillo (absceso, toxoplasma, chagoma) y el absceso epidural.</dd>
+
+        <dt class="r-tto">Tratamiento de 1ª línea</dt>
+        <dd><strong>Vancomicina + ceftriaxona</strong>, más ampicilina si hay riesgo de <em>Listeria</em>, con <strong>dexametasona</strong> antes o junto con el primer antibiótico. <strong>Aciclovir 10 mg/kg cada 8 h</strong> ante la sospecha de herpes. Neurosífilis: <strong>penicilina G cristalina IV</strong>. Toxoplasmosis: pirimetamina + sulfadiazina. Criptococo: anfotericina B + flucitosina.</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd><strong>El antibiótico nunca espera a la tomografía.</strong> Fiebre con cambios de conducta o afasia es una encefalitis herpética hasta que se demuestre lo contrario. Púrpura con shock: Waterhouse-Friderichsen. Dolor lumbar con fiebre en un paciente con factores de riesgo: RMN antes de que aparezca el déficit. Un quiste hidatídico nunca se rompe.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir de la clase «Infecciones del sistema nervioso» del Dr. Gustavo Grilli (Neurología). Tratamiento de la neurosífilis según las guías de los CDC de 2021 (Workowski y col.); dexametasona según De Gans y Van de Beek (2002); LMP según Kleinschmidt-DeMasters y Tyler (2005) y Cortese y col. (2019); signo del pulvinar según Zeidler y col. (2000) y Collie y col. (2003); neurocisticercosis según Garcia y col. (2014) y la guía IDSA/ASTMH (White y col., 2018). Material de estudio: no reemplaza el criterio clínico ni el protocolo institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+
+  // ---- Tema claro / oscuro ----
+  // Sin eleccion estampada manda el sistema; el boton la estampa y la guarda.
+  var raiz = document.documentElement;
+  var boton = document.getElementById('tema');
+
+  function temaActual(){
+    var estampado = raiz.getAttribute('data-theme');
+    if (estampado) return estampado;
+    return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+
+  if (boton){
+    var rotular = function(){
+      var actual = temaActual();
+      boton.setAttribute('aria-pressed', actual === 'dark' ? 'true' : 'false');
+      boton.setAttribute('aria-label', actual === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+    };
+    boton.addEventListener('click', function(){
+      var nuevo = temaActual() === 'dark' ? 'light' : 'dark';
+      raiz.setAttribute('data-theme', nuevo);
+      try { localStorage.setItem('wordmed-tema', nuevo); } catch (e) { /* sin persistencia */ }
+      rotular();
+    });
+    rotular();
+  }
+
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link, .ir-link'));
+
+  // Devuelve TODOS los enlaces al ancla: la misma seccion figura en el indice
+  // lateral y en el compacto, y los dos tienen que encenderse juntos.
+  function porMeta(hash){
+    return enlaces.filter(function(l){ return l.getAttribute('href') === '#' + hash; });
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var activos = porMeta(e.target.id);
+        if (!activos.length) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          activos.forEach(function(l){ l.setAttribute('aria-current', 'true'); });
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>

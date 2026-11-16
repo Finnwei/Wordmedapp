@@ -1,0 +1,1722 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<script>
+(function(){
+  var enApp = typeof window.WordmedApp !== "undefined";
+  if (!enApp) {
+    /* En la web el cuadernillo se maqueta al ancho del dispositivo. */
+    var m = document.createElement("meta");
+    m.name = "viewport";
+    m.content = "width=device-width, initial-scale=1";
+    document.head.appendChild(m);
+    return;
+  }
+  /* En la app no se emite viewport: el WebView maqueta a su ancho por
+     omision y lo encoge para que entre, igual que al abrir el archivo a
+     mano. Sacar el meta despues de parsearlo no reencuadra nada, por eso
+     directamente no se emite. */
+  var s = document.createElement("style");
+  s.textContent = ".tema{display:none !important}";
+  document.head.appendChild(s);
+})();
+</script>
+<title>Lesión Medular</title>
+<link rel="stylesheet" href="../../fuentes/fuentes.css">
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-bloque:1.95rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+
+  /* Que la barra de desplazamiento y los controles nativos acompanen al tema */
+  color-scheme: light dark;
+}
+
+/* Eleccion explicita de claro: solo hace falta para el color-scheme, los
+   tokens claros ya son la base sin estampar. */
+:root[data-theme="light"]{ color-scheme: light; }
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* Interruptor de tema claro / oscuro.
+   El estampado `data-theme` en la raíz ya lo respetan los bloques de tokens de
+   arriba; este botón sólo lo pone y lo guarda. Sin elección estampada mandan
+   las preferencias del sistema, que es el comportamiento por defecto. */
+.tema{
+  position:fixed; top:.7rem; right:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.tema:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.tema__icono{ width:1.15rem; height:1.15rem; display:block; }
+
+/* Se muestra el icono del tema al que se va a cambiar, no el actual.
+   Mismo escalonado que los tokens: base clara · sistema oscuro · elección explícita. */
+.tema__sol{ display:none; }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .tema__sol{ display:block; }
+  :root:not([data-theme="light"]) .tema__luna{ display:none; }
+}
+:root[data-theme="dark"] .tema__sol{ display:block; }
+:root[data-theme="dark"] .tema__luna{ display:none; }
+:root[data-theme="light"] .tema__sol{ display:none; }
+:root[data-theme="light"] .tema__luna{ display:block; }
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índices ---------- */
+/* Dos piezas complementarias y deliberadamente redundantes:
+   · .indice        — barra lateral fija, sólo en pantalla ancha, navegación permanente.
+   · .indice-rapido — tarjeta compacta al principio del cuerpo, visible en TODO ancho.
+   La lateral desaparece por debajo de 64rem, que es justo el ancho del panel de
+   Artifacts y del celular; sin la compacta el cuadernillo publicado se queda sin
+   índice. Las dos apuntan a los mismos anclajes y se resaltan juntas al desplazar. */
+
+/* 6.1 · Barra lateral */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+/* Rótulo de bloque intercalado en la lista lateral: no es un enlace, sólo
+   separa grupos de secciones para que 30 entradas no sean una tira plana. */
+.indice__bloque{
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+  margin:.9rem 0 .2rem; padding:0 .55rem;
+}
+.indice__bloque:first-child{ margin-top:0; }
+
+/* 6.2 · Índice compacto (va después de la portada, dentro del cuerpo) */
+.indice-rapido{
+  background:var(--hoja-hund);
+  border:1px solid var(--linea);
+  border-radius:var(--radio);
+  padding:1.1rem 1.2rem 1.2rem;
+}
+.indice-rapido__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .85rem;
+}
+/* auto-fit: una columna en el panel angosto, dos o tres en pantalla ancha */
+.indice-rapido__bloques{
+  list-style:none; margin:0; padding:0;
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(15rem, 1fr));
+  gap:1rem 2rem; align-items:start;
+}
+.ir-bloque{
+  display:block; margin-bottom:.4rem;
+  font-family:var(--f-titulo); font-size:.98rem; font-weight:700; line-height:1.3;
+  color:var(--tinta); text-decoration:none;
+  padding-bottom:.3rem; border-bottom:1px solid var(--linea-fuerte);
+}
+.ir-bloque:hover{ color:var(--cli-t); }
+.ir-secciones{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.05rem; }
+.ir-link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.55rem 1fr; align-items:baseline; gap:.4rem;
+  padding:.2rem .35rem; border-radius:2px;
+  font-size:.86rem; line-height:1.4; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.ir-link > b{
+  font-family:var(--f-dato); font-size:.76rem; font-weight:700;
+  font-variant-numeric:tabular-nums; color:var(--ct); opacity:.85;
+}
+.ir-link:hover{ background:var(--hoja); color:var(--tinta); }
+.ir-link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Título de bloque y ficha de sección ---------- */
+
+/* Anuncia un grupo de secciones. Neutro en color a propósito: los siete colores
+   tienen significado clínico fijo y un bloque agrupa secciones de varios. La
+   regla de abajo lleva el degradado completo de la paleta, igual que la pestaña
+   de repaso y la cabecera de la ficha relámpago.
+   Sin <svg> adentro: el exportador a Word aparea los diagramas con las figuras
+   por contador posicional sobre el HTML crudo (ver exportar_docx.py). */
+.bloque{
+  margin:1.4rem 0 0; padding:0;
+  text-align:center; scroll-margin-top:2.5rem;
+  display:flex; flex-direction:column; align-items:center; gap:.3rem;
+  font-weight:400;
+}
+.bloque:first-child{ margin-top:0; }
+.bloque__rotulo{
+  font-family:var(--f-texto);
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+}
+.bloque__nombre{
+  font-family:var(--f-titulo); font-size:var(--t-bloque); font-weight:700; line-height:1.15;
+  letter-spacing:-.01em; color:var(--tinta); text-wrap:balance; max-width:32ch;
+}
+.bloque::after{
+  content:""; width:7rem; height:2.5px; margin-top:.5rem; border-radius:2px;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+}
+
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.5rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-column:1; grid-row:1; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+/* El icono ocupa la columna 1 y NADA MAS. Todo el resto del contenido se
+   apila en la columna 2, una fila por elemento, sin importar cuantos
+   parrafos haya.
+
+   Sin esta regla la caja solo funciona con un unico <p>: a partir del
+   segundo, la autocolocacion del grid empieza a repartir contenido en la
+   columna del icono, que es `auto` y por lo tanto se ensancha hasta abarcar
+   el parrafo que le toco. La columna `1fr` queda entonces reducida a una
+   tira angosta, el texto se parte en dos columnas desbalanceadas y la caja
+   crece hasta volverse ilegible. */
+.importante > :not(.importante__icono){ grid-column:2; }
+.importante__titulo{
+  grid-row:1;
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante ul, .importante ol{ margin:0; padding-left:1.15rem; }
+.importante li + li{ margin-top:.3rem; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso, .tema{ display:none !important; }
+  /* La lateral no se imprime, pero la compacta sí: en papel es la tabla de
+     contenidos del cuadernillo. */
+  .indice-rapido{ display:block; break-inside:avoid; page-break-inside:avoid; margin-bottom:1.2rem; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .bloque{
+    margin:1.6rem 0 1rem;
+    break-after:avoid; page-break-after:avoid;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+<style>
+/* Fuentes de la capa de contenido. Va después del estilo del
+   cuadernillo para pisar las de Windows, que no se pueden
+   redistribuir y no existen en Android. */
+:root{
+  --f-titulo:'Spectral',Georgia,'Times New Roman',serif;
+  --f-texto:'Open Sans',system-ui,-apple-system,sans-serif;
+  --f-dato:'Cascadia Mono','Cascadia Code',ui-monospace,Consolas,monospace;
+}
+/* Botón de volver, espejo del de tema que ya trae el cuadernillo. */
+.volver{
+  position:fixed; top:.7rem; left:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.volver:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.volver__icono{ width:1.15rem; height:1.15rem; display:block; }
+</style>
+</head>
+<body data-clave="neurologia/7-lesion-medular">
+<script>
+/* Aplica el tema guardado antes de pintar. Va aca arriba a proposito: si
+   esperara al script del final, el documento parpadearia en el tema del
+   sistema antes de corregirse. */
+(function(){
+  try {
+    var guardado = localStorage.getItem('wordmed-tema');
+    if (guardado === 'dark' || guardado === 'light') {
+      document.documentElement.setAttribute('data-theme', guardado);
+    }
+  } catch (e) { /* almacenamiento bloqueado: manda el sistema */ }
+})();
+</script>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<button class="tema" id="tema" type="button" aria-pressed="false" aria-label="Cambiar a modo oscuro">
+  <svg class="tema__icono tema__sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.2"></circle>
+    <path d="M12 2.6v2.1M12 19.3v2.1M5.1 5.1l1.5 1.5M17.4 17.4l1.5 1.5M2.6 12h2.1M19.3 12h2.1M5.1 18.9l1.5-1.5M17.4 6.6l1.5-1.5"></path>
+  </svg>
+  <svg class="tema__icono tema__luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20.4 14.2A8.6 8.6 0 0 1 9.8 3.6a8.6 8.6 0 1 0 10.6 10.6z"></path>
+  </svg>
+</button>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li class="indice__bloque">A · Bases anatómicas</li>
+      <li><a class="indice__link i-generalidades"  href="#medula">La médula espinal</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#vias">Vías y corte transversal</a></li>
+
+      <li class="indice__bloque">B · Lesión medular</li>
+      <li><a class="indice__link i-generalidades"  href="#definicion">Definición y epidemiología</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#causas">Causas y factores de riesgo</a></li>
+
+      <li class="indice__bloque">C · Valoración ASIA</li>
+      <li><a class="indice__link i-diagnostico"    href="#asia">Examen ASIA</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#clasificacion">Pasos y escala AIS</a></li>
+
+      <li class="indice__bloque">D · Síndromes medulares</li>
+      <li><a class="indice__link i-clinica"        href="#completa">Lesión completa</a></li>
+      <li><a class="indice__link i-clinica"        href="#incompletos">Síndromes de la médula</a></li>
+      <li><a class="indice__link i-clinica"        href="#cono">Cono, epicono y cola</a></li>
+
+      <li class="indice__bloque">E · Tratamiento y evolución</li>
+      <li><a class="indice__link i-tratamiento"    href="#agudo">Manejo agudo</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#rehabilitacion">Rehabilitación</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#funcional">Resultados por nivel</a></li>
+      <li><a class="indice__link i-importantes"    href="#complicaciones">Complicaciones</a></li>
+
+      <li class="indice__bloque">Cierre</li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Neurología · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Lesión Medular</h1>
+      <p class="portada__bajada">De la anatomía de la médula y sus vías a la valoración ASIA, los síndromes medulares completos e incompletos, el manejo del lesionado agudo, lo que cada nivel permite recuperar y las complicaciones que hay que prevenir toda la vida.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">13 secciones</span>
+        <span class="etiqueta s-diagnostico">Escala ASIA</span>
+        <span class="etiqueta s-clinica">Síndromes incompletos</span>
+        <span class="etiqueta s-importantes">Disreflexia autonómica</span>
+      </div>
+    </header>
+
+    <nav class="indice-rapido" aria-label="Contenido del cuadernillo">
+      <p class="indice-rapido__rotulo">Contenido</p>
+      <ol class="indice-rapido__bloques">
+        <li>
+          <a class="ir-bloque" href="#bloque-a">Bloque A · Bases anatómicas</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades"  href="#medula"><b>01</b> La médula espinal y sus segmentos</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#vias"><b>02</b> Vías motoras y sensitivas en el corte transversal</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-b">Bloque B · Lesión medular</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades"  href="#definicion"><b>03</b> Definición y epidemiología</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#causas"><b>04</b> Causas y afecciones de riesgo</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-c">Bloque C · Valoración ASIA</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-diagnostico" href="#asia"><b>05</b> El examen ASIA: niveles y músculos clave</a></li>
+            <li><a class="ir-link i-diagnostico" href="#clasificacion"><b>06</b> Pasos de la clasificación y escala AIS</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-d">Bloque D · Síndromes medulares</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-clinica" href="#completa"><b>07</b> Lesión completa y shock medular</a></li>
+            <li><a class="ir-link i-clinica" href="#incompletos"><b>08</b> Síndromes incompletos de la médula</a></li>
+            <li><a class="ir-link i-clinica" href="#cono"><b>09</b> Cono, epicono y cola de caballo</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-e">Bloque E · Tratamiento y evolución</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-tratamiento" href="#agudo"><b>10</b> Manejo agudo</a></li>
+            <li><a class="ir-link i-tratamiento" href="#rehabilitacion"><b>11</b> Plan de rehabilitación</a></li>
+            <li><a class="ir-link i-tratamiento" href="#funcional"><b>12</b> Resultados funcionales por nivel</a></li>
+            <li><a class="ir-link i-importantes" href="#complicaciones"><b>13</b> Complicaciones y disreflexia autonómica</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#repaso">Cierre</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-clinica"     href="#repaso"><b>·</b> Repaso activo</a></li>
+            <li><a class="ir-link i-importantes" href="#relampago"><b>·</b> Ficha Relámpago</a></li>
+          </ul>
+        </li>
+      </ol>
+    </nav>
+
+    <h2 class="bloque" id="bloque-a">
+      <span class="bloque__rotulo">Bloque A</span>
+      <span class="bloque__nombre">Bases anatómicas</span>
+    </h2>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="medula">
+      <span class="seccion__pestana"><b>01</b> Recuerdo anatómico</span>
+      <h2 class="seccion__titulo">La médula espinal y sus segmentos</h2>
+
+      <p>La médula es la parte del sistema nervioso central contenida en el <strong>conducto raquídeo</strong>: un cordón cilíndrico de <strong>42-45 cm de largo</strong> por <strong>1 cm de ancho</strong>, con el diámetro transversal mayor que el anteroposterior. Va desde el <strong>arco anterior del atlas</strong> —a la altura de la decusación de las pirámides— hasta el <strong>límite superior de la 2.ª vértebra lumbar</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Segmento</th><th>Extensión</th><th>Qué origina</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Porción superior</strong></td><td>Atlas a C3</td><td>Raíces del <strong>plexo cervical</strong>: cuello y nuca</td></tr>
+            <tr><td><strong>Huso cervical</strong></td><td>C3 a D3</td><td><strong>Nervio frénico (C4)</strong> y <strong>plexo braquial</strong>: escápula y miembros superiores</td></tr>
+            <tr><td><strong>Médula dorsal</strong></td><td>—</td><td>Nervios <strong>intercostales</strong></td></tr>
+            <tr><td><strong>Huso dorsolumbar</strong></td><td>D10 a L2</td><td>Raíces de los <strong>plexos lumbar y sacro</strong></td></tr>
+            <tr><td><strong>Cono medular</strong></td><td>Extremo afilado del huso dorsolumbar</td><td>Últimas raíces <strong>sacras y coccígeas</strong></td></tr>
+            <tr><td><strong>Filum terminale</strong></td><td>Hasta el extremo inferior del canal</td><td>Resto embrionario: <strong>ligamento coccígeo</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 300" role="img" aria-label="Relación entre la columna y la médula: la médula termina en el cono medular a la altura de L1 y L2; por debajo, en el canal solo quedan las raíces de la cola de caballo y el filum terminale">
+          <rect x="40" y="70" width="740" height="60" rx="8" fill="currentColor" fill-opacity="0.06" stroke="currentColor" stroke-width="1.2"></rect>
+          <path d="M60 100 L470 100 C500 100 520 100 545 100" stroke="var(--c)" stroke-width="22" stroke-linecap="round" fill="none" stroke-opacity="0.75"></path>
+          <ellipse cx="170" cy="100" rx="70" ry="16" fill="var(--c)" fill-opacity="0.85"></ellipse>
+          <ellipse cx="470" cy="100" rx="60" ry="15" fill="var(--c)" fill-opacity="0.85"></ellipse>
+          <path d="M545 100 L575 100" stroke="var(--c)" stroke-width="8" stroke-linecap="round" fill="none"></path>
+          <path d="M575 92 L770 88 M575 96 L770 94 M575 100 L770 100 M575 104 L770 106 M575 108 L770 112" stroke="currentColor" stroke-width="1" fill="none"></path>
+
+          <text x="170" y="56" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Huso cervical</text>
+          <text x="170" y="40" text-anchor="middle" font-size="11" fill="currentColor">C3-D3 · frénico y plexo braquial</text>
+          <text x="330" y="56" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Médula dorsal</text>
+          <text x="470" y="56" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Huso dorsolumbar</text>
+          <text x="470" y="40" text-anchor="middle" font-size="11" fill="currentColor">D10-L2 · plexos lumbar y sacro</text>
+          <text x="565" y="160" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Cono medular</text>
+          <line x1="565" y1="146" x2="565" y2="112" stroke="currentColor" stroke-width="0.8"></line>
+          <text x="680" y="160" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Cola de caballo</text>
+          <text x="680" y="56" text-anchor="middle" font-size="11" fill="currentColor">raíces y filum terminale</text>
+
+          <line x1="40" y1="200" x2="780" y2="200" stroke="currentColor" stroke-width="1.2"></line>
+          <text x="60" y="222" font-size="11.5" fill="currentColor">Atlas</text>
+          <line x1="565" y1="192" x2="565" y2="208" stroke="currentColor" stroke-width="1.6"></line>
+          <text x="565" y="226" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">vértebras L1-L2</text>
+          <text x="760" y="222" text-anchor="end" font-size="11.5" fill="currentColor">sacro</text>
+          <text x="410" y="268" text-anchor="middle" font-size="11.5" fill="currentColor">Columna vertebral: la médula ocupa solo los dos tercios superiores del canal</text>
+        </svg>
+        <figcaption>La médula <strong>termina en L1-L2</strong>; por debajo, el canal solo contiene raíces. Por eso un traumatismo vertebral lumbar bajo no lesiona la médula sino la <strong>cola de caballo</strong>, y por eso los segmentos medulares quedan más arriba que las vértebras del mismo número.</figcaption>
+      </figure>
+
+      <p class="cita">Clase «Lesión medular», Dr. Gustavo Grilli: recuerdo anatómico. Relación segmento-vértebra: Snell RS, <em>Neuroanatomía clínica</em>.</p>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-fisiopatologia" id="vias">
+      <span class="seccion__pestana"><b>02</b> Recuerdo anatómico</span>
+      <h2 class="seccion__titulo">Vías motoras y sensitivas en el corte transversal</h2>
+
+      <p>Los síndromes medulares se entienden con un solo mapa: dónde está cada haz en el corte transversal y <strong>a qué altura cruza la línea media</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 380" role="img" aria-label="Corte transversal de la médula con la ubicación de los haces: cordones posteriores de Goll y Burdach, corticoespinal lateral, espinocerebelosos posterior y anterior, espinotalámico lateral, espinotalámico anterior y corticoespinal anterior">
+          <ellipse cx="270" cy="190" rx="200" ry="150" fill="currentColor" fill-opacity="0.04" stroke="currentColor" stroke-width="1.6"></ellipse>
+          <path d="M256 128 L222 62 L238 56 L270 140 L302 56 L318 62 L284 128 L330 190 L372 262 L330 280 L288 214 L270 214 L252 214 L210 280 L168 262 L210 190 Z" fill="currentColor" fill-opacity="0.16" stroke="currentColor" stroke-width="1.2"></path>
+          <path d="M238 56 Q270 40 302 56 L270 140 Z" fill="var(--c)" fill-opacity="0.70" stroke="currentColor" stroke-width="1"></path>
+          <ellipse cx="135" cy="165" rx="34" ry="36" fill="var(--c)" fill-opacity="0.55" stroke="currentColor" stroke-width="1"></ellipse>
+          <ellipse cx="88" cy="160" rx="13" ry="38" fill="var(--c)" fill-opacity="0.25" stroke="currentColor" stroke-width="1"></ellipse>
+          <ellipse cx="90" cy="236" rx="13" ry="34" fill="var(--c)" fill-opacity="0.25" stroke="currentColor" stroke-width="1"></ellipse>
+          <ellipse cx="140" cy="246" rx="30" ry="28" fill="var(--c)" fill-opacity="0.85" stroke="currentColor" stroke-width="1"></ellipse>
+          <ellipse cx="190" cy="306" rx="28" ry="18" fill="var(--c)" fill-opacity="0.40" stroke="currentColor" stroke-width="1"></ellipse>
+          <ellipse cx="252" cy="308" rx="12" ry="24" fill="var(--c)" fill-opacity="0.55" stroke="currentColor" stroke-width="1"></ellipse>
+          <line x1="270" y1="320" x2="270" y2="340" stroke="currentColor" stroke-width="1.4"></line>
+
+          <circle cx="270" cy="80" r="11" fill="none" stroke="currentColor"></circle>
+          <text x="270" y="84" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">1</text>
+          <circle cx="135" cy="165" r="11" fill="none" stroke="currentColor"></circle>
+          <text x="135" y="169" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">2</text>
+          <text x="88" y="164" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">3</text>
+          <text x="90" y="240" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">4</text>
+          <circle cx="140" cy="246" r="11" fill="none" stroke="currentColor"></circle>
+          <text x="140" y="250" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">5</text>
+          <text x="190" y="310" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">6</text>
+          <text x="252" y="312" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">7</text>
+
+          <text x="270" y="28" text-anchor="middle" font-size="11.5" font-style="italic" fill="currentColor">posterior</text>
+          <text x="270" y="364" text-anchor="middle" font-size="11.5" font-style="italic" fill="currentColor">anterior</text>
+
+          <text x="500" y="56" font-size="12" fill="currentColor"><tspan font-weight="700">1 · Cordones posteriores</tspan>: Goll y Burdach</text>
+          <text x="520" y="74" font-size="11" fill="currentColor">propiocepción consciente, vibración, tacto fino</text>
+          <text x="500" y="104" font-size="12" fill="currentColor"><tspan font-weight="700">2 · Corticoespinal lateral</tspan>: vía piramidal</text>
+          <text x="500" y="134" font-size="12" fill="currentColor"><tspan font-weight="700">3 · Espinocerebeloso posterior</tspan> (Flechsig)</text>
+          <text x="500" y="164" font-size="12" fill="currentColor"><tspan font-weight="700">4 · Espinocerebeloso anterior</tspan> (Gowers)</text>
+          <text x="520" y="182" font-size="11" fill="currentColor">propiocepción inconsciente</text>
+          <text x="500" y="212" font-size="12" fill="currentColor"><tspan font-weight="700">5 · Espinotalámico lateral</tspan>: dolor y temperatura</text>
+          <text x="500" y="242" font-size="12" fill="currentColor"><tspan font-weight="700">6 · Espinotalámico anterior</tspan>: tacto</text>
+          <text x="500" y="272" font-size="12" fill="currentColor"><tspan font-weight="700">7 · Corticoespinal anterior</tspan>: vía piramidal</text>
+          <text x="500" y="312" font-size="11" fill="currentColor">Los haces se dibujan de un solo lado;</text>
+          <text x="500" y="328" font-size="11" fill="currentColor">el otro lado es simétrico.</text>
+        </svg>
+        <figcaption>Arriba, los <strong>cordones posteriores</strong>, entre las astas posteriores; al costado, la <strong>vía piramidal lateral</strong>; adelante y afuera, el <strong>espinotalámico</strong>. La sustancia gris central es la que primero se daña en el síndrome centromedular.</figcaption>
+      </figure>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Vía</th><th>Haces</th><th>Qué conduce</th><th>Dónde cruza la línea media</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Piramidal</strong></td><td>Corticoespinal lateral y anterior</td><td>Motilidad voluntaria</td><td>En el <strong>bulbo</strong> (decusación de las pirámides): en la médula ya va del <strong>mismo lado</strong> que los músculos que mueve</td></tr>
+            <tr><td><strong>Extrapiramidal</strong></td><td>Reticuloespinal, tectoespinal, rubroespinal, vestibuloespinal, olivoespinal</td><td>Movimientos automáticos y tono</td><td>—</td></tr>
+            <tr><td><strong>Superficial</strong></td><td>Espinotalámico <strong>anterior</strong> (tacto) y <strong>lateral</strong> (termoalgésica)</td><td>Tacto, dolor y temperatura</td><td><strong>En la médula</strong>, uno o dos segmentos por encima de la entrada: en la médula ya va del <strong>lado opuesto</strong></td></tr>
+            <tr><td><strong>Profunda consciente</strong></td><td>Goll y Burdach</td><td>Batiestesia (posición), palestesia (vibración), barestesia (presión), barognosia (peso)</td><td>En el <strong>bulbo</strong>: en la médula va del <strong>mismo lado</strong></td></tr>
+            <tr><td><strong>Profunda inconsciente</strong></td><td>Espinocerebelosos de Flechsig y de Gowers</td><td>Propiocepción hacia el cerebelo</td><td>—</td></tr>
+            <tr><td><strong>Combinada o cortical</strong></td><td>Integración en la corteza</td><td>Grafestesia, estereognosia</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La columna del cruce es la que explica el síndrome de Brown-Séquard: la piramidal y los cordones posteriores todavía no cruzaron, así que su lesión da déficit del <strong>mismo lado</strong>; el espinotalámico ya cruzó, así que su lesión da déficit del <strong>lado opuesto</strong>.</p>
+
+      <p class="cita">Clase «Lesión medular», Dr. Gustavo Grilli: vías motoras y sensitivas, y cortes de la médula. Nivel de decusación de cada vía: Snell RS, <em>Neuroanatomía clínica</em>.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-b">
+      <span class="bloque__rotulo">Bloque B</span>
+      <span class="bloque__nombre">Lesión medular</span>
+    </h2>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-generalidades" id="definicion">
+      <span class="seccion__pestana"><b>03</b> Generalidades</span>
+      <h2 class="seccion__titulo">Definición y epidemiología</h2>
+
+      <p>La <strong>lesión medular</strong> engloba cualquier proceso patológico que afecta la médula espinal y produce un <strong>déficit neurológico —motor, sensitivo y/o autonómico— por debajo del nivel de la lesión</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Dato</th><th>Valor</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Incidencia</strong></td><td><span class="dato">30-50</span> casos por millón de habitantes por año</td></tr>
+            <tr><td><strong>Población</strong></td><td><strong>Sexo masculino</strong>; dos picos: <strong>20-30 años</strong> y <strong>60-65 años</strong></td></tr>
+            <tr><td><strong>Ubicación</strong></td><td><strong>Cervical 52 %</strong> · dorsal 30 % · lumbar 15 % · sacra 3 %</td></tr>
+            <tr><td><strong>Lesiones asociadas</strong></td><td><strong>TEC</strong>, lesiones toracoabdominales, disecciones vasculares</td></tr>
+            <tr><td><strong>Mortalidad global</strong></td><td><span class="dato">48 %</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La lesión es un evento de <strong>alta complejidad</strong> y <strong>elevado consumo de recursos</strong>, que <strong>cambia drásticamente la biografía del paciente</strong> y disminuye su calidad de vida.</p>
+
+      <p class="cita">Clase «Lesión medular», Dr. Gustavo Grilli.</p>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-fisiopatologia" id="causas">
+      <span class="seccion__pestana"><b>04</b> Fisiopatología</span>
+      <h2 class="seccion__titulo">Causas y afecciones de riesgo</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Traumáticas</th><th>Ejemplos</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Tráfico</strong></td><td>Conductor, copiloto, pasajero; pasajeros de otros transportes; atropellos de peatones y ciclistas</td></tr>
+            <tr><td><strong>Deportivas y recreativas</strong></td><td>Deportes de contacto como rugby; deportes extremos; <strong>zambullidas</strong>, equitación, esquí</td></tr>
+            <tr><td><strong>Laborales</strong></td><td>Maquinaria pesada, caídas, derrumbes</td></tr>
+            <tr><td><strong>Caídas</strong></td><td>Domésticas y laborales</td></tr>
+            <tr><td><strong>Otras</strong></td><td>Arma de fuego, arma blanca, traumatismos directos, autolisis</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>No traumáticas</th><th>Ejemplos</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Congénitas y del desarrollo</strong></td><td>Parálisis cerebral, diastematomielia</td></tr>
+            <tr><td><strong>Degenerativas del SNC</strong></td><td>Esclerosis lateral amiotrófica, paraparesia espástica hereditaria, atrofia muscular espinal</td></tr>
+            <tr><td><strong>Iatrogénicas</strong></td><td>Punciones medulares, catéter epidural, cirugía aórtica</td></tr>
+            <tr><td><strong>Infecciosas</strong></td><td>Virales (herpes simple, varicela zóster, CMV, HTLV-1, VIH, poliovirus), bacterianas (<strong>mal de Pott</strong>), micóticas, parasitarias (toxoplasma, esquistosoma)</td></tr>
+            <tr><td><strong>Inflamatorias</strong></td><td><strong>Esclerosis múltiple</strong>, mielitis transversa</td></tr>
+            <tr><td><strong>Neoplásicas</strong></td><td>Cáncer primario o metástasis, intra o extramedular</td></tr>
+            <tr><td><strong>Reumatológicas y degenerativas</strong></td><td>Espondilosis, estenosis, discopatía, enfermedad de Paget, artritis reumatoidea, osteoporosis, osificación del ligamento longitudinal posterior</td></tr>
+            <tr><td><strong>Secuela de la lesión</strong></td><td>Siringomielia, pérdida tardía de función</td></tr>
+            <tr><td><strong>Tóxicas</strong></td><td>Radiación, quimioterapia</td></tr>
+            <tr><td><strong>Genéticas y metabólicas</strong></td><td><strong>Déficit de vitamina B12</strong>, abetalipoproteinemia</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Afecciones que aumentan el riesgo</h3>
+      <p><strong>Espondilosis cervical</strong> · <strong>inestabilidad atlantoaxoidea</strong> · alteraciones congénitas como el <strong>canal estrecho</strong> · <strong>osteoporosis</strong> · artropatías: artritis reumatoidea, espondilitis anquilosante, canal estrecho degenerativo. En todas, un traumatismo menor alcanza para lesionar la médula.</p>
+
+      <p class="cita">Clase «Lesión medular», Dr. Gustavo Grilli: tablas de causas traumáticas y no traumáticas, y afecciones de riesgo.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-c">
+      <span class="bloque__rotulo">Bloque C</span>
+      <span class="bloque__nombre">Valoración ASIA</span>
+    </h2>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-diagnostico" id="asia">
+      <span class="seccion__pestana"><b>05</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">El examen ASIA: niveles y músculos clave</h2>
+
+      <p>La <strong>escala ASIA</strong> (American Spinal Injury Association), formalizada en las normas internacionales <strong>ISNCSCI</strong>, sirve para determinar cuatro cosas:</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Qué determina</th><th>Cómo</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Nivel sensitivo</strong></td><td>Sensibilidad <strong>táctil</strong> (tacto fino) y <strong>termoalgésica</strong> (pinchazo) en puntos clave de cada dermatoma, y <strong>sensación anal profunda</strong></td></tr>
+            <tr><td><strong>Nivel motor</strong></td><td>Fuerza en <strong>5 músculos clave de miembros superiores y 5 de inferiores</strong>, y contracción anal voluntaria</td></tr>
+            <tr><td><strong>Nivel neurológico</strong></td><td>El <strong>nivel más caudal</strong> con sensibilidad intacta y fuerza de <strong>3 o más</strong>, siempre que la función por encima sea normal</td></tr>
+            <tr><td><strong>Completa o incompleta</strong></td><td>Según se conserve o no función en los segmentos sacros <strong>S4-S5</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Los 10 músculos clave</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Nivel</th><th>Miembro superior</th><th>Nivel</th><th>Miembro inferior</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>C5</strong></td><td>Flexores del codo</td><td><strong>L2</strong></td><td>Flexores de cadera</td></tr>
+            <tr><td><strong>C6</strong></td><td>Extensores de muñeca</td><td><strong>L3</strong></td><td><strong>Extensores de rodilla</strong></td></tr>
+            <tr><td><strong>C7</strong></td><td>Extensores del codo</td><td><strong>L4</strong></td><td>Dorsiflexores del tobillo</td></tr>
+            <tr><td><strong>C8</strong></td><td>Flexores de los dedos de la mano</td><td><strong>L5</strong></td><td>Extensores del dedo gordo del pie</td></tr>
+            <tr><td><strong>T1</strong></td><td>Abductores del dedo meñique</td><td><strong>S1</strong></td><td>Flexores plantares del tobillo</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>La planilla en español del deck dice «flexores de rodilla» para L3: es un error.</strong> En las normas ISNCSCI, el músculo clave de L3 son los <strong>extensores de rodilla</strong>, el cuádriceps, coherente con el reflejo patelar L3-L4. Los flexores de rodilla, los isquiosurales, no son músculo clave.</p>
+      </div>
+
+      <p class="cita">Clase «Lesión medular», Dr. Gustavo Grilli: escala ASIA y planilla ISNCSCI. Normas: Según PubMed, Kirshblum SC y col., J Spinal Cord Med 2011;34(6):535-46 (<a href="https://doi.org/10.1179/204577211X13207446293695">DOI</a>); revisión 2019: Rupp R y col., Top Spinal Cord Inj Rehabil 2021;27(2):1-22 (<a href="https://doi.org/10.46292/sci2702-1">DOI</a>).</p>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-diagnostico" id="clasificacion">
+      <span class="seccion__pestana"><b>06</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">Pasos de la clasificación y escala AIS</h2>
+
+      <ol>
+        <li><strong>Nivel sensitivo</strong> derecho e izquierdo: el dermatoma intacto más caudal, para pinchazo y tacto fino.</li>
+        <li><strong>Nivel motor</strong> derecho e izquierdo: el músculo clave más bajo con fuerza de al menos 3, siempre que los de arriba estén intactos (5). Donde no hay músculo para examinar, el nivel motor se presume igual al sensitivo.</li>
+        <li><strong>Nivel neurológico de la lesión</strong>: el más cefálico de los niveles sensitivos y motores de los pasos 1 y 2.</li>
+        <li><strong>¿Completa o incompleta?</strong> Si no hay contracción anal voluntaria, la sensibilidad en S4-S5 es 0 y no hay presión anal profunda, la lesión es <strong>completa</strong>. Si no, <strong>incompleta</strong>.</li>
+        <li><strong>Grado AIS</strong>, con el árbol de abajo.</li>
+        <li><strong>Zona de preservación parcial</strong>: solo en lesiones con ausencia de función motora o sensitiva en los segmentos sacros más distales; registra los dermatomas y miotomas por debajo del nivel que conservan algo de inervación.</li>
+      </ol>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 340" role="img" aria-label="Árbol para asignar el grado AIS: si la lesión es completa, A; si es sensitiva incompleta sin función motora útil, B; si es motora incompleta, C cuando menos de la mitad de los músculos clave bajo el nivel tiene grado 3 o más, y D cuando la mitad o más lo tiene; si la sensibilidad y la motilidad son normales, E">
+          <defs>
+            <marker id="lm-ais" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <rect x="30" y="16" width="300" height="42" rx="21" fill="none" stroke="currentColor" stroke-width="1.3"></rect>
+          <text x="180" y="42" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">¿Lesión completa?</text>
+          <line x1="330" y1="37" x2="416" y2="37" stroke="currentColor" stroke-width="1.4" marker-end="url(#lm-ais)"></line>
+          <text x="373" y="30" text-anchor="middle" font-size="11" fill="currentColor">sí</text>
+          <rect x="420" y="16" width="70" height="42" rx="6" fill="var(--c)" fill-opacity="0.55" stroke="currentColor" stroke-width="1.3"></rect>
+          <text x="455" y="43" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">A</text>
+
+          <line x1="180" y1="58" x2="180" y2="88" stroke="currentColor" stroke-width="1.4" marker-end="url(#lm-ais)"></line>
+          <text x="190" y="78" font-size="11" fill="currentColor">no</text>
+          <rect x="30" y="92" width="300" height="56" rx="21" fill="none" stroke="currentColor" stroke-width="1.3"></rect>
+          <text x="180" y="116" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">¿Motora completa?</text>
+          <text x="180" y="134" text-anchor="middle" font-size="10.5" fill="currentColor">sin función motora útil bajo el nivel</text>
+          <line x1="330" y1="120" x2="416" y2="120" stroke="currentColor" stroke-width="1.4" marker-end="url(#lm-ais)"></line>
+          <text x="373" y="113" text-anchor="middle" font-size="11" fill="currentColor">sí</text>
+          <rect x="420" y="99" width="70" height="42" rx="6" fill="var(--c)" fill-opacity="0.42" stroke="currentColor" stroke-width="1.3"></rect>
+          <text x="455" y="126" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">B</text>
+
+          <line x1="180" y1="148" x2="180" y2="178" stroke="currentColor" stroke-width="1.4" marker-end="url(#lm-ais)"></line>
+          <text x="190" y="168" font-size="11" fill="currentColor">no</text>
+          <rect x="30" y="182" width="300" height="56" rx="21" fill="none" stroke="currentColor" stroke-width="1.3"></rect>
+          <text x="180" y="206" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">¿La mitad o más de los músculos</text>
+          <text x="180" y="224" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">clave bajo el nivel tienen 3 o más?</text>
+          <line x1="330" y1="210" x2="416" y2="210" stroke="currentColor" stroke-width="1.4" marker-end="url(#lm-ais)"></line>
+          <text x="373" y="203" text-anchor="middle" font-size="11" fill="currentColor">sí</text>
+          <rect x="420" y="189" width="70" height="42" rx="6" fill="var(--c)" fill-opacity="0.20" stroke="currentColor" stroke-width="1.3"></rect>
+          <text x="455" y="216" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">D</text>
+          <line x1="180" y1="238" x2="180" y2="268" stroke="currentColor" stroke-width="1.4" marker-end="url(#lm-ais)"></line>
+          <text x="190" y="258" font-size="11" fill="currentColor">no</text>
+          <rect x="145" y="272" width="70" height="42" rx="6" fill="var(--c)" fill-opacity="0.30" stroke="currentColor" stroke-width="1.3"></rect>
+          <text x="180" y="299" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">C</text>
+
+          <rect x="560" y="16" width="240" height="140" rx="8" fill="none" stroke="currentColor" stroke-width="1.1" stroke-dasharray="5 3"></rect>
+          <text x="576" y="42" font-size="12" font-weight="700" fill="currentColor">E · normal</text>
+          <text x="576" y="64" font-size="11" fill="currentColor">sensibilidad y motilidad normales</text>
+          <text x="576" y="82" font-size="11" fill="currentColor">en todos los segmentos</text>
+          <text x="576" y="110" font-size="11" fill="currentColor">Se usa en el seguimiento de quien</text>
+          <text x="576" y="128" font-size="11" fill="currentColor">tuvo una lesión documentada y</text>
+          <text x="576" y="146" font-size="11" fill="currentColor">se recuperó por completo</text>
+        </svg>
+        <figcaption>Las preguntas van en orden. La frontera entre <strong>C y D</strong> es la mitad de los músculos clave por debajo del nivel con <strong>grado 3 o más</strong>, es decir, capaces de vencer la gravedad.</figcaption>
+      </figure>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>AIS</th><th>Tipo</th><th>Definición</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>A</strong></td><td>Completa</td><td><strong>No hay función sensitiva ni motora en S4-S5</strong></td></tr>
+            <tr><td><strong>B</strong></td><td>Sensitiva incompleta</td><td>Se conserva la función <strong>sensitiva</strong> por debajo del nivel, incluidos S4-S5, <strong>sin función motora</strong></td></tr>
+            <tr><td><strong>C</strong></td><td>Motora incompleta</td><td>Hay función motora, pero <strong>más de la mitad</strong> de los músculos clave bajo el nivel tienen <strong>grado menor de 3</strong></td></tr>
+            <tr><td><strong>D</strong></td><td>Motora incompleta</td><td><strong>Al menos la mitad</strong> de los músculos clave bajo el nivel tienen <strong>grado 3 o más</strong></td></tr>
+            <tr><td><strong>E</strong></td><td>Normal</td><td>Función sensitiva y motora normal</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La clave del grado A está en el <strong>sacro</strong>: alcanza con que el paciente sienta algo en S4-S5, o con que haya presión anal profunda, para que la lesión sea incompleta, aunque el resto parezca abolido. Por eso el examen anal no se saltea.</p>
+
+      <p class="cita">Clase «Lesión medular», Dr. Gustavo Grilli: pasos en la clasificación y grado de afectación según la escala ASIA (hoja ISNCSCI en español).</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-d">
+      <span class="bloque__rotulo">Bloque D</span>
+      <span class="bloque__nombre">Síndromes medulares</span>
+    </h2>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-clinica" id="completa">
+      <span class="seccion__pestana"><b>07</b> Cuadro clínico</span>
+      <h2 class="seccion__titulo">Lesión completa y shock medular</h2>
+
+      <ul>
+        <li><strong>Compromiso motor y sensitivo completo</strong> por debajo del nivel neurológico.</li>
+        <li><strong>En agudo, shock medular</strong>: <strong>plejía fláccida y arreflexia</strong>.</li>
+        <li><strong>Incontinencia de esfínteres</strong> y <strong>disfunción sexual</strong>.</li>
+        <li><strong>Causas</strong>: traumatismos, esclerosis múltiple, tumores, mielitis transversa, abscesos.</li>
+      </ul>
+      <p><strong>Evolución en fases.</strong> El shock medular es transitorio: al principio la médula por debajo de la lesión «se apaga» y todo es flácido y arrefléxico, aunque la lesión sea de primera motoneurona. Cuando el shock cede, aparece el patrón propio de una lesión de motoneurona superior por debajo del nivel: <strong>espasticidad, hiperreflexia y Babinski</strong>. Una arreflexia en las primeras horas no permite decir que la lesión sea periférica.</p>
+
+      <p class="cita">Clase «Lesión medular», Dr. Gustavo Grilli: lesión medular completa. Evolución del shock medular: Harrison, <em>Principios de Medicina Interna</em>.</p>
+    </section>
+
+    <!-- ============ 8 ============ -->
+    <section class="seccion s-clinica" id="incompletos">
+      <span class="seccion__pestana"><b>08</b> Cuadro clínico</span>
+      <h2 class="seccion__titulo">Síndromes incompletos de la médula</h2>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 840 260" role="img" aria-label="Zona lesionada en cada síndrome incompleto: centromedular, la región central; cordonal anterior, los dos tercios anteriores; Brown-Séquard, una mitad de la médula; cordonal posterior, los cordones posteriores">
+          <g>
+            <ellipse cx="110" cy="110" rx="80" ry="62" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-width="1.5"></ellipse>
+            <circle cx="110" cy="110" r="30" fill="var(--c)" fill-opacity="0.75"></circle>
+            <text x="110" y="38" text-anchor="middle" font-size="10.5" font-style="italic" fill="currentColor">posterior</text>
+            <text x="110" y="206" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Centromedular</text>
+            <text x="110" y="224" text-anchor="middle" font-size="11" fill="currentColor">centro: más brazos</text>
+            <text x="110" y="240" text-anchor="middle" font-size="11" fill="currentColor">que piernas</text>
+          </g>
+          <g>
+            <ellipse cx="320" cy="110" rx="80" ry="62" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-width="1.5"></ellipse>
+            <path d="M241 98 A80 62 0 1 0 399 98 Z" fill="var(--c)" fill-opacity="0.75"></path>
+            <text x="320" y="38" text-anchor="middle" font-size="10.5" font-style="italic" fill="currentColor">posterior</text>
+            <text x="320" y="206" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Cordonal anterior</text>
+            <text x="320" y="224" text-anchor="middle" font-size="11" fill="currentColor">respeta los cordones</text>
+            <text x="320" y="240" text-anchor="middle" font-size="11" fill="currentColor">posteriores</text>
+          </g>
+          <g>
+            <ellipse cx="530" cy="110" rx="80" ry="62" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-width="1.5"></ellipse>
+            <path d="M530 48 A80 62 0 0 0 530 172 Z" fill="var(--c)" fill-opacity="0.75"></path>
+            <text x="530" y="38" text-anchor="middle" font-size="10.5" font-style="italic" fill="currentColor">posterior</text>
+            <text x="530" y="206" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Brown-Séquard</text>
+            <text x="530" y="224" text-anchor="middle" font-size="11" fill="currentColor">hemisección:</text>
+            <text x="530" y="240" text-anchor="middle" font-size="11" fill="currentColor">déficit cruzado</text>
+          </g>
+          <g>
+            <ellipse cx="740" cy="110" rx="80" ry="62" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-width="1.5"></ellipse>
+            <path d="M665 88 A80 62 0 0 1 815 88 Z" fill="var(--c)" fill-opacity="0.75"></path>
+            <text x="740" y="38" text-anchor="middle" font-size="10.5" font-style="italic" fill="currentColor">posterior</text>
+            <text x="740" y="206" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Cordonal posterior</text>
+            <text x="740" y="224" text-anchor="middle" font-size="11" fill="currentColor">ataxia por falta</text>
+            <text x="740" y="240" text-anchor="middle" font-size="11" fill="currentColor">de propiocepción</text>
+          </g>
+        </svg>
+        <figcaption>La zona en color es la lesionada, con la cara posterior hacia arriba, como en el corte de la sección 02. Cada cuadro se deduce de qué haces caen dentro de esa zona.</figcaption>
+      </figure>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Síndrome</th><th>Causa</th><th>Clínica</th><th>Por qué</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Centromedular</strong>: el más frecuente de los incompletos</td><td>Traumatismo con <strong>hiperextensión cervical</strong> en canales espondilóticos</td><td>Afecta <strong>más los miembros superiores, sobre todo las manos</strong>; síntomas sensitivos variables; disfunción esfinteriana (retención aguda de orina); hiperpatía</td><td>En la vía piramidal lateral, las fibras de los brazos van más cerca del centro que las de las piernas: la lesión central las toma primero</td></tr>
+            <tr><td><strong>Cordonal anterior</strong> o de la arteria espinal anterior</td><td>Compresión por un disco o un fragmento óseo en el territorio de la <strong>espinal anterior</strong></td><td><strong>Cuadriplejía</strong> si es por encima de C7, <strong>hipoestesia termoalgésica</strong> y <strong>sensibilidad profunda conservada</strong></td><td>La espinal anterior irriga los dos tercios anteriores: piramidal y espinotalámico; los cordones posteriores quedan afuera</td></tr>
+            <tr><td><strong>Brown-Séquard</strong> o hemisección</td><td>Traumatismo penetrante, mielopatía por radiación, hematoma epidural, hernia discal voluminosa</td><td><strong>Del mismo lado</strong>: plejía bajo la lesión y pérdida de la propiocepción. <strong>Del lado opuesto</strong>: anestesia termoalgésica, con tacto conservado</td><td>Piramidal y cordones posteriores todavía no cruzaron; el espinotalámico lateral ya cruzó. El tacto se conserva porque también viaja por los cordones posteriores de ese lado, que no están lesionados</td></tr>
+            <tr><td><strong>Cordonal posterior</strong>: muy raro</td><td>Tabes dorsal, esclerosis múltiple, tumores extramedulares compresivos</td><td><strong>Dolor quemante</strong> en cuello, tronco y miembros superiores; <strong>ataxia</strong> por déficit propioceptivo; hipotonía; arreflexia</td><td>Se pierden los cordones de Goll y Burdach</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>Pronóstico.</strong> La clase destaca el <strong>cordonal anterior como el de peor pronóstico</strong>: solo el <strong>10 %</strong> recupera la motilidad. El <strong>centromedular</strong>, según la clase, requiere resolución neuroquirúrgica; en la bibliografía, la indicación y el momento de la cirugía se deciden caso por caso.</p>
+
+      <p class="cita">Clase «Lesión medular», Dr. Gustavo Grilli: síndromes medulares incompletos. Mecanismo de cada síndrome por la topografía de los haces: Snell RS, <em>Neuroanatomía clínica</em>.</p>
+    </section>
+
+    <!-- ============ 9 ============ -->
+    <section class="seccion s-clinica" id="cono">
+      <span class="seccion__pestana"><b>09</b> Cuadro clínico</span>
+      <h2 class="seccion__titulo">Cono, epicono y cola de caballo</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Rasgo</th><th>Epicono</th><th>Cono medular</th><th>Cola de caballo</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Altura</strong></td><td>T11-T12</td><td>T11-L1</td><td><strong>Por debajo de L1-L2</strong></td></tr>
+            <tr><td><strong>Qué afecta</strong></td><td>Raíces <strong>L4 a S2</strong></td><td>Raíces <strong>S3, S4 y S5</strong></td><td>Raíces lumbosacras</td></tr>
+            <tr><td><strong>Motor</strong></td><td><strong>Parálisis fláccida</strong> de miembros inferiores</td><td><strong>Sin trastornos motores</strong></td><td>De paresia a <strong>paraplejía fláccida</strong></td></tr>
+            <tr><td><strong>Reflejos</strong></td><td><strong>Arreflexia aquílea</strong></td><td><strong>Conservados</strong></td><td>Disminuidos</td></tr>
+            <tr><td><strong>Sensibilidad</strong></td><td><strong>Anestesia en silla de montar</strong></td><td>Anestesia perineal</td><td><strong>Anestesia en silla de montar</strong></td></tr>
+            <tr><td><strong>Esfínteres y sexual</strong></td><td>—</td><td><strong>Retención urinaria, incontinencia fecal, disfunción eréctil</strong></td><td>Retención urinaria, incontinencia fecal, disfunción eréctil</td></tr>
+            <tr><td><strong>Dolor</strong></td><td>—</td><td>—</td><td><strong>Presente</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Las dos claves para separarlos: el <strong>cono puro no tiene déficit motor</strong> y conserva los reflejos, porque solo toma raíces sacras bajas; la <strong>cola de caballo duele</strong> y da un déficit motor fláccido, porque es una lesión de raíces, es decir, de segunda motoneurona.</p>
+
+      <p class="cita">Clase «Lesión medular», Dr. Gustavo Grilli: síndromes del cono medular, del epicono y de la cola de caballo.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-e">
+      <span class="bloque__rotulo">Bloque E</span>
+      <span class="bloque__nombre">Tratamiento y evolución</span>
+    </h2>
+
+    <!-- ============ 10 ============ -->
+    <section class="seccion s-tratamiento" id="agudo">
+      <span class="seccion__pestana"><b>10</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Manejo agudo</h2>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 260" role="img" aria-label="Manejo agudo del lesionado medular: en el lugar, sospecha, extricación, movilización en bloque e inmovilización, tratamiento del shock y traslado; en el hospital, ABCDE, estabilización, imágenes e interconsulta con el especialista">
+          <defs>
+            <marker id="lm-agu" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <text x="20" y="22" font-size="12" font-weight="700" fill="currentColor">En el lugar</text>
+          <rect x="20" y="34" width="140" height="70" rx="6" fill="var(--c)" fill-opacity="0.32" stroke="currentColor" stroke-width="1.3"></rect>
+          <text x="90" y="62" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">Sospechar</text>
+          <text x="90" y="80" text-anchor="middle" font-size="10.5" fill="currentColor">en todo</text>
+          <text x="90" y="94" text-anchor="middle" font-size="10.5" fill="currentColor">politraumatizado</text>
+          <rect x="180" y="34" width="140" height="70" rx="6" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="250" y="74" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">Extricación</text>
+          <rect x="340" y="34" width="140" height="70" rx="6" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="410" y="62" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">Movilizar</text>
+          <text x="410" y="80" text-anchor="middle" font-size="10.5" fill="currentColor">en bloque e</text>
+          <text x="410" y="94" text-anchor="middle" font-size="10.5" fill="currentColor">inmovilizar</text>
+          <rect x="500" y="34" width="140" height="70" rx="6" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="570" y="74" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">Tratar el shock</text>
+          <rect x="660" y="34" width="140" height="70" rx="6" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="730" y="62" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">Trasladar</text>
+          <text x="730" y="80" text-anchor="middle" font-size="10.5" fill="currentColor">a centro</text>
+          <text x="730" y="94" text-anchor="middle" font-size="10.5" fill="currentColor">especializado</text>
+          <line x1="160" y1="69" x2="176" y2="69" stroke="currentColor" stroke-width="1.4" marker-end="url(#lm-agu)"></line>
+          <line x1="320" y1="69" x2="336" y2="69" stroke="currentColor" stroke-width="1.4" marker-end="url(#lm-agu)"></line>
+          <line x1="480" y1="69" x2="496" y2="69" stroke="currentColor" stroke-width="1.4" marker-end="url(#lm-agu)"></line>
+          <line x1="640" y1="69" x2="656" y2="69" stroke="currentColor" stroke-width="1.4" marker-end="url(#lm-agu)"></line>
+          <path d="M730 104 L730 128 L90 128 L90 150" fill="none" stroke="currentColor" stroke-width="1.4" marker-end="url(#lm-agu)"></path>
+
+          <text x="110" y="146" font-size="12" font-weight="700" fill="currentColor">En el hospital</text>
+          <rect x="20" y="156" width="190" height="80" rx="6" fill="var(--c)" fill-opacity="0.32" stroke="currentColor" stroke-width="1.3"></rect>
+          <text x="115" y="184" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">ABCDE</text>
+          <text x="115" y="204" text-anchor="middle" font-size="10.5" fill="currentColor">vía aérea, respiración,</text>
+          <text x="115" y="220" text-anchor="middle" font-size="10.5" fill="currentColor">circulación, neuro, exposición</text>
+          <rect x="230" y="156" width="180" height="80" rx="6" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="320" y="190" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Estabilización</text>
+          <text x="320" y="210" text-anchor="middle" font-size="10.5" fill="currentColor">antes que cualquier otra cosa</text>
+          <rect x="430" y="156" width="170" height="80" rx="6" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="515" y="190" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Imágenes</text>
+          <text x="515" y="210" text-anchor="middle" font-size="10.5" fill="currentColor">Rx · TAC · RM</text>
+          <rect x="620" y="156" width="180" height="80" rx="6" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="710" y="190" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Especialista</text>
+          <text x="710" y="210" text-anchor="middle" font-size="10.5" fill="currentColor">decide la conducta</text>
+          <line x1="210" y1="196" x2="226" y2="196" stroke="currentColor" stroke-width="1.4" marker-end="url(#lm-agu)"></line>
+          <line x1="410" y1="196" x2="426" y2="196" stroke="currentColor" stroke-width="1.4" marker-end="url(#lm-agu)"></line>
+          <line x1="600" y1="196" x2="616" y2="196" stroke="currentColor" stroke-width="1.4" marker-end="url(#lm-agu)"></line>
+        </svg>
+        <figcaption>Todo lo que se hace en el lugar apunta a <strong>no agravar</strong> la lesión al mover al paciente. En el hospital, la estabilización clínica va <strong>antes que las imágenes</strong>.</figcaption>
+      </figure>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>Todo politraumatizado tiene una lesión medular hasta que se demuestre lo contrario</strong>, más aún si está bajo efectos del alcohol o de drogas, porque no puede referir dolor ni colaborar con el examen. Se lo moviliza <strong>en bloque</strong> y con <strong>inmovilización espinal completa</strong>.</p>
+      </div>
+
+      <p class="cita">Clase «Lesión medular», Dr. Gustavo Grilli: tratamiento en agudo y en el hospital.</p>
+    </section>
+
+    <!-- ============ 11 ============ -->
+    <section class="seccion s-tratamiento" id="rehabilitacion">
+      <span class="seccion__pestana"><b>11</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Plan de rehabilitación</h2>
+
+      <ol>
+        <li>Valorar la <strong>discapacidad</strong>, las limitaciones de la actividad y la restricción de la participación en la vida diaria.</li>
+        <li>Identificar las <strong>deficiencias clave</strong>.</li>
+        <li>Establecer <strong>objetivos realistas y alcanzables</strong>.</li>
+        <li>Realizar el tratamiento e ir <strong>midiendo los resultados</strong>.</li>
+      </ol>
+      <p>La clase usa la imagen de un iceberg: lo visible es el <strong>trastorno motor</strong>, la parálisis; debajo quedan la respiración, la vejiga, el intestino, la piel y las úlceras, la espasticidad, las alteraciones del simpático y la disreflexia, la hemodinamia y la sexualidad. Todo eso define la <strong>calidad de vida</strong>. Por eso el plan aborda:</p>
+      <p><strong>Espasticidad</strong> · alteración de la <strong>sensibilidad</strong> · <strong>vejiga e intestino neurogénicos</strong> · función <strong>sexual</strong> · <strong>termorregulación</strong> · función <strong>respiratoria y tos</strong> · alteraciones <strong>cardiovasculares</strong> · <strong>disreflexia autonómica</strong>.</p>
+
+      <p class="cita">Clase «Lesión medular», Dr. Gustavo Grilli: plan de tratamiento y «¿a qué nos enfrentamos?».</p>
+    </section>
+
+    <!-- ============ 12 ============ -->
+    <section class="seccion s-tratamiento" id="funcional">
+      <span class="seccion__pestana"><b>12</b> Pronóstico</span>
+      <h2 class="seccion__titulo">Resultados funcionales por nivel</h2>
+
+      <p>En una lesión completa, el nivel predice lo que el paciente va a poder hacer. Cada nivel que se baja suma un grupo muscular, y ese músculo es el que cambia la vida diaria.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 840 330" role="img" aria-label="Escalera funcional por nivel: de C1-C3, dependiente del ventilador y con asistencia 24 horas, a L2-S5 con marcha funcional e independencia en las actividades de la vida diaria">
+          <rect x="20"  y="250" width="92" height="30"  fill="var(--c)" fill-opacity="0.15" stroke="currentColor"></rect>
+          <rect x="122" y="232" width="92" height="48"  fill="var(--c)" fill-opacity="0.22" stroke="currentColor"></rect>
+          <rect x="224" y="210" width="92" height="70"  fill="var(--c)" fill-opacity="0.30" stroke="currentColor"></rect>
+          <rect x="326" y="184" width="92" height="96"  fill="var(--c)" fill-opacity="0.38" stroke="currentColor"></rect>
+          <rect x="428" y="156" width="92" height="124" fill="var(--c)" fill-opacity="0.46" stroke="currentColor"></rect>
+          <rect x="530" y="124" width="92" height="156" fill="var(--c)" fill-opacity="0.54" stroke="currentColor"></rect>
+          <rect x="632" y="90"  width="92" height="190" fill="var(--c)" fill-opacity="0.62" stroke="currentColor"></rect>
+          <rect x="734" y="52"  width="92" height="228" fill="var(--c)" fill-opacity="0.72" stroke="currentColor"></rect>
+
+          <text x="66"  y="300" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">C1-C3</text>
+          <text x="168" y="300" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">C4</text>
+          <text x="270" y="300" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">C5</text>
+          <text x="372" y="300" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">C6</text>
+          <text x="474" y="300" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">C7-C8</text>
+          <text x="576" y="300" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">T1-T9</text>
+          <text x="678" y="300" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">T10-L1</text>
+          <text x="780" y="300" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">L2-S5</text>
+
+          <text x="66"  y="240" text-anchor="middle" font-size="10.5" fill="currentColor">ventilador</text>
+          <text x="168" y="222" text-anchor="middle" font-size="10.5" fill="currentColor">weaning</text>
+          <text x="270" y="200" text-anchor="middle" font-size="10.5" fill="currentColor">flexión codo</text>
+          <text x="372" y="174" text-anchor="middle" font-size="10.5" fill="currentColor">tenodesis</text>
+          <text x="474" y="146" text-anchor="middle" font-size="10.5" fill="currentColor">extensión codo</text>
+          <text x="576" y="114" text-anchor="middle" font-size="10.5" fill="currentColor">MMSS completos</text>
+          <text x="678" y="80"  text-anchor="middle" font-size="10.5" fill="currentColor">marcha terapéutica</text>
+          <text x="780" y="42"  text-anchor="middle" font-size="10.5" fill="currentColor">marcha funcional</text>
+
+          <text x="66"  y="270" text-anchor="middle" font-size="10.5" font-weight="700" fill="currentColor">24 h</text>
+          <text x="168" y="262" text-anchor="middle" font-size="10.5" font-weight="700" fill="currentColor">24 h</text>
+          <text x="270" y="252" text-anchor="middle" font-size="10.5" font-weight="700" fill="currentColor">16 h</text>
+          <text x="372" y="240" text-anchor="middle" font-size="10.5" font-weight="700" fill="currentColor">10 h</text>
+          <text x="474" y="226" text-anchor="middle" font-size="10.5" font-weight="700" fill="currentColor">≥ 8 h</text>
+          <text x="576" y="210" text-anchor="middle" font-size="10.5" font-weight="700" fill="currentColor">≥ 3 h</text>
+          <text x="20" y="20" font-size="11" fill="currentColor">Altura de la barra: independencia · número: horas diarias de asistencia</text>
+        </svg>
+        <figcaption>Los saltos que más pesan: en <strong>C5</strong> respira solo; en <strong>C6</strong> la extensión de muñeca permite la pinza por tenodesis; en <strong>C7</strong> extiende el codo y puede transferirse; desde <strong>T10</strong> la capacidad respiratoria es normal; desde <strong>L2</strong> camina con ortesis.</figcaption>
+      </figure>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Nivel</th><th>Qué conserva</th><th>Qué logra</th><th>Asistencia</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>C1-C3</strong></td><td>—</td><td><strong>Dependiente del ventilador</strong>, no puede eliminar secreciones; dependiente para las ABVD</td><td>24 h</td></tr>
+            <tr><td><strong>C4</strong></td><td>Algunos movimientos de cabeza y cuello</td><td>Asistencia respiratoria mecánica en agudo; <strong>generalmente logra el weaning</strong>; dependiente para las ABVD</td><td>24 h</td></tr>
+            <tr><td><strong>C5</strong></td><td><strong>Flexión de codo</strong></td><td><strong>Respira en forma autónoma</strong>; dependiente para las ABVD</td><td>16 h</td></tr>
+            <tr><td><strong>C6</strong></td><td><strong>Extensores de muñeca</strong> (tenodesis)</td><td>Parcialmente dependiente; silla de ruedas autopropulsable en trayectos cortos y planos</td><td>10 h</td></tr>
+            <tr><td><strong>C7-C8</strong></td><td><strong>Extensión de codo</strong> (C7), flexión de los dedos (C8)</td><td>Menor dependencia en las ABVD; silla de ruedas eléctrica</td><td>Al menos 8 h</td></tr>
+            <tr><td><strong>T1-T9</strong></td><td><strong>Todos los músculos de los miembros superiores</strong>; desde T6, más control de tronco</td><td>Más independencia; silla manual; bipedestación con ortesis y andador</td><td>Al menos 3 h</td></tr>
+            <tr><td><strong>T10-L1</strong></td><td>Capacidad vital respiratoria normal</td><td><strong>Independiente</strong> en ABVD y transferencias; bipedestación; marcha terapéutica asistida; silla autopropulsada para trayectos largos</td><td>—</td></tr>
+            <tr><td><strong>L2-S5</strong></td><td>—</td><td><strong>Marcha funcional con ortesis</strong>; L2 requiere silla autopropulsable; L3-S1 pueden llegar a requerirla; independientes para las ABVD</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La tabla de independencia de la clase completa el cuadro por debajo de T2: de <strong>T2 a T9</strong>, bipedestación y marcha como ejercicio con ortesis largas (KAFO), muletas o andador; de <strong>T10 a L2</strong>, marcha domiciliaria y a veces en exteriores; de <strong>L3 a S5</strong>, <strong>marcha comunitaria</strong> con ortesis antiequino (AFO) y bastones.</p>
+
+      <p class="cita">Clase «Lesión medular», Dr. Gustavo Grilli: resultados funcionales esperados por nivel y tablas de independencia funcional.</p>
+    </section>
+
+    <!-- ============ 13 ============ -->
+    <section class="seccion s-importantes" id="complicaciones">
+      <span class="seccion__pestana"><b>13</b> Complicaciones</span>
+      <h2 class="seccion__titulo">Complicaciones y disreflexia autonómica</h2>
+
+      <h3>Disreflexia autonómica</h3>
+      <p>Cuadro <strong>agudo y grave</strong> por una <strong>respuesta exagerada del sistema nervioso autónomo</strong> ante un estímulo por debajo de la lesión: <strong>distensión de la vejiga o del intestino</strong>, úlceras, fracturas patológicas. Aparece en pacientes con <strong>nivel lesional en T6 o por encima</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 250" role="img" aria-label="Disreflexia autonómica: un estímulo por debajo de la lesión, como la vejiga distendida, desencadena una descarga simpática que la lesión no deja frenar; produce hipertensión, y por encima de la lesión bradicardia, rubor, sudoración y cefalea">
+          <defs>
+            <marker id="lm-dis" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <line x1="20" y1="120" x2="800" y2="120" stroke="currentColor" stroke-width="2" stroke-dasharray="8 5"></line>
+          <text x="20" y="112" font-size="11.5" font-weight="700" fill="currentColor">nivel de la lesión (T6 o más arriba)</text>
+
+          <rect x="20" y="150" width="220" height="80" rx="6" fill="var(--c)" fill-opacity="0.20" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="130" y="176" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Estímulo por debajo</text>
+          <text x="130" y="196" text-anchor="middle" font-size="11" fill="currentColor">vejiga o intestino distendidos,</text>
+          <text x="130" y="212" text-anchor="middle" font-size="11" fill="currentColor">úlceras, fracturas</text>
+          <rect x="300" y="150" width="220" height="80" rx="6" fill="var(--c)" fill-opacity="0.40" stroke="currentColor" stroke-width="1.3"></rect>
+          <text x="410" y="176" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Descarga simpática</text>
+          <text x="410" y="196" text-anchor="middle" font-size="11" fill="currentColor">masiva, sin freno desde</text>
+          <text x="410" y="212" text-anchor="middle" font-size="11" fill="currentColor">arriba de la lesión</text>
+          <rect x="580" y="150" width="220" height="80" rx="6" fill="var(--c)" fill-opacity="0.55" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="690" y="182" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">HTA</text>
+          <text x="690" y="204" text-anchor="middle" font-size="11" fill="currentColor">piloerección bajo la lesión</text>
+          <line x1="240" y1="190" x2="296" y2="190" stroke="currentColor" stroke-width="1.4" marker-end="url(#lm-dis)"></line>
+          <line x1="520" y1="190" x2="576" y2="190" stroke="currentColor" stroke-width="1.4" marker-end="url(#lm-dis)"></line>
+
+          <path d="M690 150 L690 96" stroke="currentColor" stroke-width="1.4" fill="none" marker-end="url(#lm-dis)"></path>
+          <rect x="300" y="16" width="500" height="76" rx="6" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="550" y="42" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Por encima de la lesión</text>
+          <text x="550" y="64" text-anchor="middle" font-size="11" fill="currentColor">bradicardia · cefalea pulsátil · enrojecimiento · sudoración</text>
+          <text x="550" y="82" text-anchor="middle" font-size="11" fill="currentColor">visión borrosa · inquietud · dolor de pecho · dificultad respiratoria</text>
+        </svg>
+        <figcaption>La línea punteada es la lesión. Por debajo, el simpático responde sin control; por encima, el organismo intenta compensar la hipertensión. Por eso el paciente tiene <strong>HTA con bradicardia</strong>, y <strong>rubor y sudoración solo por encima del nivel</strong>.</figcaption>
+      </figure>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>Un lesionado medular alto con HTA, cefalea pulsátil y bradicardia tiene una disreflexia autonómica hasta que se demuestre lo contrario.</strong> Es una urgencia, y su causa más frecuente está en la <strong>vejiga o el intestino distendidos</strong>: hay que buscar el desencadenante por debajo de la lesión.</p>
+      </div>
+
+      <h3>Complicaciones por sistema</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Sistema</th><th>Complicaciones</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Piel y generales</strong></td><td><strong>Úlceras por presión</strong> · dolor neuropático · espasticidad</td></tr>
+            <tr><td><strong>Genitourinario</strong></td><td><strong>Vejiga neurogénica</strong>: <strong>hiperrefléxica</strong> en lesiones por encima de L1, <strong>arrefléxica</strong> por debajo de L1 · ITU · litiasis · reflujo vesicoureteral · ureterohidronefrosis · insuficiencia renal crónica · disfunción eréctil · lesiones por sondaje intermitente</td></tr>
+            <tr><td><strong>Gastrointestinal</strong></td><td><strong>Intestino neurogénico</strong> · hemorroides · pancreatitis · litiasis biliar</td></tr>
+            <tr><td><strong>Cardiorrespiratorio</strong></td><td><strong>TVP y TEP</strong> · infecciones a repetición · insuficiencia respiratoria · HTA · <strong>hipotensión ortostática</strong> · disreflexia autonómica</td></tr>
+            <tr><td><strong>Ortopédico</strong></td><td>Escoliosis · pie equino · osteoporosis · fracturas patológicas · calcificaciones heterotópicas</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «Lesión medular», Dr. Gustavo Grilli: disreflexia autonómica y complicaciones.</p>
+    </section>
+
+    <!-- ============ Repaso ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>¿Dónde termina la médula y qué hay por debajo?</summary>
+          <div class="fc__r">En el <strong>límite superior de L2</strong> (cono medular, L1-L2). Por debajo, la <strong>cola de caballo</strong> y el filum terminale.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Qué segmento origina el frénico y el plexo braquial?</summary>
+          <div class="fc__r">El <strong>huso cervical</strong> (C3-D3). El <strong>frénico sale de C4</strong>.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Dónde cruzan la vía piramidal, los cordones posteriores y el espinotalámico?</summary>
+          <div class="fc__r">Piramidal y cordones posteriores: en el <strong>bulbo</strong>. Espinotalámico: en la <strong>médula</strong>, cerca de su entrada.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué conducen los fascículos de Goll y Burdach, y cuáles son los de la propiocepción inconsciente?</summary>
+          <div class="fc__r">Goll y Burdach: <strong>propiocepción consciente</strong>, vibración, presión y peso. Inconsciente: <strong>espinocerebelosos de Flechsig y de Gowers</strong>.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Epidemiología: incidencia, picos de edad y localización más frecuente.</summary>
+          <div class="fc__r"><strong>30-50 por millón por año</strong>; varones; picos a los <strong>20-30</strong> y <strong>60-65 años</strong>; <strong>cervical 52 %</strong>.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>Nombrá 3 afecciones que aumentan el riesgo de lesión medular.</summary>
+          <div class="fc__r">Espondilosis cervical, inestabilidad atlantoaxoidea, canal estrecho, osteoporosis, artritis reumatoidea, espondilitis anquilosante.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Qué es el nivel neurológico de la lesión?</summary>
+          <div class="fc__r">El <strong>nivel más caudal</strong> con sensibilidad intacta y fuerza de <strong>3 o más</strong>, con función normal por encima.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Músculos clave de C5, C6, C7, C8 y T1.</summary>
+          <div class="fc__r">C5 flexores del codo · C6 extensores de muñeca · C7 extensores del codo · C8 flexores de los dedos · T1 abductores del meñique.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Músculos clave de L2 a S1.</summary>
+          <div class="fc__r">L2 flexores de cadera · <strong>L3 extensores de rodilla</strong> · L4 dorsiflexores del tobillo · L5 extensores del dedo gordo · S1 flexores plantares.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Qué define una lesión completa (AIS A)?</summary>
+          <div class="fc__r"><strong>Ausencia de función sensitiva y motora en S4-S5</strong>: sin contracción anal voluntaria, sin sensibilidad sacra y sin presión anal profunda.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Qué diferencia una AIS C de una D?</summary>
+          <div class="fc__r">En la <strong>C</strong>, más de la mitad de los músculos clave bajo el nivel tiene grado <strong>menor de 3</strong>; en la <strong>D</strong>, al menos la mitad tiene <strong>3 o más</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué es el shock medular y qué viene después?</summary>
+          <div class="fc__r"><strong>Plejía fláccida y arreflexia</strong> en agudo. Cuando cede, aparecen <strong>espasticidad, hiperreflexia y Babinski</strong> por debajo del nivel.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Síndrome centromedular: mecanismo y clínica.</summary>
+          <div class="fc__r"><strong>Hiperextensión cervical en canal espondilótico.</strong> Afecta <strong>más los miembros superiores, sobre todo las manos</strong>. Es el incompleto más frecuente.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Síndrome cordonal anterior: qué se pierde, qué se conserva y pronóstico.</summary>
+          <div class="fc__r">Se pierden la <strong>motilidad y la sensibilidad termoalgésica</strong>; se conserva la <strong>sensibilidad profunda</strong>. <strong>Peor pronóstico</strong>: solo el 10 % recupera la motilidad.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Brown-Séquard: ¿qué se pierde de cada lado?</summary>
+          <div class="fc__r"><strong>Mismo lado</strong>: plejía y propiocepción. <strong>Lado opuesto</strong>: dolor y temperatura, con tacto conservado.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué distingue al síndrome del cono medular?</summary>
+          <div class="fc__r">Toma <strong>S3-S5</strong>: <strong>sin déficit motor</strong>, reflejos conservados, retención urinaria, incontinencia fecal, disfunción eréctil y anestesia perineal.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Cola de caballo: altura y clínica.</summary>
+          <div class="fc__r">Por debajo de <strong>L1-L2</strong>. <strong>Dolor</strong>, paresia a paraplejía <strong>fláccida</strong>, anestesia en <strong>silla de montar</strong>, retención urinaria, incontinencia fecal, disfunción eréctil.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Manejo en el lugar del politraumatizado con posible lesión medular.</summary>
+          <div class="fc__r"><strong>Sospechar</strong>, extricación, <strong>movilización en bloque e inmovilización espinal completa</strong>, tratar el shock y trasladar a un centro especializado.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>En el hospital, ¿qué va antes que las imágenes?</summary>
+          <div class="fc__r">El <strong>ABCDE</strong> y la <strong>estabilización clínica</strong>. Después Rx, TAC y RM, e interconsulta con el especialista.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Desde qué nivel respira solo el paciente y desde cuál tiene tenodesis?</summary>
+          <div class="fc__r"><strong>C5</strong> respira en forma autónoma; <strong>C6</strong> conserva los extensores de muñeca y logra la pinza por tenodesis.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Qué nivel logra la marcha comunitaria?</summary>
+          <div class="fc__r"><strong>L3-S5</strong>, con ortesis antiequino y bastones.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>Disreflexia autonómica: a qué nivel, causa más frecuente y signos.</summary>
+          <div class="fc__r">Lesiones en <strong>T6 o por encima</strong>. Desencadenante típico: <strong>vejiga o intestino distendidos</strong>. <strong>HTA, cefalea pulsátil, bradicardia</strong>, piloerección, rubor y sudoración por encima del nivel.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Cómo es la vejiga neurogénica según el nivel?</summary>
+          <div class="fc__r"><strong>Hiperrefléxica</strong> en lesiones por encima de L1; <strong>arrefléxica</strong> por debajo de L1.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Triada clave</dt>
+        <dd><strong>Déficit motor + sensitivo + autonómico por debajo de un nivel.</strong> En agudo, shock medular: flacidez y arreflexia. Síndromes: <strong>centromedular</strong> (más brazos), <strong>cordonal anterior</strong> (pierde motilidad y dolor, conserva lo profundo), <strong>Brown-Séquard</strong> (motor y profunda del mismo lado, dolor del opuesto), <strong>cono</strong> (esfínteres sin déficit motor), <strong>cola de caballo</strong> (dolor y flacidez).</dd>
+
+        <dt class="r-gold">Estudio de elección</dt>
+        <dd>La <strong>escala ASIA</strong> (ISNCSCI): nivel sensitivo, motor y neurológico, y lesión completa o incompleta según <strong>S4-S5</strong>. Grados <strong>AIS A a E</strong>. Imágenes: Rx, TAC y RM, después de estabilizar.</dd>
+
+        <dt class="r-tto">Tratamiento de 1ª línea</dt>
+        <dd><strong>Movilización en bloque e inmovilización espinal completa</strong>, tratamiento del shock y traslado a un centro especializado; en el hospital, <strong>ABCDE y estabilización</strong> antes que las imágenes. Después, <strong>rehabilitación por objetivos</strong> según el nivel: C5 respira solo, C6 tenodesis, C7 transferencias, L3 marcha comunitaria.</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd><strong>Todo politraumatizado tiene lesión medular hasta que se demuestre lo contrario.</strong> Lesión en T6 o más arriba con <strong>HTA, cefalea y bradicardia</strong>: disreflexia autonómica, buscar vejiga o intestino distendidos. El <strong>cordonal anterior</strong> es el de peor pronóstico.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir de la clase «Lesión medular» del Dr. Gustavo Grilli (Neurología), que incluye la planilla y los pasos de clasificación de las Normas Internacionales para la Clasificación Neurológica de la Lesión de la Médula Espinal (ISNCSCI). Topografía de las vías: Snell, <em>Neuroanatomía clínica</em>. Material de estudio: no reemplaza el criterio clínico ni el protocolo institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+
+  // ---- Tema claro / oscuro ----
+  // Sin eleccion estampada manda el sistema; el boton la estampa y la guarda.
+  var raiz = document.documentElement;
+  var boton = document.getElementById('tema');
+
+  function temaActual(){
+    var estampado = raiz.getAttribute('data-theme');
+    if (estampado) return estampado;
+    return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+
+  if (boton){
+    var rotular = function(){
+      var actual = temaActual();
+      boton.setAttribute('aria-pressed', actual === 'dark' ? 'true' : 'false');
+      boton.setAttribute('aria-label', actual === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+    };
+    boton.addEventListener('click', function(){
+      var nuevo = temaActual() === 'dark' ? 'light' : 'dark';
+      raiz.setAttribute('data-theme', nuevo);
+      try { localStorage.setItem('wordmed-tema', nuevo); } catch (e) { /* sin persistencia */ }
+      rotular();
+    });
+    rotular();
+  }
+
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link, .ir-link'));
+
+  // Devuelve TODOS los enlaces al ancla: la misma seccion figura en el indice
+  // lateral y en el compacto, y los dos tienen que encenderse juntos.
+  function porMeta(hash){
+    return enlaces.filter(function(l){ return l.getAttribute('href') === '#' + hash; });
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var activos = porMeta(e.target.id);
+        if (!activos.length) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          activos.forEach(function(l){ l.setAttribute('aria-current', 'true'); });
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>
+<script>
+(function(){
+  "use strict";
+  var clave = document.body.dataset.clave || "";
+  var enApp = typeof window.WordmedApp !== "undefined";
+  var MEM = "wordmed:progreso";
+
+  function leer(){ try{ return JSON.parse(localStorage.getItem(MEM)) || {}; }catch(e){ return {}; } }
+  function guardar(m){ try{ localStorage.setItem(MEM, JSON.stringify(m)); }catch(e){} }
+
+  function alto(){
+    return Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+  }
+
+  /* retomar donde quedó */
+  if (clave) {
+    var m = leer()[clave];
+    if (m && m.y > 0) {
+      window.addEventListener("load", function(){
+        window.scrollTo(0, Math.min(m.y, alto()));
+      });
+    }
+  }
+
+  /* anotar el avance, sin ahogar el scroll */
+  var pendiente = false;
+  window.addEventListener("scroll", function(){
+    if (pendiente || !clave) return;
+    pendiente = true;
+    requestAnimationFrame(function(){
+      pendiente = false;
+      var y = window.scrollY;
+      var pct = Math.round((y / alto()) * 100);
+      pct = Math.max(0, Math.min(100, pct));
+      var m = leer();
+      m[clave] = { y: y, pct: pct, ts: Date.now() };
+      guardar(m);
+      if (enApp && window.WordmedApp.progreso) window.WordmedApp.progreso(clave, pct, y);
+    });
+  }, { passive: true });
+
+  /* volver: solo cuando vinimos de la cáscara web */
+  if (!enApp && document.referrer && document.referrer.indexOf(location.origin) === 0) {
+    var b = document.createElement("button");
+    b.className = "volver";
+    b.type = "button";
+    b.setAttribute("aria-label", "Volver");
+    b.innerHTML = '<svg class="volver__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg>';
+    b.addEventListener("click", function(){ history.back(); });
+    document.body.appendChild(b);
+  }
+})();
+</script>
+</body>
+</html>

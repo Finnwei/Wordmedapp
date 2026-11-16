@@ -1,0 +1,1892 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<script>
+(function(){
+  var enApp = typeof window.WordmedApp !== "undefined";
+  if (!enApp) {
+    /* En la web el cuadernillo se maqueta al ancho del dispositivo. */
+    var m = document.createElement("meta");
+    m.name = "viewport";
+    m.content = "width=device-width, initial-scale=1";
+    document.head.appendChild(m);
+    return;
+  }
+  /* En la app no se emite viewport: el WebView maqueta a su ancho por
+     omision y lo encoge para que entre, igual que al abrir el archivo a
+     mano. Sacar el meta despues de parsearlo no reencuadra nada, por eso
+     directamente no se emite. */
+  var s = document.createElement("style");
+  s.textContent = ".tema{display:none !important}";
+  document.head.appendChild(s);
+})();
+</script>
+<title>Semiología del Sistema Nervioso</title>
+<link rel="stylesheet" href="../../fuentes/fuentes.css">
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-bloque:1.95rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+
+  /* Que la barra de desplazamiento y los controles nativos acompanen al tema */
+  color-scheme: light dark;
+}
+
+/* Eleccion explicita de claro: solo hace falta para el color-scheme, los
+   tokens claros ya son la base sin estampar. */
+:root[data-theme="light"]{ color-scheme: light; }
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* Interruptor de tema claro / oscuro.
+   El estampado `data-theme` en la raíz ya lo respetan los bloques de tokens de
+   arriba; este botón sólo lo pone y lo guarda. Sin elección estampada mandan
+   las preferencias del sistema, que es el comportamiento por defecto. */
+.tema{
+  position:fixed; top:.7rem; right:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.tema:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.tema__icono{ width:1.15rem; height:1.15rem; display:block; }
+
+/* Se muestra el icono del tema al que se va a cambiar, no el actual.
+   Mismo escalonado que los tokens: base clara · sistema oscuro · elección explícita. */
+.tema__sol{ display:none; }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .tema__sol{ display:block; }
+  :root:not([data-theme="light"]) .tema__luna{ display:none; }
+}
+:root[data-theme="dark"] .tema__sol{ display:block; }
+:root[data-theme="dark"] .tema__luna{ display:none; }
+:root[data-theme="light"] .tema__sol{ display:none; }
+:root[data-theme="light"] .tema__luna{ display:block; }
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índices ---------- */
+/* Dos piezas complementarias y deliberadamente redundantes:
+   · .indice        — barra lateral fija, sólo en pantalla ancha, navegación permanente.
+   · .indice-rapido — tarjeta compacta al principio del cuerpo, visible en TODO ancho.
+   La lateral desaparece por debajo de 64rem, que es justo el ancho del panel de
+   Artifacts y del celular; sin la compacta el cuadernillo publicado se queda sin
+   índice. Las dos apuntan a los mismos anclajes y se resaltan juntas al desplazar. */
+
+/* 6.1 · Barra lateral */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+/* Rótulo de bloque intercalado en la lista lateral: no es un enlace, sólo
+   separa grupos de secciones para que 30 entradas no sean una tira plana. */
+.indice__bloque{
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+  margin:.9rem 0 .2rem; padding:0 .55rem;
+}
+.indice__bloque:first-child{ margin-top:0; }
+
+/* 6.2 · Índice compacto (va después de la portada, dentro del cuerpo) */
+.indice-rapido{
+  background:var(--hoja-hund);
+  border:1px solid var(--linea);
+  border-radius:var(--radio);
+  padding:1.1rem 1.2rem 1.2rem;
+}
+.indice-rapido__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .85rem;
+}
+/* auto-fit: una columna en el panel angosto, dos o tres en pantalla ancha */
+.indice-rapido__bloques{
+  list-style:none; margin:0; padding:0;
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(15rem, 1fr));
+  gap:1rem 2rem; align-items:start;
+}
+.ir-bloque{
+  display:block; margin-bottom:.4rem;
+  font-family:var(--f-titulo); font-size:.98rem; font-weight:700; line-height:1.3;
+  color:var(--tinta); text-decoration:none;
+  padding-bottom:.3rem; border-bottom:1px solid var(--linea-fuerte);
+}
+.ir-bloque:hover{ color:var(--cli-t); }
+.ir-secciones{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.05rem; }
+.ir-link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.55rem 1fr; align-items:baseline; gap:.4rem;
+  padding:.2rem .35rem; border-radius:2px;
+  font-size:.86rem; line-height:1.4; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.ir-link > b{
+  font-family:var(--f-dato); font-size:.76rem; font-weight:700;
+  font-variant-numeric:tabular-nums; color:var(--ct); opacity:.85;
+}
+.ir-link:hover{ background:var(--hoja); color:var(--tinta); }
+.ir-link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Título de bloque y ficha de sección ---------- */
+
+/* Anuncia un grupo de secciones. Neutro en color a propósito: los siete colores
+   tienen significado clínico fijo y un bloque agrupa secciones de varios. La
+   regla de abajo lleva el degradado completo de la paleta, igual que la pestaña
+   de repaso y la cabecera de la ficha relámpago.
+   Sin <svg> adentro: el exportador a Word aparea los diagramas con las figuras
+   por contador posicional sobre el HTML crudo (ver exportar_docx.py). */
+.bloque{
+  margin:1.4rem 0 0; padding:0;
+  text-align:center; scroll-margin-top:2.5rem;
+  display:flex; flex-direction:column; align-items:center; gap:.3rem;
+  font-weight:400;
+}
+.bloque:first-child{ margin-top:0; }
+.bloque__rotulo{
+  font-family:var(--f-texto);
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+}
+.bloque__nombre{
+  font-family:var(--f-titulo); font-size:var(--t-bloque); font-weight:700; line-height:1.15;
+  letter-spacing:-.01em; color:var(--tinta); text-wrap:balance; max-width:32ch;
+}
+.bloque::after{
+  content:""; width:7rem; height:2.5px; margin-top:.5rem; border-radius:2px;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+}
+
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.5rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-column:1; grid-row:1; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+/* El icono ocupa la columna 1 y NADA MAS. Todo el resto del contenido se
+   apila en la columna 2, una fila por elemento, sin importar cuantos
+   parrafos haya.
+
+   Sin esta regla la caja solo funciona con un unico <p>: a partir del
+   segundo, la autocolocacion del grid empieza a repartir contenido en la
+   columna del icono, que es `auto` y por lo tanto se ensancha hasta abarcar
+   el parrafo que le toco. La columna `1fr` queda entonces reducida a una
+   tira angosta, el texto se parte en dos columnas desbalanceadas y la caja
+   crece hasta volverse ilegible. */
+.importante > :not(.importante__icono){ grid-column:2; }
+.importante__titulo{
+  grid-row:1;
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante ul, .importante ol{ margin:0; padding-left:1.15rem; }
+.importante li + li{ margin-top:.3rem; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso, .tema{ display:none !important; }
+  /* La lateral no se imprime, pero la compacta sí: en papel es la tabla de
+     contenidos del cuadernillo. */
+  .indice-rapido{ display:block; break-inside:avoid; page-break-inside:avoid; margin-bottom:1.2rem; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .bloque{
+    margin:1.6rem 0 1rem;
+    break-after:avoid; page-break-after:avoid;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+<style>
+/* Fuentes de la capa de contenido. Va después del estilo del
+   cuadernillo para pisar las de Windows, que no se pueden
+   redistribuir y no existen en Android. */
+:root{
+  --f-titulo:'Spectral',Georgia,'Times New Roman',serif;
+  --f-texto:'Open Sans',system-ui,-apple-system,sans-serif;
+  --f-dato:'Cascadia Mono','Cascadia Code',ui-monospace,Consolas,monospace;
+}
+/* Botón de volver, espejo del de tema que ya trae el cuadernillo. */
+.volver{
+  position:fixed; top:.7rem; left:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.volver:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.volver__icono{ width:1.15rem; height:1.15rem; display:block; }
+</style>
+</head>
+<body data-clave="neurologia/2-semiologia-sistema-nervioso">
+<script>
+/* Aplica el tema guardado antes de pintar. Va aca arriba a proposito: si
+   esperara al script del final, el documento parpadearia en el tema del
+   sistema antes de corregirse. */
+(function(){
+  try {
+    var guardado = localStorage.getItem('wordmed-tema');
+    if (guardado === 'dark' || guardado === 'light') {
+      document.documentElement.setAttribute('data-theme', guardado);
+    }
+  } catch (e) { /* almacenamiento bloqueado: manda el sistema */ }
+})();
+</script>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<button class="tema" id="tema" type="button" aria-pressed="false" aria-label="Cambiar a modo oscuro">
+  <svg class="tema__icono tema__sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.2"></circle>
+    <path d="M12 2.6v2.1M12 19.3v2.1M5.1 5.1l1.5 1.5M17.4 17.4l1.5 1.5M2.6 12h2.1M19.3 12h2.1M5.1 18.9l1.5-1.5M17.4 6.6l1.5-1.5"></path>
+  </svg>
+  <svg class="tema__icono tema__luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20.4 14.2A8.6 8.6 0 0 1 9.8 3.6a8.6 8.6 0 1 0 10.6 10.6z"></path>
+  </svg>
+</button>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li class="indice__bloque">A · Examen general</li>
+      <li><a class="indice__link i-generalidades" href="#exploracion">Exploración y anamnesis</a></li>
+      <li><a class="indice__link i-diagnostico"   href="#conciencia">Conciencia: Glasgow</a></li>
+      <li><a class="indice__link i-clinica"       href="#facies">Facies</a></li>
+      <li><a class="indice__link i-clinica"       href="#marcha">Actitud, marcha y decúbito</a></li>
+
+      <li class="indice__bloque">B · Pares craneales</li>
+      <li><a class="indice__link i-diagnostico"   href="#pares">Los 12 pares</a></li>
+      <li><a class="indice__link i-clinica"       href="#facial">Parálisis facial</a></li>
+
+      <li class="indice__bloque">C · Motilidad</li>
+      <li><a class="indice__link i-fisiopatologia" href="#jerarquias">Jerarquías motoras</a></li>
+      <li><a class="indice__link i-clinica"        href="#tono">Tono muscular</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#trofismo">Trofismo</a></li>
+      <li><a class="indice__link i-clinica"        href="#troficos">Trastornos tróficos</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#paralisis">Niveles de parálisis</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#fuerza">Fuerza muscular</a></li>
+
+      <li class="indice__bloque">D · Coordinación y más</li>
+      <li><a class="indice__link i-diagnostico"   href="#taxia">Taxia</a></li>
+      <li><a class="indice__link i-clinica"       href="#praxias">Praxias y lenguaje</a></li>
+      <li><a class="indice__link i-diagnostico"   href="#reflejos">Reflejos</a></li>
+      <li><a class="indice__link i-diagnostico"   href="#sensibilidad">Sensibilidad</a></li>
+
+      <li class="indice__bloque">E · Complementarios</li>
+      <li><a class="indice__link i-diagnostico"   href="#complementarios">Estudios complementarios</a></li>
+
+      <li class="indice__bloque">Cierre</li>
+      <li><a class="indice__link i-clinica"       href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"   href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Neurología · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Semiología del Sistema Nervioso</h1>
+      <p class="portada__bajada">El examen neurológico en el orden en que se hace: del interrogatorio y la conciencia a los pares craneales, la motilidad, la coordinación, los reflejos y la sensibilidad. Qué se explora en cada paso, cómo se hace y qué significa lo anormal.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">17 secciones</span>
+        <span class="etiqueta s-diagnostico">Maniobras y escalas</span>
+        <span class="etiqueta s-clinica">1ª vs 2ª motoneurona</span>
+        <span class="etiqueta s-fisiopatologia">Niveles de los reflejos</span>
+      </div>
+    </header>
+
+    <nav class="indice-rapido" aria-label="Contenido del cuadernillo">
+      <p class="indice-rapido__rotulo">Contenido</p>
+      <ol class="indice-rapido__bloques">
+        <li>
+          <a class="ir-bloque" href="#bloque-a">Bloque A · La exploración y el examen general</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades" href="#exploracion"><b>01</b> Cómo se ordena la exploración</a></li>
+            <li><a class="ir-link i-diagnostico"   href="#conciencia"><b>02</b> Estado de conciencia: Glasgow</a></li>
+            <li><a class="ir-link i-clinica"       href="#facies"><b>03</b> Facies</a></li>
+            <li><a class="ir-link i-clinica"       href="#marcha"><b>04</b> Actitud, marcha y decúbito</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-b">Bloque B · Pares craneales</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-diagnostico" href="#pares"><b>05</b> Exploración de los 12 pares</a></li>
+            <li><a class="ir-link i-clinica"     href="#facial"><b>06</b> Parálisis facial: central o periférica</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-c">Bloque C · Motilidad</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-fisiopatologia" href="#jerarquias"><b>07</b> Motilidad y sus jerarquías</a></li>
+            <li><a class="ir-link i-clinica"        href="#tono"><b>08</b> Tono muscular y sus alteraciones</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#trofismo"><b>09</b> Trofismo: de qué depende y cómo se explora</a></li>
+            <li><a class="ir-link i-clinica"        href="#troficos"><b>10</b> Trastornos tróficos</a></li>
+            <li><a class="ir-link i-diagnostico"    href="#paralisis"><b>11</b> Motilidad activa y niveles de parálisis</a></li>
+            <li><a class="ir-link i-diagnostico"    href="#fuerza"><b>12</b> Valoración de la fuerza</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-d">Bloque D · Coordinación, reflejos y sensibilidad</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-diagnostico" href="#taxia"><b>13</b> Coordinación o taxia</a></li>
+            <li><a class="ir-link i-clinica"     href="#praxias"><b>14</b> Praxias y lenguaje</a></li>
+            <li><a class="ir-link i-diagnostico" href="#reflejos"><b>15</b> Reflejos y sus niveles</a></li>
+            <li><a class="ir-link i-diagnostico" href="#sensibilidad"><b>16</b> Sensibilidad</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-e">Bloque E · Estudios complementarios</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-diagnostico" href="#complementarios"><b>17</b> Imágenes, exámenes eléctricos y especiales</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#repaso">Cierre</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-clinica"     href="#repaso"><b>·</b> Repaso activo</a></li>
+            <li><a class="ir-link i-importantes" href="#relampago"><b>·</b> Ficha Relámpago</a></li>
+          </ul>
+        </li>
+      </ol>
+    </nav>
+
+    <h2 class="bloque" id="bloque-a">
+      <span class="bloque__rotulo">Bloque A</span>
+      <span class="bloque__nombre">La exploración y el examen general</span>
+    </h2>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="exploracion">
+      <span class="seccion__pestana"><b>01</b> Base</span>
+      <h2 class="seccion__titulo">Cómo se ordena la exploración</h2>
+
+      <p>La exploración del sistema nervioso tiene <strong>cinco pasos</strong>, y el examen físico, que es el segundo, tiene a su vez <strong>siete puntos</strong>. Ese orden es el índice de este cuadernillo y conviene seguirlo siempre igual: así no se saltea nada.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 330" role="img" aria-label="Los cinco pasos de la exploración del sistema nervioso: interrogatorio, examen físico neurológico con sus siete puntos, diagnóstico por imágenes, exámenes eléctricos y exámenes especiales">
+          <defs>
+            <marker id="sem-exp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <rect x="20" y="16" width="290" height="44" rx="6" fill="var(--c)" fill-opacity="0.18" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="165" y="43" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">I · Interrogatorio o anamnesis</text>
+          <rect x="20" y="80" width="290" height="44" rx="6" fill="var(--c)" fill-opacity="0.38" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="165" y="107" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">II · Examen físico neurológico</text>
+          <rect x="20" y="144" width="290" height="44" rx="6" fill="var(--c)" fill-opacity="0.18" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="165" y="171" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">III · Diagnóstico por imágenes</text>
+          <rect x="20" y="208" width="290" height="44" rx="6" fill="var(--c)" fill-opacity="0.18" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="165" y="235" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">IV · Exámenes eléctricos</text>
+          <rect x="20" y="272" width="290" height="44" rx="6" fill="var(--c)" fill-opacity="0.18" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="165" y="299" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">V · Exámenes especiales</text>
+          <line x1="165" y1="60" x2="165" y2="77" stroke="currentColor" stroke-width="1.3" marker-end="url(#sem-exp)"></line>
+          <line x1="165" y1="124" x2="165" y2="141" stroke="currentColor" stroke-width="1.3" marker-end="url(#sem-exp)"></line>
+          <line x1="165" y1="188" x2="165" y2="205" stroke="currentColor" stroke-width="1.3" marker-end="url(#sem-exp)"></line>
+          <line x1="165" y1="252" x2="165" y2="269" stroke="currentColor" stroke-width="1.3" marker-end="url(#sem-exp)"></line>
+
+          <line x1="310" y1="102" x2="376" y2="102" stroke="currentColor" stroke-width="1.3" marker-end="url(#sem-exp)"></line>
+          <text x="343" y="94" text-anchor="middle" font-size="11" fill="currentColor">incluye</text>
+          <rect x="380" y="16" width="420" height="300" rx="8" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="400" y="50" font-size="12.5" fill="currentColor"><tspan font-weight="700">a ·</tspan> General: conciencia, facie, actitud, marcha, decúbito</text>
+          <text x="400" y="88" font-size="12.5" fill="currentColor"><tspan font-weight="700">b ·</tspan> Pares craneales</text>
+          <text x="400" y="126" font-size="12.5" fill="currentColor"><tspan font-weight="700">c ·</tspan> Motilidad: pasiva (tono, trofismo) y activa (fuerza)</text>
+          <text x="400" y="164" font-size="12.5" fill="currentColor"><tspan font-weight="700">d ·</tspan> Coordinación o taxia, y praxias</text>
+          <text x="400" y="202" font-size="12.5" fill="currentColor"><tspan font-weight="700">e ·</tspan> Reflejos</text>
+          <text x="400" y="240" font-size="12.5" fill="currentColor"><tspan font-weight="700">f ·</tspan> Sensibilidad</text>
+          <text x="400" y="278" font-size="12.5" fill="currentColor"><tspan font-weight="700">g ·</tspan> Lenguaje</text>
+        </svg>
+        <figcaption>Los cinco pasos en orden. El examen físico se recorre siempre de la <strong>a</strong> a la <strong>g</strong>; los tres últimos pasos son estudios complementarios y se piden según lo que encontró el examen.</figcaption>
+      </figure>
+
+      <h3>I · Interrogatorio o anamnesis</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Parte</th><th>Qué se busca</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>MC</strong>: motivo de consulta</td><td>Los <strong>signos y síntomas que llevan al enfermo a la consulta</strong></td></tr>
+            <tr><td><strong>AEA</strong>: antecedentes de la enfermedad actual</td><td><strong>Desmenuzar prolija y ordenadamente el MC</strong>: comienzo, evolución y curso. Preguntar por <strong>fiebre, trastornos esfinterianos y trastornos visuales</strong></td></tr>
+            <tr><td><strong>AP</strong>: antecedentes personales</td><td><strong>Desde el embarazo</strong>: parto, internación en neonatología, crecimiento y desarrollo, <strong>pautas madurativas</strong>, convulsiones, TEC, escolaridad, enfermedades, intoxicaciones</td></tr>
+            <tr><td><strong>AHF</strong>: antecedentes hereditarios y familiares</td><td>Enfermedades <strong>clínicas, neurológicas y psiquiátricas</strong> en la familia directa: abuelos, padres y hermanos</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «Semiología del sistema nervioso», Dr. Gustavo Grilli.</p>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-diagnostico" id="conciencia">
+      <span class="seccion__pestana"><b>02</b> Examen general</span>
+      <h2 class="seccion__titulo">Estado de conciencia: Glasgow</h2>
+
+      <p>El estado de conciencia se mide con la <strong>escala de Glasgow</strong>, que puntúa tres respuestas por separado. La suma va de <strong>3</strong>, sin ninguna respuesta, a <strong>15</strong>, normal.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Puntaje</th><th>Apertura ocular</th><th>Respuesta verbal</th><th>Mejor respuesta motora</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><span class="dato">6</span></td><td>—</td><td>—</td><td><strong>Obedece órdenes</strong></td></tr>
+            <tr><td><span class="dato">5</span></td><td>—</td><td><strong>Orientada</strong>, conversa</td><td><strong>Localiza el dolor</strong></td></tr>
+            <tr><td><span class="dato">4</span></td><td><strong>Espontánea</strong></td><td>Desorientada, confusa</td><td>Flexión normal: <strong>retirada</strong></td></tr>
+            <tr><td><span class="dato">3</span></td><td>Al estímulo verbal</td><td>Palabras inapropiadas</td><td>Flexión anormal: <strong>decorticación</strong></td></tr>
+            <tr><td><span class="dato">2</span></td><td>Al dolor</td><td>Sonidos incomprensibles</td><td>Extensión: <strong>descerebración</strong></td></tr>
+            <tr><td><span class="dato">1</span></td><td>No hay apertura</td><td>No hay respuesta</td><td>No hay respuesta</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Los máximos se recuerdan por las columnas: <strong>ocular 4, verbal 5, motora 6</strong>. En la motora, la <strong>decorticación</strong> (flexión anormal, 3) es mejor que la <strong>descerebración</strong> (extensión, 2).</p>
+
+      <p class="cita">Clase «Semiología del sistema nervioso», Dr. Gustavo Grilli: escala de Glasgow.</p>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-clinica" id="facies">
+      <span class="seccion__pestana"><b>03</b> Examen general</span>
+      <h2 class="seccion__titulo">Facies</h2>
+
+      <p>La clase presenta las facies con imágenes. De ellas, dos tienen rótulo y entran acá:</p>
+      <ul>
+        <li><strong>Síndrome de Claude Bernard-Horner</strong>: por lesión de la vía simpática del ojo. Se reconoce por la <strong>ptosis palpebral parcial</strong> y la <strong>miosis</strong> del mismo lado, con aparente hundimiento del ojo (enoftalmos) y, según el nivel de la lesión, falta de sudoración de esa hemicara (anhidrosis).</li>
+        <li><strong>Parálisis facial</strong>: supranuclear, nuclear e infranuclear. Se desarrolla con los pares craneales, en <a href="#facial">la sección 06</a>.</li>
+      </ul>
+      <p>Las demás fotografías de la diapositiva no tienen nombre y no se pueden identificar con seguridad; no se incluyen.</p>
+
+      <p class="cita">Clase «Semiología del sistema nervioso», Dr. Gustavo Grilli. Síndrome de Horner: Argente HA, Álvarez ME, <em>Semiología médica</em>.</p>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-clinica" id="marcha">
+      <span class="seccion__pestana"><b>04</b> Examen general</span>
+      <h2 class="seccion__titulo">Actitud, marcha y decúbito</h2>
+
+      <p>Se observan antes de tocar al paciente: cómo está acostado, cómo se para y cómo camina. Tres marchas tienen rótulo en la clase; las demás imágenes se identifican por su aspecto y van marcadas como tales.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Marcha o actitud</th><th>Cómo se ve</th><th>Qué indica</th><th>Origen del dato</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>En steppage</strong></td><td>Levanta mucho la rodilla porque el pie cae: la punta toca el suelo antes que el talón</td><td>Debilidad de los dorsiflexores del pie: lesión periférica</td><td>Rotulada en la clase</td></tr>
+            <tr><td><strong>Cerebelosa</strong></td><td>Base amplia, inestable, como la de un ebrio</td><td>Lesión del cerebelo</td><td>Rotulada en la clase</td></tr>
+            <tr><td><strong>Sensitiva</strong> (tabética)</td><td>Taloneante, mirando el suelo; empeora en la oscuridad o con los ojos cerrados</td><td>Pérdida de la sensibilidad profunda</td><td>Rotulada en la clase</td></tr>
+            <tr><td><strong>Parkinsoniana</strong></td><td>Tronco inclinado hacia adelante, pasos cortos, sin balanceo de los brazos</td><td>Lesión extrapiramidal</td><td>Identificada en la imagen</td></tr>
+            <tr><td><strong>Hemipléjica</strong> o en segador</td><td>El miembro inferior rígido describe un semicírculo al avanzar</td><td>Lesión piramidal unilateral</td><td>Identificada en la imagen</td></tr>
+            <tr><td><strong>En tijera</strong></td><td>Las rodillas se cruzan al caminar</td><td>Espasticidad de ambos miembros inferiores</td><td>Identificada en la imagen</td></tr>
+            <tr><td><strong>Opistótonos</strong></td><td>Cuerpo en arco con hiperextensión del tronco</td><td>Contractura de los músculos extensores, como en el tétanos</td><td>Identificada en la imagen</td></tr>
+            <tr><td><strong>Decúbito en gatillo de fusil</strong></td><td>De costado, con la cabeza hacia atrás y los miembros inferiores flexionados</td><td>Irritación meníngea</td><td>Identificada en la imagen</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «Semiología del sistema nervioso», Dr. Gustavo Grilli. Descripción de las marchas: Argente HA, Álvarez ME, <em>Semiología médica</em>.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-b">
+      <span class="bloque__rotulo">Bloque B</span>
+      <span class="bloque__nombre">Pares craneales</span>
+    </h2>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-diagnostico" id="pares">
+      <span class="seccion__pestana"><b>05</b> Exploración</span>
+      <h2 class="seccion__titulo">Exploración de los 12 pares</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Par</th><th>Nervio</th><th>Qué se examina</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>I</strong></td><td>Olfatorio</td><td>Percepción de sustancias olorosas</td></tr>
+            <tr><td><strong>II</strong></td><td>Óptico</td><td><strong>Agudeza visual</strong>, visión de colores, <strong>campos visuales</strong> e inspección de retina y papila con <strong>oftalmoscopio</strong></td></tr>
+            <tr><td><strong>III</strong></td><td>Motor ocular común</td><td><strong>Pupilas</strong>: tamaño, simetría y forma; reflejos <strong>fotomotor, consensual y de acomodación</strong>. Motilidad del oblicuo inferior y de los rectos superior, inferior y medial. <strong>Elevación del párpado</strong></td></tr>
+            <tr><td><strong>IV</strong></td><td>Patético o troclear</td><td>Motilidad del <strong>oblicuo superior</strong></td></tr>
+            <tr><td><strong>V</strong></td><td>Trigémino</td><td><strong>Sensibilidad de la cara</strong>, <strong>reflejo corneal</strong>. Motilidad de maseteros, temporales y pterigoideos: masticación y lateralización de la mandíbula</td></tr>
+            <tr><td><strong>VI</strong></td><td>Motor ocular externo</td><td>Motilidad del <strong>recto externo</strong></td></tr>
+            <tr><td><strong>VII</strong></td><td>Facial</td><td>Motilidad de la <strong>musculatura facial</strong></td></tr>
+            <tr><td><strong>VIII</strong></td><td>Acústico</td><td><strong>Rama coclear</strong>: sensibilidad auditiva. <strong>Rama vestibular</strong>: maniobras oculocefálicas, marcha en estrella y pruebas calóricas</td></tr>
+            <tr><td><strong>IX y X</strong></td><td>Glosofaríngeo y vago</td><td><strong>Se exploran juntos</strong>: sensibilidad y motilidad velopalatina, <strong>reflejo nauseoso</strong></td></tr>
+            <tr><td><strong>XI</strong></td><td>Espinal</td><td>Balance muscular del <strong>esternocleidomastoideo</strong> y de la porción superior del <strong>trapecio</strong></td></tr>
+            <tr><td><strong>XII</strong></td><td>Hipogloso</td><td>Motilidad de la <strong>lengua</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Para los músculos oculares sirve una regla corta: el <strong>IV mueve el oblicuo superior</strong>, el <strong>VI el recto externo</strong> y el <strong>III todo lo demás</strong>, además del párpado y la pupila.</p>
+
+      <p class="cita">Clase «Semiología del sistema nervioso», Dr. Gustavo Grilli: tabla de exploración de los pares craneales.</p>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-clinica" id="facial">
+      <span class="seccion__pestana"><b>06</b> Correlación clínica</span>
+      <h2 class="seccion__titulo">Parálisis facial: central o periférica</h2>
+
+      <p>La clase muestra tres parálisis faciales según dónde está la lesión: <strong>supranuclear</strong>, <strong>nuclear</strong> e <strong>infranuclear</strong>. La diferencia se entiende con un solo dato anatómico: el núcleo del facial tiene un <strong>sector superior</strong>, que mueve la frente, y un <strong>sector inferior</strong>, que mueve el resto de la cara. El superior recibe fibras de <strong>las dos cortezas</strong>; el inferior, solo de la <strong>corteza del lado opuesto</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 370" role="img" aria-label="Vía del nervio facial: el sector superior del núcleo, que mueve la frente, recibe fibras de ambas cortezas; el sector inferior solo de la corteza contralateral. Lesión A supranuclear, B nuclear y C del nervio">
+          <defs>
+            <marker id="sem-fac" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <rect x="40" y="20" width="230" height="44" rx="6" fill="var(--c)" fill-opacity="0.22" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="155" y="47" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Corteza motora izquierda</text>
+          <rect x="560" y="20" width="230" height="44" rx="6" fill="var(--c)" fill-opacity="0.22" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="675" y="47" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Corteza motora derecha</text>
+
+          <rect x="500" y="168" width="290" height="46" rx="6" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="645" y="196" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Sector superior · frente</text>
+          <rect x="500" y="214" width="290" height="46" rx="6" fill="var(--c)" fill-opacity="0.30" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="645" y="242" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Sector inferior · resto de la cara</text>
+          <text x="600" y="160" text-anchor="middle" font-size="11.5" fill="currentColor">Núcleo del facial derecho (protuberancia)</text>
+
+          <line x1="200" y1="64" x2="496" y2="190" stroke="currentColor" stroke-width="1.4" marker-end="url(#sem-fac)"></line>
+          <line x1="150" y1="64" x2="496" y2="236" stroke="currentColor" stroke-width="1.4" marker-end="url(#sem-fac)"></line>
+          <text x="330" y="96" font-size="11" fill="currentColor">fibras cruzadas: a los dos sectores</text>
+          <line x1="740" y1="64" x2="740" y2="164" stroke="currentColor" stroke-width="1.4" marker-end="url(#sem-fac)"></line>
+          <text x="748" y="118" font-size="11" fill="currentColor">directas:</text>
+          <text x="748" y="132" font-size="11" fill="currentColor">solo arriba</text>
+
+          <line x1="600" y1="260" x2="600" y2="312" stroke="currentColor" stroke-width="2" marker-end="url(#sem-fac)"></line>
+          <text x="610" y="292" font-size="11" fill="currentColor">nervio facial</text>
+          <rect x="500" y="316" width="290" height="40" rx="6" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="645" y="341" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Hemicara derecha</text>
+
+          <circle cx="323" cy="150" r="13" fill="var(--c)" fill-opacity="0.55" stroke="currentColor"></circle>
+          <text x="323" y="155" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">A</text>
+          <circle cx="478" cy="272" r="13" fill="var(--c)" fill-opacity="0.55" stroke="currentColor"></circle>
+          <text x="478" y="277" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">B</text>
+          <circle cx="575" cy="290" r="13" fill="var(--c)" fill-opacity="0.55" stroke="currentColor"></circle>
+          <text x="575" y="295" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">C</text>
+        </svg>
+        <figcaption><strong>A</strong>, supranuclear: se cortan las fibras de la corteza izquierda. El sector superior sigue recibiendo fibras de la derecha y la frente se mueve; el inferior queda sin comando. <strong>B</strong>, nuclear, y <strong>C</strong>, infranuclear: se pierde la salida del núcleo y se paraliza toda la hemicara.</figcaption>
+      </figure>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Tipo</th><th>Lesión</th><th>Qué se paraliza</th><th>Lado</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Central</strong> o supranuclear</td><td>Corteza o vía corticonuclear</td><td><strong>Solo la mitad inferior de la cara</strong>: la frente se arruga</td><td><strong>Opuesto</strong> a la lesión</td></tr>
+            <tr><td><strong>Nuclear</strong></td><td>Núcleo del facial, en la protuberancia</td><td><strong>Toda la hemicara</strong>, incluida la frente</td><td>Mismo lado</td></tr>
+            <tr><td><strong>Periférica</strong> o infranuclear</td><td>Nervio facial</td><td><strong>Toda la hemicara</strong>, incluida la frente</td><td>Mismo lado</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>La frente decide.</strong> Si el paciente <strong>puede arrugar la frente</strong> del lado paralizado, la parálisis es <strong>central</strong>: hay que pensar en una lesión del cerebro del lado opuesto, como un ACV. Si <strong>no puede</strong>, la lesión está en el núcleo o en el nervio, del mismo lado.</p>
+      </div>
+
+      <p class="cita">Clase «Semiología del sistema nervioso», Dr. Gustavo Grilli: esquema de la parálisis facial supranuclear, nuclear e infranuclear. Inervación bilateral del sector superior: Snell RS, <em>Neuroanatomía clínica</em>.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-c">
+      <span class="bloque__rotulo">Bloque C</span>
+      <span class="bloque__nombre">Motilidad</span>
+    </h2>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-fisiopatologia" id="jerarquias">
+      <span class="seccion__pestana"><b>07</b> Mecanismo</span>
+      <h2 class="seccion__titulo">Motilidad y sus jerarquías</h2>
+
+      <p>La <strong>motilidad</strong> es la actividad muscular regida por el sistema nervioso a través de su efector funcional, el <strong>aparato neuromuscular</strong>. Tiene dos formas:</p>
+      <ul>
+        <li><strong>Estática o postural</strong>: contracciones <strong>duraderas y persistentes</strong> que resultan de la <strong>variación del tono muscular</strong>.</li>
+        <li><strong>Cinética</strong> o propiamente dicha: contracciones <strong>clónicas</strong> que <strong>desplazan</strong> uno o varios segmentos, o todo el cuerpo.</li>
+      </ul>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 860 420" role="img" aria-label="Las cuatro jerarquías de la actividad motora, voluntaria, automática, postural y refleja, convergen sobre la neurona motriz periférica, vía final común hacia el músculo; el tono está regulado por núcleos facilitadores e inhibidores">
+          <defs>
+            <marker id="sem-jer" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <rect x="20" y="16" width="330" height="54" rx="6" fill="var(--c)" fill-opacity="0.26" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="36" y="38" font-size="12.5" font-weight="700" fill="currentColor">1 · Motilidad voluntaria</text>
+          <text x="36" y="57" font-size="11.5" fill="currentColor">sistema piramidal: 1ª y 2ª motoneurona</text>
+          <rect x="20" y="82" width="330" height="54" rx="6" fill="var(--c)" fill-opacity="0.20" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="36" y="104" font-size="12.5" font-weight="700" fill="currentColor">2 · Movimientos automáticos y asociados</text>
+          <text x="36" y="123" font-size="11.5" fill="currentColor">sistema extrapiramidal</text>
+          <rect x="20" y="148" width="330" height="54" rx="6" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="36" y="170" font-size="12.5" font-weight="700" fill="currentColor">3 · Motilidad estática o postural</text>
+          <text x="36" y="189" font-size="11.5" fill="currentColor">tono muscular: reflejo miotático o de estiramiento</text>
+          <rect x="20" y="214" width="330" height="54" rx="6" fill="var(--c)" fill-opacity="0.08" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="36" y="236" font-size="12.5" font-weight="700" fill="currentColor">4 · Actos reflejos</text>
+          <text x="36" y="255" font-size="11.5" fill="currentColor">arco reflejo</text>
+
+          <rect x="470" y="104" width="300" height="60" rx="6" fill="var(--c)" fill-opacity="0.36" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="620" y="130" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Neurona motriz periférica</text>
+          <text x="620" y="149" text-anchor="middle" font-size="11.5" fill="currentColor">vía final común</text>
+          <rect x="520" y="214" width="200" height="44" rx="6" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="620" y="241" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Músculo</text>
+
+          <line x1="350" y1="43" x2="466" y2="122" stroke="currentColor" stroke-width="1.3" marker-end="url(#sem-jer)"></line>
+          <line x1="350" y1="109" x2="466" y2="130" stroke="currentColor" stroke-width="1.3" marker-end="url(#sem-jer)"></line>
+          <line x1="350" y1="175" x2="466" y2="140" stroke="currentColor" stroke-width="1.3" marker-end="url(#sem-jer)"></line>
+          <line x1="350" y1="241" x2="466" y2="150" stroke="currentColor" stroke-width="1.3" marker-end="url(#sem-jer)"></line>
+          <line x1="620" y1="164" x2="620" y2="210" stroke="currentColor" stroke-width="1.6" marker-end="url(#sem-jer)"></line>
+          <text x="630" y="192" font-size="11" fill="currentColor">ordena la contracción</text>
+
+          <rect x="20" y="300" width="390" height="104" rx="6" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="36" y="324" font-size="12.5" font-weight="700" fill="currentColor">+ Facilitadores del tono</text>
+          <text x="36" y="346" font-size="11.5" fill="currentColor">Núcleo vestibular de Deiters</text>
+          <text x="36" y="364" font-size="11.5" fill="currentColor">Neocerebelo: hemisferios</text>
+          <text x="36" y="382" font-size="11.5" fill="currentColor">Núcleo caudado · núcleo lenticular</text>
+          <rect x="430" y="300" width="390" height="104" rx="6" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="446" y="324" font-size="12.5" font-weight="700" fill="currentColor">− Inhibidores del tono</text>
+          <text x="446" y="346" font-size="11.5" fill="currentColor">Núcleo rojo</text>
+          <text x="446" y="364" font-size="11.5" fill="currentColor">Locus niger</text>
+          <text x="446" y="382" font-size="11.5" fill="currentColor">Corteza motora</text>
+          <text x="420" y="290" text-anchor="middle" font-size="11.5" fill="currentColor">regulan el nivel 3, el tono</text>
+        </svg>
+        <figcaption>Las cuatro jerarquías terminan en la misma neurona: la <strong>motoneurona periférica es la vía final común</strong>. Por eso su lesión afecta a la vez la fuerza, el tono, los reflejos y el trofismo. El tono resulta del equilibrio entre <strong>facilitadores</strong> e <strong>inhibidores</strong>.</figcaption>
+      </figure>
+
+      <p class="cita">Clase «Semiología del sistema nervioso», Dr. Gustavo Grilli: jerarquías de la actividad motora.</p>
+    </section>
+
+    <!-- ============ 8 ============ -->
+    <section class="seccion s-clinica" id="tono">
+      <span class="seccion__pestana"><b>08</b> Motilidad pasiva</span>
+      <h2 class="seccion__titulo">Tono muscular y sus alteraciones</h2>
+
+      <h3>Cómo se explora</h3>
+      <ol>
+        <li><strong>Inspección</strong>: la actitud de los miembros, que puede ser normal, en flexión o en extensión.</li>
+        <li><strong>Palpación de las masas musculares</strong>: elásticas, duras o fláccidas.</li>
+        <li><strong>Movimientos pasivos de todas las articulaciones</strong>: se evalúa la <strong>resistencia al movimiento</strong>.</li>
+      </ol>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 330" role="img" aria-label="Alteraciones del tono: la hipotonía por lesión de la neurona motriz periférica, del sistema propioceptivo y cerebelo, extrapiramidal o muscular; la hipertonía piramidal, que es espasticidad, o extrapiramidal, que es rigidez; y la distonía extrapiramidal">
+          <rect x="20" y="160" width="150" height="44" rx="6" fill="var(--c)" fill-opacity="0.30" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="95" y="187" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Tono alterado</text>
+
+          <rect x="230" y="67" width="160" height="40" rx="6" fill="var(--c)" fill-opacity="0.20" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="310" y="92" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Hipotonía</text>
+          <rect x="230" y="197" width="160" height="40" rx="6" fill="var(--c)" fill-opacity="0.20" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="310" y="222" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Hipertonía</text>
+          <rect x="230" y="276" width="160" height="40" rx="6" fill="var(--c)" fill-opacity="0.20" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="310" y="301" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Distonía</text>
+          <path d="M170 182 L200 182 L200 87 L230 87 M200 182 L200 217 L230 217 M200 182 L200 296 L230 296" fill="none" stroke="currentColor" stroke-width="1.3"></path>
+
+          <rect x="450" y="14" width="350" height="32" rx="6" fill="none" stroke="currentColor" stroke-width="1.1"></rect>
+          <text x="625" y="35" text-anchor="middle" font-size="12" fill="currentColor">Neurona motriz periférica</text>
+          <rect x="450" y="52" width="350" height="32" rx="6" fill="none" stroke="currentColor" stroke-width="1.1"></rect>
+          <text x="625" y="73" text-anchor="middle" font-size="12" fill="currentColor">Sistema propioceptivo y cerebelo</text>
+          <rect x="450" y="90" width="350" height="32" rx="6" fill="none" stroke="currentColor" stroke-width="1.1"></rect>
+          <text x="625" y="111" text-anchor="middle" font-size="12" fill="currentColor">Extrapiramidal: corea</text>
+          <rect x="450" y="128" width="350" height="32" rx="6" fill="none" stroke="currentColor" stroke-width="1.1"></rect>
+          <text x="625" y="149" text-anchor="middle" font-size="12" fill="currentColor">Músculo</text>
+          <path d="M390 87 L420 87 L420 30 L450 30 M420 87 L450 68 M420 87 L450 106 M420 87 L420 144 L450 144" fill="none" stroke="currentColor" stroke-width="1.2"></path>
+
+          <rect x="450" y="182" width="350" height="32" rx="6" fill="var(--c)" fill-opacity="0.12" stroke="currentColor" stroke-width="1.1"></rect>
+          <text x="625" y="203" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Piramidal → espasticidad</text>
+          <rect x="450" y="220" width="350" height="32" rx="6" fill="var(--c)" fill-opacity="0.12" stroke="currentColor" stroke-width="1.1"></rect>
+          <text x="625" y="241" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Extrapiramidal → rigidez</text>
+          <path d="M390 217 L420 217 L420 198 L450 198 M420 217 L420 236 L450 236" fill="none" stroke="currentColor" stroke-width="1.2"></path>
+
+          <rect x="450" y="280" width="350" height="32" rx="6" fill="none" stroke="currentColor" stroke-width="1.1"></rect>
+          <text x="625" y="301" text-anchor="middle" font-size="12" fill="currentColor">Extrapiramidal</text>
+          <line x1="390" y1="296" x2="450" y2="296" stroke="currentColor" stroke-width="1.2"></line>
+        </svg>
+        <figcaption>Cada rama muestra dónde está la lesión. La <strong>hipertonía</strong> se divide según la vía: la <strong>piramidal da espasticidad</strong> y la <strong>extrapiramidal da rigidez</strong>.</figcaption>
+      </figure>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Alteración</th><th>Lesión</th><th>Ejemplos</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Hipotonía</strong></td><td>Neurona motriz periférica</td><td>Poliomielitis, polineuritis</td></tr>
+            <tr><td><strong>Hipotonía</strong></td><td>Sistema propioceptivo y cerebelo</td><td>Tabes, heredoataxia cerebelosa, enfermedad de Friedreich, síndrome cerebeloso</td></tr>
+            <tr><td><strong>Hipotonía</strong></td><td>Extrapiramidal</td><td>Corea</td></tr>
+            <tr><td><strong>Hipotonía</strong></td><td>Músculos</td><td>Enfermedad de Oppenheim (amiotonía congénita), miopatías</td></tr>
+            <tr><td><strong>Hipertonía</strong></td><td>Vía piramidal: <strong>contractura</strong></td><td>Hemiplejías, paraplejías y monoplejías espásticas</td></tr>
+            <tr><td><strong>Hipertonía</strong></td><td>Vía extrapiramidal: <strong>rigidez</strong></td><td>Enfermedad de Parkinson y parkinsonismos, enfermedad de Wilson, seudoesclerosis de Westphal-Strümpell, rigidez arteriosclerótica de Förster</td></tr>
+            <tr><td><strong>Distonía</strong></td><td>Sistema extrapiramidal</td><td>Espasmo de torsión de Oppenheim, atetosis doble</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Espasticidad y rigidez: cómo se distinguen al examen</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Rasgo</th><th>Espasticidad</th><th>Rigidez</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Vía lesionada</strong></td><td>Piramidal</td><td>Extrapiramidal</td></tr>
+            <tr><td><strong>Cómo se siente</strong></td><td>Resistencia que aumenta y <strong>cede de golpe</strong>: fenómeno de la <strong>navaja</strong></td><td>Resistencia <strong>pareja en todo el recorrido</strong>: <strong>caño de plomo</strong>; si se suma temblor, se siente a saltos: <strong>rueda dentada</strong></td></tr>
+            <tr><td><strong>Velocidad del movimiento</strong></td><td>Aumenta cuanto más rápido se moviliza</td><td>No depende de la velocidad</td></tr>
+            <tr><td><strong>Distribución</strong></td><td>Predomina en <strong>flexores del miembro superior y extensores del inferior</strong></td><td>Flexores y extensores por igual</td></tr>
+            <tr><td><strong>Lo que la acompaña</strong></td><td><strong>Hiperreflexia</strong> y signo de Babinski</td><td>Reflejos normales; temblor de reposo y bradicinesia en el Parkinson</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «Semiología del sistema nervioso», Dr. Gustavo Grilli: resumen de las alteraciones comunes del tono. Espasticidad y rigidez: Argente HA, Álvarez ME, <em>Semiología médica</em>; Harrison, <em>Principios de Medicina Interna</em>.</p>
+    </section>
+
+    <!-- ============ 9 ============ -->
+    <section class="seccion s-fisiopatologia" id="trofismo">
+      <span class="seccion__pestana"><b>09</b> Motilidad pasiva</span>
+      <h2 class="seccion__titulo">Trofismo: de qué depende y cómo se explora</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Tejido</th><th>Su trofismo depende de</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Músculo</strong></td><td>La <strong>motoneurona periférica</strong>: <strong>su lesión genera atrofia</strong></td></tr>
+            <tr><td><strong>Piel y anexos</strong></td><td>Fibras aferentes sensitivas y sensoriales, y <strong>sistema nervioso simpático</strong></td></tr>
+            <tr><td><strong>Huesos y articulaciones</strong></td><td>Aferentes sensitivos y <strong>sistema nervioso simpático</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Exploración</h3>
+      <ul>
+        <li><strong>Inspección</strong> de piel y faneras: úlceras, artropatías.</li>
+        <li><strong>Palpación</strong> de masas musculares y huesos.</li>
+        <li><strong>Exámenes complementarios</strong>: circometría de las masas musculares, <strong>EMG</strong>, enzimas musculares —<strong>CPK</strong>, GOT, LDH, aldolasa— y <strong>biopsia muscular</strong>.</li>
+      </ul>
+
+      <p class="cita">Clase «Semiología del sistema nervioso», Dr. Gustavo Grilli.</p>
+    </section>
+
+    <!-- ============ 10 ============ -->
+    <section class="seccion s-clinica" id="troficos">
+      <span class="seccion__pestana"><b>10</b> Motilidad pasiva</span>
+      <h2 class="seccion__titulo">Trastornos tróficos</h2>
+
+      <h3>De piel y anexos</h3>
+      <ul>
+        <li><strong>Mal perforante plantar</strong>: diabetes, siringomielia, tabes, lepra.</li>
+        <li><strong>Úlceras de decúbito</strong>.</li>
+        <li><strong>Piel lustrosa</strong> (<em>glossy skin</em>): siringomielia, hemiplejías.</li>
+        <li><strong>Discromías</strong>.</li>
+        <li><strong>Neurofibromatosis</strong>, <strong>enfermedad de Sturge-Weber</strong> y <strong>esclerosis tuberosa</strong>.</li>
+      </ul>
+
+      <h3>Musculares</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Grupo</th><th>Entidades</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Atrofias musculares espinales</strong></td><td>Poliomielitis aguda · síndrome de Aran-Duchenne · enfermedad de Werdnig-Hoffmann · atrofia muscular progresiva del adolescente (Kugelberg-Welander)</td></tr>
+            <tr><td><strong>Neuropatías periféricas</strong></td><td>Radiculitis o neuritis de cualquier etiología · enfermedad de Charcot-Marie-Tooth · neuritis intersticial de Dejerine-Sottas</td></tr>
+            <tr><td><strong>Atrofias miopáticas</strong></td><td>Miopatía facioescapulohumeral de Landouzy-Dejerine · miopatía de las cinturas o de Erb · miopatía seudohipertrófica de Duchenne · miopatía de Becker</td></tr>
+            <tr><td><strong>Miotonías</strong></td><td>Enfermedad de Thomsen · distrofia miotónica de Steinert · paramiotonía de Eulenburg</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La diapositiva ubica la palabra «hipertróficas» junto a este último grupo. De los tres, el que da <strong>hipertrofia muscular</strong> es la <strong>enfermedad de Thomsen</strong>; la distrofia de <strong>Steinert</strong> es, en cambio, atrófica y de predominio distal. La de <strong>Duchenne</strong> da seudohipertrofia: las pantorrillas se ven grandes, pero el músculo está reemplazado por grasa y tejido fibroso.</p>
+
+      <h3>Osteoarticulares</h3>
+      <ul>
+        <li><strong>Rarefacción, osteoporosis y fracturas</strong> en la siringomielia y la tabes.</li>
+        <li><strong>Artropatías</strong> en la lepra, la tabes y la siringomielia.</li>
+        <li><strong>Cifoescoliosis</strong> en la enfermedad de Friedreich.</li>
+        <li><strong>Hiperlordosis</strong> en las miopatías.</li>
+        <li><strong>Hemiatrofia facial progresiva</strong>.</li>
+      </ul>
+
+      <p class="cita">Clase «Semiología del sistema nervioso», Dr. Gustavo Grilli. Thomsen, Steinert y Duchenne: Harrison, <em>Principios de Medicina Interna</em>.</p>
+    </section>
+
+    <!-- ============ 11 ============ -->
+    <section class="seccion s-diagnostico" id="paralisis">
+      <span class="seccion__pestana"><b>11</b> Motilidad activa</span>
+      <h2 class="seccion__titulo">Motilidad activa y niveles de parálisis</h2>
+
+      <p>El examen de la motilidad activa consiste en observar <strong>si el paciente puede realizar los movimientos</strong> de los distintos segmentos y <strong>con qué fuerza</strong>. La disminución se llama <strong>paresia</strong> si es parcial y <strong>plejía</strong> si es total, y la lesión puede estar en cualquier punto del recorrido:</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Parálisis</th><th>Dónde está la lesión</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Central</strong></td><td><strong>Primera motoneurona</strong></td></tr>
+            <tr><td><strong>Nuclear</strong></td><td>Núcleo del nervio</td></tr>
+            <tr><td><strong>Periférica</strong></td><td>Raíz o nervio</td></tr>
+            <tr><td><strong>Miopática</strong></td><td>Músculo</td></tr>
+            <tr><td><strong>Por lesión del aparato locomotor</strong></td><td><strong>No es parálisis: es impotencia funcional</strong>. El sistema nervioso está indemne; lo que falla es el hueso o la articulación</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Primera o segunda motoneurona</h3>
+      <p>Es la pregunta que ordena todo el examen motor. La nuclear y la periférica se comportan como lesión de la segunda motoneurona.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Rasgo</th><th>1ª motoneurona: central o piramidal</th><th>2ª motoneurona: periférica</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Tono</strong></td><td><strong>Espasticidad</strong> (tras una fase inicial de hipotonía en la lesión aguda)</td><td><strong>Hipotonía</strong>, flacidez</td></tr>
+            <tr><td><strong>Reflejos osteotendinosos</strong></td><td><strong>Exaltados</strong>, con clonus</td><td><strong>Disminuidos o abolidos</strong></td></tr>
+            <tr><td><strong>Babinski</strong></td><td><strong>Presente</strong></td><td>Ausente</td></tr>
+            <tr><td><strong>Trofismo</strong></td><td>Atrofia escasa y tardía, por desuso</td><td><strong>Atrofia precoz e intensa</strong></td></tr>
+            <tr><td><strong>Fasciculaciones</strong></td><td>No</td><td><strong>Pueden aparecer</strong></td></tr>
+            <tr><td><strong>Distribución</strong></td><td>Por segmentos: hemiplejía, paraplejía</td><td>Por músculos: los de esa raíz, nervio o segmento</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «Semiología del sistema nervioso», Dr. Gustavo Grilli. Primera y segunda motoneurona: Argente HA, Álvarez ME, <em>Semiología médica</em>; Harrison, <em>Principios de Medicina Interna</em>.</p>
+    </section>
+
+    <!-- ============ 12 ============ -->
+    <section class="seccion s-diagnostico" id="fuerza">
+      <span class="seccion__pestana"><b>12</b> Motilidad activa</span>
+      <h2 class="seccion__titulo">Valoración de la fuerza</h2>
+
+      <p>La valoración de la función muscular incluye <strong>fuerza, resistencia y destreza motora</strong>. Puede hacerse <strong>en forma manual, que es la más usada</strong>, con la escala de <strong>Daniels</strong>, o <strong>en forma instrumental</strong>, con dinamómetros. La posición del paciente cambia según el músculo: sentado, en decúbito dorsal, ventral o lateral, o de pie.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Grado</th><th>Nombre</th><th>Qué logra el paciente</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><span class="dato">5/5</span></td><td><strong>Normal</strong></td><td>Fuerza normal contra una <strong>resistencia máxima</strong> del examinador</td></tr>
+            <tr><td><span class="dato">4/5</span></td><td><strong>Buena</strong></td><td>Vence la gravedad y una <strong>resistencia mediana</strong>, pero la fuerza no es completa</td></tr>
+            <tr><td><span class="dato">3/5</span></td><td><strong>Regular</strong></td><td>Movimiento completo <strong>contra la gravedad</strong>, sin resistencia</td></tr>
+            <tr><td><span class="dato">2/5</span></td><td><strong>Mala</strong></td><td>Movimiento completo <strong>sin la oposición de la gravedad</strong></td></tr>
+            <tr><td><span class="dato">1/5</span></td><td><strong>Trazas</strong></td><td>Se ve o se palpa una <strong>contracción</strong>, pero no moviliza el segmento</td></tr>
+            <tr><td><span class="dato">0/5</span></td><td><strong>Cero</strong></td><td>No se detecta contracción ni en la palpación ni en la inspección</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>A veces se agregan signos <strong>+</strong> o <strong>−</strong> para afinar el grado. La frontera que más se pregunta es la del <strong>3</strong>: es el primer grado que vence la gravedad.</p>
+
+      <h3>Grupos musculares que se exploran</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Miembros superiores</th><th>Miembros inferiores</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Trapecio, deltoides y pectoral mayor</td><td>Flexores de cadera</td></tr>
+            <tr><td><strong>Flexores del codo</strong>: bíceps braquial, braquial anterior y supinador largo</td><td>Cuádriceps</td></tr>
+            <tr><td><strong>Extensor del codo</strong>: tríceps braquial</td><td>Aductores</td></tr>
+            <tr><td>Pronosupinadores del antebrazo</td><td>Glúteo medio</td></tr>
+            <tr><td>Músculos de la mano</td><td><strong>Isquiosurales</strong>: bíceps sural, semitendinoso y semimembranoso</td></tr>
+            <tr><td>—</td><td><strong>Flexores plantares</strong>: gemelos, sóleo y plantar delgado</td></tr>
+            <tr><td>—</td><td><strong>Extrínsecos del pie</strong>: tibial anterior, tibial posterior y peroneos laterales</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «Semiología del sistema nervioso», Dr. Gustavo Grilli: grados de fuerza muscular y grupos musculares de miembros superiores e inferiores.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-d">
+      <span class="bloque__rotulo">Bloque D</span>
+      <span class="bloque__nombre">Coordinación, reflejos y sensibilidad</span>
+    </h2>
+
+    <!-- ============ 13 ============ -->
+    <section class="seccion s-diagnostico" id="taxia">
+      <span class="seccion__pestana"><b>13</b> Exploración</span>
+      <h2 class="seccion__titulo">Coordinación o taxia</h2>
+
+      <p>La <strong>taxia</strong> es la <strong>actividad coordinada de los grupos musculares</strong> para lograr un movimiento eficaz y adecuado a su fin. La regula el sistema nervioso central, que hace trabajar juntos a cuatro tipos de músculos. El ejemplo de la clase es la flexión del codo:</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Rol</th><th>Qué hace</th><th>En la flexión del codo</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Agonista o primotor</strong></td><td>Hace el movimiento principal</td><td>Bíceps</td></tr>
+            <tr><td><strong>Agonistas sinérgicos</strong></td><td>Refuerzan al agonista</td><td>Braquial anterior</td></tr>
+            <tr><td><strong>Antagonistas</strong></td><td><strong>Se relajan</strong> para permitir el movimiento</td><td>Tríceps</td></tr>
+            <tr><td><strong>Fijadores</strong></td><td>Fijan las articulaciones vecinas</td><td>Músculos del hombro</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Las maniobras</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Maniobra</th><th>Cómo se hace</th><th>Qué se busca</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Romberg</strong> (estática)</td><td>De pie, pies juntos y brazos al costado: primero con los ojos abiertos y después cerrados</td><td>Es positivo si pierde el equilibrio <strong>al cerrar los ojos</strong></td></tr>
+            <tr><td><strong>Romberg sensibilizado</strong></td><td>Lo mismo, con un pie delante del otro</td><td>Hace evidente una inestabilidad leve</td></tr>
+            <tr><td><strong>Índice-nariz</strong></td><td>Con el brazo extendido, lleva el índice a la punta de la nariz, con ojos abiertos y cerrados</td><td><strong>Dismetría</strong> (se pasa o no llega) y <strong>temblor intencional</strong>, que aumenta al acercarse al blanco</td></tr>
+            <tr><td><strong>Índice-índice y dedo-pulgar</strong></td><td>Junta ambos índices frente a sí; toca con el pulgar la punta de cada dedo</td><td>Precisión y fluidez del movimiento</td></tr>
+            <tr><td><strong>Talón-rodilla</strong></td><td>Acostado, apoya un talón en la rodilla opuesta y lo desliza por la tibia</td><td>Dismetría del miembro inferior</td></tr>
+            <tr><td><strong>Diadococinesia</strong></td><td>Movimientos alternantes rápidos, como pronar y supinar las manos</td><td><strong>Adiadococinesia</strong>: movimientos lentos e irregulares</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>El Romberg positivo indica ataxia sensitiva, no cerebelosa.</strong> El paciente que perdió la sensibilidad profunda compensa con la vista: con los ojos abiertos se mantiene y <strong>al cerrarlos se cae</strong>. El paciente cerebeloso es inestable <strong>ya con los ojos abiertos</strong> y no empeora claramente al cerrarlos, por eso su Romberg no es positivo. A él lo delatan las pruebas dinámicas: dismetría, temblor intencional y adiadococinesia.</p>
+      </div>
+
+      <p class="cita">Clase «Semiología del sistema nervioso», Dr. Gustavo Grilli. Técnica e interpretación de las maniobras: Argente HA, Álvarez ME, <em>Semiología médica</em>.</p>
+    </section>
+
+    <!-- ============ 14 ============ -->
+    <section class="seccion s-clinica" id="praxias">
+      <span class="seccion__pestana"><b>14</b> Exploración</span>
+      <h2 class="seccion__titulo">Praxias y lenguaje</h2>
+
+      <p>La <strong>praxia</strong> es la facultad de cumplir en forma más o menos automática ciertos <strong>movimientos habituales adaptados a un fin</strong>: peinarse, encender un cigarrillo, abrocharse la camisa. Su alteración es la <strong>apraxia</strong>: el paciente no logra hacer el gesto <strong>aunque no tiene parálisis, ataxia ni trastorno de la comprensión</strong> que lo expliquen. La clase ubica su asiento en el <strong>hemisferio cerebral izquierdo</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Apraxia</th><th>Qué no puede hacer</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Ideomotriz</strong></td><td>Realizar a la orden un gesto simple, o imitarlo: saludar, simular que se peina</td></tr>
+            <tr><td><strong>Constructiva</strong></td><td>Copiar un dibujo o armar una figura con piezas</td></tr>
+            <tr><td><strong>Del vestido</strong></td><td>Vestirse: no orienta las prendas ni las coloca en orden</td></tr>
+            <tr><td><strong>Orolinguofacial</strong></td><td>Movimientos de la boca y la lengua a la orden: soplar, sacar la lengua</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Un matiz sobre la localización: la apraxia ideomotriz es típica de las lesiones del <strong>hemisferio izquierdo</strong>, pero la <strong>constructiva y la del vestido</strong> aparecen con frecuencia en lesiones parietales del <strong>hemisferio derecho</strong>.</p>
+
+      <h3>Lenguaje</h3>
+      <p>Es el último punto del examen físico en el índice de la clase, que no le dedica una diapositiva propia. Las afasias de Broca y de Wernicke, con su localización y la diferencia entre fluente y no fluente, están desarrolladas en el cuadernillo «El sistema nervioso», en la sección del lóbulo temporal.</p>
+
+      <p class="cita">Clase «Semiología del sistema nervioso», Dr. Gustavo Grilli. Tipos de apraxia y su localización: Harrison, <em>Principios de Medicina Interna</em>.</p>
+    </section>
+
+    <!-- ============ 15 ============ -->
+    <section class="seccion s-diagnostico" id="reflejos">
+      <span class="seccion__pestana"><b>15</b> Exploración</span>
+      <h2 class="seccion__titulo">Reflejos y sus niveles</h2>
+
+      <p>Un <strong>reflejo</strong> es una <strong>respuesta motriz involuntaria</strong> que aparece de inmediato ante un <strong>estímulo adecuado</strong>. Su sustrato es el <strong>arco reflejo</strong>: receptor → vía aferente → centro en el tronco o la médula → vía eferente → efector. Como cada reflejo tiene su centro en un segmento conocido, explorarlo es explorar ese nivel.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 430" role="img" aria-label="Mapa de los centros de los reflejos a lo largo del neuroeje: protuberancia, bulbo, médula cervical, dorsal, lumbar y sacra, con los reflejos que corresponden a cada nivel">
+          <rect x="40" y="14" width="150" height="60" rx="6" fill="var(--c)" fill-opacity="0.34" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="115" y="49" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Protuberancia</text>
+          <rect x="40" y="78" width="150" height="40" rx="6" fill="var(--c)" fill-opacity="0.28" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="115" y="103" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Bulbo</text>
+          <rect x="40" y="122" width="150" height="80" rx="6" fill="var(--c)" fill-opacity="0.22" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="115" y="167" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Cervical</text>
+          <rect x="40" y="206" width="150" height="80" rx="6" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="115" y="251" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Dorsal</text>
+          <rect x="40" y="290" width="150" height="50" rx="6" fill="var(--c)" fill-opacity="0.12" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="115" y="320" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Lumbar</text>
+          <rect x="40" y="344" width="150" height="76" rx="6" fill="var(--c)" fill-opacity="0.08" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="115" y="387" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Sacro</text>
+
+          <line x1="190" y1="44" x2="220" y2="44" stroke="currentColor" stroke-width="1"></line>
+          <text x="226" y="32" font-size="11.5" fill="currentColor">Nasopalpebral · trigémino-facial</text>
+          <text x="226" y="49" font-size="11.5" fill="currentColor">Corneano · trigémino-facial</text>
+          <text x="226" y="66" font-size="11.5" fill="currentColor">Maseterino · trigémino-trigeminal</text>
+          <line x1="190" y1="98" x2="220" y2="98" stroke="currentColor" stroke-width="1"></line>
+          <text x="226" y="102" font-size="11.5" fill="currentColor">Velopalatino y nauseoso · glosofaringovago</text>
+
+          <line x1="190" y1="162" x2="220" y2="162" stroke="currentColor" stroke-width="1"></line>
+          <text x="226" y="136" font-size="11.5" fill="currentColor"><tspan font-weight="700">C5</tspan> bicipital</text>
+          <text x="226" y="154" font-size="11.5" fill="currentColor"><tspan font-weight="700">C6</tspan> radial o estilorradial</text>
+          <text x="226" y="172" font-size="11.5" fill="currentColor"><tspan font-weight="700">C7</tspan> tricipital</text>
+          <text x="226" y="190" font-size="11.5" fill="currentColor"><tspan font-weight="700">C8</tspan> cubitopronador</text>
+
+          <line x1="190" y1="246" x2="220" y2="246" stroke="currentColor" stroke-width="1"></line>
+          <text x="226" y="222" font-size="11.5" fill="currentColor"><tspan font-weight="700">D7</tspan> cutáneo abdominal superior</text>
+          <text x="226" y="240" font-size="11.5" fill="currentColor"><tspan font-weight="700">D8-D9</tspan> cutáneo abdominal medio</text>
+          <text x="226" y="258" font-size="11.5" fill="currentColor"><tspan font-weight="700">D11</tspan> cutáneo abdominal inferior</text>
+          <text x="226" y="276" font-size="11.5" fill="currentColor"><tspan font-weight="700">D10-L2</tspan> medio pubiano</text>
+
+          <line x1="190" y1="315" x2="220" y2="315" stroke="currentColor" stroke-width="1"></line>
+          <text x="226" y="308" font-size="11.5" fill="currentColor"><tspan font-weight="700">L1-L2</tspan> cremasteriano</text>
+          <text x="226" y="326" font-size="11.5" fill="currentColor"><tspan font-weight="700">L3-L4</tspan> patelar</text>
+
+          <line x1="190" y1="382" x2="220" y2="382" stroke="currentColor" stroke-width="1"></line>
+          <text x="226" y="360" font-size="11.5" fill="currentColor"><tspan font-weight="700">S1</tspan> aquiliano</text>
+          <text x="226" y="378" font-size="11.5" fill="currentColor"><tspan font-weight="700">S1-S2</tspan> plantar</text>
+          <text x="226" y="396" font-size="11.5" fill="currentColor"><tspan font-weight="700">S3-S4</tspan> bulbocavernoso</text>
+          <text x="226" y="414" font-size="11.5" fill="currentColor"><tspan font-weight="700">S5</tspan> anal</text>
+
+          <rect x="560" y="122" width="240" height="80" rx="6" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="5 3"></rect>
+          <text x="576" y="148" font-size="12" font-weight="700" fill="currentColor">Hoffmann</text>
+          <text x="576" y="168" font-size="11.5" fill="currentColor">no es un nivel: indica lesión</text>
+          <text x="576" y="186" font-size="11.5" fill="currentColor">piramidal por encima de C5</text>
+        </svg>
+        <figcaption>Los niveles son los que da la clase. Leídos de arriba abajo, los reflejos permiten ubicar la altura de una lesión: si el bicipital está normal y el tricipital abolido, el problema está alrededor de C7.</figcaption>
+      </figure>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Reflejo</th><th>Tipo</th><th>Nivel según la clase</th><th>Rango en la bibliografía</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Nasopalpebral</strong></td><td>Profundo</td><td>Protuberancia (trigémino-facial)</td><td>—</td></tr>
+            <tr><td><strong>Maseterino</strong></td><td>Profundo</td><td>Protuberancia (trigémino-trigeminal)</td><td>—</td></tr>
+            <tr><td><strong>Corneano</strong></td><td>Superficial</td><td>Protuberancia (trigémino-facial)</td><td>—</td></tr>
+            <tr><td><strong>Velopalatino y nauseoso</strong></td><td>Superficial</td><td>Bulbo (glosofaringovago)</td><td>—</td></tr>
+            <tr><td><strong>Bicipital</strong></td><td>Profundo</td><td><span class="dato">C5</span></td><td>C5-C6</td></tr>
+            <tr><td><strong>Radial o estilorradial</strong></td><td>Profundo</td><td><span class="dato">C6</span></td><td>C5-C6</td></tr>
+            <tr><td><strong>Tricipital</strong></td><td>Profundo</td><td><span class="dato">C7</span></td><td>C6-C7</td></tr>
+            <tr><td><strong>Cubital o cubitopronador</strong></td><td>Profundo</td><td><span class="dato">C8</span></td><td>—</td></tr>
+            <tr><td><strong>Cutáneo abdominal superior, medio e inferior</strong></td><td>Superficial</td><td><span class="dato">D7</span> · <span class="dato">D8-D9</span> · <span class="dato">D11</span></td><td>Suelen darse como D7-D8, D9-D10 y D11-D12</td></tr>
+            <tr><td><strong>Medio pubiano</strong></td><td>Profundo</td><td><span class="dato">D10-L2</span></td><td>—</td></tr>
+            <tr><td><strong>Cremasteriano</strong></td><td>Superficial</td><td><span class="dato">L1-L2</span></td><td>—</td></tr>
+            <tr><td><strong>Patelar</strong></td><td>Profundo</td><td><span class="dato">L3-L4</span></td><td>L2-L4</td></tr>
+            <tr><td><strong>Aquiliano</strong></td><td>Profundo</td><td><span class="dato">S1</span></td><td>S1-S2</td></tr>
+            <tr><td><strong>Plantar</strong></td><td>Superficial</td><td><span class="dato">S1-S2</span></td><td>—</td></tr>
+            <tr><td><strong>Bulbocavernoso</strong></td><td>Superficial</td><td><span class="dato">S3-S4</span></td><td>S2-S4</td></tr>
+            <tr><td><strong>Anal</strong></td><td>Superficial</td><td><span class="dato">S5</span></td><td>S4-S5</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Los <strong>profundos u osteotendinosos</strong> se obtienen percutiendo un tendón o un hueso; los <strong>superficiales o cutaneomucosos</strong>, estimulando la piel o una mucosa. Para el examen de la cátedra, usá los niveles de la clase; la última columna sirve para no sorprenderse si otro texto da un rango más amplio.</p>
+      <p>El <strong>Hoffmann</strong> no tiene un nivel propio: es un <strong>signo de lesión piramidal</strong> en el miembro superior. Al chasquear con un golpe seco la uña del dedo mayor, se flexionan el pulgar y el índice. La clase lo ubica en lesiones por encima de C5.</p>
+
+      <p class="cita">Clase «Semiología del sistema nervioso», Dr. Gustavo Grilli: tabla de reflejos y niveles. Rangos, clasificación y técnica del Hoffmann: Argente HA, Álvarez ME, <em>Semiología médica</em>.</p>
+    </section>
+
+    <!-- ============ 16 ============ -->
+    <section class="seccion s-diagnostico" id="sensibilidad">
+      <span class="seccion__pestana"><b>16</b> Exploración</span>
+      <h2 class="seccion__titulo">Sensibilidad</h2>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 330" role="img" aria-label="Clasificación del examen de la sensibilidad: superficial o exteroceptiva, que incluye táctil, térmica y dolorosa; profunda o propioceptiva, que incluye cinestesia, palestesia, barestesia y barognosia; y combinada o cortical, que incluye discriminación de dos puntos, grafestesia y estereognosia">
+          <rect x="20" y="140" width="150" height="50" rx="6" fill="var(--c)" fill-opacity="0.30" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="95" y="162" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Examen de la</text>
+          <text x="95" y="179" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">sensibilidad</text>
+
+          <rect x="230" y="38" width="200" height="50" rx="6" fill="var(--c)" fill-opacity="0.20" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="330" y="60" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Superficial</text>
+          <text x="330" y="77" text-anchor="middle" font-size="11" fill="currentColor">exteroceptiva</text>
+          <rect x="230" y="140" width="200" height="50" rx="6" fill="var(--c)" fill-opacity="0.20" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="330" y="162" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Profunda</text>
+          <text x="330" y="179" text-anchor="middle" font-size="11" fill="currentColor">propioceptiva</text>
+          <rect x="230" y="242" width="200" height="50" rx="6" fill="var(--c)" fill-opacity="0.20" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="330" y="264" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Combinada</text>
+          <text x="330" y="281" text-anchor="middle" font-size="11" fill="currentColor">o cortical</text>
+          <path d="M170 165 L200 165 L200 63 L230 63 M200 165 L230 165 M200 165 L200 267 L230 267" fill="none" stroke="currentColor" stroke-width="1.3"></path>
+
+          <text x="470" y="30" font-size="12" fill="currentColor"><tspan font-weight="700">Táctil</tspan>: epicrítica (fina) y protopática (grosera)</text>
+          <text x="470" y="58" font-size="12" fill="currentColor"><tspan font-weight="700">Térmica</tspan></text>
+          <text x="470" y="86" font-size="12" fill="currentColor"><tspan font-weight="700">Dolorosa</tspan></text>
+          <path d="M430 63 L450 63 L450 26 L462 26 M450 63 L450 54 L462 54 M450 63 L450 82 L462 82" fill="none" stroke="currentColor" stroke-width="1.1"></path>
+
+          <text x="470" y="132" font-size="12" fill="currentColor"><tspan font-weight="700">Cinestesia</tspan>: posición y movimiento</text>
+          <text x="470" y="156" font-size="12" fill="currentColor"><tspan font-weight="700">Palestesia</tspan>: vibración</text>
+          <text x="470" y="180" font-size="12" fill="currentColor"><tspan font-weight="700">Barestesia</tspan>: presión</text>
+          <text x="470" y="204" font-size="12" fill="currentColor"><tspan font-weight="700">Barognosia</tspan>: reconocer pesos</text>
+          <path d="M430 165 L450 165 L450 128 L462 128 M450 152 L462 152 M450 165 L450 176 L462 176 M450 165 L450 200 L462 200" fill="none" stroke="currentColor" stroke-width="1.1"></path>
+
+          <text x="470" y="248" font-size="12" fill="currentColor"><tspan font-weight="700">Discriminación de dos puntos</tspan></text>
+          <text x="470" y="272" font-size="12" fill="currentColor"><tspan font-weight="700">Grafestesia</tspan></text>
+          <text x="470" y="296" font-size="12" fill="currentColor"><tspan font-weight="700">Estereognosia</tspan></text>
+          <path d="M430 267 L450 267 L450 244 L462 244 M450 267 L450 268 L462 268 M450 267 L450 292 L462 292" fill="none" stroke="currentColor" stroke-width="1.1"></path>
+        </svg>
+        <figcaption>Las tres familias del examen de la sensibilidad. La <strong>cortical</strong> solo puede evaluarse si la superficial y la profunda están conservadas: integra información que tiene que llegar intacta.</figcaption>
+      </figure>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Sensibilidad</th><th>Cómo se explora</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Táctil</strong></td><td>Roce con un algodón o pincel, con los ojos del paciente cerrados</td></tr>
+            <tr><td><strong>Térmica</strong></td><td>Dos tubos, uno con agua fría y otro con agua caliente</td></tr>
+            <tr><td><strong>Dolorosa</strong></td><td>Pinchazo suave con un alfiler, alternando con la cabeza roma</td></tr>
+            <tr><td><strong>Cinestesia</strong></td><td>Se mueve un dedo del paciente hacia arriba o hacia abajo y debe decir en qué dirección</td></tr>
+            <tr><td><strong>Palestesia</strong></td><td><strong>Diapasón</strong> en vibración apoyado sobre prominencias óseas</td></tr>
+            <tr><td><strong>Barestesia</strong></td><td>Presión sobre masas musculares o tendones</td></tr>
+            <tr><td><strong>Barognosia</strong></td><td>Comparar pesos colocados en las manos</td></tr>
+            <tr><td><strong>Discriminación de dos puntos</strong></td><td>Compás de Weber: reconocer dos estímulos simultáneos cercanos como dos. Explora la sensibilidad <strong>epicrítica</strong></td></tr>
+            <tr><td><strong>Grafestesia</strong></td><td>Reconocer números o letras trazados sobre la piel</td></tr>
+            <tr><td><strong>Estereognosia</strong></td><td>Reconocer un objeto por el tacto, sin verlo. Su pérdida es la astereognosia de las áreas parietales 5 y 7</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Para relacionar el examen con las vías: el <strong>dolor y la temperatura</strong> viajan por el <strong>haz espinotalámico</strong>; la <strong>sensibilidad profunda y la táctil epicrítica</strong>, por los <strong>cordones posteriores</strong>. Por eso la tabes, que daña los cordones posteriores, da Romberg positivo y marcha taloneante.</p>
+
+      <p class="cita">Clase «Semiología del sistema nervioso», Dr. Gustavo Grilli: cuadro del examen de la sensibilidad. Técnica y vías: Argente HA, Álvarez ME, <em>Semiología médica</em>; Snell RS, <em>Neuroanatomía clínica</em>.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-e">
+      <span class="bloque__rotulo">Bloque E</span>
+      <span class="bloque__nombre">Estudios complementarios</span>
+    </h2>
+
+    <!-- ============ 17 ============ -->
+    <section class="seccion s-diagnostico" id="complementarios">
+      <span class="seccion__pestana"><b>17</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">Imágenes, exámenes eléctricos y especiales</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Paso</th><th>Estudio</th><th>Para qué sirve</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>III · Imágenes</strong></td><td><strong>Ecografía transfontanelar</strong></td><td>Estudio del encéfalo en el <strong>lactante con fontanela abierta</strong>, sin radiación</td></tr>
+            <tr><td><strong>III · Imágenes</strong></td><td><strong>TAC</strong>, con reconstrucción 3D</td><td>Rápida: es la de la urgencia. Muestra <strong>sangrado</strong> y <strong>hueso</strong>; la reconstrucción 3D sirve para las estructuras óseas</td></tr>
+            <tr><td><strong>III · Imágenes</strong></td><td><strong>RMN y angioRMN</strong></td><td>Mejor definición del <strong>parénquima</strong>, la médula y la fosa posterior; la angioRMN muestra los <strong>vasos</strong></td></tr>
+            <tr><td><strong>IV · Eléctricos</strong></td><td><strong>EEG</strong></td><td>Actividad eléctrica cortical: <strong>epilepsia</strong></td></tr>
+            <tr><td><strong>IV · Eléctricos</strong></td><td><strong>EMG y velocidad de conducción</strong></td><td>Distinguen el compromiso del <strong>nervio periférico</strong> del <strong>muscular</strong></td></tr>
+            <tr><td><strong>IV · Eléctricos</strong></td><td><strong>Potenciales evocados</strong></td><td>Conducción por las vías visual, auditiva y somatosensitiva; detectan lesiones que no dan síntomas</td></tr>
+            <tr><td><strong>V · Especiales</strong></td><td><strong>Punción lumbar</strong></td><td>Estudio del <strong>líquido cefalorraquídeo</strong>: infecciones, hemorragia, enfermedades inflamatorias</td></tr>
+            <tr><td><strong>V · Especiales</strong></td><td><strong>Punción cisternal</strong></td><td>Acceso al LCR por la cisterna magna, en la región suboccipital</td></tr>
+            <tr><td><strong>V · Especiales</strong></td><td><strong>Biopsia de músculo y nervio</strong></td><td>Diagnóstico de miopatías y neuropatías</td></tr>
+            <tr><td><strong>V · Especiales</strong></td><td>Laboratorio de alta complejidad</td><td>Mencionado en la clase sin detalle</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «Semiología del sistema nervioso», Dr. Gustavo Grilli. Indicaciones de cada estudio: Harrison, <em>Principios de Medicina Interna</em>; Argente HA, Álvarez ME, <em>Semiología médica</em>.</p>
+    </section>
+
+    <!-- ============ Repaso ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>¿Cuáles son los 5 pasos de la exploración del sistema nervioso y los 7 puntos del examen físico?</summary>
+          <div class="fc__r"><strong>I</strong> anamnesis · <strong>II</strong> examen físico · <strong>III</strong> imágenes · <strong>IV</strong> eléctricos · <strong>V</strong> especiales. Examen físico: <strong>a</strong> general, <strong>b</strong> pares, <strong>c</strong> motilidad, <strong>d</strong> taxia y praxias, <strong>e</strong> reflejos, <strong>f</strong> sensibilidad, <strong>g</strong> lenguaje.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Qué se pregunta en los antecedentes personales de un paciente neurológico?</summary>
+          <div class="fc__r"><strong>Desde el embarazo</strong>: parto, internación en neonatología, crecimiento y desarrollo, pautas madurativas, convulsiones, TEC, escolaridad, enfermedades e intoxicaciones.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Glasgow: máximo de cada componente y qué vale la decorticación frente a la descerebración.</summary>
+          <div class="fc__r"><strong>Ocular 4, verbal 5, motora 6</strong>; total de 3 a 15. <strong>Decorticación</strong> (flexión anormal) = <strong>3</strong>; <strong>descerebración</strong> (extensión) = <strong>2</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué se ve en el síndrome de Claude Bernard-Horner?</summary>
+          <div class="fc__r"><strong>Ptosis parcial y miosis</strong> del mismo lado, con aparente enoftalmos y, según el nivel, anhidrosis de la hemicara. Es una lesión de la vía simpática del ojo.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué marcha indica una debilidad de los dorsiflexores del pie y cómo se ve?</summary>
+          <div class="fc__r"><strong>Steppage</strong>: levanta mucho la rodilla porque el pie cae, y la punta toca el suelo antes que el talón.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Qué músculos oculares mueven el III, el IV y el VI par?</summary>
+          <div class="fc__r"><strong>IV</strong>: oblicuo superior. <strong>VI</strong>: recto externo. <strong>III</strong>: los demás (rectos superior, inferior y medial, oblicuo inferior), más la elevación del párpado y la pupila.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Qué pares se exploran juntos y con qué maniobra?</summary>
+          <div class="fc__r"><strong>IX y X</strong>: sensibilidad y motilidad velopalatina y <strong>reflejo nauseoso</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Parálisis facial que respeta la frente: ¿central o periférica, y de qué lado está la lesión?</summary>
+          <div class="fc__r"><strong>Central</strong> o supranuclear, con la lesión en el hemisferio <strong>opuesto</strong>. El sector superior del núcleo recibe fibras de las dos cortezas, por eso la frente se sigue moviendo.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Cuáles son las 4 jerarquías de la actividad motora?</summary>
+          <div class="fc__r"><strong>1</strong> voluntaria: piramidal. <strong>2</strong> automática y asociada: extrapiramidal. <strong>3</strong> estática o postural: tono por reflejo miotático. <strong>4</strong> actos reflejos: arco reflejo. Todas terminan en la <strong>motoneurona periférica, vía final común</strong>.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué núcleos facilitan el tono y cuáles lo inhiben, según la clase?</summary>
+          <div class="fc__r"><strong>Facilitadores</strong>: núcleo vestibular de Deiters, neocerebelo, caudado y lenticular. <strong>Inhibidores</strong>: núcleo rojo, locus niger y corteza motora.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Navaja, caño de plomo y rueda dentada: ¿qué indica cada una?</summary>
+          <div class="fc__r"><strong>Navaja</strong>: espasticidad, lesión <strong>piramidal</strong>. <strong>Caño de plomo</strong>: rigidez, lesión <strong>extrapiramidal</strong>. <strong>Rueda dentada</strong>: rigidez con temblor, típica del Parkinson.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Nombrá las causas de hipotonía según la lesión.</summary>
+          <div class="fc__r"><strong>Neurona motriz periférica</strong> (poliomielitis, polineuritis) · <strong>propioceptivo y cerebelo</strong> (tabes, Friedreich, síndrome cerebeloso) · <strong>extrapiramidal</strong> (corea) · <strong>muscular</strong> (Oppenheim, miopatías).</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿De qué depende el trofismo del músculo y qué pasa si se lesiona?</summary>
+          <div class="fc__r">De la <strong>motoneurona periférica</strong>; su lesión genera <strong>atrofia</strong>. El de piel y huesos depende de aferentes sensitivos y del simpático.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué enfermedades dan mal perforante plantar?</summary>
+          <div class="fc__r"><strong>Diabetes, siringomielia, tabes y lepra.</strong></div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Cuáles son las atrofias musculares espinales de la clase?</summary>
+          <div class="fc__r"><strong>Poliomielitis aguda, síndrome de Aran-Duchenne, Werdnig-Hoffmann y Kugelberg-Welander.</strong></div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Primera vs segunda motoneurona: tono, reflejos, Babinski y trofismo.</summary>
+          <div class="fc__r"><strong>1ª</strong>: espasticidad, hiperreflexia, Babinski presente, atrofia escasa. <strong>2ª</strong>: hipotonía, hipo o arreflexia, sin Babinski, atrofia precoz e intensa, fasciculaciones.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Por qué una lesión del aparato locomotor no es una parálisis?</summary>
+          <div class="fc__r">Porque el sistema nervioso está indemne: es <strong>impotencia funcional</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Daniels: ¿qué diferencia el grado 2, el 3 y el 4?</summary>
+          <div class="fc__r"><strong>2</strong>: movimiento completo sin gravedad. <strong>3</strong>: movimiento completo <strong>contra la gravedad</strong>. <strong>4</strong>: contra la gravedad y una resistencia mediana.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Romberg positivo: ¿qué ataxia indica y por qué?</summary>
+          <div class="fc__r"><strong>Ataxia sensitiva</strong>: el paciente compensa con la vista y cae al cerrar los ojos. El cerebeloso es inestable ya con los ojos abiertos.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Qué pruebas delatan al paciente cerebeloso?</summary>
+          <div class="fc__r">Las dinámicas: <strong>índice-nariz y talón-rodilla</strong> (dismetría, temblor intencional) y <strong>diadococinesia</strong> (adiadococinesia).</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué es una apraxia y cuáles nombra la clase?</summary>
+          <div class="fc__r">No poder realizar un gesto habitual con un fin <strong>sin parálisis, ataxia ni trastorno de comprensión</strong>. <strong>Ideomotriz, constructiva, del vestido y orolinguofacial.</strong></div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>Nivel de los reflejos bicipital, tricipital, patelar y aquiliano según la clase.</summary>
+          <div class="fc__r"><strong>Bicipital C5 · tricipital C7 · patelar L3-L4 · aquiliano S1.</strong></div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Qué reflejos tienen su centro en la protuberancia?</summary>
+          <div class="fc__r"><strong>Nasopalpebral</strong> y <strong>corneano</strong> (trigémino-facial) y <strong>maseterino</strong> (trigémino-trigeminal).</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Qué significa un Hoffmann positivo?</summary>
+          <div class="fc__r">Una <strong>lesión piramidal</strong> que afecta el miembro superior; la clase la ubica por encima de C5.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Qué es la palestesia y con qué se explora? ¿Por qué vía viaja?</summary>
+          <div class="fc__r">La sensibilidad a la <strong>vibración</strong>; se explora con un <strong>diapasón</strong> sobre prominencias óseas. Viaja por los <strong>cordones posteriores</strong>.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Qué estudio de imágenes se usa en el lactante con la fontanela abierta?</summary>
+          <div class="fc__r">La <strong>ecografía transfontanelar</strong>.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">El orden del examen</dt>
+        <dd><strong>Anamnesis → examen físico → imágenes → eléctricos → especiales.</strong> El examen físico va de la a a la g: <strong>general</strong> (Glasgow, facie, actitud, marcha, decúbito) · <strong>pares</strong> · <strong>motilidad</strong> (tono, trofismo, fuerza) · <strong>taxia y praxias</strong> · <strong>reflejos</strong> · <strong>sensibilidad</strong> · <strong>lenguaje</strong>.</dd>
+
+        <dt class="r-gold">Escalas y maniobras que hay que saber</dt>
+        <dd><strong>Glasgow</strong>: ocular 4, verbal 5, motora 6. <strong>Daniels</strong> de 0 a 5, con el 3 como primer grado que vence la gravedad. <strong>Romberg</strong> para la ataxia sensitiva; <strong>índice-nariz, talón-rodilla y diadococinesia</strong> para la cerebelosa. <strong>Reflejos</strong>: bicipital C5, estilorradial C6, tricipital C7, patelar L3-L4, aquiliano S1.</dd>
+
+        <dt class="r-tto">Primera o segunda motoneurona</dt>
+        <dd><strong>1ª</strong>: espasticidad en navaja, hiperreflexia, Babinski, atrofia escasa, déficit por segmentos. <strong>2ª</strong>: hipotonía, arreflexia, atrofia precoz, fasciculaciones, déficit por músculos. La <strong>rigidez</strong> en caño de plomo o rueda dentada no es piramidal: es <strong>extrapiramidal</strong>.</dd>
+
+        <dt class="r-alerta">Trampas de examen</dt>
+        <dd>La parálisis facial que <strong>respeta la frente es central</strong> y la lesión está del lado opuesto. El <strong>Romberg positivo es sensitivo, no cerebeloso</strong>. La lesión del aparato locomotor <strong>no es parálisis</strong>, es impotencia funcional. El <strong>Hoffmann</strong> indica lesión piramidal, no un nivel.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir de la clase «Semiología del sistema nervioso» del Dr. Gustavo Grilli (Neurología). Ampliaciones de los bloques de motilidad, coordinación, reflejos, sensibilidad y estudios complementarios tomadas de Argente y Álvarez, <em>Semiología médica</em>; Harrison, <em>Principios de Medicina Interna</em>; y Snell, <em>Neuroanatomía clínica</em>. Material de estudio: no reemplaza el criterio clínico.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+
+  // ---- Tema claro / oscuro ----
+  // Sin eleccion estampada manda el sistema; el boton la estampa y la guarda.
+  var raiz = document.documentElement;
+  var boton = document.getElementById('tema');
+
+  function temaActual(){
+    var estampado = raiz.getAttribute('data-theme');
+    if (estampado) return estampado;
+    return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+
+  if (boton){
+    var rotular = function(){
+      var actual = temaActual();
+      boton.setAttribute('aria-pressed', actual === 'dark' ? 'true' : 'false');
+      boton.setAttribute('aria-label', actual === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+    };
+    boton.addEventListener('click', function(){
+      var nuevo = temaActual() === 'dark' ? 'light' : 'dark';
+      raiz.setAttribute('data-theme', nuevo);
+      try { localStorage.setItem('wordmed-tema', nuevo); } catch (e) { /* sin persistencia */ }
+      rotular();
+    });
+    rotular();
+  }
+
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link, .ir-link'));
+
+  // Devuelve TODOS los enlaces al ancla: la misma seccion figura en el indice
+  // lateral y en el compacto, y los dos tienen que encenderse juntos.
+  function porMeta(hash){
+    return enlaces.filter(function(l){ return l.getAttribute('href') === '#' + hash; });
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var activos = porMeta(e.target.id);
+        if (!activos.length) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          activos.forEach(function(l){ l.setAttribute('aria-current', 'true'); });
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>
+<script>
+(function(){
+  "use strict";
+  var clave = document.body.dataset.clave || "";
+  var enApp = typeof window.WordmedApp !== "undefined";
+  var MEM = "wordmed:progreso";
+
+  function leer(){ try{ return JSON.parse(localStorage.getItem(MEM)) || {}; }catch(e){ return {}; } }
+  function guardar(m){ try{ localStorage.setItem(MEM, JSON.stringify(m)); }catch(e){} }
+
+  function alto(){
+    return Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+  }
+
+  /* retomar donde quedó */
+  if (clave) {
+    var m = leer()[clave];
+    if (m && m.y > 0) {
+      window.addEventListener("load", function(){
+        window.scrollTo(0, Math.min(m.y, alto()));
+      });
+    }
+  }
+
+  /* anotar el avance, sin ahogar el scroll */
+  var pendiente = false;
+  window.addEventListener("scroll", function(){
+    if (pendiente || !clave) return;
+    pendiente = true;
+    requestAnimationFrame(function(){
+      pendiente = false;
+      var y = window.scrollY;
+      var pct = Math.round((y / alto()) * 100);
+      pct = Math.max(0, Math.min(100, pct));
+      var m = leer();
+      m[clave] = { y: y, pct: pct, ts: Date.now() };
+      guardar(m);
+      if (enApp && window.WordmedApp.progreso) window.WordmedApp.progreso(clave, pct, y);
+    });
+  }, { passive: true });
+
+  /* volver: solo cuando vinimos de la cáscara web */
+  if (!enApp && document.referrer && document.referrer.indexOf(location.origin) === 0) {
+    var b = document.createElement("button");
+    b.className = "volver";
+    b.type = "button";
+    b.setAttribute("aria-label", "Volver");
+    b.innerHTML = '<svg class="volver__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg>';
+    b.addEventListener("click", function(){ history.back(); });
+    document.body.appendChild(b);
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1581 @@
+<title>Accidente Cerebrovascular</title>
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-bloque:1.95rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+
+  /* Que la barra de desplazamiento y los controles nativos acompanen al tema */
+  color-scheme: light dark;
+}
+
+/* Eleccion explicita de claro: solo hace falta para el color-scheme, los
+   tokens claros ya son la base sin estampar. */
+:root[data-theme="light"]{ color-scheme: light; }
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* Interruptor de tema claro / oscuro.
+   El estampado `data-theme` en la raíz ya lo respetan los bloques de tokens de
+   arriba; este botón sólo lo pone y lo guarda. Sin elección estampada mandan
+   las preferencias del sistema, que es el comportamiento por defecto. */
+.tema{
+  position:fixed; top:.7rem; right:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.tema:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.tema__icono{ width:1.15rem; height:1.15rem; display:block; }
+
+/* Se muestra el icono del tema al que se va a cambiar, no el actual.
+   Mismo escalonado que los tokens: base clara · sistema oscuro · elección explícita. */
+.tema__sol{ display:none; }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .tema__sol{ display:block; }
+  :root:not([data-theme="light"]) .tema__luna{ display:none; }
+}
+:root[data-theme="dark"] .tema__sol{ display:block; }
+:root[data-theme="dark"] .tema__luna{ display:none; }
+:root[data-theme="light"] .tema__sol{ display:none; }
+:root[data-theme="light"] .tema__luna{ display:block; }
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índices ---------- */
+/* Dos piezas complementarias y deliberadamente redundantes:
+   · .indice        — barra lateral fija, sólo en pantalla ancha, navegación permanente.
+   · .indice-rapido — tarjeta compacta al principio del cuerpo, visible en TODO ancho.
+   La lateral desaparece por debajo de 64rem, que es justo el ancho del panel de
+   Artifacts y del celular; sin la compacta el cuadernillo publicado se queda sin
+   índice. Las dos apuntan a los mismos anclajes y se resaltan juntas al desplazar. */
+
+/* 6.1 · Barra lateral */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+/* Rótulo de bloque intercalado en la lista lateral: no es un enlace, sólo
+   separa grupos de secciones para que 30 entradas no sean una tira plana. */
+.indice__bloque{
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+  margin:.9rem 0 .2rem; padding:0 .55rem;
+}
+.indice__bloque:first-child{ margin-top:0; }
+
+/* 6.2 · Índice compacto (va después de la portada, dentro del cuerpo) */
+.indice-rapido{
+  background:var(--hoja-hund);
+  border:1px solid var(--linea);
+  border-radius:var(--radio);
+  padding:1.1rem 1.2rem 1.2rem;
+}
+.indice-rapido__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .85rem;
+}
+/* auto-fit: una columna en el panel angosto, dos o tres en pantalla ancha */
+.indice-rapido__bloques{
+  list-style:none; margin:0; padding:0;
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(15rem, 1fr));
+  gap:1rem 2rem; align-items:start;
+}
+.ir-bloque{
+  display:block; margin-bottom:.4rem;
+  font-family:var(--f-titulo); font-size:.98rem; font-weight:700; line-height:1.3;
+  color:var(--tinta); text-decoration:none;
+  padding-bottom:.3rem; border-bottom:1px solid var(--linea-fuerte);
+}
+.ir-bloque:hover{ color:var(--cli-t); }
+.ir-secciones{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.05rem; }
+.ir-link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.55rem 1fr; align-items:baseline; gap:.4rem;
+  padding:.2rem .35rem; border-radius:2px;
+  font-size:.86rem; line-height:1.4; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.ir-link > b{
+  font-family:var(--f-dato); font-size:.76rem; font-weight:700;
+  font-variant-numeric:tabular-nums; color:var(--ct); opacity:.85;
+}
+.ir-link:hover{ background:var(--hoja); color:var(--tinta); }
+.ir-link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Título de bloque y ficha de sección ---------- */
+
+/* Anuncia un grupo de secciones. Neutro en color a propósito: los siete colores
+   tienen significado clínico fijo y un bloque agrupa secciones de varios. La
+   regla de abajo lleva el degradado completo de la paleta, igual que la pestaña
+   de repaso y la cabecera de la ficha relámpago.
+   Sin <svg> adentro: el exportador a Word aparea los diagramas con las figuras
+   por contador posicional sobre el HTML crudo (ver exportar_docx.py). */
+.bloque{
+  margin:1.4rem 0 0; padding:0;
+  text-align:center; scroll-margin-top:2.5rem;
+  display:flex; flex-direction:column; align-items:center; gap:.3rem;
+  font-weight:400;
+}
+.bloque:first-child{ margin-top:0; }
+.bloque__rotulo{
+  font-family:var(--f-texto);
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+}
+.bloque__nombre{
+  font-family:var(--f-titulo); font-size:var(--t-bloque); font-weight:700; line-height:1.15;
+  letter-spacing:-.01em; color:var(--tinta); text-wrap:balance; max-width:32ch;
+}
+.bloque::after{
+  content:""; width:7rem; height:2.5px; margin-top:.5rem; border-radius:2px;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+}
+
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.5rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-column:1; grid-row:1; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+/* El icono ocupa la columna 1 y NADA MAS. Todo el resto del contenido se
+   apila en la columna 2, una fila por elemento, sin importar cuantos
+   parrafos haya.
+
+   Sin esta regla la caja solo funciona con un unico <p>: a partir del
+   segundo, la autocolocacion del grid empieza a repartir contenido en la
+   columna del icono, que es `auto` y por lo tanto se ensancha hasta abarcar
+   el parrafo que le toco. La columna `1fr` queda entonces reducida a una
+   tira angosta, el texto se parte en dos columnas desbalanceadas y la caja
+   crece hasta volverse ilegible. */
+.importante > :not(.importante__icono){ grid-column:2; }
+.importante__titulo{
+  grid-row:1;
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante ul, .importante ol{ margin:0; padding-left:1.15rem; }
+.importante li + li{ margin-top:.3rem; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso, .tema{ display:none !important; }
+  /* La lateral no se imprime, pero la compacta sí: en papel es la tabla de
+     contenidos del cuadernillo. */
+  .indice-rapido{ display:block; break-inside:avoid; page-break-inside:avoid; margin-bottom:1.2rem; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .bloque{
+    margin:1.6rem 0 1rem;
+    break-after:avoid; page-break-after:avoid;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+
+<script>
+/* Aplica el tema guardado antes de pintar. Va aca arriba a proposito: si
+   esperara al script del final, el documento parpadearia en el tema del
+   sistema antes de corregirse. */
+(function(){
+  try {
+    var guardado = localStorage.getItem('wordmed-tema');
+    if (guardado === 'dark' || guardado === 'light') {
+      document.documentElement.setAttribute('data-theme', guardado);
+    }
+  } catch (e) { /* almacenamiento bloqueado: manda el sistema */ }
+})();
+</script>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<button class="tema" id="tema" type="button" aria-pressed="false" aria-label="Cambiar a modo oscuro">
+  <svg class="tema__icono tema__sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.2"></circle>
+    <path d="M12 2.6v2.1M12 19.3v2.1M5.1 5.1l1.5 1.5M17.4 17.4l1.5 1.5M2.6 12h2.1M19.3 12h2.1M5.1 18.9l1.5-1.5M17.4 6.6l1.5-1.5"></path>
+  </svg>
+  <svg class="tema__icono tema__luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20.4 14.2A8.6 8.6 0 0 1 9.8 3.6a8.6 8.6 0 1 0 10.6 10.6z"></path>
+  </svg>
+</button>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li class="indice__bloque">A · Bases</li>
+      <li><a class="indice__link i-generalidades"  href="#irrigacion">Irrigación y drenaje</a></li>
+      <li><a class="indice__link i-generalidades"  href="#definicion">Definición y epidemiología</a></li>
+      <li><a class="indice__link i-generalidades"  href="#factores">Factores de riesgo</a></li>
+
+      <li class="indice__bloque">B · Clasificación</li>
+      <li><a class="indice__link i-importantes"    href="#clasificacion">Isquémico y hemorrágico</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#causas">Causas</a></li>
+
+      <li class="indice__bloque">C · Clínica</li>
+      <li><a class="indice__link i-clinica"        href="#hemisferios">Según el hemisferio</a></li>
+      <li><a class="indice__link i-clinica"        href="#territorios">Según el territorio</a></li>
+
+      <li class="indice__bloque">D · Diagnóstico y tratamiento</li>
+      <li><a class="indice__link i-diagnostico"    href="#diagnostico">Diagnóstico</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#escalas">Valoración del déficit</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#tratamiento">Tratamiento agudo</a></li>
+
+      <li class="indice__bloque">E · Pronóstico y rehabilitación</li>
+      <li><a class="indice__link i-clinica"        href="#pronostico">Pronóstico funcional</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#rehab-aguda">Rehabilitación aguda</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#rehab-subaguda">Rehabilitación subaguda</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#rehab-cronica">Rehabilitación crónica</a></li>
+
+      <li class="indice__bloque">Cierre</li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Neurología · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Accidente Cerebrovascular</h1>
+      <p class="portada__bajada">Del polígono de Willis a la rehabilitación: qué es un ACV, cómo se clasifica, qué déficit produce según el hemisferio y la arteria, cómo se diagnostica y trata en las primeras horas, y cómo se recupera la función en las semanas y meses siguientes.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">14 secciones</span>
+        <span class="etiqueta s-importantes">Isquémico vs hemorrágico</span>
+        <span class="etiqueta s-tratamiento">Ventana terapéutica</span>
+        <span class="etiqueta s-clinica">Rehabilitación por fases</span>
+      </div>
+    </header>
+
+    <nav class="indice-rapido" aria-label="Contenido del cuadernillo">
+      <p class="indice-rapido__rotulo">Contenido</p>
+      <ol class="indice-rapido__bloques">
+        <li>
+          <a class="ir-bloque" href="#bloque-a">Bloque A · Bases</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades" href="#irrigacion"><b>01</b> Irrigación y drenaje venoso del cerebro</a></li>
+            <li><a class="ir-link i-generalidades" href="#definicion"><b>02</b> Definición y epidemiología</a></li>
+            <li><a class="ir-link i-generalidades" href="#factores"><b>03</b> Factores de riesgo</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-b">Bloque B · Clasificación y causas</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-importantes"    href="#clasificacion"><b>04</b> Isquémico y hemorrágico</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#causas"><b>05</b> Causas</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-c">Bloque C · Manifestaciones clínicas</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-clinica" href="#hemisferios"><b>06</b> Clínica según el hemisferio</a></li>
+            <li><a class="ir-link i-clinica" href="#territorios"><b>07</b> Clínica según el territorio arterial</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-d">Bloque D · Diagnóstico y tratamiento</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-diagnostico" href="#diagnostico"><b>08</b> Diagnóstico en agudo y posterior</a></li>
+            <li><a class="ir-link i-diagnostico" href="#escalas"><b>09</b> Valoración del déficit y escalas</a></li>
+            <li><a class="ir-link i-tratamiento" href="#tratamiento"><b>10</b> Tratamiento agudo</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-e">Bloque E · Pronóstico y rehabilitación</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-clinica"     href="#pronostico"><b>11</b> Pronóstico funcional</a></li>
+            <li><a class="ir-link i-tratamiento" href="#rehab-aguda"><b>12</b> Rehabilitación en fase aguda</a></li>
+            <li><a class="ir-link i-tratamiento" href="#rehab-subaguda"><b>13</b> Rehabilitación en fase subaguda</a></li>
+            <li><a class="ir-link i-tratamiento" href="#rehab-cronica"><b>14</b> Rehabilitación en fase crónica</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#repaso">Cierre</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-clinica"     href="#repaso"><b>·</b> Repaso activo</a></li>
+            <li><a class="ir-link i-importantes" href="#relampago"><b>·</b> Ficha Relámpago</a></li>
+          </ul>
+        </li>
+      </ol>
+    </nav>
+
+    <h2 class="bloque" id="bloque-a">
+      <span class="bloque__rotulo">Bloque A</span>
+      <span class="bloque__nombre">Bases</span>
+    </h2>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="irrigacion">
+      <span class="seccion__pestana"><b>01</b> Recuerdo anatómico</span>
+      <h2 class="seccion__titulo">Irrigación y drenaje venoso del cerebro</h2>
+
+      <p>El cerebro recibe sangre por dos sistemas que salen del arco aórtico: el <strong>carotídeo</strong>, por las carótidas comunes y después las internas, y el <strong>vertebrobasilar</strong>, por las arterias vertebrales que nacen de las subclavias y se unen en la arteria basilar. Los dos se conectan en la base del cerebro en un anillo: el <strong>polígono de Willis</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 450" role="img" aria-label="Polígono de Willis: las carótidas internas dan las cerebrales anterior y media; las cerebrales anteriores se unen por la comunicante anterior; las comunicantes posteriores unen cada carótida con la cerebral posterior, rama de la basilar, que se forma por la unión de las vertebrales">
+          <path d="M395 72 L425 72" stroke="var(--c)" stroke-width="5" fill="none"></path>
+          <path d="M395 72 L370 20 M425 72 L450 20" stroke="var(--c)" stroke-width="5" fill="none"></path>
+          <path d="M340 150 L395 72 M480 150 L425 72" stroke="var(--c)" stroke-width="5" fill="none"></path>
+          <path d="M340 150 L180 140 M480 150 L640 140" stroke="var(--c)" stroke-width="6" fill="none"></path>
+          <path d="M340 150 L352 262 M480 150 L468 262" stroke="var(--c)" stroke-width="4" fill="none"></path>
+          <path d="M410 272 L352 262 L230 300 M410 272 L468 262 L590 300" stroke="var(--c)" stroke-width="5" fill="none"></path>
+          <path d="M410 292 L320 332 M410 292 L500 332" stroke="var(--c)" stroke-width="3" fill="none"></path>
+          <path d="M410 272 L410 392" stroke="var(--c)" stroke-width="7" fill="none"></path>
+          <path d="M410 392 L360 438 M410 392 L460 438" stroke="var(--c)" stroke-width="5" fill="none"></path>
+          <circle cx="340" cy="150" r="9" fill="var(--c)" fill-opacity="0.45" stroke="currentColor"></circle>
+          <circle cx="480" cy="150" r="9" fill="var(--c)" fill-opacity="0.45" stroke="currentColor"></circle>
+
+          <line x1="392" y1="72" x2="300" y2="60" stroke="currentColor" stroke-width="0.8"></line>
+          <text x="294" y="64" text-anchor="end" font-size="11.5" font-weight="700" fill="currentColor">Comunicante anterior</text>
+          <text x="470" y="26" font-size="11.5" font-weight="700" fill="currentColor">Cerebral anterior</text>
+          <text x="40" y="128" font-size="11.5" font-weight="700" fill="currentColor">Cerebral media</text>
+          <text x="660" y="136" font-size="11.5" font-weight="700" fill="currentColor">Cerebral media</text>
+          <text x="410" y="164" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">Carótidas internas</text>
+          <text x="232" y="215" font-size="11.5" font-weight="700" fill="currentColor">Comunicante</text>
+          <text x="232" y="230" font-size="11.5" font-weight="700" fill="currentColor">posterior</text>
+          <text x="600" y="306" font-size="11.5" font-weight="700" fill="currentColor">Cerebral posterior</text>
+          <text x="520" y="345" font-size="11.5" fill="currentColor">Cerebelosa superior</text>
+          <text x="422" y="372" font-size="11.5" font-weight="700" fill="currentColor">Basilar</text>
+          <text x="480" y="438" font-size="11.5" font-weight="700" fill="currentColor">Vertebrales</text>
+        </svg>
+        <figcaption>Visto desde abajo. Adelante, las <strong>cerebrales anteriores</strong> se unen por la <strong>comunicante anterior</strong>; a los costados, cada <strong>comunicante posterior</strong> une la carótida interna con la <strong>cerebral posterior</strong>. Si una arteria se ocluye, el anillo permite que la sangre llegue por el otro sistema.</figcaption>
+      </figure>
+
+      <p>La clase muestra también otras ramas del polígono: la <strong>oftálmica</strong>, la <strong>coroidea anterior</strong>, la <strong>estriada medial distal</strong> o recurrente de Heubner y las <strong>arterias del puente</strong>, ramas de la basilar.</p>
+
+      <h3>Drenaje venoso</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Sistema</th><th>Componentes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Senos venosos durales mediales</strong></td><td>Seno sagital superior, sagital inferior, recto y confluencia de los senos</td></tr>
+            <tr><td><strong>Senos posteroinferiores</strong></td><td>Transverso, sigmoideo, occipital y marginal; petrosos superior e inferior; plexo basilar</td></tr>
+            <tr><td><strong>Senos anteroinferiores</strong></td><td><strong>Seno cavernoso</strong>, senos intercavernosos anterior y posterior, seno esfenoparietal</td></tr>
+            <tr><td><strong>Venas superficiales</strong></td><td>Cerebrales superiores, cerebral media superficial, cerebrales inferiores y anastomóticas superior e inferior</td></tr>
+            <tr><td><strong>Venas profundas</strong></td><td><strong>Vena cerebral magna</strong>, que recibe la <strong>vena basal</strong> y las <strong>venas internas del cerebro</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «Accidente cerebrovascular (ACV)», Dr. Gustavo Grilli: recuerdo anatómico, polígono de Willis y drenaje venoso.</p>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-generalidades" id="definicion">
+      <span class="seccion__pestana"><b>02</b> Generalidades</span>
+      <h2 class="seccion__titulo">Definición y epidemiología</h2>
+
+      <p>El ACV es un <strong>cuadro clínico de instalación aguda y origen vascular</strong> que genera una <strong>disfunción focal o global del cerebro</strong>. Se manifiesta por:</p>
+      <ul>
+        <li><strong>Déficit neurológico focal repentino</strong>, y/o</li>
+        <li><strong>trastorno de conciencia</strong>,</li>
+        <li><strong>cefalea intensa</strong>,</li>
+        <li><strong>signos meníngeos</strong>.</li>
+      </ul>
+      <p><strong>La magnitud del déficit refleja la localización y el tamaño de la lesión.</strong></p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Dato</th><th>Cifra</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Causa de muerte</strong></td><td><strong>Segunda</strong>, después de la enfermedad coronaria</td></tr>
+            <tr><td><strong>Incidencia</strong></td><td><span class="dato">200</span> casos cada 100.000 habitantes</td></tr>
+            <tr><td><strong>Discapacidad</strong></td><td><strong>Principal causa de discapacidad física grave en adultos</strong></td></tr>
+            <tr><td><strong>A los 6 meses</strong></td><td>El <span class="dato">25 %</span> todavía no camina sin asistencia y el <span class="dato">60 %</span> no incorpora la mano afectada a las actividades de la vida diaria</td></tr>
+            <tr><td><strong>Mortalidad</strong></td><td>Entre el <span class="dato">20</span> y el <span class="dato">65 %</span>, según tipo, ubicación geográfica y acceso a la atención</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «Accidente cerebrovascular (ACV)», Dr. Gustavo Grilli.</p>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-generalidades" id="factores">
+      <span class="seccion__pestana"><b>03</b> Generalidades</span>
+      <h2 class="seccion__titulo">Factores de riesgo</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>No modificables</th><th>Modificables</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Raza negra</strong></td><td><strong>HTA</strong> · enfermedades cardíacas · <strong>diabetes</strong> · hipercolesterolemia</td></tr>
+            <tr><td><strong>Sexo masculino</strong></td><td>Factores hematológicos · obesidad · <strong>tabaquismo</strong> · alcoholismo</td></tr>
+            <tr><td><strong>Edad mayor de 55 años</strong></td><td><strong>Drogas</strong>: cocaína, anfetaminas, descongestivos, antimigrañosos, anticonceptivos orales, antirretrovirales, anticuerpos monoclonales, doble antiagregación y anticoagulación</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La lista de drogas mezcla dos mecanismos: las <strong>vasoconstrictoras</strong> (cocaína, anfetaminas, descongestivos, antimigrañosos) y los anticonceptivos favorecen el ACV isquémico; la <strong>doble antiagregación y la anticoagulación</strong> favorecen el <strong>hemorrágico</strong>.</p>
+
+      <p class="cita">Clase «Accidente cerebrovascular (ACV)», Dr. Gustavo Grilli.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-b">
+      <span class="bloque__rotulo">Bloque B</span>
+      <span class="bloque__nombre">Clasificación y causas</span>
+    </h2>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-importantes" id="clasificacion">
+      <span class="seccion__pestana"><b>04</b> Clasificación</span>
+      <h2 class="seccion__titulo">Isquémico y hemorrágico</h2>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 400" role="img" aria-label="Clasificación del ACV: isquémico, 80 a 85 por ciento, con AIT, DNIR, ACV en evolución y ACV instalado; hemorrágico, 15 a 20 por ciento, con hematoma intracerebral espontáneo, hemorragia subaracnoidea y hematomas traumáticos">
+          <rect x="20" y="176" width="110" height="46" rx="6" fill="var(--c)" fill-opacity="0.34" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="75" y="204" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">ACV</text>
+
+          <rect x="180" y="62" width="200" height="54" rx="6" fill="var(--c)" fill-opacity="0.22" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="280" y="85" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Isquémico</text>
+          <text x="280" y="104" text-anchor="middle" font-size="11.5" fill="currentColor">80-85 % de los casos</text>
+          <rect x="180" y="272" width="200" height="54" rx="6" fill="var(--c)" fill-opacity="0.22" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="280" y="295" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Hemorrágico</text>
+          <text x="280" y="314" text-anchor="middle" font-size="11.5" fill="currentColor">15-20 % de los casos</text>
+          <path d="M130 199 L155 199 L155 89 L180 89 M155 199 L155 299 L180 299" fill="none" stroke="currentColor" stroke-width="1.3"></path>
+
+          <text x="430" y="40" font-size="12" fill="currentColor"><tspan font-weight="700">AIT</tspan>: accidente isquémico transitorio</text>
+          <text x="430" y="70" font-size="12" fill="currentColor"><tspan font-weight="700">DNIR</tspan>: déficit neurológico isquémico reversible</text>
+          <text x="430" y="100" font-size="12" fill="currentColor"><tspan font-weight="700">ACV en evolución</tspan></text>
+          <text x="430" y="130" font-size="12" fill="currentColor"><tspan font-weight="700">ACV instalado</tspan></text>
+          <path d="M380 89 L405 89 L405 36 L420 36 M405 66 L420 66 M405 89 L405 96 L420 96 M405 89 L405 126 L420 126" fill="none" stroke="currentColor" stroke-width="1.1"></path>
+
+          <text x="430" y="224" font-size="12" fill="currentColor"><tspan font-weight="700">Hematoma intracerebral espontáneo</tspan> (HICE)</text>
+          <text x="430" y="254" font-size="12" fill="currentColor"><tspan font-weight="700">Hemorragia subaracnoidea</tspan> (HSA)</text>
+          <text x="430" y="284" font-size="12" fill="currentColor"><tspan font-weight="700">Hematomas traumáticos</tspan>:</text>
+          <text x="450" y="306" font-size="11.5" fill="currentColor">epidural · subdural · HSA postraumática</text>
+          <text x="450" y="326" font-size="11.5" fill="currentColor">intracerebral · hemorragia intraventricular</text>
+          <path d="M380 299 L405 299 L405 220 L420 220 M405 250 L420 250 M405 299 L405 280 L420 280" fill="none" stroke="currentColor" stroke-width="1.1"></path>
+        </svg>
+        <figcaption>Cuatro de cada cinco ACV son <strong>isquémicos</strong>. Los subtipos isquémicos se ordenan por cómo evoluciona el déficit en el tiempo: del que revierte por completo (AIT) al que queda establecido.</figcaption>
+      </figure>
+
+      <p>Sobre el AIT, conviene conocer las dos definiciones. La <strong>clásica</strong> es temporal: un déficit que revierte por completo en <strong>menos de 24 horas</strong>. La <strong>actual</strong>, de la AHA/ASA, es tisular: un episodio transitorio de disfunción neurológica <strong>sin infarto en las imágenes</strong>. Con resonancia, buena parte de los cuadros que duraban algunas horas ya muestran un infarto y dejan de ser AIT.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>Un AIT no es un episodio benigno.</strong> Que el déficit haya revertido no significa que el riesgo haya pasado: es un aviso de que puede venir un ACV instalado, y se estudia y se trata con la misma urgencia.</p>
+      </div>
+
+      <p class="cita">Clase «Accidente cerebrovascular (ACV)», Dr. Gustavo Grilli. Definición tisular del AIT: Según PubMed, Easton JD y col., Stroke 2009;40(6):2276-93 (<a href="https://doi.org/10.1161/STROKEAHA.108.192218">DOI</a>).</p>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-fisiopatologia" id="causas">
+      <span class="seccion__pestana"><b>05</b> Fisiopatología</span>
+      <h2 class="seccion__titulo">Causas</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Isquémico</th><th>Hemorrágico</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Aterotrombótico</strong></td><td><strong>HTA</strong></td></tr>
+            <tr><td><strong>Cardioembólico</strong></td><td>Vasculopatías</td></tr>
+            <tr><td><strong>Lipohialinosis</strong></td><td><strong>Rotura aneurismática</strong></td></tr>
+            <tr><td><strong>Microangiopatías</strong> (DM, HTA)</td><td><strong>MAV</strong>: malformación arteriovenosa</td></tr>
+            <tr><td>Disección arterial · displasia fibromuscular</td><td>Drogas: cocaína, anfetaminas</td></tr>
+            <tr><td>—</td><td>Tumores</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La <strong>HTA aparece en las dos columnas</strong>: en la isquémica, por la microangiopatía de los vasos pequeños, que da infartos pequeños y profundos; en la hemorrágica, porque esos mismos vasos dañados se rompen. Es el factor de riesgo que más pesa.</p>
+
+      <p class="cita">Clase «Accidente cerebrovascular (ACV)», Dr. Gustavo Grilli.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-c">
+      <span class="bloque__rotulo">Bloque C</span>
+      <span class="bloque__nombre">Manifestaciones clínicas</span>
+    </h2>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-clinica" id="hemisferios">
+      <span class="seccion__pestana"><b>06</b> Cuadro clínico</span>
+      <h2 class="seccion__titulo">Clínica según el hemisferio</h2>
+
+      <p>El déficit motor siempre es <strong>contralateral</strong>; lo que cambia de un hemisferio al otro son las funciones cognitivas, la comunicación y la respuesta emocional. El <strong>dominante es el izquierdo</strong> en los diestros y en algunos zurdos.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Dominio</th><th>Hemisferio dominante (izquierdo)</th><th>Hemisferio no dominante (derecho)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Motor</strong></td><td><strong>Hemiparesia derecha</strong></td><td><strong>Hemiparesia izquierda</strong></td></tr>
+            <tr><td><strong>Cognitivo y perceptivo</strong></td><td>Dispraxias · alteración de las habilidades constructivas visuoespaciales · afectación de la <strong>memoria verbal</strong></td><td><strong>Anosognosia</strong>: no reconoce sus síntomas ni la enfermedad · <strong>heminegligencia</strong>: no atiende a los estímulos de un lado del cuerpo o del espacio · percepción espacial alterada · afectación de la <strong>memoria visual</strong></td></tr>
+            <tr><td><strong>Comunicación</strong></td><td><strong>Disfasia</strong>: expresión, comprensión, lectura y escritura</td><td>Dificultad para comprender y expresar <strong>gestos y entonación</strong> con contenido emocional y afectivo</td></tr>
+            <tr><td><strong>Emocional</strong></td><td>Reacciones con <strong>depresión y ansiedad</strong></td><td><strong>Impulsividad</strong>, reacciones de euforia o indiferencia, también ansiedad</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>El contraste emocional es una pregunta clásica: el paciente con lesión <strong>izquierda</strong> suele estar deprimido y consciente de su déficit; el de lesión <strong>derecha</strong>, indiferente o eufórico, y a veces ni siquiera reconoce que tiene un problema. Eso, sumado a la heminegligencia, complica mucho su rehabilitación.</p>
+
+      <p class="cita">Clase «Accidente cerebrovascular (ACV)», Dr. Gustavo Grilli: manifestaciones según el hemisferio dominante y no dominante.</p>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-clinica" id="territorios">
+      <span class="seccion__pestana"><b>07</b> Cuadro clínico</span>
+      <h2 class="seccion__titulo">Clínica según el territorio arterial</h2>
+
+      <p>La clase muestra en una lámina qué parte del cerebro depende de cada arteria. Con el territorio se predice el déficit:</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Arteria</th><th>Territorio</th><th>Déficit típico</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Cerebral anterior</strong></td><td>Cara medial de los lóbulos frontal y parietal</td><td>Paresia y trastorno sensitivo contralaterales de <strong>predominio crural</strong>: la pierna</td></tr>
+            <tr><td><strong>Cerebral media</strong>, tronco M1</td><td>Casi toda la cara externa del hemisferio y los núcleos profundos</td><td>Hemiparesia e hipoestesia contralaterales de <strong>predominio faciobraquial</strong>, hemianopsia homónima, y <strong>afasia</strong> si es el hemisferio dominante o <strong>heminegligencia</strong> si es el no dominante</td></tr>
+            <tr><td><strong>Cerebral media</strong>, división superior</td><td>Región frontal y parietal superior</td><td>Déficit motor faciobraquial y, en el dominante, afasia de expresión</td></tr>
+            <tr><td><strong>Cerebral media</strong>, división inferior</td><td>Región temporal y parietal inferior</td><td>En el dominante, afasia de comprensión; defecto del campo visual</td></tr>
+            <tr><td><strong>Lenticuloestriadas</strong> y <strong>talamoperforantes</strong></td><td>Ganglios basales, cápsula interna y tálamo</td><td>Infartos pequeños y profundos: <strong>lacunares</strong></td></tr>
+            <tr><td><strong>Cerebral posterior</strong></td><td>Lóbulo occipital y cara inferior del temporal</td><td><strong>Hemianopsia homónima contralateral</strong></td></tr>
+            <tr><td><strong>Basilar</strong> y sus perforantes</td><td>Protuberancia</td><td>Afectación de pares craneales con déficit motor o sensitivo cruzado</td></tr>
+            <tr><td><strong>Cerebelosas</strong>: superior, anteroinferior y posteroinferior</td><td>Cerebelo</td><td>Ataxia y vértigo</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La lámina también marca la <strong>arteria de Heubner</strong> y la <strong>coroidea anterior</strong>, ramas pequeñas que irrigan la cabeza del caudado y parte de la cápsula interna.</p>
+
+      <p class="cita">Clase «Accidente cerebrovascular (ACV)», Dr. Gustavo Grilli: lámina de territorios arteriales. Déficit por territorio: Harrison, <em>Principios de Medicina Interna</em>, capítulo de enfermedad cerebrovascular.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-d">
+      <span class="bloque__rotulo">Bloque D</span>
+      <span class="bloque__nombre">Diagnóstico y tratamiento</span>
+    </h2>
+
+    <!-- ============ 8 ============ -->
+    <section class="seccion s-diagnostico" id="diagnostico">
+      <span class="seccion__pestana"><b>08</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">Diagnóstico en agudo y posterior</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Momento</th><th>Estudio</th><th>Para qué</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>En agudo</strong></td><td><strong>Clínica</strong></td><td>Déficit focal repentino: define la sospecha y la hora de inicio</td></tr>
+            <tr><td><strong>En agudo</strong></td><td><strong>Laboratorio y ECG</strong></td><td>Glucemia, coagulación, ritmo cardíaco</td></tr>
+            <tr><td><strong>En agudo</strong></td><td><strong>TAC</strong></td><td><strong>Separa isquemia de hemorragia</strong>: el sangrado se ve hiperdenso (blanco) desde el primer momento; el infarto aparece hipodenso recién con las horas</td></tr>
+            <tr><td><strong>En agudo</strong></td><td><strong>RMN</strong></td><td>La secuencia de <strong>difusión</strong> muestra el infarto desde los primeros minutos</td></tr>
+            <tr><td><strong>Después</strong></td><td><strong>Ecodoppler de vasos de cuello</strong></td><td>Estenosis carotídea: causa aterotrombótica</td></tr>
+            <tr><td><strong>Después</strong></td><td><strong>AngioRMN</strong></td><td>Vasos intracraneales y del cuello</td></tr>
+            <tr><td><strong>Después</strong></td><td><strong>Ecocardiograma</strong> transtorácico o transesofágico</td><td>Fuente cardioembólica</td></tr>
+            <tr><td><strong>Después</strong></td><td><strong>Angiografía cerebral con sustracción digital</strong></td><td>Aneurismas y malformaciones: causa hemorrágica</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La lógica es en dos tiempos: <strong>en agudo</strong> se busca <strong>qué tipo de ACV es</strong>, porque de eso depende el tratamiento inmediato; <strong>después</strong> se busca <strong>por qué ocurrió</strong>, para prevenir el siguiente.</p>
+
+      <p class="cita">Clase «Accidente cerebrovascular (ACV)», Dr. Gustavo Grilli: diagnóstico y láminas de TAC, RMN de difusión, angioRMN y angiografía. Utilidad de cada estudio: Harrison, <em>Principios de Medicina Interna</em>.</p>
+    </section>
+
+    <!-- ============ 9 ============ -->
+    <section class="seccion s-diagnostico" id="escalas">
+      <span class="seccion__pestana"><b>09</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">Valoración del déficit y escalas</h2>
+
+      <p>La clase atribuye a la «Asociación Americana de Cardiología» —es la <strong>American Heart Association</strong>, la Asociación Americana del Corazón— la sistematización del déficit en <strong>6 dominios</strong>: <strong>motor, sensitivo, visual, del lenguaje o comunicación, cognitivo y emocional</strong>. Cada dominio tiene su escala:</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Qué mide</th><th>Escala</th><th>Tiempo</th><th>A favor</th><th>En contra</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Déficit neurológico</strong></td><td><strong>NIH Stroke Scale</strong></td><td>2-5 min</td><td>Breve, válida y fiable; valora todas las áreas deficitarias</td><td>Baja sensibilidad</td></tr>
+            <tr><td><strong>Déficit neurológico</strong></td><td>Escala Canadiense</td><td>5 min</td><td>Breve y fiable</td><td>Omite las áreas sensitiva y visual</td></tr>
+            <tr><td><strong>AVD básicas</strong></td><td><strong>Índice de Barthel</strong></td><td>5-10 min</td><td>Ampliamente usado; excelente validez y fiabilidad</td><td>Poco sensible en pacientes con alto nivel de función</td></tr>
+            <tr><td><strong>AVD básicas</strong></td><td>Medida de independencia funcional (FIM)</td><td>40 min</td><td>Mide AVD, cognición y comunicación funcional</td><td>Efecto techo y suelo</td></tr>
+            <tr><td><strong>Motora</strong></td><td>Fugl-Meyer</td><td>30-40 min</td><td>Buena validez para función sensitivomotora y equilibrio</td><td>Compleja y lenta</td></tr>
+            <tr><td><strong>Motora</strong></td><td>Índice motor</td><td>5 min</td><td>Valoración breve del déficit de las extremidades</td><td>Sensibilidad no estudiada</td></tr>
+            <tr><td><strong>Marcha</strong></td><td>Categorías de marcha funcional · test cronometrados</td><td>2-5 min</td><td>Uso extendido; los test son cuantitativos y sensibles a los cambios</td><td>Sensibilidad no estudiada</td></tr>
+            <tr><td><strong>Cognitiva</strong></td><td><strong>Mini-Mental</strong></td><td>10 min</td><td>Ampliamente usado como cribado</td><td>Puede clasificar mal a los afásicos</td></tr>
+            <tr><td><strong>Comunicación</strong></td><td>Examen de la afasia de Boston</td><td>1-4 h</td><td>Datos estandarizados</td><td>Muy largo</td></tr>
+            <tr><td><strong>Emocional</strong></td><td>Escala de depresión geriátrica</td><td>10 min</td><td>Breve, útil en el anciano con déficit</td><td>Falsos negativos en depresión menor</td></tr>
+            <tr><td><strong>AVD instrumentales</strong></td><td>Índice de actividades de Frenchay</td><td>10-15 min</td><td>Desarrollado para el ictus</td><td>Sensibilidad y fiabilidad no estudiadas</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Las dos que más se nombran son la <strong>NIHSS</strong>, para medir la gravedad del déficit en agudo, y el <strong>índice de Barthel</strong>, para medir la dependencia en las actividades de la vida diaria.</p>
+
+      <p class="cita">Clase «Accidente cerebrovascular (ACV)», Dr. Gustavo Grilli: valoración del déficit y tabla de principales escalas de valoración postictus.</p>
+    </section>
+
+    <!-- ============ 10 ============ -->
+    <section class="seccion s-tratamiento" id="tratamiento">
+      <span class="seccion__pestana"><b>10</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Tratamiento agudo</h2>
+
+      <p>La clase resume el tratamiento en dos columnas: el <strong>isquémico</strong> se trata con <strong>protocolo de trombólisis</strong>, <strong>trombectomía endovascular</strong> y <strong>prevención secundaria con AAS o clopidogrel</strong>; el <strong>hemorrágico</strong>, con <strong>cirugía y evacuación en casos seleccionados</strong>. Las ventanas de tiempo y las dosis están tomadas de la guía AHA/ASA 2026.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 440" role="img" aria-label="Algoritmo del ACV agudo: ante un déficit focal agudo, TAC sin contraste; si hay sangrado, ACV hemorrágico con cirugía en casos seleccionados; si no, ACV isquémico: trombólisis dentro de las 4,5 horas y trombectomía si hay oclusión de gran vaso, dentro de las 6 horas o entre 6 y 24 en seleccionados; luego prevención secundaria">
+          <defs>
+            <marker id="acv-alg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <rect x="250" y="12" width="320" height="42" rx="6" fill="var(--c)" fill-opacity="0.18" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="410" y="38" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Déficit focal agudo: hora de inicio</text>
+          <line x1="410" y1="54" x2="410" y2="76" stroke="currentColor" stroke-width="1.4" marker-end="url(#acv-alg)"></line>
+          <rect x="250" y="80" width="320" height="42" rx="6" fill="var(--c)" fill-opacity="0.34" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="410" y="106" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">TAC de cerebro sin contraste</text>
+          <line x1="410" y1="122" x2="410" y2="144" stroke="currentColor" stroke-width="1.4" marker-end="url(#acv-alg)"></line>
+          <rect x="300" y="148" width="220" height="40" rx="20" fill="none" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="410" y="173" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">¿Hay sangrado?</text>
+
+          <line x1="520" y1="168" x2="586" y2="168" stroke="currentColor" stroke-width="1.4" marker-end="url(#acv-alg)"></line>
+          <text x="553" y="160" text-anchor="middle" font-size="11" fill="currentColor">sí</text>
+          <rect x="590" y="140" width="210" height="58" rx="6" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="695" y="164" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">ACV hemorrágico</text>
+          <text x="695" y="183" text-anchor="middle" font-size="11" fill="currentColor">cirugía y evacuación: caso por caso</text>
+
+          <line x1="410" y1="188" x2="410" y2="214" stroke="currentColor" stroke-width="1.4" marker-end="url(#acv-alg)"></line>
+          <text x="420" y="205" font-size="11" fill="currentColor">no</text>
+          <rect x="300" y="218" width="220" height="40" rx="6" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="410" y="243" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">ACV isquémico</text>
+
+          <line x1="360" y1="258" x2="230" y2="292" stroke="currentColor" stroke-width="1.4" marker-end="url(#acv-alg)"></line>
+          <line x1="460" y1="258" x2="590" y2="292" stroke="currentColor" stroke-width="1.4" marker-end="url(#acv-alg)"></line>
+          <rect x="40" y="296" width="330" height="62" rx="6" fill="var(--c)" fill-opacity="0.24" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="205" y="320" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Dentro de las 4,5 h: trombólisis IV</text>
+          <text x="205" y="340" text-anchor="middle" font-size="11" fill="currentColor">tenecteplasa o alteplasa</text>
+          <rect x="450" y="296" width="350" height="62" rx="6" fill="var(--c)" fill-opacity="0.24" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="625" y="320" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Oclusión de gran vaso: trombectomía</text>
+          <text x="625" y="340" text-anchor="middle" font-size="11" fill="currentColor">hasta 6 h; de 6 a 24 h en seleccionados</text>
+
+          <line x1="205" y1="358" x2="380" y2="386" stroke="currentColor" stroke-width="1.4" marker-end="url(#acv-alg)"></line>
+          <line x1="625" y1="358" x2="440" y2="386" stroke="currentColor" stroke-width="1.4" marker-end="url(#acv-alg)"></line>
+          <rect x="250" y="390" width="320" height="42" rx="6" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="410" y="416" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Prevención secundaria: AAS o clopidogrel</text>
+        </svg>
+        <figcaption>La <strong>TAC sin contraste</strong> es la bifurcación de todo el algoritmo. La trombólisis y la trombectomía <strong>no son excluyentes</strong>: el paciente con oclusión de gran vaso que llega dentro de la ventana puede recibir las dos.</figcaption>
+      </figure>
+
+      <h3>ACV isquémico</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Tratamiento</th><th>Cuándo</th><th>Dosis</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Trombólisis IV con tenecteplasa</strong></td><td>Pacientes elegibles <strong>dentro de las 4,5 h</strong> del inicio de los síntomas o de la última vez visto bien</td><td><span class="dato">0,25 mg/kg</span>, máximo <span class="dato">25 mg</span></td></tr>
+            <tr><td><strong>Trombólisis IV con alteplasa</strong></td><td>Misma ventana</td><td><span class="dato">0,9 mg/kg</span></td></tr>
+            <tr><td><strong>Trombectomía endovascular</strong></td><td>Oclusión proximal de gran vaso de la circulación anterior: <strong>dentro de las 6 h</strong>; <strong>de 6 a 24 h</strong> en seleccionados por criterios clínicos y de imagen</td><td>—</td></tr>
+            <tr><td><strong>Prevención secundaria</strong></td><td>Una vez descartada la hemorragia</td><td><strong>AAS</strong> o <strong>clopidogrel</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La guía pide trombolizar <strong>lo antes posible</strong>, sin demorar el tratamiento por estudios de imagen multimodal que no cambien la decisión. Después de la trombólisis, <strong>no se recomienda bajar en forma intensiva la presión sistólica por debajo de 140 mm Hg</strong>.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>Nada antitrombótico antes de la TAC.</strong> Clínicamente, un ACV isquémico y uno hemorrágico pueden ser idénticos. Dar trombolíticos, AAS o clopidogrel sin haber descartado el sangrado puede agrandar una hemorragia. Y como la ventana es de <strong>4,5 horas desde la última vez visto bien</strong>, la hora de inicio es el dato que más importa en el interrogatorio.</p>
+      </div>
+
+      <h3>ACV hemorrágico</h3>
+      <p>La clase indica <strong>cirugía y evacuación</strong>, con <strong>selección de cada caso</strong>: no todo hematoma se opera, y la decisión depende del paciente y de la lesión.</p>
+
+      <p class="cita">Clase «Accidente cerebrovascular (ACV)», Dr. Gustavo Grilli: tratamiento agudo. Ventanas, dosis y presión arterial: Según PubMed, guía AHA/ASA 2026 para el manejo temprano del ACV isquémico agudo, Prabhakaran S y col., Stroke 2026;57(8):e316-e436 (<a href="https://doi.org/10.1161/STR.0000000000000513">DOI</a>), en la síntesis de Boettger P y col., Cerebrovasc Dis 2026 (<a href="https://doi.org/10.1159/000553505">DOI</a>).</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-e">
+      <span class="bloque__rotulo">Bloque E</span>
+      <span class="bloque__nombre">Pronóstico y rehabilitación</span>
+    </h2>
+
+    <!-- ============ 11 ============ -->
+    <section class="seccion s-clinica" id="pronostico">
+      <span class="seccion__pestana"><b>11</b> Pronóstico</span>
+      <h2 class="seccion__titulo">Pronóstico funcional</h2>
+
+      <p>Estimar el pronóstico funcional a mediano y largo plazo sirve para <strong>comunicarlo al paciente y a la familia</strong> y para armar un <strong>programa de rehabilitación realista</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 840 250" role="img" aria-label="Línea de tiempo de la recuperación tras el ACV: máxima recuperación entre la cuarta y la sexta semana, 85 por ciento a las 5 semanas, 95 por ciento a las 13 semanas, y a los 6 meses un 25 por ciento sigue dependiente para la marcha">
+          <line x1="50" y1="150" x2="800" y2="150" stroke="currentColor" stroke-width="1.6"></line>
+          <rect x="162" y="120" width="56" height="30" fill="var(--c)" fill-opacity="0.35" stroke="none"></rect>
+          <text x="190" y="112" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">4-6 sem</text>
+          <text x="190" y="98" text-anchor="middle" font-size="11" fill="currentColor">máxima recuperación</text>
+
+          <line x1="134" y1="150" x2="134" y2="186" stroke="currentColor" stroke-width="1.2"></line>
+          <text x="140" y="202" text-anchor="end" font-size="11.5" font-weight="700" fill="currentColor">3.ª semana</text>
+          <text x="140" y="218" text-anchor="end" font-size="11" fill="currentColor">déficit grave:</text>
+          <text x="140" y="232" text-anchor="end" font-size="11" fill="currentColor">suele persistir</text>
+
+          <line x1="190" y1="150" x2="190" y2="186" stroke="currentColor" stroke-width="1.2"></line>
+          <text x="184" y="202" text-anchor="start" font-size="11.5" font-weight="700" fill="currentColor">5 semanas</text>
+          <text x="184" y="218" text-anchor="start" font-size="11" fill="currentColor">85 % de su</text>
+          <text x="184" y="232" text-anchor="start" font-size="11" fill="currentColor">máximo</text>
+
+          <line x1="414" y1="150" x2="414" y2="186" stroke="currentColor" stroke-width="1.2"></line>
+          <text x="414" y="202" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">13 semanas</text>
+          <text x="414" y="218" text-anchor="middle" font-size="11" fill="currentColor">95 % completó</text>
+          <text x="414" y="232" text-anchor="middle" font-size="11" fill="currentColor">su recuperación</text>
+
+          <line x1="778" y1="150" x2="778" y2="186" stroke="currentColor" stroke-width="1.2"></line>
+          <text x="740" y="202" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">6 meses</text>
+          <text x="740" y="218" text-anchor="middle" font-size="11" fill="currentColor">25 % depende para la marcha</text>
+          <text x="740" y="232" text-anchor="middle" font-size="11" fill="currentColor">60 % no usa la mano en AVD</text>
+
+          <text x="50" y="140" font-size="11" fill="currentColor">ACV</text>
+          <circle cx="50" cy="150" r="5" fill="currentColor"></circle>
+          <text x="800" y="140" text-anchor="end" font-size="11" fill="currentColor">tiempo</text>
+          <path d="M60 60 C180 20 330 18 790 16" fill="none" stroke="var(--c)" stroke-width="2.4"></path>
+          <text x="430" y="44" font-size="11" fill="currentColor">curva de recuperación: casi toda ocurre en los primeros 3 meses</text>
+        </svg>
+        <figcaption>Datos del <strong>Copenhagen Stroke Study</strong> citados en la clase. El escalón que importa es el primero: lo que no mejoró en las <strong>primeras 4 a 6 semanas</strong> difícilmente mejore después.</figcaption>
+      </figure>
+
+      <ul>
+        <li><strong>Tiempo de máxima recuperación: 4 a 6 semanas</strong> después del ACV.</li>
+        <li>Si el <strong>déficit motor es grave en la 3.ª semana</strong>, la mayoría seguirá con el mismo déficit a los 6 y 12 meses.</li>
+        <li>La <strong>mejoría funcional va de proximal a distal y de inferior a superior</strong>: primero el hombro antes que la mano, primero la pierna antes que el brazo.</li>
+        <li>A los 6 meses, el <strong>25 %</strong> sigue dependiendo de otro para la marcha y el <strong>60 %</strong> no incorpora la mano a las AVD.</li>
+      </ul>
+
+      <h3>Factores pronósticos negativos</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Peso de la evidencia</th><th>Factores</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Fuerte</strong>: nivel A en la revisión de Meijer, 2003</td><td><strong>Incontinencia urinaria</strong> · <strong>edad avanzada</strong> · <strong>hemiplejía o hemiparesia grave</strong> · <strong>discapacidad inicial grave</strong> · disfagia · apraxia y problemas de construcción visuoespacial · ictus isquémico complicado (edema cerebral, sangrado)</td></tr>
+            <tr><td><strong>Moderada</strong>: nivel B</td><td>Déficits perceptivos: inatención táctil y visual, hemianopsia · <strong>conciencia disminuida en las primeras 48 h</strong></td></tr>
+            <tr><td><strong>Menor</strong>: un solo estudio</td><td>Desorientación temporoespacial · falta de control del tronco sentado · deterioro funcional previo · escaso apoyo social · ictus recurrente</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «Accidente cerebrovascular (ACV)», Dr. Gustavo Grilli: pronóstico funcional y tabla de variables con valor predictivo desfavorable de la función.</p>
+    </section>
+
+    <!-- ============ 12 ============ -->
+    <section class="seccion s-tratamiento" id="rehab-aguda">
+      <span class="seccion__pestana"><b>12</b> Rehabilitación</span>
+      <h2 class="seccion__titulo">Rehabilitación en fase aguda</h2>
+
+      <p>La <strong>rehabilitación</strong> es la especialidad responsable de <strong>reducir la discapacidad</strong> causada por el ACV y de definir las necesidades y cuidados de los pacientes que quedan con discapacidad permanente. Sus principios:</p>
+      <ul>
+        <li>Controlar los <strong>factores de riesgo</strong> y la comorbilidad, para prevenir recurrencias y mejorar la supervivencia.</li>
+        <li>Objetivos prioritarios: <strong>prevenir complicaciones, minimizar el déficit y maximizar la función</strong>.</li>
+        <li>Evaluación e intervención <strong>precoces</strong>, con <strong>escalas estandarizadas</strong>.</li>
+        <li>Intervención basada en <strong>objetivos funcionales</strong>; su eficacia depende de la intensidad.</li>
+        <li><strong>Equipo multidisciplinario</strong>: médicos, fisioterapeutas, terapistas ocupacionales, fonoaudiólogos, neuropsicólogos, enfermería y trabajo social.</li>
+        <li>Es un <strong>proceso educativo</strong> que incluye a la familia y los cuidadores, y usa los <strong>recursos comunitarios</strong> para la reintegración.</li>
+      </ul>
+
+      <h3>En la fase aguda</h3>
+      <p>La <strong>unidad de stroke</strong> reduce la <strong>mortalidad, la dependencia y la duración de la internación</strong> gracias a la atención y la rehabilitación multidisciplinaria precoz.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Problema</th><th>Conducta</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Complicaciones del encamamiento</strong></td><td>Prevenir neumonía, infección urinaria, TVP, TEP y úlceras por decúbito</td></tr>
+            <tr><td><strong>Disfagia</strong>: la tiene el <span class="dato">50 %</span></td><td>Sonda nasogástrica y evaluación por fonoaudiología</td></tr>
+            <tr><td><strong>Incontinencia urinaria</strong></td><td>Sonda vesical, evaluando el <strong>retiro precoz</strong></td></tr>
+            <tr><td><strong>Profilaxis de TVP</strong></td><td>Medios físicos —vendaje intermitente— y <strong>HBPM</strong></td></tr>
+            <tr><td><strong>Escaras</strong>: 4 grados según profundidad</td><td><strong>Cambios de decúbito</strong></td></tr>
+            <tr><td><strong>Función</strong></td><td>Kinesioterapia respiratoria y motora; manejo vital</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «Accidente cerebrovascular (ACV)», Dr. Gustavo Grilli: rehabilitación, claves para la rehabilitación del ictus y fase aguda.</p>
+    </section>
+
+    <!-- ============ 13 ============ -->
+    <section class="seccion s-tratamiento" id="rehab-subaguda">
+      <span class="seccion__pestana"><b>13</b> Rehabilitación</span>
+      <h2 class="seccion__titulo">Rehabilitación en fase subaguda</h2>
+
+      <p>Superado el riesgo vital, el paciente se deriva a un <strong>centro de rehabilitación integral</strong>. La decisión de cuánta rehabilitación indicar sigue un orden de preguntas:</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 380" role="img" aria-label="Algoritmo para indicar rehabilitación: si el paciente no está estable se retrasa la decisión; si no tiene discapacidad no precisa rehabilitación; si no tiene capacidad de aprendizaje, cuidados paliativos de la discapacidad; si no tolera estar sentado una hora y un mínimo esfuerzo, rehabilitación de baja intensidad; si cumple todo, rehabilitación intensa multidisciplinaria">
+          <defs>
+            <marker id="acv-reh" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <rect x="30" y="14" width="380" height="42" rx="6" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="220" y="40" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">¿Médicamente estable?</text>
+          <rect x="30" y="84" width="380" height="42" rx="6" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="220" y="110" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">¿Tiene discapacidad funcional?</text>
+          <rect x="30" y="154" width="380" height="42" rx="6" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="220" y="180" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">¿Tiene capacidad de aprendizaje?</text>
+          <rect x="30" y="224" width="380" height="50" rx="6" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="220" y="245" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">¿Tolera 1 h sentado y un mínimo</text>
+          <text x="220" y="263" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">esfuerzo físico?</text>
+          <rect x="30" y="306" width="380" height="58" rx="6" fill="var(--c)" fill-opacity="0.36" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="220" y="330" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Rehabilitación intensa, multidisciplinaria</text>
+          <text x="220" y="349" text-anchor="middle" font-size="11" fill="currentColor">y por objetivos, según el pronóstico funcional</text>
+
+          <line x1="220" y1="56" x2="220" y2="80" stroke="currentColor" stroke-width="1.3" marker-end="url(#acv-reh)"></line>
+          <line x1="220" y1="126" x2="220" y2="150" stroke="currentColor" stroke-width="1.3" marker-end="url(#acv-reh)"></line>
+          <line x1="220" y1="196" x2="220" y2="220" stroke="currentColor" stroke-width="1.3" marker-end="url(#acv-reh)"></line>
+          <line x1="220" y1="274" x2="220" y2="302" stroke="currentColor" stroke-width="1.3" marker-end="url(#acv-reh)"></line>
+          <text x="230" y="73" font-size="11" fill="currentColor">sí</text>
+          <text x="230" y="143" font-size="11" fill="currentColor">sí</text>
+          <text x="230" y="213" font-size="11" fill="currentColor">sí</text>
+          <text x="230" y="293" font-size="11" fill="currentColor">sí</text>
+
+          <rect x="490" y="14" width="310" height="42" rx="6" fill="none" stroke="currentColor" stroke-width="1.1"></rect>
+          <text x="645" y="40" text-anchor="middle" font-size="11.5" fill="currentColor">Retrasar la decisión hasta estabilizarlo</text>
+          <rect x="490" y="84" width="310" height="42" rx="6" fill="none" stroke="currentColor" stroke-width="1.1"></rect>
+          <text x="645" y="110" text-anchor="middle" font-size="11.5" fill="currentColor">No precisa rehabilitación</text>
+          <rect x="490" y="154" width="310" height="42" rx="6" fill="none" stroke="currentColor" stroke-width="1.1"></rect>
+          <text x="645" y="180" text-anchor="middle" font-size="11.5" fill="currentColor">Cuidados paliativos de la discapacidad</text>
+          <rect x="490" y="224" width="310" height="50" rx="6" fill="none" stroke="currentColor" stroke-width="1.1"></rect>
+          <text x="645" y="245" text-anchor="middle" font-size="11.5" fill="currentColor">Rehabilitación de baja intensidad,</text>
+          <text x="645" y="263" text-anchor="middle" font-size="11.5" fill="currentColor">institucional o domiciliaria</text>
+
+          <line x1="410" y1="35" x2="486" y2="35" stroke="currentColor" stroke-width="1.3" marker-end="url(#acv-reh)"></line>
+          <line x1="410" y1="105" x2="486" y2="105" stroke="currentColor" stroke-width="1.3" marker-end="url(#acv-reh)"></line>
+          <line x1="410" y1="175" x2="486" y2="175" stroke="currentColor" stroke-width="1.3" marker-end="url(#acv-reh)"></line>
+          <line x1="410" y1="249" x2="486" y2="249" stroke="currentColor" stroke-width="1.3" marker-end="url(#acv-reh)"></line>
+          <text x="448" y="28" text-anchor="middle" font-size="11" fill="currentColor">no</text>
+          <text x="448" y="98" text-anchor="middle" font-size="11" fill="currentColor">no</text>
+          <text x="448" y="168" text-anchor="middle" font-size="11" fill="currentColor">no</text>
+          <text x="448" y="242" text-anchor="middle" font-size="11" fill="currentColor">no</text>
+        </svg>
+        <figcaption>Cuatro preguntas en orden. Quien responde «sí» a todas recibe rehabilitación intensa; según el apoyo social y familiar se hace en un servicio hospitalario, ambulatorio, a domicilio o en ámbitos sociosanitarios.</figcaption>
+      </figure>
+
+      <h3>Qué se busca y con qué equipo</h3>
+      <p>Cada especialidad trabaja para <strong>minimizar el déficit y maximizar la función</strong>, <strong>reactivar la zona de penumbra</strong> y lograr el <strong>reaprendizaje funcional</strong> por <strong>plasticidad neuronal</strong>. Participan terapia física, fonoaudiología, terapia ocupacional, estimulación cognitiva y psicoterapia. Los tres objetivos principales son <strong>restaurar el control motor de la marcha</strong>, <strong>mejorar la función del miembro superior</strong> para las AVD y <strong>tratar los trastornos del lenguaje</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Técnica</th><th>Qué hace</th><th>Cuándo</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Orientadas a tareas</strong> (control motor)</td><td>Actividades con significado para el paciente</td><td><strong>Las más eficaces</strong></td></tr>
+            <tr><td><strong>Facilitadoras</strong>: Bobath, Kabat, Brunnstrom</td><td>Buscan mejorar el movimiento del <strong>lado afectado</strong></td><td>—</td></tr>
+            <tr><td><strong>Compensadoras</strong></td><td>Estimulan el <strong>lado sano</strong></td><td>Déficit motor grave y mal pronóstico funcional</td></tr>
+            <tr><td><strong>Tecnología aplicada</strong>: robótica, estimulación eléctrica funcional</td><td>Dan <strong>biofeedback</strong> al paciente</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Marcha</th><th>Miembro superior</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Es <strong>fundamental algún movimiento contra la gravedad</strong> en los flexores de cadera y en la extensión de rodilla</td><td>En las <strong>primeras 6 semanas</strong> se busca movimiento voluntario o reflejo</td></tr>
+            <tr><td>Se trabaja antes el control cefálico, del tronco y la sedestación</td><td>Si no se logra, mantener los rangos de movimiento sin limitación ni dolor</td></tr>
+            <tr><td><strong>Ortesis antiequino</strong>: estabilizan el tobillo y el recurvatum de rodilla</td><td><strong>Restricción del lado sano</strong></td></tr>
+            <tr><td>Ayudas: paralelas, bastones, trípodes, andadores</td><td>Ortesis</td></tr>
+            <tr><td><strong>Toxina botulínica</strong> en el pie equino varo</td><td>Toxina botulínica</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «Accidente cerebrovascular (ACV)», Dr. Gustavo Grilli: rehabilitación en fase subaguda y algoritmo de decisión.</p>
+    </section>
+
+    <!-- ============ 14 ============ -->
+    <section class="seccion s-tratamiento" id="rehab-cronica">
+      <span class="seccion__pestana"><b>14</b> Rehabilitación</span>
+      <h2 class="seccion__titulo">Rehabilitación en fase crónica</h2>
+
+      <ul>
+        <li><strong>Adaptación del domicilio</strong> y <strong>entrenamiento de la familia</strong>.</li>
+        <li><strong>Reinserción sociolaboral</strong> y vuelta a la conducción de vehículos.</li>
+        <li><strong>Objetivos realistas y basados en tareas</strong>.</li>
+        <li><strong>Mantener la funcionalidad alcanzada</strong>, con reevaluación periódica y ajuste del tratamiento.</li>
+      </ul>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Complicación crónica</th><th>Manejo</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Espasticidad</strong></td><td>Ejercicios pasivos en todo el arco articular, estiramiento con férulas, <strong>toxina botulínica</strong></td></tr>
+            <tr><td><strong>Subluxación de hombro</strong></td><td><strong>Prevenirla desde la etapa aguda</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «Accidente cerebrovascular (ACV)», Dr. Gustavo Grilli: rehabilitación en fase crónica.</p>
+    </section>
+
+    <!-- ============ Repaso ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>¿Qué arterias forman el polígono de Willis y qué une cada comunicante?</summary>
+          <div class="fc__r">Cerebrales anteriores, <strong>comunicante anterior</strong> (une las dos cerebrales anteriores), carótidas internas, <strong>comunicantes posteriores</strong> (unen cada carótida interna con la cerebral posterior) y cerebrales posteriores, ramas de la basilar.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Definí ACV y nombrá sus formas de presentación.</summary>
+          <div class="fc__r">Cuadro de <strong>instalación aguda y origen vascular</strong> con disfunción focal o global del cerebro. Se presenta con <strong>déficit focal repentino</strong>, trastorno de conciencia, cefalea intensa o signos meníngeos.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Epidemiología: lugar como causa de muerte, incidencia y discapacidad a los 6 meses.</summary>
+          <div class="fc__r"><strong>2.ª causa de muerte</strong>; <strong>200/100.000</strong> habitantes; principal causa de discapacidad física grave del adulto. A los 6 meses, el <strong>25 %</strong> no camina sin asistencia y el <strong>60 %</strong> no usa la mano afectada en las AVD.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Factores de riesgo no modificables.</summary>
+          <div class="fc__r"><strong>Raza negra, sexo masculino, edad mayor de 55 años.</strong></div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>Proporción de isquémicos y hemorrágicos, y subtipos isquémicos.</summary>
+          <div class="fc__r"><strong>Isquémicos 80-85 %</strong>: AIT, DNIR, ACV en evolución, ACV instalado. <strong>Hemorrágicos 15-20 %</strong>: HICE, HSA y hematomas traumáticos.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>Definición clásica y actual del AIT.</summary>
+          <div class="fc__r"><strong>Clásica</strong>: déficit que revierte en menos de 24 h. <strong>Actual (AHA/ASA)</strong>: disfunción neurológica transitoria <strong>sin infarto en las imágenes</strong>. En los dos casos, alto riesgo de ACV precoz.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>Causas de ACV hemorrágico.</summary>
+          <div class="fc__r"><strong>HTA</strong>, vasculopatías, <strong>rotura aneurismática</strong>, <strong>MAV</strong>, drogas (cocaína, anfetaminas) y tumores.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>Causas de ACV isquémico.</summary>
+          <div class="fc__r"><strong>Aterotrombótico, cardioembólico</strong>, lipohialinosis, microangiopatías (DM, HTA), disección arterial y displasia fibromuscular.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué distingue un ACV del hemisferio no dominante en lo cognitivo y lo emocional?</summary>
+          <div class="fc__r"><strong>Anosognosia, heminegligencia</strong>, percepción espacial alterada y memoria visual afectada; emocionalmente, <strong>impulsividad, euforia o indiferencia</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué déficit da el hemisferio dominante en la comunicación y el ánimo?</summary>
+          <div class="fc__r"><strong>Disfasia</strong> —expresión, comprensión, lectura y escritura— y reacciones con <strong>depresión y ansiedad</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Paresia de predominio crural contralateral: ¿qué arteria?</summary>
+          <div class="fc__r">La <strong>cerebral anterior</strong>. La cerebral media da predominio <strong>faciobraquial</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué produce el infarto de la cerebral posterior?</summary>
+          <div class="fc__r"><strong>Hemianopsia homónima contralateral</strong>, por afectación del lóbulo occipital.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Qué estudios se piden en agudo y cuáles después?</summary>
+          <div class="fc__r"><strong>En agudo</strong>: clínica, laboratorio y ECG, TAC, RMN. <strong>Después</strong>: ecodoppler de vasos de cuello, angioRMN, ecocardiograma TT o TE, angiografía con sustracción digital.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Por qué la TAC es el primer estudio?</summary>
+          <div class="fc__r">Porque <strong>separa isquemia de hemorragia</strong>: el sangrado se ve hiperdenso desde el inicio, y de eso depende todo el tratamiento.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Cuáles son los 6 dominios del déficit según la AHA?</summary>
+          <div class="fc__r"><strong>Motor, sensitivo, visual, lenguaje o comunicación, cognitivo y emocional.</strong></div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>NIHSS y Barthel: ¿qué mide cada una?</summary>
+          <div class="fc__r"><strong>NIHSS</strong>: gravedad del déficit neurológico, en 2-5 minutos. <strong>Barthel</strong>: dependencia en las AVD básicas.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Trombólisis IV: ventana y dosis según la guía AHA/ASA 2026.</summary>
+          <div class="fc__r"><strong>Dentro de las 4,5 h</strong> del inicio o de la última vez visto bien. <strong>Tenecteplasa 0,25 mg/kg</strong> (máximo 25 mg) o <strong>alteplasa 0,9 mg/kg</strong>.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Trombectomía endovascular: ¿a quién y hasta cuándo?</summary>
+          <div class="fc__r"><strong>Oclusión proximal de gran vaso anterior</strong>: dentro de las <strong>6 h</strong>, y de <strong>6 a 24 h</strong> en seleccionados por clínica e imagen.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Prevención secundaria y tratamiento del hemorrágico según la clase.</summary>
+          <div class="fc__r">Isquémico: <strong>AAS o clopidogrel</strong>. Hemorrágico: <strong>cirugía y evacuación</strong>, seleccionando cada caso.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Cuándo es la máxima recuperación y qué dicen los datos de Copenhague?</summary>
+          <div class="fc__r"><strong>4-6 semanas.</strong> El 85 % llega a su máximo a las 5 semanas y el 95 % completa la recuperación a las 13 semanas.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿En qué dirección progresa la mejoría funcional?</summary>
+          <div class="fc__r"><strong>De proximal a distal y de inferior a superior.</strong></div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Nombrá 4 factores pronósticos negativos de nivel A.</summary>
+          <div class="fc__r"><strong>Incontinencia urinaria, edad avanzada, hemiplejía grave y discapacidad inicial grave</strong>; también disfagia, apraxia y el ictus complicado.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Qué porcentaje tiene disfagia en la fase aguda y cómo se maneja?</summary>
+          <div class="fc__r">El <strong>50 %</strong>. Sonda nasogástrica y evaluación por fonoaudiología.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Qué se necesita para entrenar la marcha?</summary>
+          <div class="fc__r"><strong>Algún movimiento contra la gravedad en los flexores de cadera y en la extensión de rodilla</strong>, más control cefálico, del tronco y de la sedestación.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Técnicas de rehabilitación: ¿cuáles son las más eficaces y cuándo se usan las compensadoras?</summary>
+          <div class="fc__r">Las <strong>orientadas a tareas</strong> son las más eficaces. Las <strong>compensadoras</strong>, que estimulan el lado sano, se usan en el déficit motor grave con mal pronóstico funcional.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Triada clave</dt>
+        <dd><strong>Déficit neurológico focal + instalación repentina + origen vascular.</strong> Puede sumar trastorno de conciencia, cefalea intensa o signos meníngeos. El déficit motor es <strong>contralateral</strong>; afasia si el hemisferio es el dominante, heminegligencia y anosognosia si es el no dominante. Cerebral media: faciobraquial; cerebral anterior: crural.</dd>
+
+        <dt class="r-gold">Estudio de elección</dt>
+        <dd><strong>TAC de cerebro sin contraste en agudo</strong>, para separar isquemia de hemorragia. La RMN con difusión muestra el infarto precoz. Después se busca la causa: <strong>ecodoppler de vasos de cuello, ecocardiograma, angioRMN y angiografía</strong>.</dd>
+
+        <dt class="r-tto">Tratamiento de 1ª línea</dt>
+        <dd><strong>Isquémico</strong>: trombólisis IV dentro de las <strong>4,5 h</strong> —<strong>tenecteplasa 0,25 mg/kg</strong> (máximo 25 mg) o <strong>alteplasa 0,9 mg/kg</strong>—, <strong>trombectomía</strong> en la oclusión de gran vaso (hasta 6 h; de 6 a 24 h en seleccionados) y <strong>AAS o clopidogrel</strong> como prevención secundaria. <strong>Hemorrágico</strong>: cirugía en casos seleccionados. <strong>Rehabilitación</strong> precoz en unidad de stroke.</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd><strong>Ningún antitrombótico antes de la TAC.</strong> La hora de inicio define la ventana. El <strong>AIT</strong> no es benigno. Si el <strong>déficit motor sigue siendo grave en la 3.ª semana</strong>, lo más probable es que persista; casi toda la recuperación ocurre en las primeras <strong>4 a 6 semanas</strong>.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir de la clase «Accidente cerebrovascular (ACV)» del Dr. Gustavo Grilli (Neurología). Ventanas terapéuticas y dosis de la guía AHA/ASA 2026 para el manejo temprano del ACV isquémico agudo; definición del AIT de la declaración científica AHA/ASA 2009; déficit por territorio arterial y utilidad de los estudios según Harrison, <em>Principios de Medicina Interna</em>. Material de estudio: no reemplaza el criterio clínico ni el protocolo institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+
+  // ---- Tema claro / oscuro ----
+  // Sin eleccion estampada manda el sistema; el boton la estampa y la guarda.
+  var raiz = document.documentElement;
+  var boton = document.getElementById('tema');
+
+  function temaActual(){
+    var estampado = raiz.getAttribute('data-theme');
+    if (estampado) return estampado;
+    return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+
+  if (boton){
+    var rotular = function(){
+      var actual = temaActual();
+      boton.setAttribute('aria-pressed', actual === 'dark' ? 'true' : 'false');
+      boton.setAttribute('aria-label', actual === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+    };
+    boton.addEventListener('click', function(){
+      var nuevo = temaActual() === 'dark' ? 'light' : 'dark';
+      raiz.setAttribute('data-theme', nuevo);
+      try { localStorage.setItem('wordmed-tema', nuevo); } catch (e) { /* sin persistencia */ }
+      rotular();
+    });
+    rotular();
+  }
+
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link, .ir-link'));
+
+  // Devuelve TODOS los enlaces al ancla: la misma seccion figura en el indice
+  // lateral y en el compacto, y los dos tienen que encenderse juntos.
+  function porMeta(hash){
+    return enlaces.filter(function(l){ return l.getAttribute('href') === '#' + hash; });
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var activos = porMeta(e.target.id);
+        if (!activos.length) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          activos.forEach(function(l){ l.setAttribute('aria-current', 'true'); });
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>

@@ -1,0 +1,2101 @@
+<title>Epilepsia</title>
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-bloque:1.95rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+
+  /* Que la barra de desplazamiento y los controles nativos acompanen al tema */
+  color-scheme: light dark;
+}
+
+/* Eleccion explicita de claro: solo hace falta para el color-scheme, los
+   tokens claros ya son la base sin estampar. */
+:root[data-theme="light"]{ color-scheme: light; }
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* Interruptor de tema claro / oscuro.
+   El estampado `data-theme` en la raíz ya lo respetan los bloques de tokens de
+   arriba; este botón sólo lo pone y lo guarda. Sin elección estampada mandan
+   las preferencias del sistema, que es el comportamiento por defecto. */
+.tema{
+  position:fixed; top:.7rem; right:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.tema:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.tema__icono{ width:1.15rem; height:1.15rem; display:block; }
+
+/* Se muestra el icono del tema al que se va a cambiar, no el actual.
+   Mismo escalonado que los tokens: base clara · sistema oscuro · elección explícita. */
+.tema__sol{ display:none; }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .tema__sol{ display:block; }
+  :root:not([data-theme="light"]) .tema__luna{ display:none; }
+}
+:root[data-theme="dark"] .tema__sol{ display:block; }
+:root[data-theme="dark"] .tema__luna{ display:none; }
+:root[data-theme="light"] .tema__sol{ display:none; }
+:root[data-theme="light"] .tema__luna{ display:block; }
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índices ---------- */
+/* Dos piezas complementarias y deliberadamente redundantes:
+   · .indice        — barra lateral fija, sólo en pantalla ancha, navegación permanente.
+   · .indice-rapido — tarjeta compacta al principio del cuerpo, visible en TODO ancho.
+   La lateral desaparece por debajo de 64rem, que es justo el ancho del panel de
+   Artifacts y del celular; sin la compacta el cuadernillo publicado se queda sin
+   índice. Las dos apuntan a los mismos anclajes y se resaltan juntas al desplazar. */
+
+/* 6.1 · Barra lateral */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+/* Rótulo de bloque intercalado en la lista lateral: no es un enlace, sólo
+   separa grupos de secciones para que 30 entradas no sean una tira plana. */
+.indice__bloque{
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+  margin:.9rem 0 .2rem; padding:0 .55rem;
+}
+.indice__bloque:first-child{ margin-top:0; }
+
+/* 6.2 · Índice compacto (va después de la portada, dentro del cuerpo) */
+.indice-rapido{
+  background:var(--hoja-hund);
+  border:1px solid var(--linea);
+  border-radius:var(--radio);
+  padding:1.1rem 1.2rem 1.2rem;
+}
+.indice-rapido__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .85rem;
+}
+/* auto-fit: una columna en el panel angosto, dos o tres en pantalla ancha */
+.indice-rapido__bloques{
+  list-style:none; margin:0; padding:0;
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(15rem, 1fr));
+  gap:1rem 2rem; align-items:start;
+}
+.ir-bloque{
+  display:block; margin-bottom:.4rem;
+  font-family:var(--f-titulo); font-size:.98rem; font-weight:700; line-height:1.3;
+  color:var(--tinta); text-decoration:none;
+  padding-bottom:.3rem; border-bottom:1px solid var(--linea-fuerte);
+}
+.ir-bloque:hover{ color:var(--cli-t); }
+.ir-secciones{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.05rem; }
+.ir-link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.55rem 1fr; align-items:baseline; gap:.4rem;
+  padding:.2rem .35rem; border-radius:2px;
+  font-size:.86rem; line-height:1.4; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.ir-link > b{
+  font-family:var(--f-dato); font-size:.76rem; font-weight:700;
+  font-variant-numeric:tabular-nums; color:var(--ct); opacity:.85;
+}
+.ir-link:hover{ background:var(--hoja); color:var(--tinta); }
+.ir-link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Título de bloque y ficha de sección ---------- */
+
+/* Anuncia un grupo de secciones. Neutro en color a propósito: los siete colores
+   tienen significado clínico fijo y un bloque agrupa secciones de varios. La
+   regla de abajo lleva el degradado completo de la paleta, igual que la pestaña
+   de repaso y la cabecera de la ficha relámpago.
+   Sin <svg> adentro: el exportador a Word aparea los diagramas con las figuras
+   por contador posicional sobre el HTML crudo (ver exportar_docx.py). */
+.bloque{
+  margin:1.4rem 0 0; padding:0;
+  text-align:center; scroll-margin-top:2.5rem;
+  display:flex; flex-direction:column; align-items:center; gap:.3rem;
+  font-weight:400;
+}
+.bloque:first-child{ margin-top:0; }
+.bloque__rotulo{
+  font-family:var(--f-texto);
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+}
+.bloque__nombre{
+  font-family:var(--f-titulo); font-size:var(--t-bloque); font-weight:700; line-height:1.15;
+  letter-spacing:-.01em; color:var(--tinta); text-wrap:balance; max-width:32ch;
+}
+.bloque::after{
+  content:""; width:7rem; height:2.5px; margin-top:.5rem; border-radius:2px;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+}
+
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.5rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-column:1; grid-row:1; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+/* El icono ocupa la columna 1 y NADA MAS. Todo el resto del contenido se
+   apila en la columna 2, una fila por elemento, sin importar cuantos
+   parrafos haya.
+
+   Sin esta regla la caja solo funciona con un unico <p>: a partir del
+   segundo, la autocolocacion del grid empieza a repartir contenido en la
+   columna del icono, que es `auto` y por lo tanto se ensancha hasta abarcar
+   el parrafo que le toco. La columna `1fr` queda entonces reducida a una
+   tira angosta, el texto se parte en dos columnas desbalanceadas y la caja
+   crece hasta volverse ilegible. */
+.importante > :not(.importante__icono){ grid-column:2; }
+.importante__titulo{
+  grid-row:1;
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante ul, .importante ol{ margin:0; padding-left:1.15rem; }
+.importante li + li{ margin-top:.3rem; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso, .tema{ display:none !important; }
+  /* La lateral no se imprime, pero la compacta sí: en papel es la tabla de
+     contenidos del cuadernillo. */
+  .indice-rapido{ display:block; break-inside:avoid; page-break-inside:avoid; margin-bottom:1.2rem; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .bloque{
+    margin:1.6rem 0 1rem;
+    break-after:avoid; page-break-after:avoid;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+
+<script>
+/* Aplica el tema guardado antes de pintar. Va aca arriba a proposito: si
+   esperara al script del final, el documento parpadearia en el tema del
+   sistema antes de corregirse. */
+(function(){
+  try {
+    var guardado = localStorage.getItem('wordmed-tema');
+    if (guardado === 'dark' || guardado === 'light') {
+      document.documentElement.setAttribute('data-theme', guardado);
+    }
+  } catch (e) { /* almacenamiento bloqueado: manda el sistema */ }
+})();
+</script>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<button class="tema" id="tema" type="button" aria-pressed="false" aria-label="Cambiar a modo oscuro">
+  <svg class="tema__icono tema__sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.2"></circle>
+    <path d="M12 2.6v2.1M12 19.3v2.1M5.1 5.1l1.5 1.5M17.4 17.4l1.5 1.5M2.6 12h2.1M19.3 12h2.1M5.1 18.9l1.5-1.5M17.4 6.6l1.5-1.5"></path>
+  </svg>
+  <svg class="tema__icono tema__luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20.4 14.2A8.6 8.6 0 0 1 9.8 3.6a8.6 8.6 0 1 0 10.6 10.6z"></path>
+  </svg>
+</button>
+
+<div class="marco">
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li class="indice__bloque">A · Generalidades</li>
+      <li><a class="indice__link i-importantes"    href="#definiciones">Definiciones</a></li>
+      <li><a class="indice__link i-generalidades"  href="#epidemiologia">Epidemiología</a></li>
+      <li><a class="indice__link i-generalidades"  href="#etiologia">Etiología</a></li>
+
+      <li class="indice__bloque">B · Fisiopatología</li>
+      <li><a class="indice__link i-fisiopatologia" href="#sinapsis">Sinapsis normal</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#descarga">Mecanismo de la descarga</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#propagacion">Propagación</a></li>
+
+      <li class="indice__bloque">C · Clasificación y clínica</li>
+      <li><a class="indice__link i-importantes"    href="#clasificacion">Clasificación ILAE 2017</a></li>
+      <li><a class="indice__link i-clinica"        href="#fases">Clínica de las crisis</a></li>
+      <li><a class="indice__link i-clinica"        href="#semiologia">Semiología por lóbulo</a></li>
+      <li><a class="indice__link i-generalidades"  href="#tipos">Tipos de epilepsia</a></li>
+      <li><a class="indice__link i-clinica"        href="#sindromes">Síndromes epilépticos</a></li>
+
+      <li class="indice__bloque">D · Diagnóstico</li>
+      <li><a class="indice__link i-diagnostico"    href="#estudios">Estudios</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#diferencial">Diagnóstico diferencial</a></li>
+
+      <li class="indice__bloque">E · Tratamiento</li>
+      <li><a class="indice__link i-tratamiento"    href="#eleccion">Elección del fármaco</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#mecanismos">Mecanismos de acción</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#farmacos">Dosis y efectos adversos</a></li>
+      <li><a class="indice__link i-importantes"    href="#embarazo">Embarazo</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#refractaria">Epilepsia refractaria</a></li>
+
+      <li class="indice__bloque">F · Status epiléptico</li>
+      <li><a class="indice__link i-importantes"    href="#status">Definiciones</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#causas">Causas y diagnóstico</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#manejo-status">Tratamiento por tiempos</a></li>
+
+      <li class="indice__bloque">G · Convulsiones febriles</li>
+      <li><a class="indice__link i-clinica"        href="#febriles">Convulsiones febriles</a></li>
+
+      <li class="indice__bloque">Cierre</li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Neurología · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Epilepsia</h1>
+      <p class="portada__bajada">Una de las patologías más frecuentes de la neurología: qué es y qué no es epilepsia, por qué se produce la descarga, cómo se clasifican las crisis y los síndromes, cómo se estudia, cómo se elige el fármaco, qué hacer ante un status epiléptico y cómo reconocer una convulsión febril.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">22 secciones</span>
+        <span class="etiqueta s-importantes">ILAE 2017</span>
+        <span class="etiqueta s-clinica">Síndromes</span>
+        <span class="etiqueta s-tratamiento">Status por minutos</span>
+      </div>
+    </header>
+
+    <nav class="indice-rapido" aria-label="Contenido del cuadernillo">
+      <p class="indice-rapido__rotulo">Contenido</p>
+      <ol class="indice-rapido__bloques">
+        <li>
+          <a class="ir-bloque" href="#bloque-a">Bloque A · Generalidades</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-importantes"   href="#definiciones"><b>01</b> Definiciones</a></li>
+            <li><a class="ir-link i-generalidades" href="#epidemiologia"><b>02</b> Epidemiología</a></li>
+            <li><a class="ir-link i-generalidades" href="#etiologia"><b>03</b> Etiología</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-b">Bloque B · Fisiopatología</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-fisiopatologia" href="#sinapsis"><b>04</b> Sinapsis normal: inhibición y excitación</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#descarga"><b>05</b> Mecanismo de la descarga</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#propagacion"><b>06</b> Propagación focal y generalizada</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-c">Bloque C · Clasificación y clínica</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-importantes"   href="#clasificacion"><b>07</b> Clasificación ILAE 2017</a></li>
+            <li><a class="ir-link i-clinica"       href="#fases"><b>08</b> Clínica de las crisis y sus fases</a></li>
+            <li><a class="ir-link i-clinica"       href="#semiologia"><b>09</b> Semiología según la localización</a></li>
+            <li><a class="ir-link i-generalidades" href="#tipos"><b>10</b> Tipos de epilepsia</a></li>
+            <li><a class="ir-link i-clinica"       href="#sindromes"><b>11</b> Síndromes epilépticos</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-d">Bloque D · Diagnóstico</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-diagnostico" href="#estudios"><b>12</b> Estudios complementarios</a></li>
+            <li><a class="ir-link i-diagnostico" href="#diferencial"><b>13</b> Eventos que simulan crisis</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-e">Bloque E · Tratamiento</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-tratamiento"    href="#eleccion"><b>14</b> Elección del fármaco</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#mecanismos"><b>15</b> Mecanismos de acción</a></li>
+            <li><a class="ir-link i-tratamiento"    href="#farmacos"><b>16</b> Dosis y efectos adversos</a></li>
+            <li><a class="ir-link i-importantes"    href="#embarazo"><b>17</b> Fármacos y embarazo</a></li>
+            <li><a class="ir-link i-tratamiento"    href="#refractaria"><b>18</b> Epilepsia refractaria</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-f">Bloque F · Status epiléptico</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-importantes" href="#status"><b>19</b> Definiciones del status</a></li>
+            <li><a class="ir-link i-diagnostico" href="#causas"><b>20</b> Causas y diagnóstico</a></li>
+            <li><a class="ir-link i-tratamiento" href="#manejo-status"><b>21</b> Tratamiento por tiempos</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-g">Bloque G · Convulsiones febriles</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-clinica" href="#febriles"><b>22</b> Convulsiones febriles</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#repaso">Cierre</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-clinica"     href="#repaso"><b>·</b> Repaso activo</a></li>
+            <li><a class="ir-link i-importantes" href="#relampago"><b>·</b> Ficha Relámpago</a></li>
+          </ul>
+        </li>
+      </ol>
+    </nav>
+
+    <h2 class="bloque" id="bloque-a">
+      <span class="bloque__rotulo">Bloque A</span>
+      <span class="bloque__nombre">Generalidades</span>
+    </h2>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-importantes" id="definiciones">
+      <span class="seccion__pestana"><b>01</b> Definiciones</span>
+      <h2 class="seccion__titulo">Epilepsia y crisis epiléptica</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Concepto</th><th>Definición</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Epilepsia</strong></td><td>Afección <strong>crónica</strong>, de diferentes etiologías, caracterizada por una <strong>predisposición continua</strong> a la aparición de crisis epilépticas</td></tr>
+            <tr><td><strong>Criterio de la clase</strong></td><td>Al menos <span class="dato">2</span> crisis <strong>no provocadas o reflejas</strong> separadas por <strong>más de 24 horas</strong></td></tr>
+            <tr><td><strong>Crisis epiléptica</strong></td><td>Evento clínico <strong>transitorio</strong> producido por una descarga <strong>anormal, excesiva y sincrónica</strong> de un grupo de neuronas</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>La premisa que hay que tener presente: <strong>epilepsia no es lo mismo que convulsión</strong>, y <strong>no todas las convulsiones son epilépticas</strong>. Una convulsión es un fenómeno motor; puede aparecer en un síncope o en una crisis psicógena, que no son epilépticos. Y una crisis epiléptica aislada <strong>provocada</strong> por una causa aguda (una hipoglucemia, una hiponatremia, la abstinencia de alcohol) no define epilepsia, porque no hay una predisposición continua: corrigiendo la causa, la crisis no se repite.</p>
+
+      <h3>Definición práctica de la ILAE (2014)</h3>
+      <p>El criterio de las 2 crisis es la forma clásica de aplicar la definición. En 2014 la ILAE la amplió para los casos que no lo cumplen. Se diagnostica epilepsia ante <strong>cualquiera</strong> de estas tres situaciones:</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Criterio</th><th>Situación</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>1</strong></td><td>Al menos <strong>2 crisis no provocadas (o reflejas)</strong> separadas por más de 24 horas</td></tr>
+            <tr><td><strong>2</strong></td><td><strong>Una sola crisis</strong> no provocada (o refleja) con una probabilidad de nuevas crisis <strong>de al menos 60 %</strong> en los 10 años siguientes, similar al riesgo que hay después de dos crisis</td></tr>
+            <tr><td><strong>3</strong></td><td>Diagnóstico de un <strong>síndrome epiléptico</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La epilepsia se considera <strong>resuelta</strong> cuando el paciente tenía un síndrome dependiente de la edad y ya superó esa edad, o cuando lleva <strong>10 años sin crisis</strong> y <strong>al menos 5 sin medicación</strong>. «Resuelta» no equivale necesariamente a curada.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Con la definición de 2014, <strong>una sola crisis puede ser epilepsia</strong> si el riesgo de recurrencia es alto (al menos 60 %) o si la crisis encaja en un síndrome epiléptico. Por el contrario, varias crisis <strong>provocadas</strong> por una causa aguda no son epilepsia.</p>
+      </div>
+
+      <p class="cita">Clase «Epilepsia», Dr. Gustavo Grilli: definiciones de la ILAE. Definición práctica: Según PubMed, Fisher RS y col., ILAE official report: a practical clinical definition of epilepsy, Epilepsia 2014;55(4):475-82 (<a href="https://doi.org/10.1111/epi.12550">DOI</a>).</p>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-generalidades" id="epidemiologia">
+      <span class="seccion__pestana"><b>02</b> Generalidades</span>
+      <h2 class="seccion__titulo">Epidemiología</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Dato</th><th>Valor</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Frecuencia</strong></td><td>Una de las patologías <strong>más frecuentes de la neurología</strong></td></tr>
+            <tr><td><strong>Edad</strong></td><td>Cualquiera, con una <strong>curva bimodal</strong></td></tr>
+            <tr><td><strong>Incidencia</strong></td><td><span class="dato">25-50</span> casos cada 100.000 habitantes por año</td></tr>
+            <tr><td><strong>Prevalencia</strong></td><td><span class="dato">500-1000</span> enfermos cada 100.000 habitantes</td></tr>
+            <tr><td><strong>Riesgo de una convulsión en la vida</strong></td><td><span class="dato">9 %</span> de la población; solo el <span class="dato">2-3 %</span> desarrollará epilepsia</td></tr>
+            <tr><td><strong>Consecuencias</strong></td><td>Neurobiológicas, sociales, laborales y cognitivas</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>La <strong>curva bimodal</strong> de la clase muestra la incidencia más alta en el <strong>primer año de vida</strong>, un descenso hasta su punto más bajo en la adultez, y un segundo ascenso marcado <strong>después de los 60 años</strong>, mayor en los varones. En el niño pesan las causas genéticas y perinatales; en el anciano, las estructurales adquiridas, como el ACV o los tumores, que la clase enumera entre las causas estructurales.</p>
+
+      <p class="cita">Clase «Epilepsia», Dr. Gustavo Grilli: epidemiología y curva de incidencia por edad y sexo.</p>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-generalidades" id="etiologia">
+      <span class="seccion__pestana"><b>03</b> Generalidades</span>
+      <h2 class="seccion__titulo">Etiología</h2>
+
+      <h3>Clasificación clásica</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Tipo</th><th>Qué significa</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Primarias o idiopáticas</strong></td><td>Sin causa reconocible; cada vez se acepta más un probable <strong>origen genético</strong></td></tr>
+            <tr><td><strong>Secundarias o sintomáticas</strong></td><td>Hay una causa identificada</td></tr>
+            <tr><td><strong>Criptogénicas</strong></td><td>Hay una causa, pero <strong>todavía no se determinó</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Las seis etiologías de la ILAE</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Etiología</th><th>Criterio</th><th>Ejemplos</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Estructural</strong></td><td>Anomalía en la neuroimagen que, junto con la clínica y el EEG, sugiere ser la causa; puede ser genética, adquirida o ambas</td><td>ACV, trauma, tumor, malformaciones del desarrollo cortical</td></tr>
+            <tr><td><strong>Genética</strong></td><td>Mutación conocida, clínica con antecedentes familiares, o síndrome con evidencia de investigación que lo sugiera</td><td>—</td></tr>
+            <tr><td><strong>Infecciosa</strong></td><td><strong>La más común en todo el mundo</strong></td><td>Neurocisticercosis, VIH, citomegalovirus, toxoplasmosis cerebral</td></tr>
+            <tr><td><strong>Metabólica</strong></td><td>Trastorno metabólico conocido o presunto; puede superponerse con una etiología genética</td><td>—</td></tr>
+            <tr><td><strong>Inmune</strong></td><td>Mecanismo autoinmune</td><td>Encefalitis anti-NMDA y anti-LGI-1</td></tr>
+            <tr><td><strong>Desconocida</strong></td><td><strong>Hasta un tercio</strong> de los pacientes no tiene una etiología clara</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Las etiologías no son excluyentes: un mismo paciente puede tener, por ejemplo, una causa estructural de origen genético. En la clasificación de la ILAE, la etiología se evalúa en paralelo con los tres niveles de diagnóstico (crisis, epilepsia y síndrome), como se ve en la sección 07.</p>
+
+      <p class="cita">Clase «Epilepsia», Dr. Gustavo Grilli: etiología de la epilepsia y clasificación clásica.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-b">
+      <span class="bloque__rotulo">Bloque B</span>
+      <span class="bloque__nombre">Fisiopatología</span>
+    </h2>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-fisiopatologia" id="sinapsis">
+      <span class="seccion__pestana"><b>04</b> Fisiopatología</span>
+      <h2 class="seccion__titulo">Sinapsis normal: inhibición y excitación</h2>
+
+      <p>La actividad cerebral normal depende de un equilibrio entre sinapsis <strong>inhibitorias</strong>, mediadas por GABA, y <strong>excitatorias</strong>, mediadas por glutamato.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Sinapsis</th><th>Neurotransmisor</th><th>Receptor y canal</th><th>Efecto</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Inhibitoria</strong></td><td><strong>GABA</strong>, que se sintetiza a partir del glutamato por la enzima <strong>GAD</strong>, con vitamina <strong>B6</strong> como cofactor</td><td>Receptor GABA: entra <strong>Cl⁻</strong></td><td>Hiperpolariza: potencial postsináptico inhibitorio (<strong>PPSI</strong>)</td></tr>
+            <tr><td><strong>Excitatoria</strong></td><td><strong>Glutamato</strong></td><td>Receptores <strong>no-NMDA</strong> (entra Na⁺) y <strong>NMDA</strong> (entran Na⁺ y Ca²⁺); canales iónicos controlados por tensión para K⁺, Na⁺ y Ca²⁺</td><td>Despolariza: potencial postsináptico excitatorio (<strong>PPSE</strong>)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>El receptor <strong>NMDA</strong> es un complejo con un sitio de unión del glutamato, un sitio para el coactivador <strong>glicina</strong> y un poro iónico. La neurona en reposo está a <span class="dato">−70 mV</span>; los PPSE la acercan al umbral, a <span class="dato">−40 mV</span>, y al alcanzarlo se dispara el potencial de acción: entra Na⁺ y después sale K⁺. La <strong>bomba Na-K ATPasa</strong> restablece los gradientes, y la <strong>neuroglía</strong> capta el K⁺ que se acumula afuera de la célula.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 300" role="img" aria-label="Balanza entre inhibición por GABA, con entrada de cloro e hiperpolarización, y excitación por glutamato, con entrada de sodio y calcio y despolarización. Cuando la excitación pesa más se produce la crisis. Factores que inclinan la balanza: aumento de la conductancia de calcio, aumento del potasio extracelular, alteración del metabolismo oxidativo, falla de la bomba sodio potasio y dendritas desaferentadas">
+          <defs>
+            <marker id="epi-sin" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <line x1="110" y1="149" x2="720" y2="208" stroke="currentColor" stroke-width="4" stroke-linecap="round"></line>
+          <path d="M410 180 L380 230 L440 230 Z" fill="var(--c)" fill-opacity="0.45" stroke="currentColor" stroke-width="1.4"></path>
+          <rect x="70" y="62" width="240" height="84" rx="6" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="190" y="86" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">Inhibición · GABA</text>
+          <text x="190" y="108" text-anchor="middle" font-size="11.5" fill="currentColor">receptor GABA: entra Cl⁻</text>
+          <text x="190" y="128" text-anchor="middle" font-size="11.5" fill="currentColor">hiperpolariza (PPSI)</text>
+          <rect x="505" y="80" width="250" height="100" rx="6" fill="var(--c)" fill-opacity="0.42" stroke="currentColor" stroke-width="1.5"></rect>
+          <text x="630" y="106" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">Excitación · glutamato</text>
+          <text x="630" y="128" text-anchor="middle" font-size="11.5" fill="currentColor">NMDA y no-NMDA</text>
+          <text x="630" y="146" text-anchor="middle" font-size="11.5" fill="currentColor">entran Na⁺ y Ca²⁺</text>
+          <text x="630" y="166" text-anchor="middle" font-size="11.5" fill="currentColor">despolariza (PPSE)</text>
+          <text x="630" y="236" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">CRISIS</text>
+          <text x="630" y="254" text-anchor="middle" font-size="11" fill="currentColor">descarga brusca, excesiva</text>
+          <text x="630" y="270" text-anchor="middle" font-size="11" fill="currentColor">y sincrónica</text>
+          <text x="40" y="246" font-size="11.5" font-weight="700" fill="currentColor">Lo que inclina la balanza hacia la excitación:</text>
+          <text x="40" y="266" font-size="11" fill="currentColor">↑ conductancia de Ca · ↑ K⁺ extracelular · falla de la bomba Na-K</text>
+          <text x="40" y="284" font-size="11" fill="currentColor">alteración del metabolismo oxidativo · dendritas desaferentadas</text>
+          <line x1="452" y1="254" x2="546" y2="204" stroke="currentColor" stroke-width="1.3" marker-end="url(#epi-sin)"></line>
+        </svg>
+        <figcaption>La crisis aparece cuando se pierde el equilibrio: <strong>falta inhibición o sobra excitación</strong>. Casi todos los fármacos antiepilépticos actúan corrigiendo alguno de los dos platillos (sección 15).</figcaption>
+      </figure>
+
+      <p>La B6 es cofactor de la GAD: sin ella cae la síntesis de GABA y se pierde inhibición. Existen epilepsias dependientes de piridoxina, en las que la identificación de la causa lleva a tratar con B6.</p>
+
+      <p class="cita">Clase «Epilepsia», Dr. Gustavo Grilli: fisiología normal, transmisión sináptica inhibitoria y excitatoria, potencial de membrana. Epilepsias dependientes de piridoxina: Según PubMed, Perucca P, Perucca E, Epilepsy Res 2019;152:18-30 (<a href="https://doi.org/10.1016/j.eplepsyres.2019.03.001">DOI</a>).</p>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-fisiopatologia" id="descarga">
+      <span class="seccion__pestana"><b>05</b> Fisiopatología</span>
+      <h2 class="seccion__titulo">Mecanismo de la descarga</h2>
+
+      <p>La crisis se produce por una descarga <strong>brusca, anormal y exagerada</strong> de un grupo de neuronas, por pérdida del equilibrio entre los mecanismos excitatorios e inhibitorios.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Mecanismo</th><th>Detalle</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>PPSE gigante</strong></td><td>Por alteraciones <strong>intrínsecas de la membrana neuronal</strong> o de la <strong>red sináptica</strong></td></tr>
+            <tr><td><strong>Dendritas desaferentadas</strong></td><td>Por ejemplo, en <strong>focos de gliosis</strong>: la neurona que perdió aferencias se vuelve hiperexcitable</td></tr>
+            <tr><td><strong>Despolarización prolongada</strong></td><td>Aumento de la <strong>conductancia de Ca</strong> · aumento del <strong>K extracelular</strong> · alteración del <strong>metabolismo oxidativo</strong> · alteración de la <strong>bomba Na-K</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Del PPSE gigante a la punta del EEG</h3>
+      <p>En una neurona epiléptica, el PPSE no es un pequeño cambio de voltaje sino una <strong>despolarización paroxística</strong>, larga y sostenida, sobre la que se disparan varios potenciales de acción seguidos. Normalmente la sigue una <strong>hiperpolarización</strong> que la frena. Cuando muchas neuronas hacen esto al mismo tiempo, en el EEG aparece una <strong>punta</strong> (la despolarización sincrónica) seguida de una <strong>onda lenta</strong> (la hiperpolarización): es la <strong>punta-onda</strong>. Entre crisis, ese foco produce puntas aisladas sin síntomas, que son las <strong>descargas interictales</strong>. Si la hiperpolarización falla, por ejemplo porque el K⁺ se acumula afuera de la célula y la glía no alcanza a captarlo, la descarga se sostiene, recluta neuronas vecinas y se convierte en una crisis.</p>
+
+      <p class="cita">Clase «Epilepsia», Dr. Gustavo Grilli: fisiopatología de la descarga. Correlato con el EEG: Harrison, <em>Principios de Medicina Interna</em>, capítulo de crisis convulsivas y epilepsia.</p>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-fisiopatologia" id="propagacion">
+      <span class="seccion__pestana"><b>06</b> Fisiopatología</span>
+      <h2 class="seccion__titulo">Propagación focal y generalizada</h2>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 290" role="img" aria-label="Izquierda: crisis focal. Desde un foco cortical la descarga se propaga por fibras subcorticales en U, por el cuerpo calloso al otro hemisferio y hacia el tálamo; la activación talámica la generaliza a ambos hemisferios. Derecha: crisis generalizada. Desde los núcleos talámicos se activa la corteza de ambos hemisferios en forma bilateral y simétrica">
+          <defs>
+            <marker id="epi-pro" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <text x="206" y="24" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">Crisis focal</text>
+          <ellipse cx="150" cy="125" rx="58" ry="70" fill="var(--c)" fill-opacity="0.10" stroke="currentColor" stroke-width="1.3"></ellipse>
+          <ellipse cx="262" cy="125" rx="58" ry="70" fill="var(--c)" fill-opacity="0.10" stroke="currentColor" stroke-width="1.3"></ellipse>
+          <ellipse cx="206" cy="166" rx="20" ry="12" fill="var(--c)" fill-opacity="0.55" stroke="currentColor" stroke-width="1.1"></ellipse>
+          <circle cx="118" cy="80" r="11" fill="var(--c)" fill-opacity="0.85" stroke="currentColor" stroke-width="1.1"></circle>
+          <text x="64" y="62" font-size="11" font-weight="700" fill="currentColor">foco</text>
+          <path d="M106 90 Q84 118 100 150" fill="none" stroke="currentColor" stroke-width="1.4" marker-end="url(#epi-pro)"></path>
+          <text x="74" y="124" font-size="12" font-weight="700" fill="currentColor">1</text>
+          <path d="M130 72 Q206 36 280 78" fill="none" stroke="currentColor" stroke-width="1.4" marker-end="url(#epi-pro)"></path>
+          <text x="202" y="48" font-size="12" font-weight="700" fill="currentColor">2</text>
+          <line x1="126" y1="91" x2="192" y2="157" stroke="currentColor" stroke-width="1.4" marker-end="url(#epi-pro)"></line>
+          <text x="164" y="116" font-size="12" font-weight="700" fill="currentColor">3</text>
+          <line x1="222" y1="158" x2="282" y2="118" stroke="currentColor" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#epi-pro)"></line>
+          <line x1="192" y1="160" x2="130" y2="140" stroke="currentColor" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#epi-pro)"></line>
+          <text x="256" y="152" font-size="12" font-weight="700" fill="currentColor">4</text>
+          <text x="206" y="224" text-anchor="middle" font-size="11" fill="currentColor">1 fibras subcorticales en U · 2 transcallosa</text>
+          <text x="206" y="242" text-anchor="middle" font-size="11" fill="currentColor">3 talamocortical · 4 activación talámica:</text>
+          <text x="206" y="260" text-anchor="middle" font-size="11" fill="currentColor">generalización (focal a tónico-clónica bilateral)</text>
+
+          <line x1="410" y1="40" x2="410" y2="270" stroke="currentColor" stroke-width="1" stroke-dasharray="3 4" opacity="0.5"></line>
+
+          <text x="616" y="24" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">Crisis generalizada</text>
+          <ellipse cx="560" cy="125" rx="58" ry="70" fill="var(--c)" fill-opacity="0.30" stroke="currentColor" stroke-width="1.3"></ellipse>
+          <ellipse cx="672" cy="125" rx="58" ry="70" fill="var(--c)" fill-opacity="0.30" stroke="currentColor" stroke-width="1.3"></ellipse>
+          <ellipse cx="616" cy="166" rx="20" ry="12" fill="var(--c)" fill-opacity="0.85" stroke="currentColor" stroke-width="1.1"></ellipse>
+          <line x1="606" y1="156" x2="548" y2="72" stroke="currentColor" stroke-width="1.4" marker-end="url(#epi-pro)"></line>
+          <line x1="600" y1="162" x2="516" y2="128" stroke="currentColor" stroke-width="1.4" marker-end="url(#epi-pro)"></line>
+          <line x1="626" y1="156" x2="684" y2="72" stroke="currentColor" stroke-width="1.4" marker-end="url(#epi-pro)"></line>
+          <line x1="632" y1="162" x2="716" y2="128" stroke="currentColor" stroke-width="1.4" marker-end="url(#epi-pro)"></line>
+          <text x="616" y="206" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">núcleos talámicos</text>
+          <text x="616" y="234" text-anchor="middle" font-size="11" fill="currentColor">hiperexcitabilidad cortical bilateral y simétrica,</text>
+          <text x="616" y="252" text-anchor="middle" font-size="11" fill="currentColor">con predominio frontocentral: redes</text>
+          <text x="616" y="270" text-anchor="middle" font-size="11" fill="currentColor">tálamo-bifronto-centrales</text>
+        </svg>
+        <figcaption>La crisis <strong>focal</strong> nace en un punto y se propaga por las mismas vías de la actividad cortical normal; si llega al tálamo, se generaliza. La crisis <strong>generalizada</strong> compromete desde el inicio los dos hemisferios a través de las redes tálamo-corticales.</figcaption>
+      </figure>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Crisis</th><th>Cómo empieza</th><th>Cómo se extiende</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Focal</strong></td><td>En una <strong>zona epileptógena</strong> de la corteza; la clínica depende de dónde está esa zona y de cuánto se propaga</td><td>1) fibras subcorticales en U · 2) transcallosa · 3) talamocortical · 4) la activación del tálamo y de otras estructuras del tronco produce una activación rápida de los dos hemisferios: <strong>generalización</strong></td></tr>
+            <tr><td><strong>Generalizada</strong></td><td>En redes <strong>tálamo-bifronto-centrales</strong></td><td>Hiperexcitabilidad cortical <strong>bilateral y simétrica</strong> desde el comienzo, con predominio frontocentral</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «Epilepsia», Dr. Gustavo Grilli: propagación de las crisis focales y generalizadas.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-c">
+      <span class="bloque__rotulo">Bloque C</span>
+      <span class="bloque__nombre">Clasificación y clínica</span>
+    </h2>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-importantes" id="clasificacion">
+      <span class="seccion__pestana"><b>07</b> Clasificación</span>
+      <h2 class="seccion__titulo">Clasificación ILAE 2017</h2>
+
+      <p>La ILAE clasifica en <strong>tres niveles</strong> sucesivos: primero el tipo de crisis, después el tipo de epilepsia y, cuando es posible, el síndrome epiléptico. En cada nivel se busca además la <strong>etiología</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 290" role="img" aria-label="Clasificación ILAE 2017 en tres niveles: tipo de crisis, de inicio focal, generalizado o desconocido; tipo de epilepsia, focal, generalizada, combinada generalizada y focal, o desconocida; y síndromes epilépticos. En paralelo se evalúa la etiología: estructural, genética, infecciosa, metabólica, inmunitaria o desconocida">
+          <defs>
+            <marker id="epi-cla" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <rect x="40" y="16" width="560" height="74" rx="6" fill="var(--c)" fill-opacity="0.30" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="320" y="36" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">1 · Tipo de crisis</text>
+          <rect x="50" y="48" width="170" height="30" rx="4" fill="var(--c)" fill-opacity="0.18" stroke="currentColor" stroke-width="1"></rect>
+          <text x="135" y="68" text-anchor="middle" font-size="11.5" fill="currentColor">De inicio focal</text>
+          <rect x="235" y="48" width="170" height="30" rx="4" fill="var(--c)" fill-opacity="0.18" stroke="currentColor" stroke-width="1"></rect>
+          <text x="320" y="68" text-anchor="middle" font-size="11.5" fill="currentColor">De inicio generalizado</text>
+          <rect x="420" y="48" width="170" height="30" rx="4" fill="var(--c)" fill-opacity="0.18" stroke="currentColor" stroke-width="1"></rect>
+          <text x="505" y="68" text-anchor="middle" font-size="11.5" fill="currentColor">De inicio desconocido</text>
+
+          <line x1="320" y1="90" x2="320" y2="112" stroke="currentColor" stroke-width="1.4" marker-end="url(#epi-cla)"></line>
+
+          <rect x="40" y="114" width="560" height="88" rx="6" fill="var(--c)" fill-opacity="0.30" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="320" y="134" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">2 · Tipo de epilepsia</text>
+          <rect x="52" y="146" width="128" height="44" rx="4" fill="var(--c)" fill-opacity="0.18" stroke="currentColor" stroke-width="1"></rect>
+          <text x="116" y="172" text-anchor="middle" font-size="11.5" fill="currentColor">Focal</text>
+          <rect x="188" y="146" width="128" height="44" rx="4" fill="var(--c)" fill-opacity="0.18" stroke="currentColor" stroke-width="1"></rect>
+          <text x="252" y="172" text-anchor="middle" font-size="11.5" fill="currentColor">Generalizada</text>
+          <rect x="324" y="146" width="128" height="44" rx="4" fill="var(--c)" fill-opacity="0.18" stroke="currentColor" stroke-width="1"></rect>
+          <text x="388" y="164" text-anchor="middle" font-size="11" fill="currentColor">Combinada:</text>
+          <text x="388" y="180" text-anchor="middle" font-size="11" fill="currentColor">generalizada y focal</text>
+          <rect x="460" y="146" width="128" height="44" rx="4" fill="var(--c)" fill-opacity="0.18" stroke="currentColor" stroke-width="1"></rect>
+          <text x="524" y="172" text-anchor="middle" font-size="11.5" fill="currentColor">Desconocida</text>
+
+          <line x1="320" y1="202" x2="320" y2="224" stroke="currentColor" stroke-width="1.4" marker-end="url(#epi-cla)"></line>
+
+          <rect x="40" y="226" width="560" height="48" rx="6" fill="var(--c)" fill-opacity="0.30" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="320" y="255" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">3 · Síndromes epilépticos</text>
+
+          <line x1="625" y1="20" x2="625" y2="272" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3"></line>
+          <line x1="600" y1="53" x2="625" y2="53" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3"></line>
+          <line x1="600" y1="158" x2="625" y2="158" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3"></line>
+          <line x1="600" y1="250" x2="625" y2="250" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3"></line>
+          <text x="715" y="30" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">Etiología</text>
+          <rect x="650" y="42" width="130" height="30" rx="4" fill="none" stroke="currentColor" stroke-width="1.1"></rect>
+          <text x="715" y="62" text-anchor="middle" font-size="11.5" fill="currentColor">Estructural</text>
+          <rect x="650" y="80" width="130" height="30" rx="4" fill="none" stroke="currentColor" stroke-width="1.1"></rect>
+          <text x="715" y="100" text-anchor="middle" font-size="11.5" fill="currentColor">Genética</text>
+          <rect x="650" y="118" width="130" height="30" rx="4" fill="none" stroke="currentColor" stroke-width="1.1"></rect>
+          <text x="715" y="138" text-anchor="middle" font-size="11.5" fill="currentColor">Infecciosa</text>
+          <rect x="650" y="156" width="130" height="30" rx="4" fill="none" stroke="currentColor" stroke-width="1.1"></rect>
+          <text x="715" y="176" text-anchor="middle" font-size="11.5" fill="currentColor">Metabólica</text>
+          <rect x="650" y="194" width="130" height="30" rx="4" fill="none" stroke="currentColor" stroke-width="1.1"></rect>
+          <text x="715" y="214" text-anchor="middle" font-size="11.5" fill="currentColor">Inmunitaria</text>
+          <rect x="650" y="232" width="130" height="30" rx="4" fill="none" stroke="currentColor" stroke-width="1.1"></rect>
+          <text x="715" y="252" text-anchor="middle" font-size="11.5" fill="currentColor">Desconocida</text>
+        </svg>
+        <figcaption>Se baja de nivel solo si la información lo permite: muchas veces se llega al tipo de epilepsia sin poder definir un síndrome. La etiología se busca <strong>desde el primer nivel</strong>.</figcaption>
+      </figure>
+
+      <h3>Tipos de crisis: versión básica y ampliada</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Inicio</th><th>Versión básica</th><th>Versión ampliada</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Focal</strong></td><td>Con o sin alteración de la conciencia · inicio motor o no motor · <strong>focal a tónico-clónica bilateral</strong></td><td><strong>Inicio motor:</strong> automatismos, atónica, clónica, espasmos epilépticos, hipercinética, mioclónica, tónica · <strong>inicio no motor:</strong> autonómica, arresto del comportamiento, cognitiva, emocional, sensorial</td></tr>
+            <tr><td><strong>Generalizado</strong></td><td><strong>Motora:</strong> tónico-clónica u otra · <strong>no motora:</strong> ausencia</td><td><strong>Motora:</strong> tónico-clónica, tónica, clónica, mioclónica, mioclónica-tónico-clónica, mioclónica-atónica, atónica, espasmos epilépticos · <strong>ausencias:</strong> típica, atípica, mioclónica, con mioclonías palpebrales</td></tr>
+            <tr><td><strong>Desconocido</strong></td><td>Motora (tónico-clónica u otra) · no motora · <strong>inclasificable</strong></td><td><strong>Motora:</strong> tónico-clónica, espasmos epilépticos · <strong>no motora:</strong> arresto del comportamiento · inclasificable</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Equivalencias con los nombres clásicos: la crisis focal <strong>con alteración de la conciencia</strong> es la antigua <strong>parcial compleja</strong>; la focal sin alteración, la parcial simple; la focal a tónico-clónica bilateral, la crisis con <strong>generalización secundaria</strong>; la tónico-clónica generalizada es el <strong>gran mal</strong>, y la ausencia, el <strong>pequeño mal</strong>.</p>
+
+      <p class="cita">Clase «Epilepsia», Dr. Gustavo Grilli: clasificación de la epilepsia y clasificación operativa de las crisis, versión básica y ampliada (Fisher RS y col., Epilepsia 2017;58:531-542, citado en la clase).</p>
+    </section>
+
+    <!-- ============ 8 ============ -->
+    <section class="seccion s-clinica" id="fases">
+      <span class="seccion__pestana"><b>08</b> Clínica</span>
+      <h2 class="seccion__titulo">Clínica de las crisis y sus fases</h2>
+
+      <h3>Crisis tónico-clónica generalizada (gran mal)</h3>
+      <p>Puede ser secundaria a trastornos metabólicos. Se desarrolla en cuatro fases:</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 196" role="img" aria-label="Fases de la crisis tónico-clónica: pródromos con síntomas poco definidos que no son un aura; fase tónica con contracción generalizada, caída, cianosis, taquicardia, hipertensión y midriasis; fase clónica con contracciones rítmicas, respiración estertorosa, hipersalivación e incontinencia; y estado poscrítico con falta de respuesta, flaccidez, recuperación lenta y confusión">
+          <defs>
+            <marker id="epi-tc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <line x1="200" y1="30" x2="600" y2="30" stroke="currentColor" stroke-width="1.4"></line>
+          <line x1="200" y1="24" x2="200" y2="36" stroke="currentColor" stroke-width="1.4"></line>
+          <line x1="600" y1="30" x2="790" y2="30" stroke="currentColor" stroke-width="1.4" stroke-dasharray="5 4"></line>
+          <text x="400" y="20" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">pérdida de la conciencia</text>
+          <text x="695" y="20" text-anchor="middle" font-size="11" fill="currentColor">recuperación lenta</text>
+          <rect x="30" y="44" width="170" height="44" rx="4" fill="var(--c)" fill-opacity="0.10" stroke="currentColor" stroke-width="1.1" stroke-dasharray="5 3"></rect>
+          <text x="115" y="71" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Pródromos</text>
+          <rect x="200" y="44" width="180" height="44" rx="4" fill="var(--c)" fill-opacity="0.50" stroke="currentColor" stroke-width="1.3"></rect>
+          <text x="290" y="71" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Fase tónica</text>
+          <rect x="380" y="44" width="220" height="44" rx="4" fill="var(--c)" fill-opacity="0.36" stroke="currentColor" stroke-width="1.3"></rect>
+          <text x="490" y="71" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Fase clónica</text>
+          <rect x="600" y="44" width="190" height="44" rx="4" fill="var(--c)" fill-opacity="0.18" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="695" y="71" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Poscrítico</text>
+          <line x1="30" y1="102" x2="790" y2="102" stroke="currentColor" stroke-width="1.2" marker-end="url(#epi-tc)"></line>
+          <text x="115" y="128" text-anchor="middle" font-size="11" fill="currentColor">síntomas poco definidos</text>
+          <text x="115" y="146" text-anchor="middle" font-size="11" fill="currentColor">intranquilidad, cefalea</text>
+          <text x="115" y="164" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">no es un aura</text>
+          <text x="290" y="128" text-anchor="middle" font-size="11" fill="currentColor">contracción tónica</text>
+          <text x="290" y="146" text-anchor="middle" font-size="11" fill="currentColor">generalizada</text>
+          <text x="290" y="164" text-anchor="middle" font-size="11" fill="currentColor">caída al suelo · cianosis</text>
+          <text x="290" y="182" text-anchor="middle" font-size="11" fill="currentColor">↑ FC y PA · midriasis</text>
+          <text x="490" y="128" text-anchor="middle" font-size="11" fill="currentColor">contracción rítmica de miembros</text>
+          <text x="490" y="146" text-anchor="middle" font-size="11" fill="currentColor">respiración estertorosa</text>
+          <text x="490" y="164" text-anchor="middle" font-size="11" fill="currentColor">hipersalivación</text>
+          <text x="490" y="182" text-anchor="middle" font-size="11" fill="currentColor">incontinencia de esfínteres</text>
+          <text x="695" y="128" text-anchor="middle" font-size="11" fill="currentColor">no responde a estímulos</text>
+          <text x="695" y="146" text-anchor="middle" font-size="11" fill="currentColor">flaccidez muscular</text>
+          <text x="695" y="164" text-anchor="middle" font-size="11" fill="currentColor">recuperación lenta</text>
+          <text x="695" y="182" text-anchor="middle" font-size="11" fill="currentColor">confusión</text>
+        </svg>
+        <figcaption>La conciencia se pierde al comienzo de la fase tónica. El <strong>poscrítico con confusión</strong> es lo que distingue la crisis tónico-clónica de una ausencia, que termina de golpe y sin confusión.</figcaption>
+      </figure>
+
+      <h3>Otras crisis</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Crisis</th><th>Clínica</th><th>Después de la crisis</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Ausencia típica</strong> (pequeño mal)</td><td>Desconexión del medio de <strong>segundos</strong>, <strong>sin pérdida del tono postural</strong>; suele acompañarse de signos motores bilaterales: <strong>parpadeo, masticación</strong>. Típica de la infancia, con predisposición familiar</td><td>Recuperación <strong>brusca, sin confusión</strong>; el paciente no recuerda el episodio</td></tr>
+            <tr><td><strong>Mioclónica</strong></td><td><strong>Sacudidas bruscas</strong> de las extremidades o contracción brusca del cuello; típicas <strong>al despertar</strong></td><td>—</td></tr>
+            <tr><td><strong>Atónica</strong></td><td><strong>Pérdida repentina del tono postural</strong>, con la conciencia alterada brevemente</td><td>No suele haber confusión poscrítica</td></tr>
+            <tr><td><strong>Focal sin desconexión del medio</strong></td><td>Conciencia preservada: la persona sabe de sí misma y de su entorno durante la crisis</td><td>—</td></tr>
+            <tr><td><strong>Focal con desconexión del medio</strong></td><td>No es consciente de sí misma ni de su entorno; puede ir precedida de un <strong>aura</strong> y tener <strong>automatismos</strong></td><td>Período <strong>poscrítico</strong></td></tr>
+            <tr><td><strong>Focal con generalización secundaria</strong></td><td>Empieza focal y después se extiende a los dos hemisferios</td><td>Poscrítico como en la tónico-clónica</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Las crisis focales, con o sin desconexión, pueden dar síntomas <strong>motores, autonómicos, visuales, auditivos, olfativos, emocionales y cognitivos</strong>, según el sitio del foco. El aura es en realidad el comienzo de una crisis focal, y por eso orienta a dónde está el foco.</p>
+
+      <p class="cita">Clase «Epilepsia», Dr. Gustavo Grilli: cuadro de clasificación ILAE 2017 con la descripción de las crisis focales, la tónico-clónica, la mioclónica, la atónica y la ausencia.</p>
+    </section>
+
+    <!-- ============ 9 ============ -->
+    <section class="seccion s-clinica" id="semiologia">
+      <span class="seccion__pestana"><b>09</b> Clínica</span>
+      <h2 class="seccion__titulo">Semiología según la localización</h2>
+
+      <p>En las crisis focales, los síntomas dependen de la función de la corteza donde está el foco. Por eso la semiología permite <strong>localizarlo</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 372" role="img" aria-label="Vista lateral del hemisferio con la semiología de las crisis según el área: premotora, crisis adversivas; motora primaria, clonías contralaterales; somatosensitiva, parestesias contralaterales; prefrontal y área motora suplementaria, postura tónica asimétrica y crisis hipercinéticas; opérculo frontal, afasia de Broca, clonías faciales y salivación; parietal, ilusiones somatosensitivas; parietotemporal dominante, afasia de Wernicke; occipital, amaurosis y alucinaciones visuales simples; asociativa visual, macropsias y micropsias; auditiva, alucinaciones auditivas; amígdala e hipocampo, sensación epigástrica, miedo, déjà vu y automatismos">
+          <path d="M190 215 C180 145 250 95 350 89 C440 83 530 91 590 125 C640 155 660 205 645 250 C635 280 605 293 570 291 L540 291 C520 315 480 323 440 315 C400 308 360 307 320 307 C270 307 225 293 205 265 C193 249 190 235 190 215 Z" fill="var(--c)" fill-opacity="0.12" stroke="currentColor" stroke-width="1.6"></path>
+          <path d="M262 247 C320 225 380 217 445 221" fill="none" stroke="currentColor" stroke-width="1.4"></path>
+          <path d="M412 87 C402 135 397 175 388 219" fill="none" stroke="currentColor" stroke-width="1.4"></path>
+          <path d="M560 115 C548 165 550 215 565 268" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3"></path>
+          <text x="300" y="180" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor" opacity="0.7">FRONTAL</text>
+          <text x="495" y="165" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor" opacity="0.7">PARIETAL</text>
+          <text x="400" y="272" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor" opacity="0.7">TEMPORAL</text>
+          <text x="608" y="168" text-anchor="middle" font-size="10" font-weight="700" fill="currentColor" opacity="0.7">OCCIPITAL</text>
+
+          <circle cx="352" cy="110" r="5" fill="currentColor"></circle>
+          <circle cx="398" cy="115" r="5" fill="currentColor"></circle>
+          <circle cx="428" cy="118" r="5" fill="currentColor"></circle>
+          <circle cx="262" cy="135" r="5" fill="currentColor"></circle>
+          <circle cx="300" cy="222" r="5" fill="currentColor"></circle>
+          <circle cx="522" cy="130" r="5" fill="currentColor"></circle>
+          <circle cx="515" cy="215" r="5" fill="currentColor"></circle>
+          <circle cx="635" cy="215" r="5" fill="currentColor"></circle>
+          <circle cx="585" cy="270" r="5" fill="currentColor"></circle>
+          <circle cx="430" cy="235" r="5" fill="currentColor"></circle>
+          <circle cx="330" cy="290" r="5" fill="currentColor"></circle>
+
+          <text x="230" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">Premotora (6, 8)</text>
+          <text x="230" y="38" text-anchor="middle" font-size="11" fill="currentColor">crisis adversivas</text>
+          <line x1="236" y1="44" x2="348" y2="106" stroke="currentColor" stroke-width="1"></line>
+          <text x="404" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">Motora primaria (4)</text>
+          <text x="404" y="38" text-anchor="middle" font-size="11" fill="currentColor">clonías contralaterales</text>
+          <line x1="400" y1="44" x2="398" y2="109" stroke="currentColor" stroke-width="1"></line>
+          <text x="600" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">Somatosensitiva (3, 1, 2)</text>
+          <text x="600" y="38" text-anchor="middle" font-size="11" fill="currentColor">parestesias contralaterales</text>
+          <line x1="560" y1="44" x2="432" y2="114" stroke="currentColor" stroke-width="1"></line>
+
+          <text x="20" y="120" font-size="11" font-weight="700" fill="currentColor">Prefrontal y motora</text>
+          <text x="20" y="135" font-size="11" fill="currentColor">suplementaria: tónica</text>
+          <text x="20" y="150" font-size="11" fill="currentColor">asimétrica, hipercinéticas</text>
+          <line x1="172" y1="134" x2="256" y2="135" stroke="currentColor" stroke-width="1"></line>
+          <text x="20" y="216" font-size="11" font-weight="700" fill="currentColor">Opérculo frontal: Broca,</text>
+          <text x="20" y="231" font-size="11" fill="currentColor">clonías faciales, salivación</text>
+          <line x1="184" y1="224" x2="294" y2="222" stroke="currentColor" stroke-width="1"></line>
+
+          <text x="680" y="126" font-size="11" font-weight="700" fill="currentColor">Parietal (5, 7):</text>
+          <text x="680" y="141" font-size="11" fill="currentColor">ilusiones</text>
+          <text x="680" y="156" font-size="11" fill="currentColor">somatosensitivas</text>
+          <line x1="676" y1="134" x2="528" y2="130" stroke="currentColor" stroke-width="1"></line>
+          <text x="680" y="190" font-size="11" font-weight="700" fill="currentColor">Parietotemporal</text>
+          <text x="680" y="205" font-size="11" fill="currentColor">dominante: Wernicke</text>
+          <line x1="676" y1="196" x2="521" y2="214" stroke="currentColor" stroke-width="1"></line>
+          <text x="680" y="240" font-size="11" font-weight="700" fill="currentColor">Occipital (17):</text>
+          <text x="680" y="255" font-size="11" fill="currentColor">amaurosis, alucinaciones</text>
+          <text x="680" y="270" font-size="11" fill="currentColor">visuales simples</text>
+          <line x1="676" y1="244" x2="640" y2="218" stroke="currentColor" stroke-width="1"></line>
+
+          <text x="250" y="346" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">Amígdala e hipocampo:</text>
+          <text x="250" y="361" text-anchor="middle" font-size="11" fill="currentColor">epigástrica, miedo, déjà vu, automatismos</text>
+          <line x1="300" y1="334" x2="328" y2="296" stroke="currentColor" stroke-width="1"></line>
+          <text x="470" y="346" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">Auditiva (41, 42)</text>
+          <text x="470" y="361" text-anchor="middle" font-size="11" fill="currentColor">alucinaciones auditivas</text>
+          <line x1="462" y1="334" x2="432" y2="241" stroke="currentColor" stroke-width="1"></line>
+          <text x="650" y="346" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">Asociativa visual:</text>
+          <text x="650" y="361" text-anchor="middle" font-size="11" fill="currentColor">macropsias, micropsias</text>
+          <line x1="640" y1="334" x2="588" y2="275" stroke="currentColor" stroke-width="1"></line>
+        </svg>
+        <figcaption>Vista lateral; la amígdala y el hipocampo están en la cara medial del lóbulo temporal y se proyectan sobre él. Entre paréntesis, las áreas de Brodmann. Los síntomas motores y sensitivos aparecen del lado <strong>contrario</strong> al foco.</figcaption>
+      </figure>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Región</th><th>Semiología ictal</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Corteza premotora</strong> (6 y 8)</td><td>Crisis <strong>adversivas</strong>: desviación conjugada de la mirada y de la cabeza hacia el lado opuesto</td></tr>
+            <tr><td><strong>Corteza motora primaria</strong> (4)</td><td>Crisis <strong>clónicas contralaterales</strong> con distribución somatotópica</td></tr>
+            <tr><td><strong>Prefrontal y área motora suplementaria</strong></td><td>Crisis con <strong>postura tónica asimétrica</strong> · crisis <strong>hipercinéticas</strong></td></tr>
+            <tr><td><strong>Opérculo frontal</strong></td><td><strong>Afasia de Broca</strong> (hemisferio dominante), clonías faciales contralaterales, salivación copiosa, apraxia facial</td></tr>
+            <tr><td><strong>Corteza somatosensitiva primaria</strong> (3, 1 y 2)</td><td><strong>Parestesias</strong>, sensaciones térmicas y dolor contralateral con distribución somatotópica</td></tr>
+            <tr><td><strong>Corteza parietal</strong> (5 y 7)</td><td>Ilusiones somatosensitivas, alteración del <strong>esquema corporal</strong></td></tr>
+            <tr><td><strong>Región parietotemporal dominante</strong></td><td><strong>Afasia de Wernicke</strong></td></tr>
+            <tr><td><strong>Corteza auditiva</strong> (41 y 42)</td><td>Alucinaciones auditivas <strong>simples</strong> (corteza primaria) · alucinaciones auditivas <strong>complejas</strong> e ilusiones (áreas de asociación)</td></tr>
+            <tr><td><strong>Amígdala e hipocampo</strong></td><td><strong>Sensación epigástrica ascendente</strong>, miedo, midriasis, piloerección, fenómenos de <strong>déjà vu y jamais vu</strong>, alucinaciones olfativas o gustativas, alteración de la conciencia, fijación de la mirada, <strong>automatismos</strong> oroalimentarios y gestuales</td></tr>
+            <tr><td><strong>Corteza occipital primaria</strong> (17)</td><td>Amaurosis, visión borrosa, alucinaciones visuales <strong>simples</strong></td></tr>
+            <tr><td><strong>Corteza asociativa visual</strong> (occipitotemporal)</td><td>Alucinaciones visuales <strong>complejas</strong>, macropsias, micropsias, visión en túnel</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Signos localizadores por lóbulo</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Lóbulo</th><th>Signos</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Temporal</strong></td><td><strong>Aura epigástrica ascendente</strong> (temporal mesial) · <strong>distonía unilateral de la mano</strong> · alteraciones auditivas y olfativas</td></tr>
+            <tr><td><strong>Frontal</strong></td><td>Predominio de <strong>fenómenos motores</strong></td></tr>
+            <tr><td><strong>Parietal</strong></td><td>Alteraciones <strong>sensitivas</strong></td></tr>
+            <tr><td><strong>Occipital</strong></td><td>Alteraciones <strong>visuales</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «Epilepsia», Dr. Gustavo Grilli: semiología ictal según la localización cerebral y signos localizadores.</p>
+    </section>
+
+    <!-- ============ 10 ============ -->
+    <section class="seccion s-generalidades" id="tipos">
+      <span class="seccion__pestana"><b>10</b> Clasificación</span>
+      <h2 class="seccion__titulo">Tipos de epilepsia</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Tipo</th><th>Crisis</th><th>EEG</th><th>Ejemplos</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>1 · Generalizada</strong></td><td>Tónico-clónicas, mioclónicas, tónicas, atónicas, ausencias</td><td>Puede mostrar descargas de <strong>punta-onda generalizada</strong></td><td>Epilepsia con ausencias de la niñez · epilepsia mioclónica juvenil</td></tr>
+            <tr><td><strong>2 · Focal</strong></td><td>Motoras o no motoras, con o sin alteración de la conciencia, con o sin generalización secundaria</td><td>Generalmente <strong>puntas u ondas agudas focales</strong></td><td>—</td></tr>
+            <tr><td><strong>3 · Focal y generalizada</strong></td><td>Formas combinadas, con crisis focales y generalizadas</td><td>—</td><td>Síndrome de <strong>Lennox-Gastaut</strong></td></tr>
+            <tr><td><strong>4 · De origen desconocido</strong></td><td>No se puede determinar si el inicio es focal o generalizado</td><td>—</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «Epilepsia», Dr. Gustavo Grilli: clasificación según el tipo de epilepsia.</p>
+    </section>
+
+    <!-- ============ 11 ============ -->
+    <section class="seccion s-clinica" id="sindromes">
+      <span class="seccion__pestana"><b>11</b> Clínica</span>
+      <h2 class="seccion__titulo">Síndromes epilépticos</h2>
+
+      <p>Un <strong>síndrome epiléptico</strong> es la asociación de síntomas clínicos característicos, tipo de crisis, patrón de EEG, imágenes en la RMN, edad de comienzo, posibles etiologías, evolución natural y respuesta al tratamiento. Reconocerlo importa porque <strong>orienta la elección del tratamiento</strong> y permite un <strong>pronóstico más preciso</strong>.</p>
+
+      <h3>Los más frecuentes en la práctica</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Grupo</th><th>Síndromes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Epilepsias focales</strong></td><td>Epilepsia autolimitada (benigna) de la niñez con puntas centrotemporales (<strong>epilepsia rolándica</strong>) · epilepsia del <strong>lóbulo temporal mesial</strong></td></tr>
+            <tr><td><strong>Generalizadas idiopáticas</strong></td><td>Epilepsia con <strong>ausencias de la niñez</strong> · epilepsia <strong>mioclónica juvenil</strong></td></tr>
+            <tr><td><strong>Generalizadas sintomáticas</strong></td><td>Síndrome de <strong>West</strong> o de los espasmos infantiles (hipsarritmia) · síndrome de <strong>Lennox-Gastaut</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Organizados por edad de inicio</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Edad</th><th>Síndromes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Período neonatal</strong></td><td>Crisis neonatales benignas · epilepsia familiar neonatal benigna · síndrome de Ohtahara · encefalopatía mioclónica temprana</td></tr>
+            <tr><td><strong>Lactancia</strong></td><td>Crisis febriles y crisis febriles plus · epilepsia benigna de la lactancia · epilepsia familiar benigna de la lactancia · <strong>síndrome de West</strong> · síndrome de Dravet · epilepsia mioclónica de la lactancia · encefalopatía mioclónica en trastornos no progresivos · epilepsia de la lactancia con crisis focales migratorias</td></tr>
+            <tr><td><strong>Infancia</strong></td><td>Crisis febriles y febriles plus · epilepsia occipital de inicio temprano (Panayiotopoulos) · epilepsia con crisis mioclono-atónicas · <strong>epilepsia ausencia infantil</strong> · <strong>epilepsia benigna con puntas centrotemporales</strong> · epilepsia frontal nocturna autosómica dominante · epilepsia occipital de inicio tardío (Gastaut) · epilepsia con ausencias mioclónicas · <strong>síndrome de Lennox-Gastaut</strong> · encefalopatía con punta-onda continua durante el sueño · síndrome de Landau-Kleffner</td></tr>
+            <tr><td><strong>Adolescencia y adultez</strong></td><td>Epilepsia ausencia juvenil · <strong>epilepsia mioclónica juvenil</strong> · epilepsia con crisis tónico-clónicas generalizadas solamente · epilepsia autosómica dominante con características auditivas · otras epilepsias familiares del lóbulo temporal</td></tr>
+            <tr><td><strong>Edad variable</strong></td><td>Epilepsia focal familiar con focos variables · epilepsias mioclónicas progresivas · epilepsias reflejas</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Clínica de los síndromes más frecuentes</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Síndrome</th><th>Edad y contexto</th><th>Crisis</th><th>EEG, imágenes y evolución</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Autolimitada con puntas centrotemporales</strong> (rolándica)</td><td>Inicio a los <strong>4-10 años</strong> (rango 3-14), leve predominio en varones; niño previamente normal. Es el <span class="dato">6-7 %</span> de las epilepsias de la infancia</td><td>Breves (2-3 minutos), <strong>sobre todo durante el sueño</strong>. Empiezan con adormecimiento o parestesias de un lado de la lengua, los labios, las encías o la mejilla, siguen con clonías o contracción tónica de esa hemicara, <strong>detención del habla</strong> y <strong>babeo</strong>; pueden pasar a clonías de un hemicuerpo o a una crisis tónico-clónica bilateral. Puede quedar una <strong>paresia de Todd</strong></td><td>Fondo normal con <strong>puntas centrotemporales</strong> de alto voltaje que se activan con la somnolencia y el sueño. Responde a la medicación y <strong>remite hacia la pubertad</strong>, en ocasiones hasta los 18 años</td></tr>
+            <tr><td><strong>Temporal mesial con esclerosis del hipocampo</strong></td><td>Alrededor del <strong>25 %</strong> tiene antecedente de convulsiones febriles, sobre todo prolongadas; después de ellas hay un <strong>período de latencia</strong> antes de que aparezcan las crisis temporales</td><td>Crisis focales con <strong>rasgos temporales mesiales</strong> (sensación epigástrica ascendente, miedo, déjà vu, automatismos; sección 09), que pueden pasar a tónico-clónicas bilaterales. Puede haber déficit de memoria <strong>verbal</strong> si el hipocampo afectado es el dominante y <strong>visual</strong> si es el no dominante</td><td>EEG: puntas u ondas agudas temporales anteriores del lado de la esclerosis. RMN: <strong>atrofia del hipocampo con hiperseñal en T2 y FLAIR</strong>. Suele ser <strong>resistente a los fármacos</strong></td></tr>
+            <tr><td><strong>Epilepsia con ausencias de la niñez</strong></td><td>Inicio a los <strong>2-13 años</strong> (habitualmente 4-10); <strong>60-75 % niñas</strong>; desarrollo y examen neurológico normales</td><td><strong>Ausencias muy frecuentes</strong> (varias por día), breves (<strong>3-20 segundos</strong>), con compromiso intenso de la conciencia. Se provocan con la <strong>hiperventilación</strong>. Sin poscrítico</td><td>Fondo normal con <strong>punta-onda generalizada a 2,5-4 Hz</strong>. <strong>Remite en el 60 %</strong>; el resto evoluciona a otras epilepsias generalizadas idiopáticas</td></tr>
+            <tr><td><strong>Mioclónica juvenil</strong></td><td>Inicio a los <strong>8-40 años</strong> (típicamente 10-24); leve predominio femenino. Es cerca del <span class="dato">10 %</span> de todas las epilepsias. Entre el 5 y el 15 % tuvo antes una epilepsia con ausencias de la niñez</td><td><strong>Mioclonías</strong> sobre todo en la <strong>primera hora después de despertar</strong>, en los miembros superiores, facilitadas por la <strong>privación de sueño</strong>. Más del 90 % tiene crisis tónico-clónicas, muchas veces precedidas por una salva de mioclonías que se intensifican. Un tercio tiene ausencias</td><td><strong>Punta y polipunta-onda generalizada a 3-5,5 Hz</strong>; <strong>fotosensibilidad</strong> en hasta el 90 %</td></tr>
+            <tr><td><strong>West</strong> (espasmos epilépticos infantiles)</td><td>Inicio entre <strong>1 y 24 meses</strong> (pico 3-12); predominio en varones. Causas estructurales (esclerosis tuberosa, encefalopatía hipóxico-isquémica), cromosómicas (síndrome de Down), genéticas o metabólicas</td><td><strong>Espasmos epilépticos en salvas</strong>, típicamente al despertar. Tríada: <strong>espasmos + hipsarritmia + estancamiento o regresión del desarrollo</strong></td><td><strong>Hipsarritmia</strong>: ondas lentas irregulares de alto voltaje mezcladas con puntas y polipuntas multifocales. Es una <strong>encefalopatía del desarrollo y epiléptica</strong></td></tr>
+            <tr><td><strong>Lennox-Gastaut</strong></td><td>Aparece entre los <strong>18 meses y los 8 años</strong> (pico 3-5); leve predominio en varones. Suele evolucionar desde otro síndrome o etiología: el <strong>10-30 %</strong> viene de un West</td><td><strong>Crisis tónicas durante el sueño</strong> (obligatorias) más al menos otro tipo: ausencias atípicas, atónicas, mioclónicas, tónico-clónicas. <strong>Resistentes a los fármacos</strong>. Status no convulsivo en la mitad de los pacientes</td><td>Fondo lento con <strong>punta-onda lenta difusa</strong> y actividad rápida paroxística generalizada. Más del 90 % termina con <strong>discapacidad intelectual moderada a grave</strong>; persiste en la adultez</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «Epilepsia», Dr. Gustavo Grilli: síndromes epilépticos y síndromes electroclínicos por edad de inicio. Clínica de cada síndrome: sitio oficial de diagnóstico de la ILAE, epilepsydiagnosis.org (actualizado en 2024), basado en las definiciones de 2022. Según PubMed: Specchio N y col., Epilepsia 2022;63(6):1398-1442 (<a href="https://doi.org/10.1111/epi.17241">DOI</a>); Hirsch E y col., Epilepsia 2022;63(6):1475-1499 (<a href="https://doi.org/10.1111/epi.17236">DOI</a>); Zuberi SM y col., Epilepsia 2022;63(6):1349-1397 (<a href="https://doi.org/10.1111/epi.17239">DOI</a>); Riney K y col., Epilepsia 2022;63(6):1443-1474 (<a href="https://doi.org/10.1111/epi.17240">DOI</a>).</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-d">
+      <span class="bloque__rotulo">Bloque D</span>
+      <span class="bloque__nombre">Diagnóstico</span>
+    </h2>
+
+    <!-- ============ 12 ============ -->
+    <section class="seccion s-diagnostico" id="estudios">
+      <span class="seccion__pestana"><b>12</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">Estudios complementarios</h2>
+
+      <p>El diagnóstico de epilepsia es <strong>clínico</strong>: se apoya en la historia del episodio, muchas veces relatada por un testigo. Los estudios confirman, clasifican y buscan la causa.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Estudio</th><th>Para qué</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Historia clínica detallada y examen físico</strong></td><td>Base del diagnóstico: cómo fue la crisis, qué pasó antes y después</td></tr>
+            <tr><td><strong>Laboratorio completo</strong></td><td>Causas metabólicas; la clase plantea la <strong>punción lumbar</strong> como pregunta, según la sospecha</td></tr>
+            <tr><td><strong>EEG</strong></td><td>Descargas focales o generalizadas; en la clase, un trazado con <strong>punta-onda generalizada</strong></td></tr>
+            <tr><td><strong>ECG</strong></td><td>Descartar un síncope de origen cardíaco</td></tr>
+            <tr><td><strong>Video-EEG</strong></td><td>Registra al mismo tiempo la crisis y el trazado: confirma que el evento es epiléptico y clasifica la crisis</td></tr>
+            <tr><td><strong>RMN de alto campo con gadolinio y protocolo de epilepsia</strong></td><td>Lesiones estructurales; en la clase, una <strong>esclerosis del hipocampo</strong> en un corte coronal</td></tr>
+            <tr><td><strong>PET y SPECT</strong></td><td>Localizan el foco por su metabolismo o su flujo; en la clase, un PET con zonas de <strong>hipometabolismo</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «Epilepsia», Dr. Gustavo Grilli: diagnóstico de epilepsia e imágenes de EEG, video-EEG, RMN y PET.</p>
+    </section>
+
+    <!-- ============ 13 ============ -->
+    <section class="seccion s-diagnostico" id="diferencial">
+      <span class="seccion__pestana"><b>13</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">Eventos paroxísticos que simulan crisis</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Grupo</th><th>Causas</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Síncope de origen cardíaco</strong></td><td>Arritmias · cardiopatías congénitas · cardiomiopatía · mixoma auricular</td></tr>
+            <tr><td><strong>Síncope de origen extracardíaco</strong></td><td>Vasovagal · Valsalva · ortostático · inducido por medicación</td></tr>
+            <tr><td><strong>Otros eventos</strong></td><td>Hiperventilación · espasmos del sollozo · migraña · amnesia global transitoria · isquemia cerebral transitoria</td></tr>
+            <tr><td><strong>Trastornos del sueño</strong></td><td>Narcolepsia · parasomnias</td></tr>
+            <tr><td><strong>Trastornos psiquiátricos</strong></td><td>Crisis de pánico o ansiedad · <strong>crisis seudoepilépticas</strong> (reacciones de conversión) · síndrome de descontrol episódico</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>El síncope y la crisis psicógena son los que más se confunden con una crisis tónico-clónica. Por eso la clase incluye el <strong>ECG</strong> en el estudio inicial y el <strong>video-EEG</strong> para los casos dudosos.</p>
+
+      <p class="cita">Clase «Epilepsia», Dr. Gustavo Grilli: eventos paroxísticos que pueden simular crisis epilépticas.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-e">
+      <span class="bloque__rotulo">Bloque E</span>
+      <span class="bloque__nombre">Tratamiento</span>
+    </h2>
+
+    <!-- ============ 14 ============ -->
+    <section class="seccion s-tratamiento" id="eleccion">
+      <span class="seccion__pestana"><b>14</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Elección del fármaco</h2>
+
+      <p>El fármaco se elige según el <strong>tipo de crisis</strong> y, si se identificó, según el <strong>síndrome</strong>. Hay fármacos de <strong>espectro reducido</strong>, útiles solo en las crisis focales, y fármacos de <strong>amplio espectro</strong>, que sirven para todos los tipos de crisis.</p>
+
+      <h3>Según el tipo de crisis</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Crisis</th><th>Fármacos específicos</th><th>Además, amplio espectro</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Focales</strong>: consciente, con conciencia alterada y focal a tónico-clónica bilateral</td><td>Carbamazepina · eslicarbazepina · fenobarbital · fenitoína · gabapentina · lacosamida · oxcarbazepina · perampanel · pregabalina · vigabatrina</td><td>Benzodiacepinas · brivaracetam · lamotrigina · levetiracetam · topiramato · valproato · zonisamida</td></tr>
+            <tr><td><strong>Ausencias</strong></td><td><strong>Etosuximida</strong></td><td>Los mismos de amplio espectro</td></tr>
+            <tr><td><strong>Mioclónicas · tónicas y atónicas · tónico-clónicas generalizadas</strong></td><td>—</td><td>Los mismos de amplio espectro</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Según el tipo de crisis o el síndrome, en orden de elección</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Indicación</th><th>1ª</th><th>2ª</th><th>3ª</th><th>4ª</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Crisis generalizadas</strong></td><td>Ácido valproico</td><td>Lamotrigina</td><td>Levetiracetam</td><td>Fenitoína, fenobarbital</td></tr>
+            <tr><td><strong>Crisis focales</strong></td><td>Carbamazepina</td><td>Oxcarbazepina</td><td>Levetiracetam</td><td>Ácido valproico</td></tr>
+            <tr><td><strong>Epilepsia mioclónica juvenil</strong></td><td>Ácido valproico</td><td>Levetiracetam</td><td>Lamotrigina</td><td>—</td></tr>
+            <tr><td><strong>Ausencias</strong></td><td>Ácido valproico</td><td>Etosuximida</td><td>Lamotrigina</td><td>—</td></tr>
+            <tr><td><strong>Síndrome de West</strong></td><td>ACTH</td><td>Vigabatrina</td><td>Zonisamida</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Por qué se elige cada uno</h3>
+      <p>Los bloqueantes de los canales de sodio (carbamazepina, oxcarbazepina, fenitoína) impiden que la neurona dispare potenciales de acción repetidos, que es lo que hace el foco durante la despolarización paroxística: por eso funcionan bien en las crisis focales. Las <strong>ausencias</strong>, en cambio, dependen del circuito tálamo-cortical, cuyas neuronas talámicas generan el ritmo de punta-onda con corrientes de calcio de tipo T: la <strong>etosuximida</strong> bloquea justamente esas corrientes, y por eso sirve para las ausencias y para nada más. El <strong>valproato</strong> es de amplio espectro y es el fármaco con mejor eficacia documentada en algunos síndromes generalizados como la mioclónica juvenil, pero tiene el problema del embarazo (sección 17).</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Un fármaco mal elegido puede <strong>empeorar</strong> la epilepsia. <strong>Carbamazepina, fenitoína, tiagabina, vigabatrina y gabapentina</strong> pueden desencadenar o agravar <strong>ausencias y mioclonías</strong>: en las epilepsias generalizadas idiopáticas no son de primera línea. La carbamazepina y la vigabatrina están contraindicadas en las ausencias típicas. La <strong>lamotrigina</strong> puede agravar las crisis en la epilepsia mioclónica juvenil. Antes de indicar un fármaco hay que tener <strong>bien clasificada la crisis</strong>.</p>
+      </div>
+
+      <p class="cita">Clase «Epilepsia», Dr. Gustavo Grilli: tratamiento médico de las epilepsias por tipo de crisis y por síndrome. Mecanismo de los bloqueantes de sodio y de la etosuximida: Harrison, <em>Principios de Medicina Interna</em>, capítulo de crisis convulsivas y epilepsia. Agravamiento por fármacos, según PubMed: Perucca E, Epilepsia 2001;42 Suppl 3:31-5 (<a href="https://doi.org/10.1046/j.1528-1157.2001.042suppl.3031.x">DOI</a>); Parker AP y col., Dev Med Child Neurol 1998;40(8):517-9 (<a href="https://doi.org/10.1111/j.1469-8749.1998.tb15409.x">DOI</a>); Gesche J y col., Epilepsy Res 2021;170:106547 (<a href="https://doi.org/10.1016/j.eplepsyres.2020.106547">DOI</a>). Valproato en la mioclónica juvenil: Tomson T y col., Lancet Neurol 2016;15(2):210-218 (<a href="https://doi.org/10.1016/S1474-4422(15)00314-2">DOI</a>).</p>
+    </section>
+
+    <!-- ============ 15 ============ -->
+    <section class="seccion s-fisiopatologia" id="mecanismos">
+      <span class="seccion__pestana"><b>15</b> Fisiopatología</span>
+      <h2 class="seccion__titulo">Mecanismos de acción de los fármacos</h2>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 325" role="img" aria-label="Sitios de acción de los fármacos antiepilépticos. En la terminal presináptica: canal de sodio dependiente de voltaje, bloqueado por carbamazepina, eslicarbazepina, fenitoína, lacosamida, lamotrigina y oxcarbazepina; vesícula sináptica SV2A, a la que se unen levetiracetam y brivaracetam. En la neurona postsináptica: aumento de la función GABA con benzodiacepinas, fenobarbital, topiramato, valproato y vigabatrina; receptor AMPA de glutamato bloqueado por perampanel. En la neurona talámica: canal de calcio tipo T bloqueado por etosuximida y zonisamida">
+          <defs>
+            <marker id="epi-mec" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <rect x="40" y="40" width="300" height="212" rx="18" fill="var(--c)" fill-opacity="0.08" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="190" y="28" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Terminal presináptica</text>
+          <rect x="55" y="62" width="270" height="78" rx="6" fill="var(--c)" fill-opacity="0.34" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="190" y="84" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Bloqueo del canal de Na⁺ (voltaje)</text>
+          <text x="190" y="106" text-anchor="middle" font-size="11" fill="currentColor">carbamazepina · eslicarbazepina · fenitoína</text>
+          <text x="190" y="124" text-anchor="middle" font-size="11" fill="currentColor">lacosamida · lamotrigina · oxcarbazepina</text>
+          <rect x="55" y="156" width="270" height="78" rx="6" fill="var(--c)" fill-opacity="0.20" stroke="currentColor" stroke-width="1.2"></rect>
+          <circle cx="82" cy="195" r="13" fill="none" stroke="currentColor" stroke-width="1.2"></circle>
+          <circle cx="78" cy="191" r="2.4" fill="currentColor"></circle>
+          <circle cx="86" cy="197" r="2.4" fill="currentColor"></circle>
+          <circle cx="80" cy="200" r="2.4" fill="currentColor"></circle>
+          <text x="204" y="182" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Vesícula sináptica: SV2A</text>
+          <text x="204" y="204" text-anchor="middle" font-size="11" fill="currentColor">levetiracetam · brivaracetam</text>
+          <text x="204" y="222" text-anchor="middle" font-size="11" fill="currentColor">(se unen a la proteína)</text>
+
+          <line x1="345" y1="146" x2="462" y2="146" stroke="currentColor" stroke-width="1.6" marker-end="url(#epi-mec)"></line>
+          <text x="404" y="134" text-anchor="middle" font-size="11" fill="currentColor">glutamato</text>
+          <text x="404" y="166" text-anchor="middle" font-size="11" fill="currentColor">GABA</text>
+
+          <rect x="470" y="40" width="310" height="212" rx="18" fill="var(--c)" fill-opacity="0.08" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="625" y="28" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Neurona postsináptica</text>
+          <rect x="485" y="62" width="280" height="90" rx="6" fill="var(--c)" fill-opacity="0.34" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="625" y="84" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Aumento de la función GABA</text>
+          <text x="625" y="106" text-anchor="middle" font-size="11" fill="currentColor">benzodiacepinas · fenobarbital</text>
+          <text x="625" y="124" text-anchor="middle" font-size="11" fill="currentColor">topiramato · valproato · vigabatrina</text>
+          <text x="625" y="142" text-anchor="middle" font-size="10.5" fill="currentColor">más inhibición</text>
+          <rect x="485" y="164" width="280" height="70" rx="6" fill="var(--c)" fill-opacity="0.20" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="625" y="188" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Receptor AMPA de glutamato</text>
+          <text x="625" y="210" text-anchor="middle" font-size="11" fill="currentColor">perampanel: antagonista no competitivo</text>
+          <text x="625" y="226" text-anchor="middle" font-size="10.5" fill="currentColor">menos excitación</text>
+
+          <rect x="240" y="266" width="340" height="50" rx="6" fill="var(--c)" fill-opacity="0.26" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="410" y="286" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Neurona talámica: Ca²⁺ tipo T (umbral bajo)</text>
+          <text x="410" y="306" text-anchor="middle" font-size="11" fill="currentColor">etosuximida · zonisamida</text>
+        </svg>
+        <figcaption>Todos los mecanismos terminan en lo mismo: <strong>menos excitación o más inhibición</strong>. Los bloqueantes de sodio son los fármacos de las crisis focales; el bloqueo del calcio tipo T, el de las ausencias.</figcaption>
+      </figure>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Mecanismo</th><th>Fármacos</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Bloqueo de los canales de sodio sensibles al voltaje</strong></td><td>Carbamazepina · eslicarbazepina · fenitoína · lacosamida · lamotrigina · oxcarbazepina</td></tr>
+            <tr><td><strong>Bloqueo de las corrientes de calcio de umbral bajo (tipo T)</strong></td><td>Etosuximida · zonisamida</td></tr>
+            <tr><td><strong>Aumento de la función GABAérgica</strong> (inhibitoria)</td><td>Benzodiacepinas · fenobarbital · topiramato · valproato · vigabatrina</td></tr>
+            <tr><td><strong>Unión a la vesícula sináptica SV2A</strong></td><td>Brivaracetam · levetiracetam</td></tr>
+            <tr><td><strong>Disminución de la función glutamatérgica</strong> (excitatoria)</td><td>Perampanel: antagonista no competitivo del receptor AMPA</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «Epilepsia», Dr. Gustavo Grilli: principales mecanismos de acción de los fármacos antiepilépticos.</p>
+    </section>
+
+    <!-- ============ 16 ============ -->
+    <section class="seccion s-tratamiento" id="farmacos">
+      <span class="seccion__pestana"><b>16</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Dosis y efectos adversos</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Fármaco</th><th>Dosis en adultos</th><th>Dosis en niños</th><th>Efectos adversos</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Brivaracetam</strong></td><td>200 mg/día</td><td>No consta</td><td>Somnolencia, mareos, trastornos de conducta, irritabilidad</td></tr>
+            <tr><td><strong>Carbamazepina</strong></td><td>200-1000 mg/día · 5-15 mg/kg</td><td>20-40 mg/kg</td><td>Mareos, visión borrosa, diplopía, nistagmo, <strong>erupción cutánea</strong></td></tr>
+            <tr><td><strong>Clobazam</strong></td><td>20-40 mg/día</td><td>0,4-0,8 mg/kg</td><td>Sedación, somnolencia, hiperactividad, confusión</td></tr>
+            <tr><td><strong>Eslicarbazepina</strong></td><td>800-1600 mg/día</td><td>15-45 mg/kg</td><td>Fatiga, mareos, cefaleas, ataxia, <strong>hiponatremia</strong></td></tr>
+            <tr><td><strong>Etosuximida</strong></td><td>1000-2000 mg/día · 15-30 mg/kg</td><td>20-40 mg/kg</td><td>Vómitos, anorexia, pérdida de peso, cefaleas, hipo, dolor abdominal</td></tr>
+            <tr><td><strong>Fenitoína</strong></td><td>200-400 mg/día · 4-7 mg/kg</td><td>5-10 mg/kg</td><td>Ataxia, nistagmo, <strong>hiperplasia gingival</strong>, <strong>hirsutismo</strong>, engrosamiento de los rasgos faciales</td></tr>
+            <tr><td><strong>Fenobarbital</strong></td><td>60-240 mg/día · 1-4 mg/kg</td><td>2-8 mg/kg</td><td>Somnolencia, trastornos de conducta</td></tr>
+            <tr><td><strong>Gabapentina</strong></td><td>1200-4800 mg/día · 20-60 mg/kg</td><td>25-35 mg/kg</td><td>Somnolencia, mareos, ataxia, aumento de peso, mioclonías</td></tr>
+            <tr><td><strong>Lamotrigina</strong></td><td>100-400 mg/día · 1,5-6 mg/kg</td><td>2-10 mg/kg</td><td>Mareos, visión borrosa, diplopía, nistagmo, <strong>erupción cutánea</strong></td></tr>
+            <tr><td><strong>Levetiracetam</strong></td><td>1000-3000 mg/día · 15-45 mg/kg</td><td>20-60 mg/kg</td><td>Somnolencia, mareos, <strong>trastornos de conducta, irritabilidad</strong></td></tr>
+            <tr><td><strong>Oxcarbazepina</strong></td><td>600-1800 mg/día · 15-45 mg/kg</td><td>15-45 mg/kg</td><td>Fatiga, mareos, cefaleas, ataxia, <strong>hiponatremia</strong></td></tr>
+            <tr><td><strong>Perampanel</strong></td><td>6-12 mg/día</td><td>No consta</td><td>Mareos, somnolencia, <strong>conducta hostil, agresividad</strong></td></tr>
+            <tr><td><strong>Pregabalina</strong></td><td>150-600 mg/día</td><td>No consta</td><td>Somnolencia, mareos, diplopía, aumento de peso, mioclonías</td></tr>
+            <tr><td><strong>Topiramato</strong></td><td>200-400 mg/día · 3-6 mg/kg</td><td>15-45 mg/kg</td><td>Somnolencia, bradipsiquia, disnomia, parestesias, anorexia, pérdida de peso, <strong>nefrolitiasis</strong></td></tr>
+            <tr><td><strong>Valproato</strong></td><td>500-2000 mg/día · 10-45 mg/kg</td><td>15-60 mg/kg</td><td>Náuseas, vómitos, <strong>temblor</strong>, <strong>aumento de peso</strong>, <strong>alopecia</strong>, somnolencia</td></tr>
+            <tr><td><strong>Vigabatrina</strong></td><td>1000-4000 mg/día · 15-60 mg/kg</td><td>50-150 mg/kg</td><td>Somnolencia, astenia, mareos</td></tr>
+            <tr><td><strong>Zonisamida</strong></td><td>200-400 mg/día · 3-6 mg/kg</td><td>3-6 mg/kg</td><td>Anorexia, astenia, somnolencia, mareos, ataxia, <strong>nefrolitiasis</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Para recordar los efectos adversos, conviene agruparlos: los derivados de la carbamazepina (oxcarbazepina, eslicarbazepina) dan <strong>hiponatremia</strong>; topiramato y zonisamida, <strong>nefrolitiasis</strong> y pérdida de peso; la fenitoína, los cambios cosméticos (encías, vello, rasgos faciales); el valproato, <strong>aumento de peso, temblor y alopecia</strong>; levetiracetam, brivaracetam y perampanel, <strong>trastornos de conducta</strong>. La lacosamida, que figura entre los fármacos de las crisis focales, no aparece en el cuadro de la clase.</p>
+
+      <p class="cita">Clase «Epilepsia», Dr. Gustavo Grilli: principales características farmacológicas de los fármacos antiepilépticos (se omiten la vida media y el rango terapéutico).</p>
+    </section>
+
+    <!-- ============ 17 ============ -->
+    <section class="seccion s-importantes" id="embarazo">
+      <span class="seccion__pestana"><b>17</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Fármacos antiepilépticos y embarazo</h2>
+
+      <p>En una mujer en edad fértil, la elección del fármaco tiene que tener en cuenta un posible embarazo, porque los antiepilépticos difieren mucho en su riesgo para el feto.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Riesgo</th><th>Fármacos y efecto</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Mayor riesgo de malformaciones congénitas mayores</strong></td><td><strong>Valproato</strong>, con riesgo que depende de la dosis</td></tr>
+            <tr><td><strong>Menor riesgo de malformaciones mayores</strong></td><td><strong>Lamotrigina, levetiracetam y oxcarbazepina</strong></td></tr>
+            <tr><td><strong>Riesgo que aumenta con la dosis</strong></td><td>Valproato, fenobarbital, fenitoína, carbamazepina y lamotrigina</td></tr>
+            <tr><td><strong>Efectos sobre el neurodesarrollo</strong></td><td>La exposición prenatal al <strong>valproato</strong> aumenta el riesgo de <strong>alteraciones cognitivas y rasgos autistas</strong></td></tr>
+            <tr><td><strong>Momento</strong></td><td>Las malformaciones se asocian sobre todo al <strong>primer trimestre</strong>; los efectos cognitivos y conductuales pueden producirse durante todo el embarazo</td></tr>
+            <tr><td><strong>Ácido fólico</strong></td><td>En un estudio poblacional, la suplementación periconcepcional con folato <strong>atenuó el riesgo de rasgos autistas</strong> inducidos por antiepilépticos</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>El <strong>valproato no debe usarse como primera línea en mujeres en edad fértil</strong> si hay alternativas igual o más eficaces, como en la epilepsia focal. En algunos síndromes generalizados, como la mioclónica juvenil, donde el valproato tiene mejor eficacia documentada, la decisión se comparte con la paciente informada después de evaluar riesgo y beneficio. La Agencia Europea de Medicamentos restringió su uso en mujeres con capacidad de gestar y exige un programa de prevención del embarazo. El tratamiento se <strong>optimiza antes de la concepción</strong>.</p>
+      </div>
+
+      <p>Esto cambia la tabla de la sección 14: en una adolescente con una epilepsia generalizada, donde la clase pone el valproato primero, hay que pensar en lamotrigina o levetiracetam antes de indicarlo.</p>
+
+      <p class="cita">Según PubMed: Tomson T, Battino D, Perucca E, Teratogenicity of antiepileptic drugs, Curr Opin Neurol 2019;32(2):246-252 (<a href="https://doi.org/10.1097/WCO.0000000000000659">DOI</a>); Tomson T y col., Valproic acid after five decades of use in epilepsy, Lancet Neurol 2016;15(2):210-218 (<a href="https://doi.org/10.1016/S1474-4422(15)00314-2">DOI</a>); restricciones de la EMA: Zelano J y col., Acta Neurol Scand 2022;145(5):551-556 (<a href="https://doi.org/10.1111/ane.13581">DOI</a>).</p>
+    </section>
+
+    <!-- ============ 18 ============ -->
+    <section class="seccion s-tratamiento" id="refractaria">
+      <span class="seccion__pestana"><b>18</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Epilepsia refractaria</h2>
+
+      <p>La ILAE define la epilepsia <strong>farmacorresistente</strong> como el fracaso de <strong>dos esquemas</strong> de fármacos antiepilépticos <strong>tolerados, bien elegidos y bien usados</strong>, en monoterapia o combinados, para lograr que el paciente quede libre de crisis en forma sostenida.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Opción</th><th>Detalle</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Drogas nuevas</strong></td><td><strong>Perampanel</strong> y <strong>lacosamida</strong></td></tr>
+            <tr><td><strong>Dieta cetogénica</strong></td><td><strong>Rica en grasas</strong>, con las proteínas necesarias e <strong>intensa restricción de hidratos de carbono</strong>. Debe suplementarse con <strong>vitaminas D y C, hierro y calcio</strong></td></tr>
+            <tr><td><strong>Cirugía</strong></td><td>En epilepsias <strong>incontrolables con 2 o más fármacos</strong> con mala calidad de vida, o con crisis de <strong>origen focal</strong>: hemisferectomía funcional · callosotomía · transecciones subpiales múltiples · lesionectomía · estimulación vagal · estimulación cerebral profunda</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Qué hace cada cirugía</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Procedimiento</th><th>Lógica</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Lesionectomía</strong></td><td>Reseca la lesión que origina las crisis</td></tr>
+            <tr><td><strong>Hemisferectomía funcional</strong></td><td>Desconecta un hemisferio dañado que genera las crisis</td></tr>
+            <tr><td><strong>Callosotomía</strong></td><td>Corta el cuerpo calloso para impedir la <strong>propagación transcallosa</strong> (sección 06)</td></tr>
+            <tr><td><strong>Transecciones subpiales múltiples</strong></td><td>Cortes en la corteza que interrumpen la propagación horizontal cuando el foco está en una zona que no se puede resecar</td></tr>
+            <tr><td><strong>Estimulación vagal y cerebral profunda</strong></td><td>Neuromodulación: no resecan, sino que modifican la actividad de las redes</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La dieta cetogénica tiene además una indicación específica: en el <strong>déficit del transportador de glucosa GLUT1</strong> corrige el defecto metabólico de base, porque el cerebro usa los cuerpos cetónicos en lugar de la glucosa. Por eso, ante ausencias que empiezan antes de los 4 años, la ILAE recomienda pensar en ese déficit.</p>
+
+      <p class="cita">Clase «Epilepsia», Dr. Gustavo Grilli: tratamiento de la epilepsia refractaria. Definición de farmacorresistencia: Según PubMed, Kwan P y col., Epilepsia 2010;51(6):1069-77 (<a href="https://doi.org/10.1111/j.1528-1167.2009.02397.x">DOI</a>). Dieta cetogénica en el déficit de GLUT1: Perucca P, Perucca E, Epilepsy Res 2019;152:18-30 (<a href="https://doi.org/10.1016/j.eplepsyres.2019.03.001">DOI</a>); ausencias antes de los 4 años: epilepsydiagnosis.org (ILAE). Lógica de cada cirugía: Harrison, <em>Principios de Medicina Interna</em>.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-f">
+      <span class="bloque__rotulo">Bloque F</span>
+      <span class="bloque__nombre">Status epiléptico</span>
+    </h2>
+
+    <!-- ============ 19 ============ -->
+    <section class="seccion s-importantes" id="status">
+      <span class="seccion__pestana"><b>19</b> Status</span>
+      <h2 class="seccion__titulo">Definiciones del status epiléptico</h2>
+
+      <p>El estado de mal epiléptico es una <strong>emergencia neurológica</strong>, con una mortalidad del <span class="dato">30 %</span> según la clase.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Definición</th><th>Criterio</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Clásica</strong></td><td>Crisis que dura <strong>más de 30 minutos</strong>, o dos o más crisis <strong>subintrantes</strong> sin recuperación completa de la conciencia entre ellas, con una duración mayor de 30 minutos</td></tr>
+            <tr><td><strong>Operativa</strong></td><td>En adultos y niños mayores de 5 años: cualquier actividad epiléptica de <strong>más de 5 minutos</strong>, sea una crisis duradera o dos o más crisis sin volver al estado de conciencia previo</td></tr>
+            <tr><td><strong>Refractario</strong></td><td>Se mantiene más de <strong>30-60 minutos</strong> a pesar del tratamiento adecuado con fármacos de <strong>primera y segunda línea</strong></td></tr>
+            <tr><td><strong>Superrefractario</strong></td><td>Continúa o recurre <strong>24 horas después</strong> de iniciada la terapia anestésica, incluidos los casos en que reaparece al disminuir o suspender la anestesia</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Por qué 5 y 30 minutos</h3>
+      <p>La ILAE definió en 2015 el status como una falla de los mecanismos que terminan la crisis, o la puesta en marcha de mecanismos que la prolongan, con dos puntos de tiempo. El <strong>t1</strong> es el momento a partir del cual la crisis ya se considera actividad continua y hay que tratarla: en el status tónico-clónico es de <strong>5 minutos</strong>. El <strong>t2</strong> es el momento a partir del cual hay riesgo de <strong>consecuencias a largo plazo</strong> (muerte y lesión neuronal, alteración de las redes): en el tónico-clónico es de <strong>30 minutos</strong>. Por eso la definición operativa usa los 5 minutos para empezar a tratar, y la clásica, los 30 minutos del daño. Ambos valores son las mejores estimaciones disponibles, basadas en estudios experimentales y clínicos.</p>
+
+      <p class="cita">Clase «Epilepsia», Dr. Gustavo Grilli: estado de mal epiléptico. Puntos t1 y t2: Según PubMed, Trinka E y col., A definition and classification of status epilepticus, Epilepsia 2015;56(10):1515-23 (<a href="https://doi.org/10.1111/epi.13121">DOI</a>).</p>
+    </section>
+
+    <!-- ============ 20 ============ -->
+    <section class="seccion s-diagnostico" id="causas">
+      <span class="seccion__pestana"><b>20</b> Status</span>
+      <h2 class="seccion__titulo">Causas y diagnóstico del status</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Contexto</th><th>Causas</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Con epilepsia previa</strong></td><td><strong>Modificación o incumplimiento del tratamiento</strong> · abuso o deprivación de alcohol · infección intercurrente · deprivación de sueño · embarazo y parto · otras (las mismas que en los no epilépticos)</td></tr>
+            <tr><td><strong>De novo, sintomático</strong></td><td>Infección febril sistémica en niños · <strong>infección aguda del SNC</strong> (meningitis, encefalitis) · enfermedad cerebrovascular · traumatismo craneoencefálico · abstinencia de tóxicos (alcohol) o de fármacos (psicofármacos) · intoxicación por fármacos (isoniacida, tricíclicos, neurolépticos) o por otras sustancias (cocaína, estricnina) · tumores o abscesos cerebrales · radioterapia · contraste endovenoso</td></tr>
+            <tr><td><strong>Alteraciones metabólicas</strong></td><td><strong>Hipocalcemia · hipoglucemia</strong> · hiperglucemia no cetósica · <strong>hiponatremia</strong> · encefalopatía hipóxico-isquémica · insuficiencia renal · sepsis</td></tr>
+            <tr><td><strong>De novo, idiopático</strong></td><td>Sin causa identificada</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>El diagnóstico del status es <strong>clínico</strong>: actividad epiléptica de más de 5 minutos, o crisis repetidas sin recuperar la conciencia. <strong>Al mismo tiempo</strong> que se inicia el tratamiento se empieza a estudiar la etiología, con una exploración clínica rápida en busca de posibles causas. No se espera a tener el diagnóstico para tratar.</p>
+
+      <p class="cita">Clase «Epilepsia», Dr. Gustavo Grilli: causas y diagnóstico del status epiléptico.</p>
+    </section>
+
+    <!-- ============ 21 ============ -->
+    <section class="seccion s-tratamiento" id="manejo-status">
+      <span class="seccion__pestana"><b>21</b> Status</span>
+      <h2 class="seccion__titulo">Tratamiento del status por tiempos</h2>
+
+      <h3>Manejo inicial</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Paso</th><th>Qué se hace</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>1 · Soporte</strong></td><td>Asegurar la <strong>vía aérea</strong> · monitorear signos vitales (temperatura, oximetría, ECG) · oxígeno · <strong>glucemia</strong> · vía venosa</td></tr>
+            <tr><td><strong>2 · Corregir lo reversible</strong></td><td><strong>Glucosa</strong> si hay hipoglucemia · <strong>tiamina 100 mg</strong> si hay alcoholismo</td></tr>
+            <tr><td><strong>3 · Anticonvulsivante</strong></td><td>Según la escalera de tiempos</td></tr>
+            <tr><td><strong>4 · En paralelo</strong></td><td><strong>Historia y examen</strong>: ¿epilepsia previa? ¿traumatismo? ¿signos focales? ¿enfermedad sistémica? ¿drogas? · <strong>Estudios</strong>: laboratorio general, niveles de antiepilépticos y tóxicos, LCR según sospecha, EEG, neuroimagen</td></tr>
+            <tr><td><strong>5 · Causa</strong></td><td><strong>Tratar la causa</strong> y los problemas asociados</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La tiamina va antes o junto con la glucosa en el alcohólico porque la glucosa sin tiamina puede precipitar una encefalopatía de Wernicke.</p>
+
+      <h3>Escalera de tratamiento</h3>
+      <figure class="esquema">
+        <svg viewBox="0 0 820 230" role="img" aria-label="Escalera del status epiléptico por minutos: de 0 a 5 estabilización; de 5 a 10 primera línea con benzodiacepinas; de 10 a 15 se puede repetir la benzodiacepina; de 15 a 30 segunda línea con fenitoína, fenobarbital, valproico o levetiracetam; después de 30 minutos terapia intensiva, asistencia respiratoria y anestésicos. A los 5 minutos está el punto t1, desde el que hay que tratar, y a los 30 minutos el punto t2, desde el que hay riesgo de daño neuronal">
+          <defs>
+            <marker id="epi-se" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <text x="150" y="18" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">t1 · 5 min</text>
+          <text x="150" y="33" text-anchor="middle" font-size="10.5" fill="currentColor">crisis prolongada: tratar</text>
+          <text x="620" y="18" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">t2 · 30 min</text>
+          <text x="620" y="33" text-anchor="middle" font-size="10.5" fill="currentColor">riesgo de daño neuronal</text>
+          <rect x="30" y="44" width="120" height="50" rx="4" fill="var(--c)" fill-opacity="0.12" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="90" y="74" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Estabilización</text>
+          <rect x="150" y="44" width="130" height="50" rx="4" fill="var(--c)" fill-opacity="0.30" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="215" y="74" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">1ª línea</text>
+          <rect x="280" y="44" width="120" height="50" rx="4" fill="var(--c)" fill-opacity="0.22" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="340" y="74" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Repetir</text>
+          <rect x="400" y="44" width="220" height="50" rx="4" fill="var(--c)" fill-opacity="0.40" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="510" y="74" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">2ª línea</text>
+          <rect x="620" y="44" width="170" height="50" rx="4" fill="var(--c)" fill-opacity="0.55" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="705" y="74" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Refractario</text>
+          <line x1="150" y1="38" x2="150" y2="102" stroke="currentColor" stroke-width="1.6" stroke-dasharray="4 3"></line>
+          <line x1="620" y1="38" x2="620" y2="102" stroke="currentColor" stroke-width="1.6" stroke-dasharray="4 3"></line>
+          <line x1="30" y1="110" x2="795" y2="110" stroke="currentColor" stroke-width="1.2" marker-end="url(#epi-se)"></line>
+          <text x="30" y="126" text-anchor="middle" font-size="10.5" fill="currentColor">0</text>
+          <text x="150" y="126" text-anchor="middle" font-size="10.5" fill="currentColor">5</text>
+          <text x="280" y="126" text-anchor="middle" font-size="10.5" fill="currentColor">10</text>
+          <text x="400" y="126" text-anchor="middle" font-size="10.5" fill="currentColor">15</text>
+          <text x="620" y="126" text-anchor="middle" font-size="10.5" fill="currentColor">30 min</text>
+          <text x="90" y="152" text-anchor="middle" font-size="11" fill="currentColor">ABC · glucemia</text>
+          <text x="90" y="170" text-anchor="middle" font-size="11" fill="currentColor">signos vitales</text>
+          <text x="90" y="188" text-anchor="middle" font-size="11" fill="currentColor">postura de seguridad</text>
+          <text x="215" y="152" text-anchor="middle" font-size="11" fill="currentColor">benzodiacepina:</text>
+          <text x="215" y="170" text-anchor="middle" font-size="11" fill="currentColor">lorazepam IV</text>
+          <text x="215" y="188" text-anchor="middle" font-size="11" fill="currentColor">midazolam IM</text>
+          <text x="215" y="206" text-anchor="middle" font-size="11" fill="currentColor">diazepam IV</text>
+          <text x="340" y="152" text-anchor="middle" font-size="11" fill="currentColor">se puede repetir</text>
+          <text x="340" y="170" text-anchor="middle" font-size="11" fill="currentColor">la benzodiacepina</text>
+          <text x="510" y="152" text-anchor="middle" font-size="11" fill="currentColor">fenitoína · fenobarbital</text>
+          <text x="510" y="170" text-anchor="middle" font-size="11" fill="currentColor">ácido valproico</text>
+          <text x="510" y="188" text-anchor="middle" font-size="11" fill="currentColor">levetiracetam</text>
+          <text x="705" y="152" text-anchor="middle" font-size="11" fill="currentColor">pase a UTI · ARM</text>
+          <text x="705" y="170" text-anchor="middle" font-size="11" fill="currentColor">monitoreo continuo</text>
+          <text x="705" y="188" text-anchor="middle" font-size="11" fill="currentColor">propofol o tiopental</text>
+        </svg>
+        <figcaption>Cada escalón funciona peor que el anterior: por eso el tiempo es lo que más importa. La benzodiacepina tiene que darse <strong>a los 5 minutos</strong>, no cuando la crisis ya lleva media hora.</figcaption>
+      </figure>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Tiempo</th><th>Conducta</th><th>Fármaco y dosis</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>0-5 minutos</strong></td><td>ABC, glucemia capilar, signos vitales, postura de seguridad</td><td>—</td></tr>
+            <tr><td><strong>5-10 minutos</strong></td><td>1ª línea: <strong>benzodiacepinas</strong></td><td><strong>Lorazepam</strong> 0,1-0,15 mg/kg IV, hasta 4 mg · <strong>midazolam</strong> 5-10 mg IM en dosis única (0,2 mg/kg) · <strong>diazepam</strong> 0,15 mg/kg IV, máximo 10 mg</td></tr>
+            <tr><td><strong>10-15 minutos</strong></td><td>Se puede <strong>repetir la benzodiacepina</strong></td><td>—</td></tr>
+            <tr><td><strong>15-30 minutos</strong></td><td>2ª línea</td><td><strong>Fenitoína</strong> 15-20 mg/kg de carga · <strong>fenobarbital</strong> 10-20 mg/kg · <strong>ácido valproico</strong> 25-30 mg/kg IV · <strong>levetiracetam</strong> 20 mg/kg (1-3 g)</td></tr>
+            <tr><td><strong>Más de 30 minutos</strong></td><td>Valorar pase a <strong>UTI</strong>, requerimiento de <strong>ARM</strong> y monitoreo continuo</td><td>Anestésicos o sedantes: <strong>propofol</strong> o <strong>tiopental</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Lo que agrega la guía de la American Epilepsy Society (2016)</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Punto</th><th>Recomendación</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Fases</strong></td><td>Estabilización de 0 a 5 minutos; la terapia inicial empieza a los <strong>5 minutos</strong> y su respuesta debería verse antes de los <strong>20 minutos</strong></td></tr>
+            <tr><td><strong>Primera elección</strong></td><td><strong>Midazolam IM, lorazepam IV o diazepam IV</strong>; el fenobarbital IV es eficaz, pero se administra más lento y queda como alternativa</td></tr>
+            <tr><td><strong>Sin vía venosa</strong></td><td>El <strong>midazolam IM</strong> es más efectivo que el lorazepam IV en el adulto sin acceso venoso</td></tr>
+            <tr><td><strong>Cómo se da</strong></td><td>En <strong>una dosis completa</strong>, no fraccionada en dosis chicas; solo el lorazepam y el diazepam IV se repiten</td></tr>
+            <tr><td><strong>Fenitoína</strong></td><td>Si hay ambas, se prefiere la <strong>fosfenitoína</strong> por tolerancia; la fenitoína es una alternativa aceptable</td></tr>
+            <tr><td><strong>Eficacia decreciente</strong></td><td>En el adulto, el segundo fármaco es menos efectivo que el primero, y el tercero, sustancialmente menos</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Ante una crisis de <strong>más de 5 minutos</strong>, se trata como status: <strong>benzodiacepina en dosis completa</strong>, sin esperar. Si no hay vía, <strong>midazolam IM</strong>. Siempre medir la <strong>glucemia</strong> y buscar la causa en paralelo.</p>
+      </div>
+
+      <p class="cita">Clase «Epilepsia», Dr. Gustavo Grilli: manejo inicial (Neurología 2016;31:121-9, citado en la clase) y tratamiento del status epiléptico. Se omiten las diluciones y las velocidades de infusión. Según PubMed: Glauser T y col., Evidence-based guideline: treatment of convulsive status epilepticus in children and adults, Epilepsy Curr 2016;16(1):48-61 (<a href="https://doi.org/10.5698/1535-7597-16.1.48">DOI</a>). Tiamina antes de la glucosa: Harrison, <em>Principios de Medicina Interna</em>.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-g">
+      <span class="bloque__rotulo">Bloque G</span>
+      <span class="bloque__nombre">Convulsiones febriles</span>
+    </h2>
+
+    <!-- ============ 22 ============ -->
+    <section class="seccion s-clinica" id="febriles">
+      <span class="seccion__pestana"><b>22</b> Clínica</span>
+      <h2 class="seccion__titulo">Convulsiones febriles</h2>
+
+      <p>Episodio convulsivo en niños de <strong>6 meses a 5 años</strong>, asociado a fiebre, en un niño <strong>sin enfermedad neurológica</strong>, sin infección u otra causa intracraneal y sin alteraciones metabólicas o sistémicas que puedan causarlo. Es la <strong>causa más común de convulsiones en los niños</strong>: afecta al <span class="dato">2-5 %</span> de los niños de 6 a 60 meses.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Característica</th><th>Simple o típica (60-70 %)</th><th>Atípica (30-40 %)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Momento</strong></td><td>En las <strong>primeras 24 horas</strong> del proceso febril, generalmente con temperatura mayor de <strong>38 °C</strong></td><td>—</td></tr>
+            <tr><td><strong>Tipo de crisis</strong></td><td><strong>Generalizada</strong>: tónico-clónica (80 %), tónica (13 %), atónica (3 %)</td><td>Generalmente <strong>focal</strong> (4 %), con o sin generalización secundaria</td></tr>
+            <tr><td><strong>Duración</strong></td><td><strong>Breve</strong>: menos de 15 minutos</td><td><strong>Prolongada</strong></td></tr>
+            <tr><td><strong>Recurrencia en 24 horas</strong></td><td>Una sola crisis</td><td><strong>Recurrente</strong> en las primeras 24 horas</td></tr>
+            <tr><td><strong>Después de la crisis</strong></td><td><strong>Poscrítico corto</strong>, sin focalidad neurológica</td><td>Puede dejar una <strong>paresia poscrítica de Todd</strong> (0,4 %)</td></tr>
+            <tr><td><strong>Riesgo</strong></td><td>—</td><td>Puede progresar a un <strong>status convulsivo</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>Tratamiento preventivo en los episodios febriles</strong> según la clase: <strong>diazepam 0,5 mg/kg/día por 3 días</strong>.</p>
+
+      <p>Las convulsiones febriles <strong>prolongadas</strong> tienen una relación con la epilepsia del lóbulo temporal: alrededor del 25 % de los pacientes con esclerosis del hipocampo tiene ese antecedente, seguido de un período de latencia antes de las crisis temporales (sección 11).</p>
+
+      <p class="cita">Clase «Epilepsia», Dr. Gustavo Grilli: convulsiones febriles. Prevalencia y definición de la crisis febril simple: Según PubMed, American Academy of Pediatrics, Febrile seizures: clinical practice guideline for the long-term management of the child with simple febrile seizures, Pediatrics 2008;121(6):1281-6 (<a href="https://doi.org/10.1542/peds.2008-0939">DOI</a>). Relación con la esclerosis del hipocampo: epilepsydiagnosis.org (ILAE).</p>
+    </section>
+
+    <!-- ============ REPASO ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-importantes">
+          <summary>¿Cuáles son los tres criterios de la definición práctica de epilepsia de la ILAE (2014)?</summary>
+          <div class="fc__r">1) <strong>Dos crisis no provocadas</strong> (o reflejas) separadas por más de 24 h; 2) <strong>una crisis</strong> no provocada con riesgo de recurrencia de <strong>al menos 60 %</strong> en 10 años; 3) diagnóstico de un <strong>síndrome epiléptico</strong>.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Por qué una crisis por hipoglucemia no es epilepsia?</summary>
+          <div class="fc__r">Porque es una crisis <strong>provocada</strong> por una causa aguda: no hay <strong>predisposición continua</strong>. Corregida la causa, no se repite.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Incidencia, prevalencia y forma de la curva por edad de la epilepsia.</summary>
+          <div class="fc__r">Incidencia <strong>25-50/100.000</strong> por año; prevalencia <strong>500-1000/100.000</strong>; curva <strong>bimodal</strong>, con picos en el primer año de vida y después de los 60.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Las seis etiologías de la ILAE y cuál es la más común en el mundo.</summary>
+          <div class="fc__r">Estructural, genética, <strong>infecciosa</strong> (la más común en el mundo, por ejemplo la neurocisticercosis), metabólica, inmune y desconocida (hasta un tercio).</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué ion entra con el receptor GABA y qué efecto tiene?</summary>
+          <div class="fc__r">Entra <strong>Cl⁻</strong>: la neurona se <strong>hiperpolariza</strong> (PPSI). La GABA se sintetiza desde el glutamato por la GAD, con <strong>B6</strong> como cofactor.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>Mecanismos de despolarización prolongada en la descarga epiléptica.</summary>
+          <div class="fc__r">Aumento de la <strong>conductancia de Ca</strong>, aumento del <strong>K extracelular</strong>, alteración del <strong>metabolismo oxidativo</strong> y de la <strong>bomba Na-K</strong>.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿A qué corresponden la punta y la onda lenta de la punta-onda del EEG?</summary>
+          <div class="fc__r">La <strong>punta</strong>, a la despolarización paroxística sincrónica de muchas neuronas; la <strong>onda lenta</strong>, a la hiperpolarización que la sigue.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Cómo se generaliza una crisis focal?</summary>
+          <div class="fc__r">Se propaga por fibras en U, por vía transcallosa y talamocortical; la <strong>activación del tálamo</strong> extiende la descarga a ambos hemisferios: crisis <strong>focal a tónico-clónica bilateral</strong>.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>Los tres niveles de la clasificación ILAE 2017.</summary>
+          <div class="fc__r">1) <strong>Tipo de crisis</strong> (focal, generalizada, desconocida); 2) <strong>tipo de epilepsia</strong> (focal, generalizada, combinada, desconocida); 3) <strong>síndrome</strong>. La etiología se evalúa en paralelo.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Fases de la crisis tónico-clónica generalizada.</summary>
+          <div class="fc__r"><strong>Pródromos</strong> (no son aura) → <strong>tónica</strong> (contracción, caída, cianosis, midriasis) → <strong>clónica</strong> (sacudidas rítmicas, hipersalivación, incontinencia) → <strong>poscrítico</strong> (flaccidez, confusión, recuperación lenta).</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué diferencia una ausencia de una crisis focal con desconexión?</summary>
+          <div class="fc__r">La ausencia dura <strong>segundos</strong>, sin aura, y termina de golpe <strong>sin confusión</strong>. La focal con desconexión puede tener <strong>aura, automatismos</strong> y un <strong>poscrítico</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Semiología de una crisis originada en la amígdala y el hipocampo.</summary>
+          <div class="fc__r"><strong>Sensación epigástrica ascendente</strong>, miedo, midriasis, piloerección, <strong>déjà vu</strong>, alucinaciones olfativas o gustativas, fijación de la mirada y <strong>automatismos</strong> oroalimentarios.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué produce un foco en la corteza premotora?</summary>
+          <div class="fc__r">Crisis <strong>adversivas</strong>: desviación conjugada de la mirada y de la cabeza hacia el lado <strong>opuesto</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Epilepsia rolándica: edad, crisis, EEG y pronóstico.</summary>
+          <div class="fc__r"><strong>4-10 años</strong>; crisis breves <strong>durante el sueño</strong> con parestesias de la boca, clonías hemifaciales, detención del habla y babeo; <strong>puntas centrotemporales</strong>; <strong>remite hacia la pubertad</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Epilepsia con ausencias de la niñez: crisis y EEG.</summary>
+          <div class="fc__r">Ausencias <strong>muy frecuentes</strong>, de 3-20 segundos, provocadas por la <strong>hiperventilación</strong>; <strong>punta-onda generalizada a 2,5-4 Hz</strong>. Más frecuente en niñas; remite en el 60 %.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Epilepsia mioclónica juvenil: cuándo aparecen las mioclonías y qué las facilita.</summary>
+          <div class="fc__r">En la <strong>primera hora después de despertar</strong>, en los miembros superiores; las facilita la <strong>privación de sueño</strong>. Fotosensibilidad en hasta el 90 %; punta y polipunta-onda a 3-5,5 Hz.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Tríada del síndrome de West.</summary>
+          <div class="fc__r"><strong>Espasmos epilépticos</strong> en salvas + <strong>hipsarritmia</strong> + estancamiento o <strong>regresión del desarrollo</strong>; inicio entre 1 y 24 meses.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Crisis obligatoria del síndrome de Lennox-Gastaut.</summary>
+          <div class="fc__r"><strong>Crisis tónicas durante el sueño</strong>, más al menos otro tipo de crisis; EEG con <strong>punta-onda lenta difusa</strong>; discapacidad intelectual en más del 90 %.</div>
+        </details>
+
+        <details class="fc s-diagnostico">
+          <summary>¿Por qué se pide un ECG en el estudio de una primera crisis?</summary>
+          <div class="fc__r">Para descartar un <strong>síncope de origen cardíaco</strong> (arritmias, cardiopatías), el principal diagnóstico diferencial.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Fármaco de primera elección en crisis focales y en crisis generalizadas según la clase.</summary>
+          <div class="fc__r">Focales: <strong>carbamazepina</strong>. Generalizadas: <strong>ácido valproico</strong>. Ausencias: valproico o <strong>etosuximida</strong>. West: <strong>ACTH</strong>.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Qué fármacos pueden agravar ausencias y mioclonías?</summary>
+          <div class="fc__r"><strong>Carbamazepina, fenitoína, tiagabina, vigabatrina y gabapentina</strong>; la lamotrigina puede agravar la mioclónica juvenil.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>Mecanismo de acción de la etosuximida y del levetiracetam.</summary>
+          <div class="fc__r">Etosuximida: bloqueo del <strong>calcio tipo T</strong> (umbral bajo). Levetiracetam: unión a la proteína de la vesícula sináptica <strong>SV2A</strong>.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Qué fármacos dan hiponatremia y cuáles nefrolitiasis?</summary>
+          <div class="fc__r">Hiponatremia: <strong>oxcarbazepina y eslicarbazepina</strong>. Nefrolitiasis: <strong>topiramato y zonisamida</strong>.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Qué antiepiléptico tiene el mayor riesgo teratogénico y cuáles el menor?</summary>
+          <div class="fc__r">Mayor: <strong>valproato</strong> (malformaciones, alteración cognitiva y rasgos autistas). Menor: <strong>lamotrigina, levetiracetam y oxcarbazepina</strong>.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>Definición operativa de status y qué representan los 5 y los 30 minutos.</summary>
+          <div class="fc__r">Actividad epiléptica de <strong>más de 5 minutos</strong> o crisis sin recuperar la conciencia. <strong>5 min (t1)</strong>: hay que tratar; <strong>30 min (t2)</strong>: riesgo de daño neuronal.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>Primera y segunda línea del status, con sus tiempos.</summary>
+          <div class="fc__r"><strong>5-10 min</strong>: benzodiacepina (lorazepam IV, midazolam IM, diazepam IV), repetible a los 10-15. <strong>15-30 min</strong>: fenitoína, fenobarbital, valproico o levetiracetam. <strong>Más de 30</strong>: UTI y anestésicos.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Diferencias entre la convulsión febril simple y la atípica.</summary>
+          <div class="fc__r">Simple: <strong>generalizada, menos de 15 minutos, única en 24 h</strong>, poscrítico corto. Atípica: <strong>focal, prolongada o recurrente</strong> en 24 h, puede dejar paresia de Todd.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ RELAMPAGO ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Triada clave</dt>
+        <dd><strong>Predisposición continua + crisis no provocadas + clasificar bien.</strong> Epilepsia: 2 crisis no provocadas con más de 24 h entre ellas, o una con riesgo de 60 %, o un síndrome. Clasificar en tres niveles: crisis, epilepsia, síndrome. Tónico-clónica: pródromos, tónica, clónica, <strong>poscrítico confuso</strong>; ausencia: segundos, <strong>sin poscrítico</strong>.</dd>
+
+        <dt class="r-gold">Estudio de elección</dt>
+        <dd><strong>Historia clínica</strong> con testigo, <strong>EEG</strong> (punta-onda generalizada o puntas focales) y <strong>RMN con protocolo de epilepsia</strong>. Video-EEG si hay dudas; <strong>ECG</strong> para el síncope cardíaco. PET y SPECT para localizar el foco.</dd>
+
+        <dt class="r-tto">Tratamiento de 1ª línea</dt>
+        <dd>Focales: <strong>carbamazepina</strong>. Generalizadas: <strong>ácido valproico</strong> (en mujeres en edad fértil, preferir lamotrigina o levetiracetam). Ausencias: valproico o <strong>etosuximida</strong>. West: <strong>ACTH</strong>. Refractaria (2 fármacos): dieta cetogénica, cirugía, estimulación vagal. Status: <strong>benzodiacepina a los 5 minutos</strong>, después fenitoína, fenobarbital, valproico o levetiracetam; más de 30 minutos, UTI y anestésicos.</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd>Crisis de <strong>más de 5 minutos</strong> = status: emergencia, mortalidad del 30 %. <strong>No dar carbamazepina en ausencias ni mioclonías.</strong> <strong>Valproato</strong>: el mayor riesgo teratogénico. Convulsión febril <strong>focal, prolongada o recurrente</strong>: atípica, puede ir a status.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir de la clase «Epilepsia» del Dr. Gustavo Grilli (Neurología). Definición práctica de la ILAE (Fisher y col., 2014), definición de status (Trinka y col., 2015), farmacorresistencia (Kwan y col., 2010), síndromes según la ILAE 2022 y epilepsydiagnosis.org, fármacos y embarazo (Tomson y col., 2016 y 2019), guía de status de la American Epilepsy Society (2016) y guía de convulsiones febriles de la American Academy of Pediatrics (2008); fisiopatología según Harrison, <em>Principios de Medicina Interna</em>. Material de estudio: no reemplaza el criterio clínico ni el protocolo institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+
+  // ---- Tema claro / oscuro ----
+  // Sin eleccion estampada manda el sistema; el boton la estampa y la guarda.
+  var raiz = document.documentElement;
+  var boton = document.getElementById('tema');
+
+  function temaActual(){
+    var estampado = raiz.getAttribute('data-theme');
+    if (estampado) return estampado;
+    return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+
+  if (boton){
+    var rotular = function(){
+      var actual = temaActual();
+      boton.setAttribute('aria-pressed', actual === 'dark' ? 'true' : 'false');
+      boton.setAttribute('aria-label', actual === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+    };
+    boton.addEventListener('click', function(){
+      var nuevo = temaActual() === 'dark' ? 'light' : 'dark';
+      raiz.setAttribute('data-theme', nuevo);
+      try { localStorage.setItem('wordmed-tema', nuevo); } catch (e) { /* sin persistencia */ }
+      rotular();
+    });
+    rotular();
+  }
+
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link, .ir-link'));
+
+  // Devuelve TODOS los enlaces al ancla: la misma seccion figura en el indice
+  // lateral y en el compacto, y los dos tienen que encenderse juntos.
+  function porMeta(hash){
+    return enlaces.filter(function(l){ return l.getAttribute('href') === '#' + hash; });
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var activos = porMeta(e.target.id);
+        if (!activos.length) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          activos.forEach(function(l){ l.setAttribute('aria-current', 'true'); });
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>

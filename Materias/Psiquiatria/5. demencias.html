@@ -1,0 +1,1418 @@
+<title>Demencias</title>
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-bloque:1.95rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+
+  /* Que la barra de desplazamiento y los controles nativos acompanen al tema */
+  color-scheme: light dark;
+}
+
+/* Eleccion explicita de claro: solo hace falta para el color-scheme, los
+   tokens claros ya son la base sin estampar. */
+:root[data-theme="light"]{ color-scheme: light; }
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* Interruptor de tema claro / oscuro.
+   El estampado `data-theme` en la raíz ya lo respetan los bloques de tokens de
+   arriba; este botón sólo lo pone y lo guarda. Sin elección estampada mandan
+   las preferencias del sistema, que es el comportamiento por defecto. */
+.tema{
+  position:fixed; top:.7rem; right:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.tema:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.tema__icono{ width:1.15rem; height:1.15rem; display:block; }
+
+/* Se muestra el icono del tema al que se va a cambiar, no el actual.
+   Mismo escalonado que los tokens: base clara · sistema oscuro · elección explícita. */
+.tema__sol{ display:none; }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .tema__sol{ display:block; }
+  :root:not([data-theme="light"]) .tema__luna{ display:none; }
+}
+:root[data-theme="dark"] .tema__sol{ display:block; }
+:root[data-theme="dark"] .tema__luna{ display:none; }
+:root[data-theme="light"] .tema__sol{ display:none; }
+:root[data-theme="light"] .tema__luna{ display:block; }
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índices ---------- */
+/* Dos piezas complementarias y deliberadamente redundantes:
+   · .indice        — barra lateral fija, sólo en pantalla ancha, navegación permanente.
+   · .indice-rapido — tarjeta compacta al principio del cuerpo, visible en TODO ancho.
+   La lateral desaparece por debajo de 64rem, que es justo el ancho del panel de
+   Artifacts y del celular; sin la compacta el cuadernillo publicado se queda sin
+   índice. Las dos apuntan a los mismos anclajes y se resaltan juntas al desplazar. */
+
+/* 6.1 · Barra lateral */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+/* Rótulo de bloque intercalado en la lista lateral: no es un enlace, sólo
+   separa grupos de secciones para que 30 entradas no sean una tira plana. */
+.indice__bloque{
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+  margin:.9rem 0 .2rem; padding:0 .55rem;
+}
+.indice__bloque:first-child{ margin-top:0; }
+
+/* 6.2 · Índice compacto (va después de la portada, dentro del cuerpo) */
+.indice-rapido{
+  background:var(--hoja-hund);
+  border:1px solid var(--linea);
+  border-radius:var(--radio);
+  padding:1.1rem 1.2rem 1.2rem;
+}
+.indice-rapido__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .85rem;
+}
+/* auto-fit: una columna en el panel angosto, dos o tres en pantalla ancha */
+.indice-rapido__bloques{
+  list-style:none; margin:0; padding:0;
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(15rem, 1fr));
+  gap:1rem 2rem; align-items:start;
+}
+.ir-bloque{
+  display:block; margin-bottom:.4rem;
+  font-family:var(--f-titulo); font-size:.98rem; font-weight:700; line-height:1.3;
+  color:var(--tinta); text-decoration:none;
+  padding-bottom:.3rem; border-bottom:1px solid var(--linea-fuerte);
+}
+.ir-bloque:hover{ color:var(--cli-t); }
+.ir-secciones{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.05rem; }
+.ir-link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.55rem 1fr; align-items:baseline; gap:.4rem;
+  padding:.2rem .35rem; border-radius:2px;
+  font-size:.86rem; line-height:1.4; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.ir-link > b{
+  font-family:var(--f-dato); font-size:.76rem; font-weight:700;
+  font-variant-numeric:tabular-nums; color:var(--ct); opacity:.85;
+}
+.ir-link:hover{ background:var(--hoja); color:var(--tinta); }
+.ir-link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Título de bloque y ficha de sección ---------- */
+
+/* Anuncia un grupo de secciones. Neutro en color a propósito: los siete colores
+   tienen significado clínico fijo y un bloque agrupa secciones de varios. La
+   regla de abajo lleva el degradado completo de la paleta, igual que la pestaña
+   de repaso y la cabecera de la ficha relámpago.
+   Sin <svg> adentro: el exportador a Word aparea los diagramas con las figuras
+   por contador posicional sobre el HTML crudo (ver exportar_docx.py). */
+.bloque{
+  margin:1.4rem 0 0; padding:0;
+  text-align:center; scroll-margin-top:2.5rem;
+  display:flex; flex-direction:column; align-items:center; gap:.3rem;
+  font-weight:400;
+}
+.bloque:first-child{ margin-top:0; }
+.bloque__rotulo{
+  font-family:var(--f-texto);
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+}
+.bloque__nombre{
+  font-family:var(--f-titulo); font-size:var(--t-bloque); font-weight:700; line-height:1.15;
+  letter-spacing:-.01em; color:var(--tinta); text-wrap:balance; max-width:32ch;
+}
+.bloque::after{
+  content:""; width:7rem; height:2.5px; margin-top:.5rem; border-radius:2px;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+}
+
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.5rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-column:1; grid-row:1; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+/* El icono ocupa la columna 1 y NADA MAS. Todo el resto del contenido se
+   apila en la columna 2, una fila por elemento, sin importar cuantos
+   parrafos haya.
+
+   Sin esta regla la caja solo funciona con un unico <p>: a partir del
+   segundo, la autocolocacion del grid empieza a repartir contenido en la
+   columna del icono, que es `auto` y por lo tanto se ensancha hasta abarcar
+   el parrafo que le toco. La columna `1fr` queda entonces reducida a una
+   tira angosta, el texto se parte en dos columnas desbalanceadas y la caja
+   crece hasta volverse ilegible. */
+.importante > :not(.importante__icono){ grid-column:2; }
+.importante__titulo{
+  grid-row:1;
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante ul, .importante ol{ margin:0; padding-left:1.15rem; }
+.importante li + li{ margin-top:.3rem; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso, .tema{ display:none !important; }
+  /* La lateral no se imprime, pero la compacta sí: en papel es la tabla de
+     contenidos del cuadernillo. */
+  .indice-rapido{ display:block; break-inside:avoid; page-break-inside:avoid; margin-bottom:1.2rem; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .bloque{
+    margin:1.6rem 0 1rem;
+    break-after:avoid; page-break-after:avoid;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+
+<script>
+/* Aplica el tema guardado antes de pintar. Va aca arriba a proposito: si
+   esperara al script del final, el documento parpadearia en el tema del
+   sistema antes de corregirse. */
+(function(){
+  try {
+    var guardado = localStorage.getItem('wordmed-tema');
+    if (guardado === 'dark' || guardado === 'light') {
+      document.documentElement.setAttribute('data-theme', guardado);
+    }
+  } catch (e) { /* almacenamiento bloqueado: manda el sistema */ }
+})();
+</script>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<button class="tema" id="tema" type="button" aria-pressed="false" aria-label="Cambiar a modo oscuro">
+  <svg class="tema__icono tema__sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.2"></circle>
+    <path d="M12 2.6v2.1M12 19.3v2.1M5.1 5.1l1.5 1.5M17.4 17.4l1.5 1.5M2.6 12h2.1M19.3 12h2.1M5.1 18.9l1.5-1.5M17.4 6.6l1.5-1.5"></path>
+  </svg>
+  <svg class="tema__icono tema__luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20.4 14.2A8.6 8.6 0 0 1 9.8 3.6a8.6 8.6 0 1 0 10.6 10.6z"></path>
+  </svg>
+</button>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li class="indice__bloque">A · Concepto</li>
+      <li><a class="indice__link i-generalidades"  href="#concepto">Concepto y continuo</a></li>
+
+      <li class="indice__bloque">B · Etiologías</li>
+      <li><a class="indice__link i-fisiopatologia" href="#alz-fisio">Alzheimer: fisiopatología</a></li>
+      <li><a class="indice__link i-clinica"        href="#alz-clinica">Alzheimer: clínica</a></li>
+      <li><a class="indice__link i-clinica"        href="#vascular">Vascular</a></li>
+      <li><a class="indice__link i-clinica"        href="#lewy">Cuerpos de Lewy</a></li>
+      <li><a class="indice__link i-clinica"        href="#dft">Frontotemporal</a></li>
+      <li><a class="indice__link i-diferenciales"  href="#comparacion">Perfiles comparados</a></li>
+
+      <li class="indice__bloque">C · Evaluación</li>
+      <li><a class="indice__link i-diagnostico"    href="#entrevista">Entrevista y escalas</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#estudios">Estudios complementarios</a></li>
+      <li><a class="indice__link i-diferenciales"  href="#diferencial">Diagnóstico diferencial</a></li>
+
+      <li class="indice__bloque">D · Síntomas conductuales</li>
+      <li><a class="indice__link i-clinica"        href="#bpsd">BPSD</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#agitacion">Agitación y psicosis</a></li>
+
+      <li class="indice__bloque">E · Tratamiento</li>
+      <li><a class="indice__link i-tratamiento"    href="#no-farmacologico">No farmacológico</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#farmacologico">IACE y memantina</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#antiamiloide">Antiamiloides</a></li>
+
+      <li class="indice__bloque">Cierre</li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Psiquiatría · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Demencias</h1>
+      <p class="portada__bajada">Los trastornos neurocognitivos desde la mirada psiquiátrica: cómo se separan del envejecimiento y del deterioro leve, qué perfil clínico tiene cada etiología, cómo se arma una evaluación racional, cómo se manejan los síntomas conductuales y qué ofrece hoy el tratamiento, de los inhibidores de la acetilcolinesterasa a los anticuerpos antiamiloide.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">15 secciones</span>
+        <span class="etiqueta s-clinica">Alzheimer, vascular, Lewy y frontotemporal</span>
+        <span class="etiqueta s-diagnostico">Criterios McKeith y Rascovsky</span>
+        <span class="etiqueta s-tratamiento">Dosis, lecanemab y donanemab</span>
+      </div>
+    </header>
+
+    <nav class="indice-rapido" aria-label="Contenido del cuadernillo">
+      <p class="indice-rapido__rotulo">Contenido</p>
+      <ol class="indice-rapido__bloques">
+        <li>
+          <a class="ir-bloque" href="#bloque-a">Bloque A · Concepto y continuo cognitivo</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades" href="#concepto"><b>01</b> Trastorno neurocognitivo: concepto y continuo</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-b">Bloque B · Etiologías</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-fisiopatologia" href="#alz-fisio"><b>02</b> Enfermedad de Alzheimer: fisiopatología</a></li>
+            <li><a class="ir-link i-clinica"        href="#alz-clinica"><b>03</b> Enfermedad de Alzheimer: clínica por fases</a></li>
+            <li><a class="ir-link i-clinica"        href="#vascular"><b>04</b> Demencia vascular</a></li>
+            <li><a class="ir-link i-clinica"        href="#lewy"><b>05</b> Demencia con cuerpos de Lewy</a></li>
+            <li><a class="ir-link i-clinica"        href="#dft"><b>06</b> Demencia frontotemporal</a></li>
+            <li><a class="ir-link i-diferenciales"  href="#comparacion"><b>07</b> Perfiles clínicos comparados</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-c">Bloque C · Evaluación diagnóstica</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-diagnostico"   href="#entrevista"><b>08</b> Entrevista y exploración cognitiva y funcional</a></li>
+            <li><a class="ir-link i-diagnostico"   href="#estudios"><b>09</b> Estudios complementarios</a></li>
+            <li><a class="ir-link i-diferenciales" href="#diferencial"><b>10</b> Diagnóstico diferencial</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-d">Bloque D · Síntomas neuropsiquiátricos</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-clinica"     href="#bpsd"><b>11</b> Síntomas conductuales y psicológicos (BPSD)</a></li>
+            <li><a class="ir-link i-tratamiento" href="#agitacion"><b>12</b> Agitación y psicosis: abordaje escalonado</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-e">Bloque E · Tratamiento</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-tratamiento" href="#no-farmacologico"><b>13</b> Tratamiento no farmacológico</a></li>
+            <li><a class="ir-link i-tratamiento" href="#farmacologico"><b>14</b> Inhibidores de la acetilcolinesterasa y memantina</a></li>
+            <li><a class="ir-link i-tratamiento" href="#antiamiloide"><b>15</b> Terapias modificadoras: anticuerpos antiamiloide</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#repaso">Cierre</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-clinica"     href="#repaso">Repaso activo</a></li>
+            <li><a class="ir-link i-importantes" href="#relampago">Ficha de Repaso Relámpago</a></li>
+          </ul>
+        </li>
+      </ol>
+    </nav>
+
+    <h2 class="bloque" id="bloque-a">
+      <span class="bloque__rotulo">Bloque A</span>
+      <span class="bloque__nombre">Concepto y continuo cognitivo</span>
+    </h2>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="concepto">
+      <span class="seccion__pestana"><b>01</b> Generalidades</span>
+      <h2 class="seccion__titulo">Trastorno neurocognitivo: concepto y continuo</h2>
+
+      <p>El DSM-5-TR reemplaza «demencia» por <strong>trastorno neurocognitivo mayor</strong>. Para diagnosticarlo tienen que cumplirse las cinco condiciones:</p>
+      <ol>
+        <li><strong>Declive cognitivo significativo</strong> respecto del nivel previo.</li>
+        <li>El declive <strong>interfiere con la independencia</strong> en las actividades cotidianas.</li>
+        <li>Afecta <strong>uno o más dominios</strong>: memoria, atención, función ejecutiva, lenguaje, percepción-motricidad o cognición social.</li>
+        <li><strong>No ocurre exclusivamente durante un delirium</strong>.</li>
+        <li><strong>No se explica mejor por otro trastorno mental</strong>.</li>
+      </ol>
+
+      <h3>El continuo cognitivo</h3>
+      <figure class="esquema">
+        <svg viewBox="0 0 760 250" role="img" aria-label="Continuo cognitivo: envejecimiento normal con cambios leves sin pérdida funcional; deterioro cognitivo leve con declive objetivo y autonomía global conservada; trastorno neurocognitivo mayor con pérdida de la independencia. El límite entre el deterioro leve y el trastorno mayor lo marca la pérdida funcional"><defs><marker id="dem-cont" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path></marker></defs><rect x="35" y="25" width="210" height="72" rx="7" fill="var(--c)" fill-opacity="0.08" stroke="currentColor" stroke-width="1.2"></rect><text x="140" y="50" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Envejecimiento normal</text><text x="140" y="64" text-anchor="middle" font-size="12.5" fill="currentColor">Cambios leves</text><text x="140" y="80" text-anchor="middle" font-size="12.5" fill="currentColor">sin pérdida funcional</text><path d="M248 61 L287 61" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#dem-cont)"></path><rect x="290" y="25" width="210" height="72" rx="7" fill="var(--c)" fill-opacity="0.2" stroke="currentColor" stroke-width="1.2"></rect><text x="395" y="50" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Deterioro cognitivo leve</text><text x="395" y="64" text-anchor="middle" font-size="12.5" fill="currentColor">Declive objetivo</text><text x="395" y="80" text-anchor="middle" font-size="12.5" fill="currentColor">Autonomía global conservada</text><path d="M503 61 L542 61" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#dem-cont)"></path><rect x="545" y="25" width="210" height="72" rx="7" fill="var(--c)" fill-opacity="0.38" stroke="currentColor" stroke-width="1.2"></rect><text x="650" y="50" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Trastorno neurocognitivo mayor</text><text x="650" y="64" text-anchor="middle" font-size="12.5" fill="currentColor">Declive significativo</text><text x="650" y="80" text-anchor="middle" font-size="12.5" fill="currentColor">Pierde la independencia</text><text x="35" y="132" font-size="12" font-weight="700" fill="currentColor">Independencia en las actividades cotidianas</text><rect x="35" y="142" width="465" height="18" rx="4" fill="var(--c)" fill-opacity="0.15" stroke="currentColor" stroke-width="1"></rect><rect x="500" y="142" width="225" height="18" rx="4" fill="var(--c)" fill-opacity="0.45" stroke="currentColor" stroke-width="1"></rect><text x="267" y="156" text-anchor="middle" font-size="11.5" fill="currentColor">Conservada</text><text x="612" y="156" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">Perdida</text><path d="M500 132 L500 176" stroke="currentColor" stroke-width="2" stroke-dasharray="4 3"></path><text x="500" y="194" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">La pérdida funcional separa el deterioro leve del trastorno mayor</text><text x="380" y="230" text-anchor="middle" font-size="12" font-style="italic" fill="currentColor">La evolución y la etiología importan más que una puntuación aislada</text></svg>
+        <figcaption>Del envejecimiento al trastorno mayor: lo que cambia de un escalón a otro es la autonomía.</figcaption>
+      </figure>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Etapa</th><th>Cognición</th><th>Funcionalidad</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Envejecimiento normal</strong></td><td>Cambios leves</td><td>Sin pérdida funcional</td></tr>
+            <tr><td><strong>Deterioro cognitivo leve</strong> (trastorno neurocognitivo leve)</td><td><strong>Declive objetivo</strong></td><td><strong>Autonomía global conservada</strong>. El DSM-5-TR aclara que puede requerir más esfuerzo o estrategias compensatorias</td></tr>
+            <tr><td><strong>Trastorno neurocognitivo mayor</strong></td><td>Declive significativo</td><td><strong>Pérdida de independencia</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La clase insiste en que <strong>la evolución y la etiología importan más que una puntuación aislada</strong>: un número en una escala no diagnostica ni descarta.</p>
+
+      <p class="cita">Clase «Demencias | Trastornos neurocognitivos», Psiquiatría: objetivos, concepto, terminología y continuo cognitivo. American Psychiatric Association, DSM-5-TR, 2022: trastornos neurocognitivos mayor y leve.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-b">
+      <span class="bloque__rotulo">Bloque B</span>
+      <span class="bloque__nombre">Etiologías</span>
+    </h2>
+
+    <p>Las cuatro etiologías principales son <strong>Alzheimer</strong>, <strong>vascular</strong>, <strong>cuerpos de Lewy</strong> y <strong>frontotemporal</strong>. En los adultos mayores son frecuentes las <strong>formas mixtas</strong>. La anatomía patológica, los biomarcadores y las demencias reversibles están desarrollados en el cuadernillo de Neurología <a href="https://claude.ai/artifact/49UFCDvsJiXi3kT3BBtYhk">«15 · Enfermedades neurodegenerativas»</a>. Acá va el perfil clínico de cada una, que es lo que pide la clase.</p>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-fisiopatologia" id="alz-fisio">
+      <span class="seccion__pestana"><b>02</b> Fisiopatología</span>
+      <h2 class="seccion__titulo">Enfermedad de Alzheimer: fisiopatología</h2>
+
+      <ol>
+        <li><strong>Depósitos de β-amiloide</strong> y <strong>patología de tau fosforilada</strong>.</li>
+        <li><strong>Neurodegeneración sináptica y neuronal</strong> progresiva.</li>
+        <li>En las presentaciones típicas, el <strong>compromiso temporomedial es temprano</strong>: por eso lo primero que falla es la memoria de lo nuevo.</li>
+      </ol>
+      <p>El fenotipo clínico es <strong>heterogéneo</strong>: existen <strong>variantes no amnésicas</strong>. La clase de Neurología nombra la <strong>cortical posterior</strong> (visuoespacial), la <strong>logopénica</strong> (lenguaje) y la <strong>frontal</strong> (conducta).</p>
+      <p>Los fármacos salen de la neuroquímica: al principio se afecta sobre todo el <strong>sistema colinérgico</strong>, y después los sistemas glutamatérgico, serotoninérgico y noradrenérgico.</p>
+
+      <p class="cita">Clase «Demencias | Trastornos neurocognitivos», Psiquiatría: fisiopatología del Alzheimer. Clase «Enfermedades neurodegenerativas», Dr. Gustavo Grilli (Neurología): variantes atípicas y sistemas de neurotransmisión.</p>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-clinica" id="alz-clinica">
+      <span class="seccion__pestana"><b>03</b> Cuadro clínico</span>
+      <h2 class="seccion__titulo">Enfermedad de Alzheimer: clínica por fases</h2>
+
+      <p>Tiene un <strong>inicio insidioso</strong> y una <strong>progresión gradual</strong>. El síntoma inicial típico es la <strong>dificultad para aprender y recordar información nueva</strong>.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Fase</th><th>Manifestaciones</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Inicial: memoria</strong></td><td>Pierde objetos o dinero, olvida citas, <strong>repite preguntas</strong>. Se desorienta primero en el <strong>tiempo</strong> y después en el <strong>espacio</strong>. Puede haber depresión, ansiedad y apatía</td></tr>
+            <tr><td><strong>Se suman otros dominios</strong></td><td><strong>Anomia</strong> y menor fluencia; <strong>alteraciones ejecutivas</strong> (planificación, resolución de problemas); apraxias y agnosias; <strong>anosognosia</strong></td></tr>
+            <tr><td><strong>Moderada</strong></td><td><strong>Delirios y alucinaciones</strong>, celotipia</td></tr>
+            <tr><td><strong>Avanzada</strong></td><td>Agitación verbal y física, mioclonías y convulsiones</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Los <strong>síntomas neuropsiquiátricos son variables</strong> a lo largo de toda la evolución (ver <a href="#bpsd">BPSD</a>).</p>
+
+      <div class="importante">
+        <p><strong>¡Importante!</strong> La <strong>anosognosia</strong> hace que el paciente minimice sus fallas: por eso la historia del <strong>informante</strong> es indispensable. Antes de cerrar el diagnóstico hay que <strong>confirmar la repercusión funcional y descartar otras causas</strong>.</p>
+      </div>
+
+      <p class="cita">Clase «Demencias | Trastornos neurocognitivos», Psiquiatría: clínica del Alzheimer. Clase «Enfermedades neurodegenerativas», Dr. Gustavo Grilli (Neurología): clínica por fases de la EA.</p>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-clinica" id="vascular">
+      <span class="seccion__pestana"><b>04</b> Cuadro clínico</span>
+      <h2 class="seccion__titulo">Demencia vascular</h2>
+
+      <p>Es el deterioro que aparece <strong>tras un ACV</strong> o que se asocia a <strong>daño vascular acumulado</strong>.</p>
+      <ul>
+        <li><strong>Dominios típicos</strong>: la <strong>velocidad de procesamiento</strong> y la <strong>función ejecutiva</strong>, más que la memoria.</li>
+        <li><strong>Curso</strong>: puede ser <strong>escalonado</strong> (empeora con cada evento vascular), pero <strong>no es obligatorio</strong>: el daño difuso de la sustancia blanca progresa de forma gradual.</li>
+        <li><strong>Forma subcortical (Binswanger)</strong>: según la clase de Neurología, suma <strong>trastornos de la marcha</strong>, signos pseudobulbares y signos piramidales y extrapiramidales leves.</li>
+      </ul>
+      <p><strong>Neuroimagen</strong>: infartos, <strong>lesiones de la sustancia blanca</strong> y microhemorragias. <strong>Tratamiento</strong>: <strong>prevención secundaria</strong> y control de los factores de riesgo vascular.</p>
+
+      <p class="cita">Clase «Demencias | Trastornos neurocognitivos», Psiquiatría: demencia vascular. Clase «Enfermedades neurodegenerativas», Dr. Gustavo Grilli (Neurología): encefalopatía de Binswanger.</p>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-clinica" id="lewy">
+      <span class="seccion__pestana"><b>05</b> Cuadro clínico</span>
+      <h2 class="seccion__titulo">Demencia con cuerpos de Lewy</h2>
+
+      <p>La clase la define por cuatro rasgos y una advertencia:</p>
+      <ul>
+        <li><strong>Fluctuaciones marcadas</strong> de la atención y el alerta.</li>
+        <li><strong>Alucinaciones visuales recurrentes y bien formadas</strong>.</li>
+        <li><strong>Trastorno de conducta del sueño REM</strong>.</li>
+        <li><strong>Parkinsonismo espontáneo</strong>.</li>
+        <li><strong>Precaución especial con los antipsicóticos</strong>, por sensibilidad grave.</li>
+      </ul>
+
+      <h3>Cómo evoluciona</h3>
+      <ol>
+        <li><strong>Pródromo</strong>: según PubMed, el trastorno de conducta del sueño REM suele empezar <strong>muchos años antes</strong> que los demás síntomas.</li>
+        <li><strong>Inicio</strong>: predominan los déficits de <strong>atención, función ejecutiva y visuoespaciales</strong>; la <strong>memoria se afecta menos y más tarde</strong>. Aparecen las fluctuaciones y las alucinaciones.</li>
+        <li><strong>Parkinsonismo</strong>: la clase de Neurología lo ubica junto con el deterioro cognitivo o dentro del primer año (<strong>regla del año</strong>: si la demencia llega más de un año después de los síntomas motores, es demencia de la enfermedad de Parkinson).</li>
+      </ol>
+
+      <h3>Criterios del consorcio (McKeith 2017)</h3>
+      <p>Según PubMed, el cuarto consenso separa los rasgos clínicos de los biomarcadores y da más peso al trastorno del sueño REM y a la gammagrafía miocárdica con MIBG. El requisito de base es la <strong>demencia</strong>.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Categoría</th><th>Qué incluye</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Rasgos clínicos centrales</strong></td><td><strong>Fluctuaciones</strong> de la cognición, la atención y el alerta (parecidas a un delirium) · <strong>alucinaciones visuales</strong> recurrentes y bien formadas (personas, niños, animales) · <strong>trastorno de conducta del sueño REM</strong> · uno o más signos de <strong>parkinsonismo</strong> espontáneo (bradicinesia, temblor de reposo o rigidez)</td></tr>
+            <tr><td><strong>Rasgos de sostén</strong></td><td>Sensibilidad grave a los antipsicóticos, inestabilidad postural y caídas, síncope o episodios de falta de respuesta, disautonomía, <strong>hipersomnia</strong>, <strong>hiposmia</strong>, alucinaciones de otras modalidades, delirios sistematizados, apatía, ansiedad y depresión</td></tr>
+            <tr><td><strong>Biomarcadores indicativos</strong></td><td><strong>Captación reducida del transportador de dopamina</strong> en los ganglios basales (SPECT o PET) · <strong>MIBG miocárdica</strong> con captación baja · <strong>polisomnografía</strong> con sueño REM sin atonía</td></tr>
+            <tr><td><strong>Biomarcadores de sostén</strong></td><td>Lóbulo temporal medial relativamente preservado en la TC o la RM · hipoperfusión o hipometabolismo con baja actividad occipital y signo de la «isla del cíngulo» en el PET-FDG · actividad lenta posterior en el EEG</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul>
+        <li><strong>Probable</strong>: <strong>dos o más rasgos centrales</strong>, o <strong>uno central + uno o más biomarcadores indicativos</strong>.</li>
+        <li><strong>Posible</strong>: un solo rasgo central sin biomarcadores, o uno o más biomarcadores indicativos sin rasgos centrales.</li>
+        <li>No se diagnostica como probable <strong>solo con biomarcadores</strong>.</li>
+      </ul>
+
+      <p class="cita">Clase «Demencias | Trastornos neurocognitivos», Psiquiatría: demencia con cuerpos de Lewy. Clase «Enfermedades neurodegenerativas», Dr. Gustavo Grilli (Neurología): regla del año. Según PubMed: McKeith IG y col., «Diagnosis and management of dementia with Lewy bodies: Fourth consensus report of the DLB Consortium», Neurology 2017;89(1):88-100 (<a href="https://doi.org/10.1212/WNL.0000000000004058">DOI</a>).</p>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-clinica" id="dft">
+      <span class="seccion__pestana"><b>06</b> Cuadro clínico</span>
+      <h2 class="seccion__titulo">Demencia frontotemporal</h2>
+
+      <p><strong>Suele debutar antes</strong> que las otras demencias, aunque no siempre. En algunos casos la <strong>memoria está relativamente preservada al inicio</strong>. Tiene dos formas de presentación:</p>
+      <ul>
+        <li><strong>Variante conductual</strong>: desinhibición, apatía, pérdida de empatía, conductas compulsivas y cambios alimentarios.</li>
+        <li><strong>Afasias primarias progresivas</strong>: variantes <strong>semántica</strong> y <strong>no fluente</strong>. La logopénica también es una afasia primaria progresiva, pero suele deberse a patología de Alzheimer.</li>
+      </ul>
+
+      <h3>Cómo evoluciona la variante conductual</h3>
+      <ol>
+        <li><strong>Inicio</strong>: cambios de <strong>personalidad y conducta</strong> antes que de memoria, con disfunción ejecutiva temprana.</li>
+        <li><strong>Progresión</strong>: pérdida de fluencia verbal, anomias, estereotipias del lenguaje.</li>
+        <li><strong>Fase avanzada</strong>: deterioro global con síndrome acinético-rígido, <strong>mutismo y postración</strong>.</li>
+      </ol>
+
+      <h3>Criterios de Rascovsky 2011 (variante conductual)</h3>
+      <p>Según PubMed, el consorcio internacional exige como base un <strong>deterioro progresivo de la conducta o la cognición</strong>, observado o referido. «Temprano» significa dentro de los <strong>primeros 3 años</strong>.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Rasgo</th><th>Cómo se ve</th></tr></thead>
+          <tbody>
+            <tr><td><strong>A · Desinhibición</strong> temprana</td><td>Conducta socialmente inapropiada, pérdida de modales, actos impulsivos</td></tr>
+            <tr><td><strong>B · Apatía o inercia</strong> temprana</td><td>Pierde interés e iniciativa</td></tr>
+            <tr><td><strong>C · Pérdida de simpatía o empatía</strong> temprana</td><td>Menos respuesta a las necesidades y sentimientos de los demás</td></tr>
+            <tr><td><strong>D · Conducta perseverativa, estereotipada o compulsiva</strong> temprana</td><td>Movimientos repetitivos, rituales, lenguaje estereotipado</td></tr>
+            <tr><td><strong>E · Hiperoralidad y cambios en la dieta</strong></td><td>Cambian sus preferencias alimentarias (la clase de Neurología destaca los hidratos de carbono), come en atracones, consume más alcohol o cigarrillos, explora objetos con la boca</td></tr>
+            <tr><td><strong>F · Perfil neuropsicológico disejecutivo</strong></td><td>Fallan las funciones ejecutivas, con <strong>memoria y funciones visuoespaciales relativamente conservadas</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul>
+        <li><strong>Posible</strong>: <strong>3 de los 6</strong> rasgos.</li>
+        <li><strong>Probable</strong>: lo anterior + <strong>deterioro funcional</strong> + <strong>neuroimagen característica</strong> (atrofia, hipometabolismo o hipoperfusión frontal o temporal anterior).</li>
+        <li><strong>Definida</strong>: confirmación <strong>histopatológica</strong> o <strong>mutación patogénica</strong>.</li>
+      </ul>
+
+      <p class="cita">Clase «Demencias | Trastornos neurocognitivos», Psiquiatría: demencia frontotemporal. Clase «Enfermedades neurodegenerativas», Dr. Gustavo Grilli (Neurología): evolución de la variante conductual y variante logopénica. Según PubMed: Rascovsky K y col., «Sensitivity of revised diagnostic criteria for the behavioural variant of frontotemporal dementia», Brain 2011;134(Pt 9):2456-77 (<a href="https://doi.org/10.1093/brain/awr179">DOI</a>).</p>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-diferenciales" id="comparacion">
+      <span class="seccion__pestana"><b>07</b> Diferenciales</span>
+      <h2 class="seccion__titulo">Perfiles clínicos comparados</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Etiología</th><th>Lo que aparece primero</th><th>Curso</th><th>Pista distintiva</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Alzheimer</strong></td><td><strong>Amnesia episódica</strong>: no retiene lo nuevo</td><td>Insidioso y gradual</td><td>Anosognosia; compromiso temporomedial</td></tr>
+            <tr><td><strong>Vascular</strong></td><td><strong>Enlentecimiento</strong> y déficit ejecutivo</td><td>Escalonado posible, no obligatorio</td><td>Lesión vascular en la imagen; antecedente de ACV</td></tr>
+            <tr><td><strong>Cuerpos de Lewy</strong></td><td>Atención y visuoespacial</td><td>Fluctuante</td><td><strong>Fluctuación + alucinaciones visuales + parkinsonismo</strong> o sueño REM</td></tr>
+            <tr><td><strong>Frontotemporal</strong></td><td><strong>Conducta o lenguaje</strong></td><td>Suele debutar antes</td><td>Memoria relativamente preservada al inicio</td></tr>
+            <tr><td><strong>Mixtas</strong></td><td>Rasgos superpuestos</td><td>Variable</td><td><strong>Superposición frecuente</strong> en los adultos mayores, sobre todo Alzheimer con patología vascular</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «Demencias | Trastornos neurocognitivos», Psiquiatría: etiologías principales y comparación clínica rápida. Clase «Enfermedades neurodegenerativas», Dr. Gustavo Grilli (Neurología): demencias mixtas.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-c">
+      <span class="bloque__rotulo">Bloque C</span>
+      <span class="bloque__nombre">Evaluación diagnóstica</span>
+    </h2>
+
+    <!-- ============ 8 ============ -->
+    <section class="seccion s-diagnostico" id="entrevista">
+      <span class="seccion__pestana"><b>08</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">Entrevista y exploración cognitiva y funcional</h2>
+
+      <h3>La entrevista</h3>
+      <ul>
+        <li>Historia con el <strong>paciente</strong> y con un <strong>familiar o informante</strong>.</li>
+        <li><strong>Inicio, curso y dominios afectados</strong>, siempre con <strong>ejemplos concretos</strong>: repite preguntas, pierde pagos, necesita ayuda con la medicación.</li>
+        <li><strong>Impacto</strong> en las actividades <strong>instrumentales</strong> (manejo de dinero, medicación, transporte) y <strong>básicas</strong> (higiene, vestido, alimentación).</li>
+        <li><strong>Medicamentos, alcohol, sueño, ánimo, audición y visión</strong>.</li>
+        <li><strong>Antecedentes</strong> vasculares, neurológicos y familiares.</li>
+      </ul>
+
+      <h3>Herramientas de exploración</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Herramienta</th><th>Qué evalúa</th><th>A quién se aplica</th></tr></thead>
+          <tbody>
+            <tr><td><strong>MoCA</strong> o <strong>MMSE</strong></td><td>Cribado cognitivo global: <strong>no son diagnósticos por sí solos</strong></td><td>Paciente</td></tr>
+            <tr><td>Pruebas de memoria, <strong>fluencia verbal</strong>, <strong>test del reloj</strong> y función ejecutiva</td><td>Dominios específicos</td><td>Paciente</td></tr>
+            <tr><td><strong>AD8</strong> / <strong>IQCODE</strong></td><td>Cambio cognitivo percibido por quien convive</td><td><strong>Informante</strong></td></tr>
+            <tr><td><strong>FAQ</strong> y <strong>Lawton-Brody</strong></td><td>Actividades <strong>instrumentales</strong> de la vida diaria</td><td>Informante</td></tr>
+            <tr><td><strong>Barthel</strong></td><td>Actividades <strong>básicas</strong> de la vida diaria</td><td>Informante o paciente</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Toda puntuación se <strong>interpreta según la escolaridad, el idioma y el contexto</strong>.</p>
+
+      <p class="cita">Clase «Demencias | Trastornos neurocognitivos», Psiquiatría: evaluación inicial, exploración cognitiva y funcional.</p>
+    </section>
+
+    <!-- ============ 9 ============ -->
+    <section class="seccion s-diagnostico" id="estudios">
+      <span class="seccion__pestana"><b>09</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">Estudios complementarios</h2>
+
+      <ul>
+        <li><strong>Laboratorio básico</strong>: hemograma, electrolitos, función renal y hepática, <strong>TSH</strong> y <strong>vitamina B12</strong>.</li>
+        <li><strong>Según la sospecha clínica</strong>: VIH, sífilis, entre otros.</li>
+        <li><strong>Neuroimagen</strong>: <strong>RM cerebral, preferible</strong> cuando está disponible; TC según el contexto.</li>
+        <li><strong>Evaluar siempre</strong>: apnea del sueño, depresión y fármacos anticolinérgicos.</li>
+        <li><strong>Biomarcadores de Alzheimer</strong>: solo en <strong>contextos seleccionados y especializados</strong>. Hoy son requisito para indicar antiamiloides (ver <a href="#antiamiloide">sección 15</a>).</li>
+      </ul>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 760 560" role="img" aria-label="Evaluación diagnóstica escalonada: 1 historia con el paciente y un informante; 2 exploración cognitiva y funcional; 3 descartar delirium, depresión, fármacos, déficit sensorial y trastornos del sueño; 4 laboratorio y neuroimagen, que también buscan causas tratables; 5 perfil clínico y etiología probable; biomarcadores de Alzheimer solo en contextos seleccionados y especializados"><defs><marker id="dem-eval" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path></marker></defs><rect x="70" y="20" width="440" height="70" rx="7" fill="var(--c)" fill-opacity="0.12" stroke="currentColor" stroke-width="1.2"></rect><text x="290" y="44" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">1 · Historia con paciente e informante</text><text x="290" y="58" text-anchor="middle" font-size="12.5" fill="currentColor">Inicio, curso, dominios afectados y ejemplos concretos</text><text x="290" y="74" text-anchor="middle" font-size="12.5" fill="currentColor">Impacto en actividades instrumentales y básicas</text><path d="M290 92 L290 118" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#dem-eval)"></path><rect x="70" y="120" width="440" height="70" rx="7" fill="var(--c)" fill-opacity="0.12" stroke="currentColor" stroke-width="1.2"></rect><text x="290" y="144" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">2 · Exploración cognitiva y funcional</text><text x="290" y="158" text-anchor="middle" font-size="12.5" fill="currentColor">MoCA o MMSE (cribado), reloj, fluencia verbal · AD8 / IQCODE</text><text x="290" y="174" text-anchor="middle" font-size="12.5" fill="currentColor">FAQ, Lawton-Brody y Barthel para la funcionalidad</text><path d="M290 192 L290 218" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#dem-eval)"></path><rect x="70" y="220" width="440" height="70" rx="7" fill="var(--c)" fill-opacity="0.3" stroke="currentColor" stroke-width="1.2"></rect><text x="290" y="244" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">3 · Descartar lo que imita o empeora</text><text x="290" y="258" text-anchor="middle" font-size="12.5" fill="currentColor">Delirium · depresión · fármacos anticolinérgicos y sedantes</text><text x="290" y="274" text-anchor="middle" font-size="12.5" fill="currentColor">Déficit auditivo o visual · apnea y trastornos del sueño</text><path d="M290 292 L290 318" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#dem-eval)"></path><rect x="70" y="320" width="440" height="70" rx="7" fill="var(--c)" fill-opacity="0.12" stroke="currentColor" stroke-width="1.2"></rect><text x="290" y="344" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">4 · Laboratorio y neuroimagen</text><text x="290" y="358" text-anchor="middle" font-size="12.5" fill="currentColor">Hemograma, electrolitos, renal, hepático, TSH, B12</text><text x="290" y="374" text-anchor="middle" font-size="12.5" fill="currentColor">± VIH, sífilis · RM preferible, TC según contexto</text><path d="M290 392 L290 418" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#dem-eval)"></path><rect x="70" y="420" width="440" height="70" rx="7" fill="var(--c)" fill-opacity="0.38" stroke="currentColor" stroke-width="1.2"></rect><text x="290" y="444" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">5 · Perfil clínico → etiología probable</text><text x="290" y="458" text-anchor="middle" font-size="12.5" fill="currentColor">Alzheimer · vascular · cuerpos de Lewy</text><text x="290" y="474" text-anchor="middle" font-size="12.5" fill="currentColor">frontotemporal · mixta</text><rect x="540" y="325" width="200" height="60" rx="7" fill="var(--c)" fill-opacity="0.22" stroke="currentColor" stroke-width="1.2"></rect><text x="640" y="344" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Causas tratables</text><text x="640" y="358" text-anchor="middle" font-size="12.5" fill="currentColor">Hidrocefalia normotensiva,</text><text x="640" y="374" text-anchor="middle" font-size="12.5" fill="currentColor">hematoma subdural</text><path d="M512 355 L538 355" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#dem-eval)"></path><rect x="540" y="425" width="200" height="60" rx="7" fill="var(--c)" fill-opacity="0.08" stroke="currentColor" stroke-width="1.2" stroke-dasharray="5 4"></rect><text x="640" y="444" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Biomarcadores de Alzheimer</text><text x="640" y="458" text-anchor="middle" font-size="12.5" fill="currentColor">Solo en contextos</text><text x="640" y="474" text-anchor="middle" font-size="12.5" fill="currentColor">seleccionados y especializados</text><path d="M512 455 L538 455" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#dem-eval)"></path><rect x="540" y="25" width="200" height="60" rx="7" fill="var(--c)" fill-opacity="0.08" stroke="currentColor" stroke-width="1.2"></rect><text x="640" y="44" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">El informante</text><text x="640" y="58" text-anchor="middle" font-size="12.5" fill="currentColor">es indispensable:</text><text x="640" y="74" text-anchor="middle" font-size="12.5" fill="currentColor">el paciente puede no notarlo</text><path d="M512.0 55 L538 55" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3"></path><text x="380" y="545" text-anchor="middle" font-size="12" font-style="italic" fill="currentColor">El diagnóstico combina historia, informante, cognición y función: ninguna escala diagnostica sola</text></svg>
+        <figcaption>La evaluación en cinco pasos: primero la historia y la función, después lo que imita o empeora, y recién al final el perfil etiológico.</figcaption>
+      </figure>
+
+      <p class="cita">Clase «Demencias | Trastornos neurocognitivos», Psiquiatría: estudios complementarios y mensajes clave.</p>
+    </section>
+
+    <!-- ============ 10 ============ -->
+    <section class="seccion s-diferenciales" id="diferencial">
+      <span class="seccion__pestana"><b>10</b> Diferenciales</span>
+      <h2 class="seccion__titulo">Diagnóstico diferencial</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Entidad</th><th>Lo que la delata</th><th>Trampa</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Delirium</strong></td><td><strong>Inicio agudo</strong>, <strong>fluctuación</strong>, <strong>alteración atencional</strong></td><td>Si el déficit ocurre solo durante el delirium, no es un trastorno neurocognitivo mayor. Las fluctuaciones de los cuerpos de Lewy se le parecen</td></tr>
+            <tr><td><strong>Depresión</strong></td><td><strong>Enlentecimiento</strong> y <strong>quejas cognitivas</strong></td><td><strong>Puede coexistir</strong> con la demencia; descartarla no descarta la demencia</td></tr>
+            <tr><td><strong>Efectos farmacológicos</strong></td><td><strong>Anticolinérgicos</strong>, <strong>sedantes</strong>, <strong>polifarmacia</strong></td><td>Revisar la lista completa antes de etiquetar</td></tr>
+            <tr><td><strong>Causas tratables</strong></td><td><strong>Hidrocefalia normotensiva</strong>, <strong>hematoma subdural</strong>, otras</td><td>Por eso la neuroimagen. Ver <a href="https://claude.ai/artifact/49UFCDvsJiXi3kT3BBtYhk">Neurología 15</a>, demencias reversibles y Hakim-Adams</td></tr>
+            <tr><td><strong>Déficits sensoriales y trastornos del sueño</strong></td><td>Hipoacusia, baja visión, apnea del sueño</td><td>Empeoran el rendimiento en las pruebas</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <p><strong>¡Importante!</strong> <strong>Delirium, depresión y medicamentos siempre deben evaluarse</strong> antes de diagnosticar una demencia. Según PubMed, las fluctuaciones de la demencia con cuerpos de Lewy son <strong>parecidas a un delirium</strong>: ante episodios confusionales que van y vienen sin causa clara, conviene buscar los otros rasgos de Lewy.</p>
+      </div>
+
+      <p class="cita">Clase «Demencias | Trastornos neurocognitivos», Psiquiatría: diagnóstico diferencial y mensajes clave. Según PubMed: McKeith IG y col., Neurology 2017;89(1):88-100 (<a href="https://doi.org/10.1212/WNL.0000000000004058">DOI</a>).</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-d">
+      <span class="bloque__rotulo">Bloque D</span>
+      <span class="bloque__nombre">Síntomas neuropsiquiátricos</span>
+    </h2>
+
+    <!-- ============ 11 ============ -->
+    <section class="seccion s-clinica" id="bpsd">
+      <span class="seccion__pestana"><b>11</b> Cuadro clínico</span>
+      <h2 class="seccion__titulo">Síntomas conductuales y psicológicos (BPSD)</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Grupo</th><th>Síntomas</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Afectivos</strong></td><td><strong>Apatía</strong>, depresión, ansiedad, irritabilidad</td></tr>
+            <tr><td><strong>Psicóticos y de hiperactividad</strong></td><td><strong>Agitación</strong>, agresividad, <strong>ideas delirantes</strong>, <strong>alucinaciones</strong></td></tr>
+            <tr><td><strong>Otros</strong></td><td>Alteraciones del sueño, <strong>deambulación</strong>, desinhibición</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Antes de tratar el síntoma, buscar la causa</h3>
+      <ul>
+        <li><strong>Dolor</strong>, <strong>infección</strong>, <strong>estreñimiento</strong>.</li>
+        <li><strong>Sobrecarga ambiental</strong>.</li>
+        <li><strong>Delirium</strong> sobreagregado.</li>
+      </ul>
+      <p>Después se evalúan el <strong>riesgo</strong>, el <strong>malestar</strong> del paciente y la <strong>repercusión en los cuidadores</strong>.</p>
+
+      <p class="cita">Clase «Demencias | Trastornos neurocognitivos», Psiquiatría: síntomas neuropsiquiátricos (BPSD).</p>
+    </section>
+
+    <!-- ============ 12 ============ -->
+    <section class="seccion s-tratamiento" id="agitacion">
+      <span class="seccion__pestana"><b>12</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Agitación y psicosis: abordaje escalonado</h2>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 760 300" role="img" aria-label="Abordaje escalonado de la agitación y la psicosis en la demencia: 1 buscar y tratar precipitantes como dolor, infección, estreñimiento, sobrecarga ambiental o delirium; 2 intervenciones ambientales y no farmacológicas; 3 antipsicótico solo si hay riesgo importante o sufrimiento grave; 4 dosis mínima, tiempo limitado y reevaluación frecuente. En cuerpos de Lewy, evitar los bloqueantes dopaminérgicos potentes"><defs><marker id="dem-agit" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path></marker></defs><rect x="30" y="125" width="155" height="100" rx="7" fill="var(--c)" fill-opacity="0.1" stroke="currentColor" stroke-width="1.2"></rect><text x="108" y="148" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">1 · Precipitantes</text><text x="108" y="164" text-anchor="middle" font-size="12.5" fill="currentColor">Dolor · infección</text><text x="108" y="178" text-anchor="middle" font-size="12.5" fill="currentColor">estreñimiento</text><text x="108" y="194" text-anchor="middle" font-size="12.5" fill="currentColor">sobrecarga ambiental</text><text x="108" y="208" text-anchor="middle" font-size="12.5" fill="currentColor">delirium</text><path d="M188 185 L212 173" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#dem-agit)"></path><rect x="215" y="105" width="155" height="120" rx="7" fill="var(--c)" fill-opacity="0.18" stroke="currentColor" stroke-width="1.2"></rect><text x="292" y="146" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">2 · Medidas</text><text x="292" y="161" text-anchor="middle" font-size="12.5" fill="currentColor">ambientales</text><text x="292" y="176" text-anchor="middle" font-size="12.5" fill="currentColor">Rutinas, entorno,</text><text x="292" y="191" text-anchor="middle" font-size="12.5" fill="currentColor">apoyo al cuidador</text><path d="M373 175 L397 163" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#dem-agit)"></path><rect x="400" y="85" width="155" height="140" rx="7" fill="var(--c)" fill-opacity="0.3" stroke="currentColor" stroke-width="1.2"></rect><text x="478" y="136" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">3 · Antipsicótico</text><text x="478" y="151" text-anchor="middle" font-size="12.5" fill="currentColor">solo si riesgo</text><text x="478" y="166" text-anchor="middle" font-size="12.5" fill="currentColor">importante o</text><text x="478" y="181" text-anchor="middle" font-size="12.5" fill="currentColor">sufrimiento grave</text><path d="M558 165 L582 153" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#dem-agit)"></path><rect x="585" y="65" width="155" height="160" rx="7" fill="var(--c)" fill-opacity="0.42" stroke="currentColor" stroke-width="1.2"></rect><text x="662" y="118" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">4 · Dosis mínima</text><text x="662" y="134" text-anchor="middle" font-size="12.5" fill="currentColor">Tiempo limitado</text><text x="662" y="148" text-anchor="middle" font-size="12.5" fill="currentColor">Reevaluar seguido</text><text x="662" y="164" text-anchor="middle" font-size="12.5" fill="currentColor">(NICE: cada 6 semanas</text><text x="662" y="178" text-anchor="middle" font-size="12.5" fill="currentColor">como mínimo)</text><text x="30" y="40" font-size="12.5" font-weight="700" fill="currentColor">Cada escalón se sube solo si el anterior no alcanzó</text><rect x="30" y="245" width="700" height="38" rx="7" fill="var(--c)" fill-opacity="0.5" stroke="currentColor" stroke-width="1.4"></rect><text x="380" y="269" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">Cuerpos de Lewy: evitar los bloqueantes dopaminérgicos potentes (sensibilidad grave)</text></svg>
+        <figcaption>Del precipitante al antipsicótico: el fármaco es el último escalón y tiene fecha de revisión.</figcaption>
+      </figure>
+
+      <ol>
+        <li><strong>Primero</strong>: descartar las causas precipitantes y aplicar <strong>intervenciones ambientales</strong>.</li>
+        <li><strong>Antipsicóticos solo si hay riesgo importante o sufrimiento grave</strong>.</li>
+        <li>El <strong>beneficio es generalmente modesto</strong> y los riesgos son reales: <strong>ACV</strong>, <strong>sedación</strong> y <strong>aumento de la mortalidad</strong>.</li>
+        <li>Usar la <strong>dosis mínima</strong>, por un <strong>tiempo limitado</strong>, con <strong>reevaluación frecuente</strong>. La guía NICE NG97 pide reevaluar <strong>al menos cada 6 semanas</strong> si todavía hace falta la medicación, y no usar valproato para la agitación salvo que esté indicado por otra causa.</li>
+      </ol>
+      <p>Para los síntomas psicóticos del Alzheimer, la clase de Neurología nombra la <strong>quetiapina 25-300 mg</strong> o el <strong>aripiprazol</strong>.</p>
+
+      <div class="importante">
+        <p><strong>¡Importante!</strong> En los <strong>cuerpos de Lewy</strong> hay que <strong>evitar especialmente los bloqueantes dopaminérgicos potentes</strong>. Según PubMed, el consenso pide evitar los antipsicóticos siempre que se pueda por el riesgo de una <strong>reacción de sensibilidad grave</strong>. La <strong>quetiapina en dosis bajas</strong> sería relativamente más segura, aunque un ensayo pequeño contra placebo fue negativo; la clozapina y la pimavanserina no tienen eficacia establecida en Lewy. Los <strong>IACE</strong> pueden reducir la apatía, las alucinaciones y los delirios.</p>
+      </div>
+
+      <p class="cita">Clase «Demencias | Trastornos neurocognitivos», Psiquiatría: agitación y psicosis, precauciones. Clase «Enfermedades neurodegenerativas», Dr. Gustavo Grilli (Neurología): síntomas psicóticos en la EA. NICE NG97, «Dementia: assessment, management and support for people living with dementia and their carers», 2018 (<a href="https://www.nice.org.uk/guidance/ng97">guía</a>). Según PubMed: McKeith IG y col., Neurology 2017;89(1):88-100 (<a href="https://doi.org/10.1212/WNL.0000000000004058">DOI</a>).</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-e">
+      <span class="bloque__rotulo">Bloque E</span>
+      <span class="bloque__nombre">Tratamiento</span>
+    </h2>
+
+    <p>El tratamiento es <strong>multimodal</strong> y está <strong>centrado en la persona y en su cuidador</strong>.</p>
+
+    <!-- ============ 13 ============ -->
+    <section class="seccion s-tratamiento" id="no-farmacologico">
+      <span class="seccion__pestana"><b>13</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Tratamiento no farmacológico</h2>
+
+      <ul>
+        <li><strong>Psicoeducación y apoyo al cuidador</strong>.</li>
+        <li><strong>Rutinas previsibles</strong>, adaptación ambiental y señalización.</li>
+        <li><strong>Actividad física</strong>, estimulación significativa y medidas de higiene del sueño.</li>
+        <li><strong>Corregir los déficits auditivos y visuales</strong>.</li>
+        <li><strong>Planificación anticipada</strong> y evaluación de la <strong>seguridad</strong>.</li>
+      </ul>
+      <p>La guía NICE NG97 recomienda ofrecer <strong>estimulación cognitiva grupal</strong> a las personas con demencia leve a moderada.</p>
+
+      <p class="cita">Clase «Demencias | Trastornos neurocognitivos», Psiquiatría: tratamiento no farmacológico. NICE NG97, 2018 (<a href="https://www.nice.org.uk/guidance/ng97">guía</a>).</p>
+    </section>
+
+    <!-- ============ 14 ============ -->
+    <section class="seccion s-tratamiento" id="farmacologico">
+      <span class="seccion__pestana"><b>14</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Inhibidores de la acetilcolinesterasa y memantina</h2>
+
+      <ul>
+        <li><strong>Inhibidores de la acetilcolinesterasa (IACE)</strong>: <strong>donepezilo</strong>, <strong>rivastigmina</strong>, <strong>galantamina</strong>.</li>
+        <li><strong>Memantina</strong> (antagonista del receptor NMDA de glutamato): opción en el <strong>Alzheimer moderado-grave</strong>, según el contexto.</li>
+        <li>Son <strong>sintomáticos</strong>: <strong>no revierten la neurodegeneración</strong>.</li>
+        <li>Revisar <strong>interacciones, comorbilidades y objetivos</strong> del tratamiento.</li>
+      </ul>
+
+      <h3>A quién se indica cada uno (NICE NG97)</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Etiología</th><th>Indicación</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Alzheimer leve a moderado</strong></td><td><strong>IACE</strong> en monoterapia</td></tr>
+            <tr><td><strong>Alzheimer moderado</strong></td><td><strong>Memantina</strong> si los IACE no se toleran o están contraindicados. Si ya toma un IACE, considerar <strong>agregar</strong> memantina</td></tr>
+            <tr><td><strong>Alzheimer grave</strong></td><td><strong>Memantina</strong>; si ya toma un IACE, ofrecer agregarla. No suspender los IACE solo porque avanzó la gravedad</td></tr>
+            <tr><td><strong>Cuerpos de Lewy</strong></td><td><strong>Donepezilo o rivastigmina</strong>; galantamina solo si no se toleran. Memantina si los IACE no se toleran o están contraindicados</td></tr>
+            <tr><td><strong>Vascular</strong></td><td>Solo si se sospecha Alzheimer, Lewy o Parkinson asociados</td></tr>
+            <tr><td><strong>Frontotemporal</strong></td><td><strong>No</strong> ofrecer IACE ni memantina</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Según PubMed, en los cuerpos de Lewy los IACE mejoran la cognición, la función global y las actividades de la vida diaria. La eficacia de la memantina es menos clara, pero se tolera bien.</p>
+
+      <h3>Dosis y titulación</h3>
+      <p>Según PubMed (algoritmo de Cummings y col., con las dosis de los prospectos de la FDA), coincidente con la clase de Neurología:</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Fármaco</th><th>Inicio</th><th>Titulación</th><th>Mantenimiento</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Donepezilo</strong> VO</td><td><span class="dato">5 mg/día</span>, una toma (la clase lo indica al acostarse)</td><td><span class="dato">10 mg/día</span> después de <span class="dato">4-6 semanas</span>. En el moderado-grave puede subirse a <span class="dato">23 mg/día</span> tras al menos <span class="dato">3 meses</span> más</td><td><span class="dato">5-10 mg/día</span>; <span class="dato">10-23 mg/día</span> en el moderado-grave</td></tr>
+            <tr><td><strong>Rivastigmina</strong> VO</td><td><span class="dato">3 mg/día</span> en dos tomas</td><td>Subir a <span class="dato">6</span>, <span class="dato">9</span> y <span class="dato">12 mg/día</span>, con al menos <span class="dato">2 semanas</span> en cada dosis</td><td><span class="dato">6-12 mg/día</span></td></tr>
+            <tr><td><strong>Rivastigmina</strong> transdérmica</td><td><span class="dato">4,6 mg/24 h</span></td><td><span class="dato">9,5 mg/24 h</span> después de al menos <span class="dato">4 semanas</span>; <span class="dato">13,3 mg/24 h</span> tras <span class="dato">4 semanas</span> más</td><td><span class="dato">9,5-13,3 mg/24 h</span></td></tr>
+            <tr><td><strong>Galantamina</strong> VO</td><td><span class="dato">8 mg/día</span> (dos tomas con comida; la de liberación prolongada, una toma a la mañana)</td><td><span class="dato">16 mg/día</span> después de al menos <span class="dato">4 semanas</span>; <span class="dato">24 mg/día</span> tras <span class="dato">4 semanas</span> más</td><td><span class="dato">16-24 mg/día</span></td></tr>
+            <tr><td><strong>Memantina</strong> VO</td><td><span class="dato">5 mg/día</span></td><td><span class="dato">+5 mg</span> por semana</td><td><span class="dato">20 mg/día</span> en dos tomas</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>El parche de rivastigmina de <span class="dato">9,5 mg/24 h</span> rinde como <span class="dato">6 mg c/12 h</span> por vía oral, con unos dos tercios menos de efectos gastrointestinales.</p>
+
+      <h3>Efectos adversos</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Grupo</th><th>Efectos a vigilar</th></tr></thead>
+          <tbody>
+            <tr><td><strong>IACE</strong></td><td><strong>Bradicardia</strong>, <strong>síncope</strong> y <strong>efectos gastrointestinales</strong> (náuseas, vómitos, diarrea, anorexia, pérdida de peso). Con el donepezilo, además, insomnio, fatiga y calambres</td></tr>
+            <tr><td><strong>Memantina</strong></td><td>Mareos, cefalea, constipación, confusión</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «Demencias | Trastornos neurocognitivos», Psiquiatría: tratamiento farmacológico sintomático. Clase «Enfermedades neurodegenerativas», Dr. Gustavo Grilli (Neurología): dosis y efectos adversos. NICE NG97, 2018 (<a href="https://www.nice.org.uk/guidance/ng97">guía</a>). Según PubMed: Cummings JL y col., «A practical algorithm for managing Alzheimer's disease: what, when, and why?», Ann Clin Transl Neurol 2015;2(3):307-23 (<a href="https://doi.org/10.1002/acn3.166">DOI</a>); McKeith IG y col., Neurology 2017;89(1):88-100 (<a href="https://doi.org/10.1212/WNL.0000000000004058">DOI</a>).</p>
+    </section>
+
+    <!-- ============ 15 ============ -->
+    <section class="seccion s-tratamiento" id="antiamiloide">
+      <span class="seccion__pestana"><b>15</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Terapias modificadoras: anticuerpos antiamiloide</h2>
+
+      <p>Son <strong>anticuerpos monoclonales antiamiloide</strong>, disponibles solo en algunos países y centros. La clase marca cuatro condiciones:</p>
+      <ul>
+        <li>Se indican solo en pacientes <strong>cuidadosamente seleccionados</strong>, con <strong>enfermedad temprana</strong> y <strong>confirmación de amiloide</strong>.</li>
+        <li>Requieren <strong>evaluación de elegibilidad</strong>, <strong>RM seriadas</strong> y <strong>vigilancia de ARIA</strong>.</li>
+        <li>El <strong>acceso, la aprobación y la cobertura varían</strong> según la jurisdicción.</li>
+        <li>La indicación es una <strong>decisión compartida</strong> sobre beneficio, riesgos y carga asistencial.</li>
+      </ul>
+
+      <h3>Lecanemab y donanemab</h3>
+      <p>Según PubMed, con los ensayos de fase 3 y las recomendaciones de uso de cada fármaco:</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Aspecto</th><th>Lecanemab</th><th>Donanemab</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Blanco</strong></td><td><strong>Protofibrillas solubles</strong> de β-amiloide</td><td>Formas de β-amiloide <strong>modificadas con piroglutamato</strong>, propias de la placa</td></tr>
+            <tr><td><strong>Candidatos</strong></td><td>DCL o demencia leve por Alzheimer, <strong>MMSE 22-30</strong>, amiloide confirmado por PET o LCR</td><td>DCL o demencia leve por Alzheimer, <strong>MMSE 20-30</strong>, amiloide confirmado por PET o LCR. No hace falta PET de tau</td></tr>
+            <tr><td><strong>Dosis</strong></td><td><span class="dato">10 mg/kg</span> IV cada <span class="dato">2 semanas</span></td><td><span class="dato">700 mg</span> IV cada <span class="dato">4 semanas</span> por 3 dosis, después <span class="dato">1400 mg</span> cada <span class="dato">4 semanas</span></td></tr>
+            <tr><td><strong>Ensayo pivote</strong></td><td><strong>CLARITY AD</strong> (1795 pacientes, 18 meses): el CDR-SB empeoró <span class="dato">1,21</span> con lecanemab y <span class="dato">1,66</span> con placebo (diferencia <span class="dato">−0,45</span>)</td><td><strong>TRAILBLAZER-ALZ 2</strong> (1736 pacientes, 76 semanas): el CDR-SB empeoró <span class="dato">1,72</span> con donanemab y <span class="dato">2,42</span> con placebo (diferencia <span class="dato">−0,7</span>)</td></tr>
+            <tr><td><strong>ARIA-E</strong> en el ensayo</td><td><span class="dato">12,6 %</span></td><td><span class="dato">24,0 %</span> (la cuarta parte, sintomáticos)</td></tr>
+            <tr><td><strong>Reacciones a la infusión</strong></td><td><span class="dato">26,4 %</span></td><td><span class="dato">8,7 %</span></td></tr>
+            <tr><td><strong>RM de control</strong></td><td>Después de la <strong>5ª, 7ª y 14ª</strong> infusión; otra a la <span class="dato">semana 52</span> en portadores de APOE4 o con ARIA previa</td><td>Antes de la <strong>2ª, 3ª, 4ª y 7ª</strong> infusión; otra antes de la <strong>12ª</strong> en los de alto riesgo</td></tr>
+            <tr><td><strong>Cuándo suspender</strong></td><td>ARIA grave (radiológico o sintomático), cualquier <strong>macrohemorragia</strong>, un área de siderosis superficial, <strong>más de 10 microhemorragias</strong> nuevas, <strong>más de 2 episodios</strong> de ARIA o necesidad de <strong>anticoagular</strong></td><td>Se puede <strong>suspender</strong> si el PET muestra que se eliminó el amiloide, típicamente a los <span class="dato">12-18 meses</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Según PubMed, en el ensayo TRAILBLAZER-ALZ 6 una <strong>titulación más gradual</strong> del donanemab bajó el ARIA-E de <span class="dato">23,7 %</span> a <span class="dato">13,7 %</span> a las 24 semanas, con la misma reducción de amiloide.</p>
+
+      <h3>ARIA: qué son y quién está en riesgo</h3>
+      <ul>
+        <li><strong>ARIA-E</strong>: <strong>edema</strong> o efusión. <strong>ARIA-H</strong>: <strong>hemorragia</strong> (microhemorragias, siderosis superficial).</li>
+        <li>Suelen ser <strong>asintomáticas o leves y autolimitadas</strong>. Cuando dan síntomas, son inespecíficos: <strong>cefalea, mareos, más confusión</strong>. Ante síntomas, RM no programada.</li>
+        <li><strong>APOE4</strong>: el riesgo sube con cada copia. Con lecanemab, el ARIA-E fue de <span class="dato">5,4 %</span> en los no portadores, <span class="dato">10,9 %</span> en los heterocigotas y <span class="dato">32,6 %</span> en los <strong>homocigotas</strong>. Por eso se recomienda <strong>genotipar APOE</strong> antes de indicar; la FDA puso una advertencia de recuadro para el donanemab en los homocigotas.</li>
+        <li><strong>Exclusiones en la RM previa</strong>: <strong>más de 4 microhemorragias</strong>, siderosis superficial y una contribución vascular importante al deterioro.</li>
+      </ul>
+
+      <div class="importante">
+        <p><strong>¡Importante!</strong> La <strong>anticoagulación</strong> aumenta el riesgo de hemorragia: las recomendaciones de uso del lecanemab indican <strong>no darlo a quien necesita anticoagulantes</strong>. El beneficio es <strong>moderado</strong> (enlentece la caída, no la frena ni la revierte), y eso tiene que quedar claro en la decisión compartida.</p>
+      </div>
+
+      <p class="cita">Clase «Demencias | Trastornos neurocognitivos», Psiquiatría: terapias modificadoras en Alzheimer. Según PubMed: van Dyck CH y col., «Lecanemab in Early Alzheimer's Disease», N Engl J Med 2023;388(1):9-21 (<a href="https://doi.org/10.1056/NEJMoa2212948">DOI</a>); Sims JR y col., «Donanemab in Early Symptomatic Alzheimer Disease: The TRAILBLAZER-ALZ 2 Randomized Clinical Trial», JAMA 2023;330(6):512-27 (<a href="https://doi.org/10.1001/jama.2023.13239">DOI</a>); Cummings J y col., «Lecanemab: Appropriate Use Recommendations», J Prev Alzheimers Dis 2023;10(3):362-77 (<a href="https://doi.org/10.14283/jpad.2023.30">DOI</a>); Rabinovici GD y col., «Donanemab: Appropriate use recommendations», J Prev Alzheimers Dis 2025;12(5):100150 (<a href="https://doi.org/10.1016/j.tjpad.2025.100150">DOI</a>); Wang H y col., «Modified titration of donanemab reduces ARIA risk and maintains amyloid reduction», Alzheimers Dement 2025;21(4):e70062 (<a href="https://doi.org/10.1002/alz.70062">DOI</a>).</p>
+    </section>
+
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>¿Qué separa el deterioro cognitivo leve del trastorno neurocognitivo mayor?</summary>
+          <div class="fc__r">La <strong>pérdida de independencia</strong> en las actividades cotidianas. En el leve el declive es objetivo, pero la autonomía global se conserva.</div>
+        </details>
+        <details class="fc s-generalidades">
+          <summary>¿Cuáles son las dos exclusiones del criterio DSM-5-TR de trastorno neurocognitivo mayor?</summary>
+          <div class="fc__r">Que <strong>no ocurra exclusivamente durante un delirium</strong> y que <strong>no se explique mejor por otro trastorno mental</strong>.</div>
+        </details>
+        <details class="fc s-generalidades">
+          <summary>¿Qué seis dominios cognitivos puede afectar?</summary>
+          <div class="fc__r">Memoria, atención, función ejecutiva, lenguaje, percepción-motricidad y cognición social.</div>
+        </details>
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué dos proteínas definen la patología del Alzheimer y qué región se compromete primero?</summary>
+          <div class="fc__r"><strong>β-amiloide</strong> y <strong>tau fosforilada</strong>. En las formas típicas, la región <strong>temporomedial</strong>.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿Cuál es el síntoma inicial típico del Alzheimer y en qué orden se pierde la orientación?</summary>
+          <div class="fc__r">La dificultad para <strong>aprender y recordar información nueva</strong>. Primero se desorienta en el <strong>tiempo</strong>, después en el <strong>espacio</strong>.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿Por qué la historia del informante es indispensable en el Alzheimer?</summary>
+          <div class="fc__r">Por la <strong>anosognosia</strong>: el paciente no reconoce o minimiza sus fallas.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿Qué dominios afecta típicamente la demencia vascular y su curso es siempre escalonado?</summary>
+          <div class="fc__r"><strong>Velocidad de procesamiento</strong> y <strong>función ejecutiva</strong>. El curso escalonado es posible, <strong>no obligatorio</strong>.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿Cuáles son los cuatro rasgos centrales de la demencia con cuerpos de Lewy (McKeith 2017)?</summary>
+          <div class="fc__r"><strong>Fluctuaciones</strong>, <strong>alucinaciones visuales</strong> bien formadas, <strong>trastorno de conducta del sueño REM</strong> y <strong>parkinsonismo</strong>.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿Cuáles son los tres biomarcadores indicativos de Lewy?</summary>
+          <div class="fc__r">Captación reducida del <strong>transportador de dopamina</strong> (SPECT o PET), <strong>MIBG miocárdica</strong> baja y <strong>polisomnografía</strong> con REM sin atonía.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿Cuándo es probable una demencia con cuerpos de Lewy?</summary>
+          <div class="fc__r">Con <strong>dos o más rasgos centrales</strong>, o con <strong>uno central + uno o más biomarcadores indicativos</strong>. Nunca solo con biomarcadores.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿Qué es la regla del año?</summary>
+          <div class="fc__r">Si la demencia aparece antes del parkinsonismo o dentro del primer año, es <strong>cuerpos de Lewy</strong>. Si aparece más de un año después de los síntomas motores, es <strong>demencia de la enfermedad de Parkinson</strong>.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿Cuáles son los seis rasgos de Rascovsky y cuántos hacen falta para una variante conductual posible?</summary>
+          <div class="fc__r">Desinhibición, apatía, pérdida de empatía, conducta perseverativa o compulsiva, hiperoralidad y perfil disejecutivo. Hacen falta <strong>3 de 6</strong>.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿Qué agrega la variante conductual «probable» sobre la «posible»?</summary>
+          <div class="fc__r"><strong>Deterioro funcional</strong> y <strong>neuroimagen característica</strong> frontal o temporal anterior.</div>
+        </details>
+        <details class="fc s-diferenciales">
+          <summary>¿Qué etiología debuta con conducta o lenguaje y suele empezar antes?</summary>
+          <div class="fc__r">La <strong>frontotemporal</strong>, con la memoria relativamente preservada al inicio en algunos casos.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary>¿Qué escalas se le aplican al informante y qué mide cada una?</summary>
+          <div class="fc__r"><strong>AD8 / IQCODE</strong>: cambio cognitivo. <strong>FAQ y Lawton-Brody</strong>: actividades instrumentales. <strong>Barthel</strong>: actividades básicas.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary>¿Qué lugar tienen el MoCA y el MMSE?</summary>
+          <div class="fc__r">Son de <strong>cribado</strong>, no diagnósticos únicos; se interpretan según la escolaridad, el idioma y el contexto.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary>¿Qué laboratorio básico pide la clase?</summary>
+          <div class="fc__r">Hemograma, electrolitos, función renal y hepática, <strong>TSH</strong> y <strong>vitamina B12</strong>; VIH y sífilis según la sospecha.</div>
+        </details>
+        <details class="fc s-diferenciales">
+          <summary>¿Qué tres cosas hay que evaluar siempre antes de diagnosticar una demencia?</summary>
+          <div class="fc__r"><strong>Delirium</strong>, <strong>depresión</strong> y <strong>medicamentos</strong> (anticolinérgicos, sedantes, polifarmacia).</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>Ante agitación en un paciente con demencia, ¿qué causas se buscan primero?</summary>
+          <div class="fc__r"><strong>Dolor</strong>, <strong>infección</strong>, <strong>estreñimiento</strong>, sobrecarga ambiental y <strong>delirium</strong>.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Cuándo está indicado un antipsicótico en la demencia y cómo se usa?</summary>
+          <div class="fc__r">Solo con <strong>riesgo importante o sufrimiento grave</strong>, tras las medidas ambientales. <strong>Dosis mínima</strong>, tiempo limitado y reevaluación al menos cada <strong>6 semanas</strong> (NICE).</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Qué riesgos tienen los antipsicóticos en la demencia?</summary>
+          <div class="fc__r"><strong>ACV</strong>, <strong>sedación</strong> y <strong>mayor mortalidad</strong>, con un beneficio en general modesto. En Lewy, además, sensibilidad grave.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Cómo se titula el donepezilo y cómo la memantina?</summary>
+          <div class="fc__r">Donepezilo: <strong>5 mg/día</strong> y a <strong>10 mg/día</strong> después de 4-6 semanas. Memantina: <strong>5 mg/día</strong>, +5 mg por semana hasta <strong>20 mg/día</strong>.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Qué efectos adversos de los IACE marca la clase?</summary>
+          <div class="fc__r"><strong>Bradicardia</strong>, <strong>síncope</strong> y <strong>efectos gastrointestinales</strong>.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿En qué demencia NICE desaconseja los IACE y la memantina?</summary>
+          <div class="fc__r">En la <strong>frontotemporal</strong>. En la vascular, solo si se sospecha Alzheimer, Lewy o Parkinson asociados.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿A quién se le puede indicar un antiamiloide?</summary>
+          <div class="fc__r">DCL o demencia leve por Alzheimer con <strong>amiloide confirmado</strong> por PET o LCR, tras evaluar la elegibilidad (RM, APOE, anticoagulación) y en decisión compartida.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Qué son los ARIA y quiénes tienen más riesgo?</summary>
+          <div class="fc__r"><strong>ARIA-E</strong> (edema o efusión) y <strong>ARIA-H</strong> (hemorragia). El riesgo es mayor en los <strong>homocigotas para APOE4</strong>.</div>
+        </details>
+      </div>
+    </section>
+
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Triada clave</dt>
+        <dd><strong>Declive cognitivo + pérdida de independencia + sin delirium</strong> que lo explique. Perfiles: Alzheimer (amnesia), vascular (enlentecimiento), Lewy (fluctuación, alucinaciones visuales, parkinsonismo), frontotemporal (conducta o lenguaje).</dd>
+
+        <dt class="r-gold">Estudio de elección</dt>
+        <dd><strong>Historia con informante</strong> + cognición (MoCA o MMSE como cribado) + función (FAQ, Lawton-Brody, Barthel). Laboratorio con <strong>TSH y B12</strong>, y <strong>RM cerebral</strong>. Biomarcadores solo en contextos seleccionados.</dd>
+
+        <dt class="r-tto">Tratamiento de 1ª línea</dt>
+        <dd><strong>No farmacológico y apoyo al cuidador</strong> siempre. <strong>IACE</strong> en el Alzheimer leve a moderado y en Lewy; <strong>memantina</strong> en el moderado-grave. Antiamiloides solo en enfermedad temprana con amiloide confirmado.</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd>Inicio agudo o fluctuante: <strong>delirium</strong> hasta demostrar lo contrario. Agitación: buscar <strong>dolor, infección, estreñimiento</strong> antes de medicar. <strong>Lewy</strong>: no usar bloqueantes dopaminérgicos potentes. Antiamiloide con síntomas nuevos: <strong>RM por ARIA</strong>.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir de la clase «Demencias | Trastornos neurocognitivos» de Psiquiatría, con apoyo de la clase «Enfermedades neurodegenerativas» del Dr. Gustavo Grilli (Neurología). Ampliaciones según PubMed: criterios de la demencia con cuerpos de Lewy (McKeith y col., 2017); criterios de la variante conductual frontotemporal (Rascovsky y col., 2011); dosis y titulación de IACE y memantina (Cummings y col., 2015); lecanemab y donanemab (van Dyck y col., 2023; Sims y col., 2023; Cummings y col., 2023; Rabinovici y col., 2025; Wang y col., 2025). Guías: DSM-5-TR (APA, 2022) y NICE NG97 (2018). Material de estudio: no reemplaza el criterio clínico ni el protocolo institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+
+  // ---- Tema claro / oscuro ----
+  // Sin eleccion estampada manda el sistema; el boton la estampa y la guarda.
+  var raiz = document.documentElement;
+  var boton = document.getElementById('tema');
+
+  function temaActual(){
+    var estampado = raiz.getAttribute('data-theme');
+    if (estampado) return estampado;
+    return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+
+  if (boton){
+    var rotular = function(){
+      var actual = temaActual();
+      boton.setAttribute('aria-pressed', actual === 'dark' ? 'true' : 'false');
+      boton.setAttribute('aria-label', actual === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+    };
+    boton.addEventListener('click', function(){
+      var nuevo = temaActual() === 'dark' ? 'light' : 'dark';
+      raiz.setAttribute('data-theme', nuevo);
+      try { localStorage.setItem('wordmed-tema', nuevo); } catch (e) { /* sin persistencia */ }
+      rotular();
+    });
+    rotular();
+  }
+
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link, .ir-link'));
+
+  // Devuelve TODOS los enlaces al ancla: la misma seccion figura en el indice
+  // lateral y en el compacto, y los dos tienen que encenderse juntos.
+  function porMeta(hash){
+    return enlaces.filter(function(l){ return l.getAttribute('href') === '#' + hash; });
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var activos = porMeta(e.target.id);
+        if (!activos.length) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          activos.forEach(function(l){ l.setAttribute('aria-current', 'true'); });
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>

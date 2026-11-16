@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<script>
+(function(){
+  var enApp = typeof window.WordmedApp !== "undefined";
+  if (!enApp) {
+    /* En la web el cuadernillo se maqueta al ancho del dispositivo. */
+    var m = document.createElement("meta");
+    m.name = "viewport";
+    m.content = "width=device-width, initial-scale=1";
+    document.head.appendChild(m);
+    return;
+  }
+  /* En la app no se emite viewport: el WebView maqueta a su ancho por
+     omision y lo encoge para que entre, igual que al abrir el archivo a
+     mano. Sacar el meta despues de parsearlo no reencuadra nada, por eso
+     directamente no se emite. */
+  var s = document.createElement("style");
+  s.textContent = ".tema{display:none !important}";
+  document.head.appendChild(s);
+})();
+</script>
+<title>Espina Bífida y Mielomeningocele</title>
+<link rel="stylesheet" href="../../fuentes/fuentes.css">
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-bloque:1.95rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+
+  /* Que la barra de desplazamiento y los controles nativos acompanen al tema */
+  color-scheme: light dark;
+}
+
+/* Eleccion explicita de claro: solo hace falta para el color-scheme, los
+   tokens claros ya son la base sin estampar. */
+:root[data-theme="light"]{ color-scheme: light; }
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* Interruptor de tema claro / oscuro.
+   El estampado `data-theme` en la raíz ya lo respetan los bloques de tokens de
+   arriba; este botón sólo lo pone y lo guarda. Sin elección estampada mandan
+   las preferencias del sistema, que es el comportamiento por defecto. */
+.tema{
+  position:fixed; top:.7rem; right:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.tema:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.tema__icono{ width:1.15rem; height:1.15rem; display:block; }
+
+/* Se muestra el icono del tema al que se va a cambiar, no el actual.
+   Mismo escalonado que los tokens: base clara · sistema oscuro · elección explícita. */
+.tema__sol{ display:none; }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .tema__sol{ display:block; }
+  :root:not([data-theme="light"]) .tema__luna{ display:none; }
+}
+:root[data-theme="dark"] .tema__sol{ display:block; }
+:root[data-theme="dark"] .tema__luna{ display:none; }
+:root[data-theme="light"] .tema__sol{ display:none; }
+:root[data-theme="light"] .tema__luna{ display:block; }
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índices ---------- */
+/* Dos piezas complementarias y deliberadamente redundantes:
+   · .indice        — barra lateral fija, sólo en pantalla ancha, navegación permanente.
+   · .indice-rapido — tarjeta compacta al principio del cuerpo, visible en TODO ancho.
+   La lateral desaparece por debajo de 64rem, que es justo el ancho del panel de
+   Artifacts y del celular; sin la compacta el cuadernillo publicado se queda sin
+   índice. Las dos apuntan a los mismos anclajes y se resaltan juntas al desplazar. */
+
+/* 6.1 · Barra lateral */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+/* Rótulo de bloque intercalado en la lista lateral: no es un enlace, sólo
+   separa grupos de secciones para que 30 entradas no sean una tira plana. */
+.indice__bloque{
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+  margin:.9rem 0 .2rem; padding:0 .55rem;
+}
+.indice__bloque:first-child{ margin-top:0; }
+
+/* 6.2 · Índice compacto (va después de la portada, dentro del cuerpo) */
+.indice-rapido{
+  background:var(--hoja-hund);
+  border:1px solid var(--linea);
+  border-radius:var(--radio);
+  padding:1.1rem 1.2rem 1.2rem;
+}
+.indice-rapido__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .85rem;
+}
+/* auto-fit: una columna en el panel angosto, dos o tres en pantalla ancha */
+.indice-rapido__bloques{
+  list-style:none; margin:0; padding:0;
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(15rem, 1fr));
+  gap:1rem 2rem; align-items:start;
+}
+.ir-bloque{
+  display:block; margin-bottom:.4rem;
+  font-family:var(--f-titulo); font-size:.98rem; font-weight:700; line-height:1.3;
+  color:var(--tinta); text-decoration:none;
+  padding-bottom:.3rem; border-bottom:1px solid var(--linea-fuerte);
+}
+.ir-bloque:hover{ color:var(--cli-t); }
+.ir-secciones{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.05rem; }
+.ir-link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.55rem 1fr; align-items:baseline; gap:.4rem;
+  padding:.2rem .35rem; border-radius:2px;
+  font-size:.86rem; line-height:1.4; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.ir-link > b{
+  font-family:var(--f-dato); font-size:.76rem; font-weight:700;
+  font-variant-numeric:tabular-nums; color:var(--ct); opacity:.85;
+}
+.ir-link:hover{ background:var(--hoja); color:var(--tinta); }
+.ir-link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Título de bloque y ficha de sección ---------- */
+
+/* Anuncia un grupo de secciones. Neutro en color a propósito: los siete colores
+   tienen significado clínico fijo y un bloque agrupa secciones de varios. La
+   regla de abajo lleva el degradado completo de la paleta, igual que la pestaña
+   de repaso y la cabecera de la ficha relámpago.
+   Sin <svg> adentro: el exportador a Word aparea los diagramas con las figuras
+   por contador posicional sobre el HTML crudo (ver exportar_docx.py). */
+.bloque{
+  margin:1.4rem 0 0; padding:0;
+  text-align:center; scroll-margin-top:2.5rem;
+  display:flex; flex-direction:column; align-items:center; gap:.3rem;
+  font-weight:400;
+}
+.bloque:first-child{ margin-top:0; }
+.bloque__rotulo{
+  font-family:var(--f-texto);
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+}
+.bloque__nombre{
+  font-family:var(--f-titulo); font-size:var(--t-bloque); font-weight:700; line-height:1.15;
+  letter-spacing:-.01em; color:var(--tinta); text-wrap:balance; max-width:32ch;
+}
+.bloque::after{
+  content:""; width:7rem; height:2.5px; margin-top:.5rem; border-radius:2px;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+}
+
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.5rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-column:1; grid-row:1; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+/* El icono ocupa la columna 1 y NADA MAS. Todo el resto del contenido se
+   apila en la columna 2, una fila por elemento, sin importar cuantos
+   parrafos haya.
+
+   Sin esta regla la caja solo funciona con un unico <p>: a partir del
+   segundo, la autocolocacion del grid empieza a repartir contenido en la
+   columna del icono, que es `auto` y por lo tanto se ensancha hasta abarcar
+   el parrafo que le toco. La columna `1fr` queda entonces reducida a una
+   tira angosta, el texto se parte en dos columnas desbalanceadas y la caja
+   crece hasta volverse ilegible. */
+.importante > :not(.importante__icono){ grid-column:2; }
+.importante__titulo{
+  grid-row:1;
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante ul, .importante ol{ margin:0; padding-left:1.15rem; }
+.importante li + li{ margin-top:.3rem; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso, .tema{ display:none !important; }
+  /* La lateral no se imprime, pero la compacta sí: en papel es la tabla de
+     contenidos del cuadernillo. */
+  .indice-rapido{ display:block; break-inside:avoid; page-break-inside:avoid; margin-bottom:1.2rem; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .bloque{
+    margin:1.6rem 0 1rem;
+    break-after:avoid; page-break-after:avoid;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+<style>
+/* Fuentes de la capa de contenido. Va después del estilo del
+   cuadernillo para pisar las de Windows, que no se pueden
+   redistribuir y no existen en Android. */
+:root{
+  --f-titulo:'Spectral',Georgia,'Times New Roman',serif;
+  --f-texto:'Open Sans',system-ui,-apple-system,sans-serif;
+  --f-dato:'Cascadia Mono','Cascadia Code',ui-monospace,Consolas,monospace;
+}
+/* Botón de volver, espejo del de tema que ya trae el cuadernillo. */
+.volver{
+  position:fixed; top:.7rem; left:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.volver:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.volver__icono{ width:1.15rem; height:1.15rem; display:block; }
+</style>
+</head>
+<body data-clave="neurologia/5-espina-bifida-mielomeningocele">
+<script>
+/* Aplica el tema guardado antes de pintar. Va aca arriba a proposito: si
+   esperara al script del final, el documento parpadearia en el tema del
+   sistema antes de corregirse. */
+(function(){
+  try {
+    var guardado = localStorage.getItem('wordmed-tema');
+    if (guardado === 'dark' || guardado === 'light') {
+      document.documentElement.setAttribute('data-theme', guardado);
+    }
+  } catch (e) { /* almacenamiento bloqueado: manda el sistema */ }
+})();
+</script>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<button class="tema" id="tema" type="button" aria-pressed="false" aria-label="Cambiar a modo oscuro">
+  <svg class="tema__icono tema__sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.2"></circle>
+    <path d="M12 2.6v2.1M12 19.3v2.1M5.1 5.1l1.5 1.5M17.4 17.4l1.5 1.5M2.6 12h2.1M19.3 12h2.1M5.1 18.9l1.5-1.5M17.4 6.6l1.5-1.5"></path>
+  </svg>
+  <svg class="tema__icono tema__luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20.4 14.2A8.6 8.6 0 0 1 9.8 3.6a8.6 8.6 0 1 0 10.6 10.6z"></path>
+  </svg>
+</button>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li class="indice__bloque">A · Generalidades</li>
+      <li><a class="indice__link i-generalidades"  href="#definicion">Definición y causas</a></li>
+      <li><a class="indice__link i-importantes"    href="#formas">Formas</a></li>
+
+      <li class="indice__bloque">B · Clínica</li>
+      <li><a class="indice__link i-clinica"        href="#oculta">Espina bífida oculta</a></li>
+      <li><a class="indice__link i-clinica"        href="#manifiesta">Espina bífida manifiesta</a></li>
+      <li><a class="indice__link i-clinica"        href="#nivel">Nivel funcional</a></li>
+
+      <li class="indice__bloque">C · Manejo</li>
+      <li><a class="indice__link i-tratamiento"    href="#neonatal">Cuidados al nacer</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#cirugia">Cirugía</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#seguimiento">Equipo y prevención</a></li>
+
+      <li class="indice__bloque">Cierre</li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Neurología · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Espina Bífida y Mielomeningocele</h1>
+      <p class="portada__bajada">El defecto de cierre del tubo neural: sus formas, de la oculta al mielomeningocele, qué función conserva el niño según el nivel de la lesión, qué hacer en las primeras 12 horas de vida y cómo se previene.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">8 secciones</span>
+        <span class="etiqueta s-importantes">Oculta · meningocele · MMC</span>
+        <span class="etiqueta s-clinica">Nivel funcional</span>
+        <span class="etiqueta s-tratamiento">Cirugía antes de las 12 h</span>
+      </div>
+    </header>
+
+    <nav class="indice-rapido" aria-label="Contenido del cuadernillo">
+      <p class="indice-rapido__rotulo">Contenido</p>
+      <ol class="indice-rapido__bloques">
+        <li>
+          <a class="ir-bloque" href="#bloque-a">Bloque A · Generalidades</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades" href="#definicion"><b>01</b> Definición y causas</a></li>
+            <li><a class="ir-link i-importantes"   href="#formas"><b>02</b> Formas: oculta y manifiesta</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-b">Bloque B · Clínica</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-clinica" href="#oculta"><b>03</b> Espina bífida oculta</a></li>
+            <li><a class="ir-link i-clinica" href="#manifiesta"><b>04</b> Espina bífida manifiesta y trastornos asociados</a></li>
+            <li><a class="ir-link i-clinica" href="#nivel"><b>05</b> Clasificación según el nivel funcional</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-c">Bloque C · Manejo</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-tratamiento" href="#neonatal"><b>06</b> Cuidados al nacer</a></li>
+            <li><a class="ir-link i-tratamiento" href="#cirugia"><b>07</b> Pasos quirúrgicos</a></li>
+            <li><a class="ir-link i-tratamiento" href="#seguimiento"><b>08</b> Equipo multidisciplinario y prevención</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#repaso">Cierre</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-clinica"     href="#repaso"><b>·</b> Repaso activo</a></li>
+            <li><a class="ir-link i-importantes" href="#relampago"><b>·</b> Ficha Relámpago</a></li>
+          </ul>
+        </li>
+      </ol>
+    </nav>
+
+    <h2 class="bloque" id="bloque-a">
+      <span class="bloque__rotulo">Bloque A</span>
+      <span class="bloque__nombre">Generalidades</span>
+    </h2>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="definicion">
+      <span class="seccion__pestana"><b>01</b> Generalidades</span>
+      <h2 class="seccion__titulo">Definición y causas</h2>
+
+      <p>La <strong>espina bífida</strong> es una <strong>malformación congénita del cierre del tubo neural</strong> que puede afectar <strong>solo las vértebras</strong> o, además, el <strong>tejido nervioso</strong>. Consiste en la <strong>falta de fusión del arco posterior</strong> de una, dos o más vértebras.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Rasgo</th><th>Dato</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Cuándo ocurre</strong></td><td>En las <strong>primeras semanas de gestación</strong>: la clase lo ubica entre los <strong>días 21 y 38</strong></td></tr>
+            <tr><td><strong>Dónde</strong></td><td>Más frecuente en la <strong>zona lumbosacra</strong>; también puede ser dorsal o cervical</td></tr>
+            <tr><td><strong>Causa</strong></td><td><strong>Multifactorial</strong>: predisposición familiar, <strong>déficit de ácido fólico</strong> y zinc, madres de edad avanzada o muy jóvenes, HTA y diabetes gestacional, drogas como la cocaína y el <strong>valproato</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>El momento importa para la prevención: el tubo neural se cierra en las <strong>primeras semanas</strong>, muchas veces antes de que la mujer sepa que está embarazada. Por eso el ácido fólico tiene que estar presente desde antes de la concepción.</p>
+
+      <p class="cita">Clase «Espina bífida-MMC», Dr. Gustavo Grilli.</p>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-importantes" id="formas">
+      <span class="seccion__pestana"><b>02</b> Clasificación</span>
+      <h2 class="seccion__titulo">Formas: oculta y manifiesta</h2>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 840 330" role="img" aria-label="Corte transversal de las tres formas: en la oculta falta el arco posterior pero la piel está intacta y la médula en su lugar; en el meningocele las meninges forman un saco con líquido cefalorraquídeo cubierto de piel y la médula queda en el canal; en el mielomeningocele la médula y las raíces salen dentro del saco y la placa neural queda expuesta">
+          <g>
+            <path d="M20 86 L260 86" stroke="currentColor" stroke-width="1.6" fill="none"></path>
+            <path d="M126 86 L124 74 M132 86 L132 72 M138 86 L140 74" stroke="currentColor" stroke-width="1.2" fill="none"></path>
+            <rect x="85" y="200" width="90" height="48" rx="10" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="1.2"></rect>
+            <circle cx="130" cy="160" r="28" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3"></circle>
+            <circle cx="130" cy="160" r="14" fill="var(--c)" fill-opacity="0.65" stroke="currentColor"></circle>
+            <path d="M102 156 L95 118 M158 156 L165 118" stroke="currentColor" stroke-width="5" fill="none"></path>
+            <text x="140" y="280" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">Oculta</text>
+            <text x="140" y="300" text-anchor="middle" font-size="11" fill="currentColor">falta el arco, piel intacta</text>
+            <text x="140" y="316" text-anchor="middle" font-size="11" fill="currentColor">médula en su lugar</text>
+          </g>
+          <g>
+            <path d="M300 86 L388 86 C388 20 472 20 472 86 L560 86" stroke="currentColor" stroke-width="1.6" fill="none"></path>
+            <path d="M392 118 C385 30 475 30 468 118 Z" fill="var(--c)" fill-opacity="0.15" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3"></path>
+            <rect x="385" y="200" width="90" height="48" rx="10" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="1.2"></rect>
+            <circle cx="430" cy="160" r="28" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3"></circle>
+            <circle cx="430" cy="160" r="14" fill="var(--c)" fill-opacity="0.65" stroke="currentColor"></circle>
+            <path d="M402 156 L395 118 M458 156 L465 118" stroke="currentColor" stroke-width="5" fill="none"></path>
+            <text x="430" y="80" text-anchor="middle" font-size="11" fill="currentColor">LCR</text>
+            <text x="430" y="280" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">Meningocele</text>
+            <text x="430" y="300" text-anchor="middle" font-size="11" fill="currentColor">saco de meninges con LCR,</text>
+            <text x="430" y="316" text-anchor="middle" font-size="11" fill="currentColor">cubierto; médula en el canal</text>
+          </g>
+          <g>
+            <path d="M600 86 L680 86 M780 86 L830 86" stroke="currentColor" stroke-width="1.6" fill="none"></path>
+            <path d="M692 118 C680 40 700 26 730 26 C760 26 780 40 768 118" fill="var(--c)" fill-opacity="0.15" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3"></path>
+            <path d="M700 40 C712 28 748 28 760 40" stroke="var(--c)" stroke-width="7" fill="none"></path>
+            <path d="M720 150 C716 110 712 70 712 46 M740 150 C744 110 748 70 748 46" stroke="var(--c)" stroke-width="3" fill="none"></path>
+            <rect x="685" y="200" width="90" height="48" rx="10" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="1.2"></rect>
+            <circle cx="730" cy="160" r="28" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3"></circle>
+            <circle cx="730" cy="160" r="12" fill="var(--c)" fill-opacity="0.45" stroke="currentColor"></circle>
+            <path d="M702 156 L695 118 M758 156 L765 118" stroke="currentColor" stroke-width="5" fill="none"></path>
+            <text x="730" y="16" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">placa neural expuesta</text>
+            <text x="730" y="280" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">Mielomeningocele</text>
+            <text x="730" y="300" text-anchor="middle" font-size="11" fill="currentColor">médula y raíces en el saco,</text>
+            <text x="730" y="316" text-anchor="middle" font-size="11" fill="currentColor">sin piel que las cubra</text>
+          </g>
+        </svg>
+        <figcaption>Corte transversal de una vértebra lumbar en las tres formas. La línea superior es la piel; el círculo punteado, las meninges; el relleno de color, la médula. Lo que separa cada forma es <strong>qué sale por el defecto</strong>: nada, solo meninges con LCR, o meninges con tejido nervioso.</figcaption>
+      </figure>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Forma</th><th>Qué sale por el defecto</th><th>Clínica</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Oculta</strong>, sin o con estigmas</td><td>Nada: solo falta la fusión de los arcos posteriores</td><td>Sin manifestaciones; a veces un estigma cutáneo</td></tr>
+            <tr><td><strong>Manifiesta: meningocele</strong></td><td><strong>Meninges</strong> en forma de saco</td><td>Déficit motor, sensitivo e incontinencia esfinteriana</td></tr>
+            <tr><td><strong>Manifiesta: mielomeningocele</strong></td><td><strong>Meninges y médula espinal</strong> en forma de saco</td><td>Déficit motor, sensitivo e incontinencia esfinteriana</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La clase presenta el meningocele y el mielomeningocele con la misma lista de déficits. En la bibliografía general, el meningocele, que no lleva tejido nervioso en el saco, suele tener <strong>menos compromiso neurológico</strong> que el mielomeningocele.</p>
+
+      <p class="cita">Clase «Espina bífida-MMC», Dr. Gustavo Grilli: formas y esquemas del meningocele y del mielomeningocele.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-b">
+      <span class="bloque__rotulo">Bloque B</span>
+      <span class="bloque__nombre">Clínica</span>
+    </h2>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-clinica" id="oculta">
+      <span class="seccion__pestana"><b>03</b> Cuadro clínico</span>
+      <h2 class="seccion__titulo">Espina bífida oculta</h2>
+
+      <ul>
+        <li>Es la <strong>falta de fusión de los arcos posteriores vertebrales</strong>: falta la apófisis espinosa y la parte adyacente de las láminas.</li>
+        <li><strong>No da manifestaciones clínicas.</strong></li>
+        <li>Puede ser solo un <strong>hallazgo radiológico</strong> o presentar algún <strong>estigma cutáneo</strong> en la región lumbosacra; la clase los muestra en fotografías.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>«Oculta» no siempre significa inocente.</strong> Un estigma cutáneo lumbosacro puede marcar una lesión de la médula por debajo: <strong>diastematomielia</strong>, <strong>médula anclada</strong> o <strong>lipoma del filum</strong>. El estigma es la razón para estudiar.</p>
+      </div>
+
+      <p class="cita">Clase «Espina bífida-MMC», Dr. Gustavo Grilli: espina bífida oculta, radiografía y estigmas cutáneos.</p>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-clinica" id="manifiesta">
+      <span class="seccion__pestana"><b>04</b> Cuadro clínico</span>
+      <h2 class="seccion__titulo">Espina bífida manifiesta y trastornos asociados</h2>
+
+      <ul>
+        <li><strong>Incidencia</strong>: la clase da <strong>1-2 casos cada 1000</strong>. Dice «habitantes», pero una cifra de malformación congénita se expresa cada 1000 <strong>nacidos vivos</strong>.</li>
+        <li><strong>Riesgo de recurrencia</strong>: aumenta al <strong>5 %</strong> si hay un hermano con mielomeningocele y al <strong>15 %</strong> si hay dos.</li>
+        <li>Las <strong>meninges, y en el mielomeningocele también la médula, afloran en forma de saco</strong> por el defecto óseo.</li>
+        <li>Se acompañan de <strong>déficit motor, déficit sensitivo e incontinencia esfinteriana</strong>.</li>
+      </ul>
+
+      <h3>Trastornos asociados</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Sistema</th><th>Trastorno</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Sistema nervioso</strong></td><td><strong>Hidrocefalia</strong> · <strong>malformación de Arnold-Chiari tipo II</strong> · siringomielia · trastorno del desarrollo mental</td></tr>
+            <tr><td><strong>Riñón y vía urinaria</strong></td><td>Malformaciones renales y de las vías urinarias</td></tr>
+            <tr><td><strong>Ortopédico</strong></td><td>Pie bot · cifoescoliosis · displasia de caderas · artrogriposis múltiple</td></tr>
+            <tr><td><strong>Endocrino</strong></td><td>Alteraciones endócrinas</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «Espina bífida-MMC», Dr. Gustavo Grilli: espina bífida manifiesta y trastornos asociados.</p>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-clinica" id="nivel">
+      <span class="seccion__pestana"><b>05</b> Cuadro clínico</span>
+      <h2 class="seccion__titulo">Clasificación según el nivel funcional</h2>
+
+      <p>El nivel de la lesión define qué músculos conserva el niño y, con eso, cuánto va a poder caminar. Cuanto <strong>más bajo el nivel</strong>, más función.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 340" role="img" aria-label="Grados del mielomeningocele por nivel: grado I D8 a D12 con marcha solo terapéutica; grado II L1 a L3 con marcha domiciliaria; grado III L4 a S1 con marcha comunitaria; grado IV S1 a S2 con marcha casi sin equipamiento">
+          <defs>
+            <marker id="eb-niv" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <rect x="30" y="20" width="130" height="64" rx="6" fill="var(--c)" fill-opacity="0.10" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="95" y="48" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Grado I</text>
+          <text x="95" y="68" text-anchor="middle" font-size="11.5" fill="currentColor">D8-D12</text>
+          <rect x="30" y="94" width="130" height="64" rx="6" fill="var(--c)" fill-opacity="0.22" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="95" y="122" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Grado II</text>
+          <text x="95" y="142" text-anchor="middle" font-size="11.5" fill="currentColor">L1-L3</text>
+          <rect x="30" y="168" width="130" height="64" rx="6" fill="var(--c)" fill-opacity="0.36" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="95" y="196" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Grado III</text>
+          <text x="95" y="216" text-anchor="middle" font-size="11.5" fill="currentColor">L4-S1</text>
+          <rect x="30" y="242" width="130" height="64" rx="6" fill="var(--c)" fill-opacity="0.52" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="95" y="270" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Grado IV</text>
+          <text x="95" y="290" text-anchor="middle" font-size="11.5" fill="currentColor">S1-S2</text>
+
+          <text x="190" y="46" font-size="12" fill="currentColor"><tspan font-weight="700">Conserva</tspan>: flexoextensión de tronco</text>
+          <text x="190" y="66" font-size="12" fill="currentColor"><tspan font-weight="700">Marcha</tspan>: solo terapéutica, ortesis largas con reciprocador</text>
+          <text x="190" y="120" font-size="12" fill="currentColor"><tspan font-weight="700">Conserva</tspan>: flexoaducción de caderas</text>
+          <text x="190" y="140" font-size="12" fill="currentColor"><tspan font-weight="700">Marcha</tspan>: domiciliaria, ortesis largas y cinturón pélvico</text>
+          <text x="190" y="194" font-size="12" fill="currentColor"><tspan font-weight="700">Conserva</tspan>: extensión de rodillas (cuádriceps)</text>
+          <text x="190" y="214" font-size="12" fill="currentColor"><tspan font-weight="700">Marcha</tspan>: comunitaria, de ortesis largas a cortas</text>
+          <text x="190" y="268" font-size="12" fill="currentColor"><tspan font-weight="700">Conserva</tspan>: flexión plantar del tobillo</text>
+          <text x="190" y="288" font-size="12" fill="currentColor"><tspan font-weight="700">Marcha</tspan>: con valvas cortas o sin equipamiento</text>
+
+          <line x1="780" y1="24" x2="780" y2="300" stroke="currentColor" stroke-width="1.6" marker-end="url(#eb-niv)"></line>
+          <text x="768" y="164" text-anchor="middle" font-size="11.5" fill="currentColor" transform="rotate(-90 768 164)">más función</text>
+        </svg>
+        <figcaption>Cada grado agrega un grupo muscular al anterior. El salto que más pesa es el <strong>cuádriceps</strong>: con la rodilla que se extiende, el niño pasa de caminar solo en la casa a caminar en la comunidad.</figcaption>
+      </figure>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Grado</th><th>Nivel</th><th>Función conservada</th><th>Marcha</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>I</strong></td><td>D8-D12</td><td>Flexoextensión de tronco; <strong>paraplejía</strong></td><td>Solo bipedestación y marcha <strong>terapéutica</strong>, con ortesis largas con cinturón y reciprocador</td></tr>
+            <tr><td><strong>II</strong></td><td>L1-L3</td><td><strong>Flexoaducción de caderas</strong>: psoas, aductores, recto anterior</td><td>Marcha <strong>domiciliaria</strong> con ortesis largas y cinturón pélvico</td></tr>
+            <tr><td><strong>III</strong></td><td>L4-S1</td><td><strong>Extensión de rodillas</strong>: cuádriceps</td><td>Marcha <strong>comunitaria</strong> con ortesis largas, con o sin cinturón, y luego cortas; silla de ruedas para tramos largos y deportes</td></tr>
+            <tr><td><strong>IV</strong></td><td>S1-S2</td><td><strong>Flexión plantar del tobillo</strong></td><td>Con valvas cortas o <strong>sin equipamiento</strong>; silla de ruedas para tramos largos y deportes</td></tr>
+            <tr><td><strong>V</strong></td><td>—</td><td><strong>Lesión incompleta</strong>: cuadro mixto que no encaja en los otros grados</td><td>—</td></tr>
+            <tr><td><strong>VI</strong></td><td>—</td><td><strong>Sin plejía</strong>: solo trastornos esfinterianos</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Todos los grupos tienen</strong> vejiga neurogénica, incontinencia esfinteriana y algún trastorno sensitivo, incluso el grado VI, que camina normalmente.</p>
+
+      <p class="cita">Clase «Espina bífida-MMC», Dr. Gustavo Grilli: clasificación del mielomeningocele según el nivel funcional.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-c">
+      <span class="bloque__rotulo">Bloque C</span>
+      <span class="bloque__nombre">Manejo</span>
+    </h2>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-tratamiento" id="neonatal">
+      <span class="seccion__pestana"><b>06</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Cuidados al nacer</h2>
+
+      <p>El objetivo de las primeras horas es <strong>proteger la placa medular expuesta</strong> de la infección y el daño hasta la cirugía.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 230" role="img" aria-label="Secuencia de cuidados del recién nacido con mielomeningocele: limpieza de la placa, gasa con gentamicina, plástico estéril sellado, decúbito prono con nalgas elevadas y cirugía preferentemente antes de las 12 horas">
+          <defs>
+            <marker id="eb-neo" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <rect x="10" y="20" width="148" height="86" rx="6" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="84" y="46" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">1 · Limpiar</text>
+          <text x="84" y="68" text-anchor="middle" font-size="11" fill="currentColor">por arrastre, con</text>
+          <text x="84" y="84" text-anchor="middle" font-size="11" fill="currentColor">solución fisiológica tibia</text>
+          <rect x="172" y="20" width="148" height="86" rx="6" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="246" y="46" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">2 · Cubrir</text>
+          <text x="246" y="68" text-anchor="middle" font-size="11" fill="currentColor">gasa embebida</text>
+          <text x="246" y="84" text-anchor="middle" font-size="11" fill="currentColor">en gentamicina</text>
+          <rect x="334" y="20" width="148" height="86" rx="6" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="408" y="46" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">3 · Sellar</text>
+          <text x="408" y="68" text-anchor="middle" font-size="11" fill="currentColor">plástico estéril,</text>
+          <text x="408" y="84" text-anchor="middle" font-size="11" fill="currentColor">bordes con tela adhesiva</text>
+          <rect x="496" y="20" width="148" height="86" rx="6" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="570" y="46" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">4 · Posición</text>
+          <text x="570" y="68" text-anchor="middle" font-size="11" fill="currentColor">decúbito prono,</text>
+          <text x="570" y="84" text-anchor="middle" font-size="11" fill="currentColor">nalgas elevadas</text>
+          <rect x="658" y="20" width="152" height="86" rx="6" fill="var(--c)" fill-opacity="0.40" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="734" y="46" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">5 · Cirugía</text>
+          <text x="734" y="68" text-anchor="middle" font-size="11" fill="currentColor">preferentemente</text>
+          <text x="734" y="84" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">antes de las 12 h</text>
+          <line x1="158" y1="63" x2="168" y2="63" stroke="currentColor" stroke-width="1.4" marker-end="url(#eb-neo)"></line>
+          <line x1="320" y1="63" x2="330" y2="63" stroke="currentColor" stroke-width="1.4" marker-end="url(#eb-neo)"></line>
+          <line x1="482" y1="63" x2="492" y2="63" stroke="currentColor" stroke-width="1.4" marker-end="url(#eb-neo)"></line>
+          <line x1="644" y1="63" x2="654" y2="63" stroke="currentColor" stroke-width="1.4" marker-end="url(#eb-neo)"></line>
+
+          <line x1="10" y1="170" x2="810" y2="170" stroke="currentColor" stroke-width="1.4" marker-end="url(#eb-neo)"></line>
+          <text x="10" y="192" font-size="11.5" font-weight="700" fill="currentColor">Nacimiento</text>
+          <line x1="734" y1="162" x2="734" y2="178" stroke="currentColor" stroke-width="1.6"></line>
+          <text x="734" y="196" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">12 h</text>
+          <rect x="10" y="130" width="724" height="20" rx="4" fill="var(--c)" fill-opacity="0.22" stroke="none"></rect>
+          <text x="372" y="145" text-anchor="middle" font-size="11" fill="currentColor">con estas medidas, cultivos negativos en el 90 % hasta las 12 h</text>
+        </svg>
+        <figcaption>Los cuatro primeros pasos protegen la placa medular; el quinto la cierra. La ventana de <strong>12 horas</strong> es la que mantienen limpia estas medidas.</figcaption>
+      </figure>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>El recién nacido con mielomeningocele va boca abajo, con las nalgas más altas, y se opera antes de las 12 horas.</strong> Acostarlo boca arriba apoya el saco y la placa expuesta; dejar pasar el tiempo aumenta el riesgo de infección. La misma posición se mantiene después de la cirugía, hasta que cicatriza.</p>
+      </div>
+
+      <p class="cita">Clase «Espina bífida-MMC», Dr. Gustavo Grilli: cuidados del recién nacido con mielomeningocele.</p>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-tratamiento" id="cirugia">
+      <span class="seccion__pestana"><b>07</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Pasos quirúrgicos</h2>
+
+      <ol>
+        <li><strong>Anestesia general</strong>, paciente en <strong>decúbito prono</strong> sobre rodillos.</li>
+        <li>Antisepsia y campos estériles con <strong>antisépticos no yodados</strong> y <strong>material libre de látex</strong>.</li>
+        <li><strong>Disecar la placa medular</strong> de la serosa periférica.</li>
+        <li><strong>Cerrar la placa sobre sí misma</strong> con microsutura en los restos aracnoideos de sus bordes: es la <strong>reconstrucción del tubo neural</strong>.</li>
+        <li>Intentar colocar la médula en el canal.</li>
+        <li><strong>Reconstruir un plano dural</strong> con cierre hermético en la línea media, buscando un saco amplio que aloje la médula y las raíces.</li>
+        <li>Reparar el defecto raquídeo con <strong>colgajos musculoaponeuróticos</strong> de los músculos paravertebrales.</li>
+        <li><strong>Cierre de piel.</strong></li>
+        <li>Hasta que consolide la cicatriz, <strong>decúbito prono con las nalgas más altas</strong>, para evitar la contaminación.</li>
+      </ol>
+      <p>La cirugía reconstruye las capas en el mismo orden en que deberían haberse formado: tubo neural, duramadre, plano musculoaponeurótico y piel.</p>
+
+      <p class="cita">Clase «Espina bífida-MMC», Dr. Gustavo Grilli: pasos quirúrgicos y fotografías del cierre.</p>
+    </section>
+
+    <!-- ============ 8 ============ -->
+    <section class="seccion s-tratamiento" id="seguimiento">
+      <span class="seccion__pestana"><b>08</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Equipo multidisciplinario y prevención</h2>
+
+      <p>El mielomeningocele exige <strong>tratamiento precoz y multidisciplinario</strong>: neonatólogo, neurocirujano, pediatra, urólogo, nefrólogo, cirujano, ortopedista, kinesiólogo, terapista ocupacional, psicólogo y asistente social. La lista refleja los trastornos asociados: la hidrocefalia, la vejiga neurogénica, las malformaciones renales y las ortopédicas tienen cada una su especialista.</p>
+      <p>En la Argentina, el marco de referencia son las <strong>«Recomendaciones para los Servicios de Neonatología ante el diagnóstico de Mielomeningocele»</strong> del Grupo Asesor sobre Defectos Congénitos del Tubo Neural, de la Dirección Nacional de Maternidad e Infancia del Ministerio de Salud de la Nación.</p>
+
+      <h3>Prevención con ácido fólico</h3>
+      <p>El <strong>déficit de ácido fólico</strong> es uno de los factores causales, y es el que se puede corregir:</p>
+      <ul>
+        <li>En el ensayo del <strong>Medical Research Council</strong> (1991), la suplementación con ácido fólico iniciada <strong>antes de la concepción</strong> redujo un <strong>72 %</strong> los defectos del tubo neural en mujeres que ya habían tenido un embarazo afectado.</li>
+        <li>En la Argentina, el registro nacional de anomalías congénitas (RENAC) comprobó una <strong>disminución de la prevalencia</strong> de anencefalia, espina bífida y encefalocele después de la <strong>fortificación de las harinas con ácido fólico</strong>.</li>
+      </ul>
+
+      <p class="cita">Clase «Espina bífida-MMC», Dr. Gustavo Grilli. Según PubMed: MRC Vitamin Study Research Group, Lancet 1991;338(8760):131-7 (<a href="https://pubmed.ncbi.nlm.nih.gov/1677062/">PubMed 1677062</a>); Sargiotto C y col., Birth Defects Res A 2015;103(6):509-16 (<a href="https://doi.org/10.1002/bdra.23372">DOI</a>).</p>
+    </section>
+
+    <!-- ============ Repaso ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>Definí espina bífida.</summary>
+          <div class="fc__r">Malformación congénita del <strong>cierre del tubo neural</strong>: falta de fusión del <strong>arco posterior</strong> de una o más vértebras, con o sin compromiso del tejido nervioso.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Cuándo ocurre y dónde es más frecuente?</summary>
+          <div class="fc__r">En las <strong>primeras semanas de gestación</strong> (días 21 a 38 según la clase). Más frecuente en la zona <strong>lumbosacra</strong>.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Nombrá 4 factores causales.</summary>
+          <div class="fc__r">Predisposición familiar, <strong>déficit de ácido fólico</strong> y zinc, edad materna extrema, HTA y diabetes gestacional, drogas (cocaína, <strong>valproato</strong>).</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Qué sale por el defecto en el meningocele y en el mielomeningocele?</summary>
+          <div class="fc__r"><strong>Meningocele</strong>: solo meninges con LCR. <strong>Mielomeningocele</strong>: meninges y <strong>médula</strong>, con la placa neural expuesta.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué puede esconder una espina bífida oculta con estigma cutáneo?</summary>
+          <div class="fc__r"><strong>Diastematomielia, médula anclada o lipoma del filum.</strong></div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Riesgo de recurrencia según los hermanos afectados.</summary>
+          <div class="fc__r"><strong>5 %</strong> con un hermano con MMC; <strong>15 %</strong> con dos.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué déficits acompañan a la espina bífida manifiesta?</summary>
+          <div class="fc__r"><strong>Déficit motor, déficit sensitivo e incontinencia esfinteriana.</strong></div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Nombrá los trastornos asociados del sistema nervioso.</summary>
+          <div class="fc__r"><strong>Hidrocefalia, Arnold-Chiari tipo II</strong>, siringomielia y trastorno del desarrollo mental.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué grado tiene un MMC L1-L3 y cómo camina?</summary>
+          <div class="fc__r"><strong>Grado II</strong>: conserva la flexoaducción de caderas. Marcha <strong>domiciliaria</strong> con ortesis largas y cinturón pélvico.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué músculo marca el paso a la marcha comunitaria?</summary>
+          <div class="fc__r">El <strong>cuádriceps</strong>: grado III, L4-S1, con extensión de rodillas.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué tienen en común todos los grados?</summary>
+          <div class="fc__r"><strong>Vejiga neurogénica, incontinencia esfinteriana y algún trastorno sensitivo.</strong></div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué son los grados V y VI?</summary>
+          <div class="fc__r"><strong>V</strong>: lesión incompleta, cuadro mixto. <strong>VI</strong>: sin plejía, solo trastornos esfinterianos.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Cómo se cubre la placa medular al nacer?</summary>
+          <div class="fc__r">Limpieza por arrastre con <strong>solución fisiológica tibia</strong>, gasa embebida en <strong>gentamicina</strong>, <strong>plástico estéril</strong> sellado con tela adhesiva.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿En qué posición va el recién nacido y cuándo se opera?</summary>
+          <div class="fc__r"><strong>Decúbito prono con las nalgas elevadas.</strong> Cirugía preferentemente <strong>antes de las 12 horas</strong>: con las medidas iniciales, los cultivos son negativos en el 90 % hasta ese momento.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿En qué consiste la reconstrucción del tubo neural en la cirugía?</summary>
+          <div class="fc__r">En <strong>cerrar la placa medular sobre sí misma</strong> con microsutura en los restos aracnoideos, y después reconstruir un plano dural hermético.</div>
+        </details>
+
+        <details class="fc s-tratamiento">
+          <summary>¿Qué demostró el ensayo MRC de 1991?</summary>
+          <div class="fc__r">Que el <strong>ácido fólico antes de la concepción</strong> reduce un <strong>72 %</strong> la recurrencia de defectos del tubo neural.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Triada clave</dt>
+        <dd>En la forma manifiesta, <strong>saco lumbosacro + déficit motor y sensitivo + incontinencia esfinteriana</strong>. El nivel define la marcha: <strong>D8-D12</strong> terapéutica, <strong>L1-L3</strong> domiciliaria, <strong>L4-S1</strong> comunitaria (cuádriceps), <strong>S1-S2</strong> casi sin equipamiento. Siempre hay <strong>vejiga neurogénica</strong>.</dd>
+
+        <dt class="r-gold">Estudio de elección</dt>
+        <dd>La forma manifiesta se reconoce al nacer. La <strong>oculta</strong> puede ser un hallazgo <strong>radiológico</strong>; con un <strong>estigma cutáneo</strong> hay que estudiar la médula buscando diastematomielia, médula anclada o lipoma del filum.</dd>
+
+        <dt class="r-tto">Tratamiento de 1ª línea</dt>
+        <dd>Al nacer: <strong>limpiar, cubrir con gasa con gentamicina, sellar con plástico estéril</strong> y poner en <strong>decúbito prono con nalgas elevadas</strong>. <strong>Cirugía antes de las 12 h</strong> con material libre de látex. Después, seguimiento <strong>multidisciplinario</strong>. Prevención: <strong>ácido fólico antes de la concepción</strong> y fortificación de las harinas.</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd><strong>Nunca boca arriba</strong> antes ni después de la cirugía, hasta que cicatrice. Asociaciones que hay que buscar: <strong>hidrocefalia y Arnold-Chiari II</strong>. Recurrencia: <strong>5 %</strong> con un hermano afectado y <strong>15 %</strong> con dos.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir de la clase «Espina bífida-MMC» del Dr. Gustavo Grilli (Neurología), que remite a las Recomendaciones para los Servicios de Neonatología ante el diagnóstico de Mielomeningocele del Ministerio de Salud de la Nación. Datos de prevención con ácido fólico del ensayo MRC (1991) y del registro RENAC. Material de estudio: no reemplaza el criterio clínico ni el protocolo institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+
+  // ---- Tema claro / oscuro ----
+  // Sin eleccion estampada manda el sistema; el boton la estampa y la guarda.
+  var raiz = document.documentElement;
+  var boton = document.getElementById('tema');
+
+  function temaActual(){
+    var estampado = raiz.getAttribute('data-theme');
+    if (estampado) return estampado;
+    return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+
+  if (boton){
+    var rotular = function(){
+      var actual = temaActual();
+      boton.setAttribute('aria-pressed', actual === 'dark' ? 'true' : 'false');
+      boton.setAttribute('aria-label', actual === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+    };
+    boton.addEventListener('click', function(){
+      var nuevo = temaActual() === 'dark' ? 'light' : 'dark';
+      raiz.setAttribute('data-theme', nuevo);
+      try { localStorage.setItem('wordmed-tema', nuevo); } catch (e) { /* sin persistencia */ }
+      rotular();
+    });
+    rotular();
+  }
+
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link, .ir-link'));
+
+  // Devuelve TODOS los enlaces al ancla: la misma seccion figura en el indice
+  // lateral y en el compacto, y los dos tienen que encenderse juntos.
+  function porMeta(hash){
+    return enlaces.filter(function(l){ return l.getAttribute('href') === '#' + hash; });
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var activos = porMeta(e.target.id);
+        if (!activos.length) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          activos.forEach(function(l){ l.setAttribute('aria-current', 'true'); });
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>
+<script>
+(function(){
+  "use strict";
+  var clave = document.body.dataset.clave || "";
+  var enApp = typeof window.WordmedApp !== "undefined";
+  var MEM = "wordmed:progreso";
+
+  function leer(){ try{ return JSON.parse(localStorage.getItem(MEM)) || {}; }catch(e){ return {}; } }
+  function guardar(m){ try{ localStorage.setItem(MEM, JSON.stringify(m)); }catch(e){} }
+
+  function alto(){
+    return Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+  }
+
+  /* retomar donde quedó */
+  if (clave) {
+    var m = leer()[clave];
+    if (m && m.y > 0) {
+      window.addEventListener("load", function(){
+        window.scrollTo(0, Math.min(m.y, alto()));
+      });
+    }
+  }
+
+  /* anotar el avance, sin ahogar el scroll */
+  var pendiente = false;
+  window.addEventListener("scroll", function(){
+    if (pendiente || !clave) return;
+    pendiente = true;
+    requestAnimationFrame(function(){
+      pendiente = false;
+      var y = window.scrollY;
+      var pct = Math.round((y / alto()) * 100);
+      pct = Math.max(0, Math.min(100, pct));
+      var m = leer();
+      m[clave] = { y: y, pct: pct, ts: Date.now() };
+      guardar(m);
+      if (enApp && window.WordmedApp.progreso) window.WordmedApp.progreso(clave, pct, y);
+    });
+  }, { passive: true });
+
+  /* volver: solo cuando vinimos de la cáscara web */
+  if (!enApp && document.referrer && document.referrer.indexOf(location.origin) === 0) {
+    var b = document.createElement("button");
+    b.className = "volver";
+    b.type = "button";
+    b.setAttribute("aria-label", "Volver");
+    b.innerHTML = '<svg class="volver__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg>';
+    b.addEventListener("click", function(){ history.back(); });
+    document.body.appendChild(b);
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1349 @@
+<title>Ansiedad, TOC y Trauma</title>
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-bloque:1.95rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+
+  /* Que la barra de desplazamiento y los controles nativos acompanen al tema */
+  color-scheme: light dark;
+}
+
+/* Eleccion explicita de claro: solo hace falta para el color-scheme, los
+   tokens claros ya son la base sin estampar. */
+:root[data-theme="light"]{ color-scheme: light; }
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* Interruptor de tema claro / oscuro.
+   El estampado `data-theme` en la raíz ya lo respetan los bloques de tokens de
+   arriba; este botón sólo lo pone y lo guarda. Sin elección estampada mandan
+   las preferencias del sistema, que es el comportamiento por defecto. */
+.tema{
+  position:fixed; top:.7rem; right:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.tema:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.tema__icono{ width:1.15rem; height:1.15rem; display:block; }
+
+/* Se muestra el icono del tema al que se va a cambiar, no el actual.
+   Mismo escalonado que los tokens: base clara · sistema oscuro · elección explícita. */
+.tema__sol{ display:none; }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .tema__sol{ display:block; }
+  :root:not([data-theme="light"]) .tema__luna{ display:none; }
+}
+:root[data-theme="dark"] .tema__sol{ display:block; }
+:root[data-theme="dark"] .tema__luna{ display:none; }
+:root[data-theme="light"] .tema__sol{ display:none; }
+:root[data-theme="light"] .tema__luna{ display:block; }
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índices ---------- */
+/* Dos piezas complementarias y deliberadamente redundantes:
+   · .indice        — barra lateral fija, sólo en pantalla ancha, navegación permanente.
+   · .indice-rapido — tarjeta compacta al principio del cuerpo, visible en TODO ancho.
+   La lateral desaparece por debajo de 64rem, que es justo el ancho del panel de
+   Artifacts y del celular; sin la compacta el cuadernillo publicado se queda sin
+   índice. Las dos apuntan a los mismos anclajes y se resaltan juntas al desplazar. */
+
+/* 6.1 · Barra lateral */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+/* Rótulo de bloque intercalado en la lista lateral: no es un enlace, sólo
+   separa grupos de secciones para que 30 entradas no sean una tira plana. */
+.indice__bloque{
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+  margin:.9rem 0 .2rem; padding:0 .55rem;
+}
+.indice__bloque:first-child{ margin-top:0; }
+
+/* 6.2 · Índice compacto (va después de la portada, dentro del cuerpo) */
+.indice-rapido{
+  background:var(--hoja-hund);
+  border:1px solid var(--linea);
+  border-radius:var(--radio);
+  padding:1.1rem 1.2rem 1.2rem;
+}
+.indice-rapido__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .85rem;
+}
+/* auto-fit: una columna en el panel angosto, dos o tres en pantalla ancha */
+.indice-rapido__bloques{
+  list-style:none; margin:0; padding:0;
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(15rem, 1fr));
+  gap:1rem 2rem; align-items:start;
+}
+.ir-bloque{
+  display:block; margin-bottom:.4rem;
+  font-family:var(--f-titulo); font-size:.98rem; font-weight:700; line-height:1.3;
+  color:var(--tinta); text-decoration:none;
+  padding-bottom:.3rem; border-bottom:1px solid var(--linea-fuerte);
+}
+.ir-bloque:hover{ color:var(--cli-t); }
+.ir-secciones{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.05rem; }
+.ir-link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.55rem 1fr; align-items:baseline; gap:.4rem;
+  padding:.2rem .35rem; border-radius:2px;
+  font-size:.86rem; line-height:1.4; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.ir-link > b{
+  font-family:var(--f-dato); font-size:.76rem; font-weight:700;
+  font-variant-numeric:tabular-nums; color:var(--ct); opacity:.85;
+}
+.ir-link:hover{ background:var(--hoja); color:var(--tinta); }
+.ir-link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Título de bloque y ficha de sección ---------- */
+
+/* Anuncia un grupo de secciones. Neutro en color a propósito: los siete colores
+   tienen significado clínico fijo y un bloque agrupa secciones de varios. La
+   regla de abajo lleva el degradado completo de la paleta, igual que la pestaña
+   de repaso y la cabecera de la ficha relámpago.
+   Sin <svg> adentro: el exportador a Word aparea los diagramas con las figuras
+   por contador posicional sobre el HTML crudo (ver exportar_docx.py). */
+.bloque{
+  margin:1.4rem 0 0; padding:0;
+  text-align:center; scroll-margin-top:2.5rem;
+  display:flex; flex-direction:column; align-items:center; gap:.3rem;
+  font-weight:400;
+}
+.bloque:first-child{ margin-top:0; }
+.bloque__rotulo{
+  font-family:var(--f-texto);
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+}
+.bloque__nombre{
+  font-family:var(--f-titulo); font-size:var(--t-bloque); font-weight:700; line-height:1.15;
+  letter-spacing:-.01em; color:var(--tinta); text-wrap:balance; max-width:32ch;
+}
+.bloque::after{
+  content:""; width:7rem; height:2.5px; margin-top:.5rem; border-radius:2px;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+}
+
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.5rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-column:1; grid-row:1; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+/* El icono ocupa la columna 1 y NADA MAS. Todo el resto del contenido se
+   apila en la columna 2, una fila por elemento, sin importar cuantos
+   parrafos haya.
+
+   Sin esta regla la caja solo funciona con un unico <p>: a partir del
+   segundo, la autocolocacion del grid empieza a repartir contenido en la
+   columna del icono, que es `auto` y por lo tanto se ensancha hasta abarcar
+   el parrafo que le toco. La columna `1fr` queda entonces reducida a una
+   tira angosta, el texto se parte en dos columnas desbalanceadas y la caja
+   crece hasta volverse ilegible. */
+.importante > :not(.importante__icono){ grid-column:2; }
+.importante__titulo{
+  grid-row:1;
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante ul, .importante ol{ margin:0; padding-left:1.15rem; }
+.importante li + li{ margin-top:.3rem; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso, .tema{ display:none !important; }
+  /* La lateral no se imprime, pero la compacta sí: en papel es la tabla de
+     contenidos del cuadernillo. */
+  .indice-rapido{ display:block; break-inside:avoid; page-break-inside:avoid; margin-bottom:1.2rem; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .bloque{
+    margin:1.6rem 0 1rem;
+    break-after:avoid; page-break-after:avoid;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+
+<script>
+/* Aplica el tema guardado antes de pintar. Va aca arriba a proposito: si
+   esperara al script del final, el documento parpadearia en el tema del
+   sistema antes de corregirse. */
+(function(){
+  try {
+    var guardado = localStorage.getItem('wordmed-tema');
+    if (guardado === 'dark' || guardado === 'light') {
+      document.documentElement.setAttribute('data-theme', guardado);
+    }
+  } catch (e) { /* almacenamiento bloqueado: manda el sistema */ }
+})();
+</script>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<button class="tema" id="tema" type="button" aria-pressed="false" aria-label="Cambiar a modo oscuro">
+  <svg class="tema__icono tema__sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.2"></circle>
+    <path d="M12 2.6v2.1M12 19.3v2.1M5.1 5.1l1.5 1.5M17.4 17.4l1.5 1.5M2.6 12h2.1M19.3 12h2.1M5.1 18.9l1.5-1.5M17.4 6.6l1.5-1.5"></path>
+  </svg>
+  <svg class="tema__icono tema__luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20.4 14.2A8.6 8.6 0 0 1 9.8 3.6a8.6 8.6 0 1 0 10.6 10.6z"></path>
+  </svg>
+</button>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li class="indice__bloque">A · Marco general</li>
+      <li><a class="indice__link i-generalidades"  href="#marco">Los tres capítulos</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#exclusion">Exclusión orgánica</a></li>
+
+      <li class="indice__bloque">B · Ansiedad</li>
+      <li><a class="indice__link i-fisiopatologia" href="#miedo">Miedo y ansiedad</a></li>
+      <li><a class="indice__link i-clinica"        href="#panico">Pánico y agorafobia</a></li>
+      <li><a class="indice__link i-clinica"        href="#tag">Ansiedad generalizada</a></li>
+      <li><a class="indice__link i-clinica"        href="#fobias">Fobias y ansiedad social</a></li>
+
+      <li class="indice__bloque">C · TOC y afines</li>
+      <li><a class="indice__link i-clinica"        href="#toc">TOC</a></li>
+      <li><a class="indice__link i-clinica"        href="#relacionados">Relacionados con el TOC</a></li>
+
+      <li class="indice__bloque">D · Trauma y estrés</li>
+      <li><a class="indice__link i-fisiopatologia" href="#trauma">Criterio A</a></li>
+      <li><a class="indice__link i-clinica"        href="#tept">TEPT</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#temporal">Estrés agudo y adaptación</a></li>
+
+      <li class="indice__bloque">E · Integración</li>
+      <li><a class="indice__link i-diferenciales"  href="#diferencial">Matriz diferencial</a></li>
+
+      <li class="indice__bloque">Cierre</li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Psiquiatría · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Ansiedad, TOC y Trauma</h1>
+      <p class="portada__bajada">El espectro de la hiperactivación según el DSM-5: por qué la ansiedad, el TOC y los trastornos por trauma son hoy tres capítulos distintos, qué hay que descartar antes de diagnosticar, los criterios de cada trastorno, cómo los separa el tiempo y cómo se tratan según las guías NICE.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">12 secciones</span>
+        <span class="etiqueta s-clinica">Pánico, TAG, fobias, TOC, TEPT</span>
+        <span class="etiqueta s-diagnostico">Exclusión orgánica</span>
+        <span class="etiqueta s-tratamiento">Tratamiento según NICE</span>
+      </div>
+    </header>
+
+    <nav class="indice-rapido" aria-label="Contenido del cuadernillo">
+      <p class="indice-rapido__rotulo">Contenido</p>
+      <ol class="indice-rapido__bloques">
+        <li>
+          <a class="ir-bloque" href="#bloque-a">Bloque A · Marco general</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades" href="#marco"><b>01</b> Trastorno mental y los tres capítulos del DSM-5</a></li>
+            <li><a class="ir-link i-diagnostico"   href="#exclusion"><b>02</b> El diagnóstico de exclusión orgánica</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-b">Bloque B · Trastornos de ansiedad</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-fisiopatologia" href="#miedo"><b>03</b> Miedo, ansiedad y el espectro clínico</a></li>
+            <li><a class="ir-link i-clinica"        href="#panico"><b>04</b> Trastorno de pánico y agorafobia</a></li>
+            <li><a class="ir-link i-clinica"        href="#tag"><b>05</b> Trastorno de ansiedad generalizada</a></li>
+            <li><a class="ir-link i-clinica"        href="#fobias"><b>06</b> Fobia específica y ansiedad social</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-c">Bloque C · TOC y trastornos relacionados</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-clinica" href="#toc"><b>07</b> Trastorno obsesivo-compulsivo</a></li>
+            <li><a class="ir-link i-clinica" href="#relacionados"><b>08</b> Trastornos relacionados con el TOC</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-d">Bloque D · Trastornos relacionados con traumas y estrés</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-fisiopatologia" href="#trauma"><b>09</b> El trauma como requisito: criterio A</a></li>
+            <li><a class="ir-link i-clinica"        href="#tept"><b>10</b> Trastorno de estrés postraumático</a></li>
+            <li><a class="ir-link i-diagnostico"    href="#temporal"><b>11</b> La variable temporal: estrés agudo y adaptación</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-e">Bloque E · Integración</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-diferenciales" href="#diferencial"><b>12</b> Matriz diferencial y reglas de oro</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#repaso">Cierre</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-clinica"     href="#repaso">Repaso activo</a></li>
+            <li><a class="ir-link i-importantes" href="#relampago">Ficha de Repaso Relámpago</a></li>
+          </ul>
+        </li>
+      </ol>
+    </nav>
+
+    <h2 class="bloque" id="bloque-a">
+      <span class="bloque__rotulo">Bloque A</span>
+      <span class="bloque__nombre">Marco general</span>
+    </h2>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="marco">
+      <span class="seccion__pestana"><b>01</b> Generalidades</span>
+      <h2 class="seccion__titulo">Trastorno mental y los tres capítulos del DSM-5</h2>
+
+      <h3>Enfermedad médica y trastorno mental</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Aspecto</th><th>Enfermedad médica</th><th>Trastorno mental</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Criterio</strong></td><td>Alteración <strong>orgánica y estructural identificable</strong></td><td>Patrón psicológico disfuncional <strong>sin etiología orgánica identificable</strong> objetivamente</td></tr>
+            <tr><td><strong>Cómo se define</strong></td><td>Por un marcador: en el Alzheimer, las placas seniles y el amiloide en el tejido cerebral</td><td><strong>Operacionalmente</strong> (DSM-5, CIE), por el malestar emocional, cognitivo o conductual</td></tr>
+            <tr><td><strong>Abordaje</strong></td><td>Anatomoclínico y somático</td><td>Fenomenológico: los sistemas agrupan <strong>síndromes, no causas</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>El reto clínico es que la línea entre lo físico y lo psicológico es <strong>difusa</strong>.</p>
+
+      <h3>El desacoplamiento del DSM-IV al DSM-5</h3>
+      <p>Lo que el paciente trae es un <strong>malestar inespecífico o angustia</strong>. El DSM-5 separó lo que el DSM-IV agrupaba como ansiedad en <strong>tres capítulos</strong>, para reflejar diferencias neurobiológicas y orientar mejor el tratamiento:</p>
+      <figure class="esquema">
+        <svg viewBox="0 0 760 300" role="img" aria-label="Del malestar inespecífico a los tres capítulos del DSM-5: trastornos de ansiedad, con miedo y anticipación desregulada; trastorno obsesivo-compulsivo y afines, con pérdida del control cognitivo y bucles conductuales; trastornos relacionados con traumas y estrés, con una herida externa e hiperalerta"><defs><marker id="an-cap" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path></marker></defs><rect x="25" y="115" width="170" height="70" rx="7" fill="var(--c)" fill-opacity="0.08" stroke="currentColor" stroke-width="1.2"></rect><text x="110" y="138" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Malestar inespecífico</text><text x="110" y="154" text-anchor="middle" font-size="12.5" fill="currentColor">o angustia</text><text x="110" y="168" text-anchor="middle" font-size="12.5" fill="currentColor">(lo que trae el paciente)</text><rect x="320" y="20" width="400" height="72" rx="7" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1.2"></rect><text x="520" y="44" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Trastornos de ansiedad</text><text x="520" y="60" text-anchor="middle" font-size="12.5" fill="currentColor">Miedo y anticipación desregulada</text><text x="520" y="74" text-anchor="middle" font-size="12.5" fill="currentColor">TAG · fobias · pánico</text><path d="M197 150 L318 56" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#an-cap)"></path><rect x="320" y="112" width="400" height="72" rx="7" fill="var(--c)" fill-opacity="0.28" stroke="currentColor" stroke-width="1.2"></rect><text x="520" y="136" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">TOC y afines</text><text x="520" y="152" text-anchor="middle" font-size="12.5" fill="currentColor">Pérdida del control cognitivo y bucles</text><text x="520" y="166" text-anchor="middle" font-size="12.5" fill="currentColor">TOC · dismórfico · acumulación</text><path d="M197 150 L318 148" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#an-cap)"></path><rect x="320" y="204" width="400" height="72" rx="7" fill="var(--c)" fill-opacity="0.42" stroke="currentColor" stroke-width="1.2"></rect><text x="520" y="228" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Relacionados con traumas y estrés</text><text x="520" y="244" text-anchor="middle" font-size="12.5" fill="currentColor">Herida externa e hiperalerta</text><text x="520" y="258" text-anchor="middle" font-size="12.5" fill="currentColor">TEPT · estrés agudo · adaptación</text><path d="M197 150 L318 240" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#an-cap)"></path><text x="380" y="292" text-anchor="middle" font-size="12" font-style="italic" fill="currentColor">El DSM-5 los separó para reflejar diferencias neurobiológicas y orientar mejor el tratamiento</text></svg>
+        <figcaption>Un mismo malestar, tres estructuras distintas: la amenaza desregulada, el bucle cognitivo y la herida externa.</figcaption>
+      </figure>
+
+      <p class="cita">Clase «Navegando el espectro de la hiperactivación: criterios diagnósticos DSM-5», Dra. Laura Bielli, Cátedra de Psiquiatría: enfermedad y trastorno mental, desacoplamiento del DSM-IV al DSM-5.</p>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-diagnostico" id="exclusion">
+      <span class="seccion__pestana"><b>02</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">El diagnóstico de exclusión orgánica</h2>
+
+      <p>La clase lo plantea como un axioma: <strong>la psiquiatría es clínica médica</strong>, y todo diagnóstico del DSM-5 exige <strong>descartar primero las causas orgánicas</strong>. La medicina interna es el <strong>paso cero</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Causa</th><th>Cuándo pensarla</th><th>Ejemplos a descartar</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Inducido por sustancias o medicamentos</strong></td><td>Los síntomas (ansiedad, TOC, psicosis) aparecen <strong>durante o poco después</strong> de una intoxicación, una abstinencia o la exposición a un fármaco</td><td>Intoxicación por <strong>cocaína o anfetaminas</strong> (simula pánico o paranoia). <strong>Abstinencia</strong> de sedantes, hipnóticos o alcohol (simula una ansiedad generalizada grave)</td></tr>
+            <tr><td><strong>Debido a otra afección médica</strong></td><td>Hay evidencia clínica o de laboratorio de que es la <strong>consecuencia fisiopatológica directa</strong> de una enfermedad no psiquiátrica, y no ocurre solo durante un delirium</td><td><strong>Hipertiroidismo</strong> (activación adrenérgica). <strong>Infarto cerebral o lesiones neurológicas</strong> (pueden dar un TOC orgánico). <strong>Feocromocitoma</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Qué pedir</h3>
+      <p>Según PubMed, la guía canadiense de ansiedad, TEPT y TOC pide revisar por sistemas los <strong>fármacos</strong> (incluidos los de venta libre), el <strong>alcohol</strong>, la <strong>cafeína</strong> y las <strong>drogas</strong>. El examen físico y el laboratorio de base deberían hacerse <strong>antes de empezar un fármaco</strong>, y se amplían según los síntomas (por ejemplo, mareos o taquicardia):</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Laboratorio de base</th><th>Si está indicado</th></tr></thead>
+          <tbody>
+            <tr><td>Hemograma · glucemia en ayunas · perfil lipídico · <strong>TSH</strong> · electrolitos · enzimas hepáticas</td><td><strong>Tóxicos en orina</strong> si se sospecha consumo</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Ante un ataque de pánico en la guardia, la guía NICE CG113 pide los <strong>estudios mínimos necesarios para descartar un problema físico agudo</strong>, no internar de rutina y derivar a atención primaria para el seguimiento.</p>
+
+      <div class="importante">
+        <p><strong>¡Importante!</strong> <strong>Nunca</strong> diagnostiques un trastorno psiquiátrico primario sin haber interrogado a fondo el <strong>consumo de sustancias</strong>, la <strong>abstinencia</strong> y las causas <strong>endocrinológicas o neurológicas</strong>. Las comorbilidades son frecuentes, así que encontrar una enfermedad médica no siempre descarta el trastorno de ansiedad.</p>
+      </div>
+
+      <p class="cita">Clase «Navegando el espectro de la hiperactivación», Dra. Laura Bielli: diagnóstico de exclusión y reglas de oro. NICE CG113, «Generalised anxiety disorder and panic disorder in adults: management», 2011 (<a href="https://www.nice.org.uk/guidance/cg113">guía</a>). Según PubMed: Katzman MA y col., «Canadian clinical practice guidelines for the management of anxiety, posttraumatic stress and obsessive-compulsive disorders», BMC Psychiatry 2014;14 Suppl 1:S1 (<a href="https://doi.org/10.1186/1471-244X-14-S1-S1">DOI</a>).</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-b">
+      <span class="bloque__rotulo">Bloque B</span>
+      <span class="bloque__nombre">Trastornos de ansiedad: la desregulación de la amenaza</span>
+    </h2>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-fisiopatologia" id="miedo">
+      <span class="seccion__pestana"><b>03</b> Fisiopatología</span>
+      <h2 class="seccion__titulo">Miedo, ansiedad y el espectro clínico</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Miedo</th><th>Ansiedad</th></tr></thead>
+          <tbody>
+            <tr><td>Respuesta autonómica de <strong>lucha o huida</strong> ante un <strong>peligro inminente</strong>, real o percibido</td><td><strong>Anticipación</strong> de una <strong>amenaza futura</strong></td></tr>
+            <tr><td><strong>Activación simpática aguda</strong></td><td><strong>Tensión muscular</strong>, <strong>hipervigilancia</strong> y preparación prolongada</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Cambios del DSM-5 en este capítulo</h3>
+      <ul>
+        <li><strong>Pánico y agorafobia</strong> pasan a ser <strong>dos diagnósticos distintos</strong>, independientes.</li>
+        <li>El <strong>ataque de pánico</strong> es un <strong>especificador transversal</strong>: se puede agregar a cualquier trastorno mental.</li>
+        <li>La <strong>ansiedad por separación</strong> y el <strong>mutismo selectivo</strong> se reclasifican como trastornos de ansiedad, sin exigir que empiecen en la infancia.</li>
+      </ul>
+
+      <h3>El espectro en el tiempo</h3>
+      <figure class="esquema">
+        <svg viewBox="0 0 760 300" role="img" aria-label="Intensidad de la activación fisiológica en el tiempo: el ataque de pánico es un pico abrupto que llega al máximo en minutos; en las fobias y la ansiedad social la activación aparece solo ante el estímulo; en la ansiedad generalizada la línea de base está elevada en forma crónica, más de 6 meses"><path d="M60 30 L60 250 L740 250" fill="none" stroke="currentColor" stroke-width="1.4"></path><text x="22" y="140" text-anchor="middle" font-size="12" fill="currentColor" transform="rotate(-90 22 140)">Intensidad de la activación</text><text x="400" y="285" text-anchor="middle" font-size="12" fill="currentColor">Tiempo</text><path d="M60 190 L70 192 L80 193 L90 195 L100 195 L110 196 L120 196 L130 195 L140 195 L150 193 L160 192 L170 190 L180 188 L190 187 L200 185 L210 185 L220 184 L230 184 L240 185 L250 185 L260 187 L270 188 L280 190 L290 192 L300 193 L310 195 L320 195 L330 196 L340 196 L350 195 L360 195 L370 193 L380 192 L390 190 L400 188 L410 187 L420 185 L430 185 L440 184 L450 184 L460 185 L470 185 L480 187 L490 188 L500 190 L510 192 L520 193 L530 195 L540 195 L550 196 L560 196 L570 195 L580 195 L590 193 L600 192 L610 190 L620 188 L630 187 L640 185 L650 185 L660 184 L670 184 L680 185 L690 185 L700 187 L710 188 L720 190 L730 192 L740 193" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="6 3"></path><path d="M60 250 L95 250 L105 45 L118 250 L740 250" fill="none" stroke="currentColor" stroke-width="2.2"></path><path d="M321 250 L330 120 L339 250" fill="var(--c)" fill-opacity="0.35" stroke="currentColor" stroke-width="1.6"></path><path d="M330 252 L330 260" stroke="currentColor" stroke-width="1.2"></path><path d="M511 250 L520 120 L529 250" fill="var(--c)" fill-opacity="0.35" stroke="currentColor" stroke-width="1.6"></path><path d="M520 252 L520 260" stroke="currentColor" stroke-width="1.2"></path><path d="M651 250 L660 120 L669 250" fill="var(--c)" fill-opacity="0.35" stroke="currentColor" stroke-width="1.6"></path><path d="M660 252 L660 260" stroke="currentColor" stroke-width="1.2"></path><text x="520" y="266" text-anchor="middle" font-size="11" font-style="italic" fill="currentColor">estímulo</text><text x="125" y="52" font-size="12.5" font-weight="700" fill="currentColor">Ataque de pánico</text><text x="125" y="68" font-size="12" fill="currentColor">pico abrupto, máximo en minutos;</text><text x="125" y="84" font-size="12" fill="currentColor">miedo a morir o a perder el control</text><text x="345" y="108" font-size="12.5" font-weight="700" fill="currentColor">Fobias y ansiedad social</text><text x="345" y="124" font-size="12" fill="currentColor">solo ante el estímulo</text><text x="358" y="218" font-size="12.5" font-weight="700" fill="currentColor">Ansiedad generalizada</text><text x="358" y="234" font-size="12" fill="currentColor">base elevada, más de 6 meses</text></svg>
+        <figcaption>Tres perfiles de activación: el pico del pánico, los picos atados al estímulo en las fobias y la base elevada de la ansiedad generalizada.</figcaption>
+      </figure>
+      <p>La lámina dice que el pico del pánico dura <strong>menos de 10 minutos</strong>; el criterio del DSM-5 habla de llegar al máximo «<strong>en minutos</strong>».</p>
+
+      <p class="cita">Clase «Navegando el espectro de la hiperactivación», Dra. Laura Bielli: pilar I, trastornos de ansiedad, y espectro de la ansiedad en el plano clínico.</p>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-clinica" id="panico">
+      <span class="seccion__pestana"><b>04</b> Cuadro clínico</span>
+      <h2 class="seccion__titulo">Trastorno de pánico y agorafobia</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Criterio</th><th>Trastorno de pánico</th><th>Agorafobia</th></tr></thead>
+          <tbody>
+            <tr><td><strong>A</strong></td><td><strong>Ataques de pánico imprevistos y recurrentes</strong>: surgen de golpe, llegan al máximo en minutos, con <strong>4 o más de 13 síntomas</strong> autonómicos o cognitivos (palpitaciones, sudoración, sensación de asfixia, miedo a morir…)</td><td>Miedo o ansiedad marcados en <strong>2 o más de 5 situaciones</strong>: transporte público, espacios abiertos, sitios cerrados, filas o multitudes, estar solo fuera de casa</td></tr>
+            <tr><td><strong>B</strong></td><td>Al menos <strong>1 mes</strong> de inquietud por tener nuevos ataques, o de <strong>cambios desadaptativos</strong> de conducta</td><td><strong>Evitación activa</strong>, por pensar que escapar sería difícil o que no habría ayuda si aparecen los síntomas</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Completando el criterio</strong>: la lámina no lo dice, pero el DSM-5-TR exige que el miedo o la evitación de la agorafobia duren, en general, <strong>6 meses o más</strong>.</p>
+
+      <div class="importante">
+        <p><strong>¡Importante!</strong> En el DSM-5 se diagnostican <strong>por separado</strong>: si se cumplen los dos, se asignan <strong>ambos diagnósticos</strong>. Antes de cualquiera de los dos, descartá lo orgánico y lo tóxico (<a href="#exclusion">sección 02</a>): hipertiroidismo, feocromocitoma, cocaína, anfetaminas, abstinencias.</p>
+      </div>
+
+      <h3>Tratamiento (NICE CG113)</h3>
+      <ul>
+        <li><strong>Opciones con evidencia</strong>: psicoterapia (<strong>TCC</strong>), fármacos y autoayuda. En el pánico leve a moderado se empieza por <strong>autoayuda</strong>, guiada o no.</li>
+        <li><strong>TCC</strong>: <span class="dato">7-14 horas</span> en total, en sesiones semanales de <span class="dato">1-2 h</span>, completada en <strong>4 meses</strong> como máximo.</li>
+        <li><strong>Fármaco</strong>: un <strong>ISRS</strong> aprobado para el pánico. Se revisa a las <span class="dato">2</span>, <span class="dato">4</span>, <span class="dato">6</span> y <span class="dato">12 semanas</span>. Si a las 12 semanas no mejora, otra clase de antidepresivo; si el ISRS no sirve, considerar imipramina o clomipramina.</li>
+        <li><strong>Duración</strong>: si mejora, seguir <strong>al menos 6 meses</strong> después de alcanzar la dosis óptima, y después bajar de a poco.</li>
+        <li><strong>No usar</strong>: <strong>benzodiacepinas</strong> (peor evolución a largo plazo), antihistamínicos sedantes ni antipsicóticos.</li>
+      </ul>
+
+      <p class="cita">Clase «Navegando el espectro de la hiperactivación», Dra. Laura Bielli: matriz diagnóstica de pánico y agorafobia. American Psychiatric Association, DSM-5-TR, 2022: agorafobia. NICE CG113, 2011 (<a href="https://www.nice.org.uk/guidance/cg113">guía</a>).</p>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-clinica" id="tag">
+      <span class="seccion__pestana"><b>05</b> Cuadro clínico</span>
+      <h2 class="seccion__titulo">Trastorno de ansiedad generalizada</h2>
+
+      <p>Es el perfil <strong>crónico</strong>: línea de base elevada, preocupación flotante, fatiga y tensión muscular.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Criterio</th><th>Qué exige</th></tr></thead>
+          <tbody>
+            <tr><td><strong>A</strong></td><td>Ansiedad y <strong>preocupación excesivas</strong> durante <strong>6 meses o más</strong>, la mayoría de los días</td></tr>
+            <tr><td><strong>B</strong></td><td>Le cuesta <strong>controlar</strong> la preocupación</td></tr>
+            <tr><td><strong>C</strong></td><td><strong>3 o más de 6</strong> síntomas (<strong>solo 1 en niños</strong>): inquietud o nervios de punta · fatigabilidad · mente en blanco o dificultad para concentrarse · irritabilidad · tensión muscular · alteración del sueño</td></tr>
+            <tr><td><strong>D</strong></td><td>Malestar clínicamente significativo o deterioro</td></tr>
+            <tr><td><strong>E</strong></td><td>No se debe a sustancias ni a otra afección médica</td></tr>
+            <tr><td><strong>F</strong></td><td>No se explica mejor por otro trastorno mental</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Tratamiento escalonado (NICE CG113)</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Paso</th><th>Qué se ofrece</th></tr></thead>
+          <tbody>
+            <tr><td><strong>1</strong></td><td>Identificación, <strong>psicoeducación</strong> y monitoreo activo</td></tr>
+            <tr><td><strong>2</strong></td><td>Si no mejora: intervenciones psicológicas de <strong>baja intensidad</strong> (autoayuda guiada o no, grupos psicoeducativos)</td></tr>
+            <tr><td><strong>3</strong></td><td>Si no mejora o hay deterioro marcado: a elección, <strong>TCC o relajación aplicada</strong> (<span class="dato">12-15</span> sesiones semanales de <span class="dato">1 h</span>) o un <strong>fármaco</strong></td></tr>
+            <tr><td><strong>4</strong></td><td>Atención especializada en salud mental</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul>
+        <li><strong>Fármaco de primera línea</strong>: un <strong>ISRS</strong>, y la guía propone empezar por la <strong>sertralina</strong> (la opción más costo-efectiva). Si no sirve, otro ISRS o un IRSN; si no tolera ninguno, <strong>pregabalina</strong>, evaluando antes el riesgo de abuso.</li>
+        <li><strong>Duración</strong>: si funciona, seguir <strong>al menos un año</strong>, porque el riesgo de recaída es alto.</li>
+        <li><strong>No usar</strong>: <strong>benzodiacepinas</strong>, salvo por poco tiempo en una crisis. Tampoco antipsicóticos en atención primaria.</li>
+      </ul>
+
+      <p class="cita">Clase «Navegando el espectro de la hiperactivación», Dra. Laura Bielli: checklist del TAG. NICE CG113, 2011, actualizada en 2020 (<a href="https://www.nice.org.uk/guidance/cg113">guía</a>).</p>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-clinica" id="fobias">
+      <span class="seccion__pestana"><b>06</b> Cuadro clínico</span>
+      <h2 class="seccion__titulo">Fobia específica y ansiedad social</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Aspecto</th><th>Fobia específica: el objeto</th><th>Ansiedad social: el juicio</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Núcleo</strong></td><td><strong>Miedo intenso</strong> a un objeto o situación, con ansiedad inmediata y <strong>evitación activa</strong>, durante <strong>6 meses o más</strong> (criterios A a G)</td><td>Miedo a las situaciones sociales en las que puede ser <strong>examinado por otros</strong>: teme ser humillado, rechazado u ofender</td></tr>
+            <tr><td><strong>Especificadores</strong></td><td><strong>Animal</strong> · <strong>entorno natural</strong> (alturas, tormentas) · <strong>sangre-inyección-heridas</strong> · <strong>situacional</strong> (aviones, ascensores)</td><td>«<strong>Solo actuación</strong>»: si el miedo se limita a hablar o actuar en público</td></tr>
+            <tr><td><strong>Tratamiento</strong></td><td>Según PubMed, la base son las <strong>terapias de exposición</strong>, en vivo o en realidad virtual. En la fobia a la sangre o las inyecciones, exposición con tensión muscular aplicada. Los fármacos tienen un papel mínimo</td><td>NICE CG159: <strong>TCC individual</strong> específica para la ansiedad social. Si la rechaza y prefiere un fármaco, un <strong>ISRS (escitalopram o sertralina)</strong>; si responde en los primeros 3 meses, seguir <strong>al menos 6 meses más</strong>. No usar de rutina benzodiacepinas, tricíclicos, anticonvulsivantes ni antipsicóticos</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>Nota del DSM-5</strong>: ya <strong>no hace falta que el paciente reconozca</strong> su miedo como irracional. Basta con que el clínico lo juzgue <strong>desproporcionado</strong> al peligro real.</p>
+
+      <p class="cita">Clase «Navegando el espectro de la hiperactivación», Dra. Laura Bielli: fobias específicas frente a ansiedad social. NICE CG159, «Social anxiety disorder: recognition, assessment and treatment», 2013 (<a href="https://www.nice.org.uk/guidance/cg159">guía</a>). Según PubMed: Katzman MA y col., BMC Psychiatry 2014;14 Suppl 1:S1 (<a href="https://doi.org/10.1186/1471-244X-14-S1-S1">DOI</a>).</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-c">
+      <span class="bloque__rotulo">Bloque C</span>
+      <span class="bloque__nombre">TOC y trastornos relacionados</span>
+    </h2>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-clinica" id="toc">
+      <span class="seccion__pestana"><b>07</b> Cuadro clínico</span>
+      <h2 class="seccion__titulo">Trastorno obsesivo-compulsivo</h2>
+
+      <p><strong>El TOC ya no es un trastorno de ansiedad.</strong> En la ansiedad el problema es la <strong>percepción exagerada del riesgo</strong> externo o futuro. En el TOC es la <strong>pérdida del control</strong> sobre los propios procesos cognitivos y conductuales; la ansiedad es solo un subproducto transitorio de la intrusión.</p>
+
+      <h3>Criterios DSM-5</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Criterio</th><th>Qué exige</th></tr></thead>
+          <tbody>
+            <tr><td><strong>A · Obsesiones</strong> (pensamiento)</td><td>Pensamientos, impulsos o imágenes <strong>recurrentes, intrusos y no deseados</strong> que causan ansiedad. El sujeto intenta ignorarlos o neutralizarlos</td></tr>
+            <tr><td><strong>A · Compulsiones</strong> (acción)</td><td>Conductas (lavado) o <strong>actos mentales</strong> (contar) repetitivos en respuesta a una obsesión, para prevenir la ansiedad, pero <strong>claramente excesivos</strong></td></tr>
+            <tr><td><strong>B · Umbral clínico</strong></td><td>Consumen <strong>más de 1 hora por día</strong> o causan malestar o deterioro significativo</td></tr>
+            <tr><td><strong>C y D</strong></td><td>No se deben a sustancias ni a otra afección médica, y no se explican mejor por otro trastorno</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Especificador de introspección (insight)</h3>
+      <ul>
+        <li><strong>Buena o aceptable</strong>.</li>
+        <li><strong>Poca</strong>.</li>
+        <li><strong>Ausente</strong> o <strong>con creencias delirantes</strong>: convencimiento absoluto. Sigue siendo un TOC, no una psicosis.</li>
+      </ul>
+
+      <h3>El bucle de retroalimentación</h3>
+      <figure class="esquema">
+        <svg viewBox="0 0 760 400" role="img" aria-label="El bucle del TOC: la obsesión, una intrusión cognitiva, genera malestar; el malestar empuja a la compulsión, el acto neutralizador; la compulsión produce alivio transitorio, que funciona como refuerzo negativo y asegura que la compulsión se repita ante la próxima obsesión"><defs><marker id="an-toc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path></marker></defs><rect x="270" y="37.0" width="220" height="66" rx="7" fill="var(--c)" fill-opacity="0.32" stroke="currentColor" stroke-width="1.2"></rect><text x="380" y="58" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">1 · Obsesión</text><text x="380" y="74" text-anchor="middle" font-size="12.5" fill="currentColor">intrusión: contaminación,</text><text x="380" y="88" text-anchor="middle" font-size="12.5" fill="currentColor">simetría, duda patológica</text><rect x="510" y="167.0" width="220" height="66" rx="7" fill="var(--c)" fill-opacity="0.2" stroke="currentColor" stroke-width="1.2"></rect><text x="620" y="188" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">2 · Malestar</text><text x="620" y="204" text-anchor="middle" font-size="12.5" fill="currentColor">angustia, ansiedad o</text><text x="620" y="218" text-anchor="middle" font-size="12.5" fill="currentColor">sensación de incorrección</text><rect x="270" y="297.0" width="220" height="66" rx="7" fill="var(--c)" fill-opacity="0.32" stroke="currentColor" stroke-width="1.2"></rect><text x="380" y="318" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">3 · Compulsión</text><text x="380" y="334" text-anchor="middle" font-size="12.5" fill="currentColor">lavado, comprobación,</text><text x="380" y="348" text-anchor="middle" font-size="12.5" fill="currentColor">conteo, reglas rígidas</text><rect x="30" y="167.0" width="220" height="66" rx="7" fill="var(--c)" fill-opacity="0.12" stroke="currentColor" stroke-width="1.2"></rect><text x="140" y="188" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">4 · Alivio</text><text x="140" y="204" text-anchor="middle" font-size="12.5" fill="currentColor">transitorio: refuerzo</text><text x="140" y="218" text-anchor="middle" font-size="12.5" fill="currentColor">negativo del bucle</text><path d="M492 82 L600 164" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#an-toc)"></path><path d="M600 236 L492 318" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#an-toc)"></path><path d="M268 318 L160 236" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#an-toc)"></path><path d="M160 164 L268 82" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#an-toc)"></path><text x="380" y="192" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">Umbral clínico:</text><text x="380" y="210" text-anchor="middle" font-size="12.5" fill="currentColor">más de 1 hora por día</text><text x="380" y="226" text-anchor="middle" font-size="12.5" fill="currentColor">o malestar o deterioro</text></svg>
+        <figcaption>El alivio que da la compulsión es lo que mantiene el bucle: refuerza que se repita ante la próxima obsesión.</figcaption>
+      </figure>
+
+      <h3>Diagnóstico diferencial</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Entidad</th><th>Cómo se distingue</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Psicosis</strong></td><td>En el TOC la obsesión es <strong>intrusa y no deseada</strong>. Si la convicción es absoluta pero el contenido es obsesivo, sigue siendo TOC, con el especificador <strong>«con ausencia de introspección / con creencias delirantes»</strong></td></tr>
+            <tr><td><strong>Trastorno obsesivo-compulsivo de la personalidad</strong></td><td>Rasgos de orden y perfeccionismo, <strong>sin obsesiones ni compulsiones verdaderas</strong>. Ver el cuadernillo <a href="https://claude.ai/artifact/GyFTY5iQ39V1vUtXmWo2SH">«6 · Trastornos de la Personalidad»</a></td></tr>
+            <tr><td><strong>TOC orgánico o inducido</strong></td><td>Lesiones neurológicas, infartos o sustancias (<a href="#exclusion">sección 02</a>)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Tratamiento</h3>
+      <p>La clase propone <strong>TCC con exposición y prevención de respuesta</strong> (EPR), más <strong>farmacoterapia según la gravedad y las preferencias</strong>. La guía NICE CG31 lo ordena así:</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Deterioro funcional</th><th>Qué se ofrece</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Leve</strong></td><td><strong>TCC con EPR de baja intensidad</strong> (hasta <span class="dato">10 horas</span> de terapeuta): breve, con autoayuda, telefónica o grupal. Si no alcanza, un ISRS o TCC más intensiva</td></tr>
+            <tr><td><strong>Moderado</strong></td><td>A elección: un <strong>ISRS</strong> o <strong>TCC con EPR intensiva</strong> (más de <span class="dato">10 horas</span>), que rinden parecido</td></tr>
+            <tr><td><strong>Grave</strong></td><td><strong>Combinación</strong> de ISRS y TCC con EPR</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul>
+        <li><strong>ISRS de inicio</strong>: fluoxetina, fluvoxamina, paroxetina, sertralina o citalopram. El efecto puede tardar <strong>hasta 12 semanas</strong>.</li>
+        <li><strong>Duración</strong>: si funciona, seguir <strong>al menos 12 meses</strong>; al suspender, bajar de a poco a lo largo de varias semanas.</li>
+        <li><strong>Sin respuesta</strong> a 12 semanas de tratamiento combinado o a un ISRS: <strong>otro ISRS o clomipramina</strong>.</li>
+        <li><strong>No usar de rutina</strong>: otros tricíclicos, IRSN como la venlafaxina, IMAO, ansiolíticos (salvo por poco tiempo al empezar el ISRS) ni <strong>antipsicóticos en monoterapia</strong>.</li>
+      </ul>
+
+      <p class="cita">Clase «Navegando el espectro de la hiperactivación», Dra. Laura Bielli: pilar II, criterios del TOC, bucle de retroalimentación y razonamiento del caso de TOC. NICE CG31, «Obsessive-compulsive disorder and body dysmorphic disorder: treatment», 2005 (<a href="https://www.nice.org.uk/guidance/cg31">guía</a>).</p>
+    </section>
+
+    <!-- ============ 8 ============ -->
+    <section class="seccion s-clinica" id="relacionados">
+      <span class="seccion__pestana"><b>08</b> Cuadro clínico</span>
+      <h2 class="seccion__titulo">Trastornos relacionados con el TOC</h2>
+
+      <p>Comparten la <strong>pérdida del control inhibitorio</strong>:</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Trastorno</th><th>Qué lo define</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Dismórfico corporal</strong></td><td>Preocupación por <strong>defectos percibidos</strong> en el aspecto que los demás no ven, con conductas repetitivas de <strong>comprobación</strong>. Especificador: <strong>con dismorfia muscular</strong></td></tr>
+            <tr><td><strong>Acumulación</strong></td><td>Dificultad persistente para <strong>deshacerse de posesiones</strong>, sea cual sea su valor, por la angustia de separarse de ellas. Las zonas de la casa quedan <strong>congestionadas</strong></td></tr>
+            <tr><td><strong>Tricotilomanía</strong></td><td>Se <strong>arranca el pelo</strong> en forma repetitiva, con pérdida de pelo</td></tr>
+            <tr><td><strong>Excoriación</strong></td><td>Se <strong>rasca o lastima la piel</strong> compulsivamente, con lesiones. Es un <strong>diagnóstico nuevo del DSM-5</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Tratamiento del dismórfico corporal (NICE CG31)</strong>: TCC con EPR dirigida a sus rasgos. Si hace falta un fármaco, la primera elección es la <strong>fluoxetina</strong>, también cuando las creencias tienen intensidad delirante, porque es el ISRS con más evidencia en este trastorno.</p>
+
+      <p class="cita">Clase «Navegando el espectro de la hiperactivación», Dra. Laura Bielli: la expansión nosológica, trastornos relacionados con el TOC. NICE CG31, 2005 (<a href="https://www.nice.org.uk/guidance/cg31">guía</a>).</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-d">
+      <span class="bloque__rotulo">Bloque D</span>
+      <span class="bloque__nombre">Trastornos relacionados con traumas y estrés</span>
+    </h2>
+
+    <!-- ============ 9 ============ -->
+    <section class="seccion s-fisiopatologia" id="trauma">
+      <span class="seccion__pestana"><b>09</b> Fisiopatología</span>
+      <h2 class="seccion__titulo">El trauma como requisito: criterio A</h2>
+
+      <p>A diferencia de la depresión o la esquizofrenia, estos síndromes <strong>requieren la exposición a un evento externo</strong>. Es la «herida primaria».</p>
+      <p><strong>Criterio A</strong>: exposición a la <strong>muerte</strong>, una <strong>lesión grave</strong> o <strong>violencia sexual</strong>, real o como amenaza, por alguna de estas vías:</p>
+      <ol>
+        <li><strong>Experiencia directa</strong>.</li>
+        <li><strong>Presencia directa</strong>, como testigo.</li>
+        <li><strong>Saber</strong> que le ocurrió a un familiar o amigo íntimo (violento o accidental).</li>
+        <li><strong>Exposición repetida</strong> a detalles repulsivos del suceso: socorristas, policías. La exposición <strong>laboral directa</strong> de un médico de guardia también cumple el umbral.</li>
+      </ol>
+
+      <div class="importante">
+        <p><strong>¡Importante!</strong> El DSM-5 <strong>eliminó el antiguo criterio A2</strong>, que exigía una reacción de miedo o impotencia en el momento. El personal entrenado (militar o sanitario) puede no reaccionar en el momento y desarrollar el síndrome después.</p>
+      </div>
+
+      <p class="cita">Clase «Navegando el espectro de la hiperactivación», Dra. Laura Bielli: pilar III, criterio A y razonamiento del caso de estrés agudo.</p>
+    </section>
+
+    <!-- ============ 10 ============ -->
+    <section class="seccion s-clinica" id="tept">
+      <span class="seccion__pestana"><b>10</b> Cuadro clínico</span>
+      <h2 class="seccion__titulo">Trastorno de estrés postraumático</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Grupo de síntomas</th><th>Cómo se ve</th></tr></thead>
+          <tbody>
+            <tr><td><strong>1 · Intrusión</strong>: la memoria no asimilada</td><td>Recuerdos angustiosos recurrentes, <strong>pesadillas</strong>, reacciones disociativas (<strong>flashbacks</strong>) en las que actúa como si el trauma estuviera ocurriendo</td></tr>
+            <tr><td><strong>2 · Evitación</strong></td><td>Esfuerzos constantes por evitar recuerdos, pensamientos, personas, lugares o conversaciones ligados al trauma</td></tr>
+            <tr><td><strong>3 · Alteraciones cognitivas y del ánimo</strong> (nuevo en el DSM-5)</td><td>Amnesia disociativa, creencias negativas sobre sí o el mundo, <strong>culpa</strong> persistente, anhedonia, desapego crónico</td></tr>
+            <tr><td><strong>4 · Hiperalerta y reactividad</strong></td><td>Irritabilidad, arrebatos de furia, <strong>hipervigilancia</strong>, <strong>sobresalto exagerado</strong>, alteraciones graves del sueño</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Los síntomas duran <strong>más de 1 mes</strong>. La lámina pide deterioro funcional «severo»; el DSM-5-TR exige que el malestar o el deterioro sean <strong>clínicamente significativos</strong>. Con <strong>expresión retardada</strong>: si los criterios completos aparecen a los <strong>6 meses o más</strong>.</p>
+
+      <h3>Tratamiento (NICE NG116)</h3>
+      <ul>
+        <li><strong>TCC centrada en el trauma</strong>: terapia de procesamiento cognitivo, terapia cognitiva para el TEPT, exposición narrativa o exposición prolongada. Habitualmente <span class="dato">8-12 sesiones</span>, más si hubo traumas múltiples.</li>
+        <li><strong>EMDR</strong> (desensibilización y reprocesamiento por movimientos oculares): se ofrece si consulta <strong>más de 3 meses</strong> después de un trauma no bélico, y se puede considerar entre el primer y el tercer mes si el paciente lo prefiere. También <span class="dato">8-12 sesiones</span>.</li>
+        <li><strong>Fármacos</strong>: considerar <strong>venlafaxina o un ISRS como la sertralina</strong> si el paciente prefiere un fármaco, con revisión periódica.</li>
+        <li><strong>Antipsicóticos como la risperidona</strong>: solo <strong>agregados</strong> a la psicoterapia, si hay síntomas incapacitantes (hiperalerta grave, síntomas psicóticos) que no respondieron a otros tratamientos, indicados y revisados por un especialista.</li>
+      </ul>
+
+      <p class="cita">Clase «Navegando el espectro de la hiperactivación», Dra. Laura Bielli: arquitectura del TEPT y variable temporal. American Psychiatric Association, DSM-5-TR, 2022: TEPT. NICE NG116, «Post-traumatic stress disorder», 2018 (<a href="https://www.nice.org.uk/guidance/ng116">guía</a>).</p>
+    </section>
+
+    <!-- ============ 11 ============ -->
+    <section class="seccion s-diagnostico" id="temporal">
+      <span class="seccion__pestana"><b>11</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">La variable temporal: estrés agudo y adaptación</h2>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 760 290" role="img" aria-label="Línea temporal después del evento traumático o estresor: el estrés agudo va del día 3 al mes; el TEPT, desde más de un mes, con expresión retardada si los criterios completos aparecen a los 6 meses o más; el trastorno de adaptación empieza dentro de los 3 meses de un estresor sin criterio A y se resuelve antes de los 6 meses de terminado"><path d="M70 60 L730 60" stroke="currentColor" stroke-width="2.2"></path><path d="M70 54 L70 66" stroke="currentColor" stroke-width="1.6"></path><text x="70" y="46" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Evento</text><path d="M97 54 L97 66" stroke="currentColor" stroke-width="1.6"></path><text x="97" y="82" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Día 3</text><path d="M340 54 L340 66" stroke="currentColor" stroke-width="1.6"></path><text x="340" y="46" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">1 mes</text><path d="M472 54 L472 66" stroke="currentColor" stroke-width="1.6"></path><text x="472" y="46" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">3 meses</text><path d="M670 54 L670 66" stroke="currentColor" stroke-width="1.6"></path><text x="670" y="46" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">6 meses</text><rect x="97" y="92" width="243" height="34" rx="6" fill="var(--c)" fill-opacity="0.3" stroke="currentColor" stroke-width="1.2"></rect><text x="107" y="107" font-size="12.5" font-weight="700" fill="currentColor">Estrés agudo</text><text x="107" y="121" font-size="11.5" fill="currentColor">del día 3 al mes</text><rect x="340" y="140" width="319" height="34" rx="6" fill="var(--c)" fill-opacity="0.45" stroke="currentColor" stroke-width="1.2"></rect><text x="350" y="155" font-size="12.5" font-weight="700" fill="currentColor">TEPT</text><text x="350" y="169" font-size="11.5" fill="currentColor">más de 1 mes</text><rect x="70" y="188" width="402" height="34" rx="6" fill="var(--c)" fill-opacity="0.15" stroke="currentColor" stroke-width="1.2"></rect><text x="80" y="203" font-size="12.5" font-weight="700" fill="currentColor">Adaptación: empieza dentro de los 3 meses del estresor</text><path d="M659 157 L730 157" stroke="currentColor" stroke-width="1.4" stroke-dasharray="5 4"></path><text x="728" y="132" text-anchor="end" font-size="11.5" font-style="italic" fill="currentColor">expresión retardada: 6 meses o más</text><text x="80" y="246" font-size="12" fill="currentColor">Adaptación: estresor identificable sin criterio A; se resuelve antes de 6 meses de terminado el estresor</text><text x="380" y="278" text-anchor="middle" font-size="12" font-style="italic" fill="currentColor">El tiempo determina la estructura: interrogá siempre el cronograma del síntoma</text></svg>
+        <figcaption>Desde el evento: estrés agudo hasta el mes, TEPT después; la adaptación corre aparte porque no requiere un trauma del criterio A.</figcaption>
+      </figure>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Trastorno</th><th>Cuándo</th><th>Qué lo define</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Estrés agudo</strong></td><td>Del <strong>día 3 al mes</strong> del trauma</td><td><strong>9 o más síntomas</strong>, solo en la ventana inmediata al trauma</td></tr>
+            <tr><td><strong>TEPT</strong></td><td><strong>Más de 1 mes</strong></td><td>Los cuatro grupos de síntomas (<a href="#tept">sección 10</a>)</td></tr>
+            <tr><td><strong>Adaptación</strong></td><td>Empieza dentro de los <strong>3 meses</strong> del estresor; se resuelve <strong>antes de los 6 meses</strong> de terminado</td><td>Síntomas emocionales (depresión, ansiedad) con malestar <strong>desproporcionado</strong> ante un estresor identificable que <strong>no cumple el criterio A</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Corrección del material</strong>: la lámina reparte los síntomas del estrés agudo en intrusión, disociación, evitación y alerta. El DSM-5-TR pide <strong>9 de 14 síntomas</strong> en <strong>cinco</strong> categorías: falta el <strong>estado de ánimo negativo</strong>.</p>
+
+      <h3>Qué evaluar y cómo actuar en el estrés agudo</h3>
+      <ul>
+        <li>La clase pide evaluar <strong>seguridad, disociación, sueño, depresión, consumo y riesgo suicida</strong>, y planificar <strong>apoyo, seguimiento y tratamiento focalizado</strong> según la evolución.</li>
+        <li>NICE NG116 ofrece <strong>TCC individual centrada en el trauma</strong> a quien tiene estrés agudo o síntomas importantes de TEPT dentro del primer mes. Con síntomas por debajo del umbral, <strong>monitoreo activo</strong> con control dentro del mes.</li>
+        <li><strong>No usar</strong>: el <strong>debriefing psicológico</strong> para prevenir o tratar el TEPT, ni fármacos (incluidas las <strong>benzodiacepinas</strong>) para prevenirlo.</li>
+      </ul>
+
+      <p class="cita">Clase «Navegando el espectro de la hiperactivación», Dra. Laura Bielli: variable temporal y razonamiento del caso de estrés agudo. American Psychiatric Association, DSM-5-TR, 2022: trastorno de estrés agudo. NICE NG116, 2018 (<a href="https://www.nice.org.uk/guidance/ng116">guía</a>).</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-e">
+      <span class="bloque__rotulo">Bloque E</span>
+      <span class="bloque__nombre">Integración</span>
+    </h2>
+
+    <!-- ============ 12 ============ -->
+    <section class="seccion s-diferenciales" id="diferencial">
+      <span class="seccion__pestana"><b>12</b> Diferenciales</span>
+      <h2 class="seccion__titulo">Matriz diferencial y reglas de oro</h2>
+
+      <p>La fenomenología <strong>rara vez respeta las fronteras del manual</strong>. El paciente trae el síntoma superpuesto («no puedo dormir, estoy nervioso todo el día y siento que voy a perder el control»); el trabajo semiológico es interrogar qué estructura hay debajo:</p>
+      <ul>
+        <li><strong>Ansiedad</strong>: hiperactivación autonómica, tensión muscular, preocupación por el futuro.</li>
+        <li><strong>TOC</strong>: intrusiones mentales, conducta rígida, ritualización.</li>
+        <li><strong>Trauma</strong>: insomnio, hipervigilancia, reactividad emocional, evitación.</li>
+      </ul>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Dimensión</th><th>Ansiedad generalizada</th><th>TOC</th><th>TEPT</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Naturaleza de la amenaza</strong></td><td><strong>Interna, difusa</strong> y orientada al <strong>futuro</strong> (anticipación)</td><td><strong>Autogenerada</strong>, intrusiva y <strong>egodistónica</strong>: el propio pensamiento</td><td><strong>Externa, específica</strong> y anclada en el <strong>pasado</strong> (memoria no procesada)</td></tr>
+            <tr><td><strong>Respuesta conductual</strong></td><td>Evitación generalizada, inquietud motora, parálisis por análisis</td><td><strong>Ritualización</strong> estructurada, actos mentales, compulsiones repetitivas</td><td>Evitación estricta de los <strong>recordatorios del trauma</strong></td></tr>
+            <tr><td><strong>Estructura del pensamiento</strong></td><td>Preocupación excesiva e incontrolable, tensión constante</td><td>Pensamiento mágico, <strong>dudas patológicas</strong>, reglas rígidas</td><td>Recuerdos fragmentados, <strong>flashbacks</strong> disociativos, hipervigilancia</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Las tres reglas de oro de la clase</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Regla</th><th>Qué significa</th></tr></thead>
+          <tbody>
+            <tr><td><strong>El síntoma no es el diagnóstico</strong></td><td>La ansiedad que refiere el paciente es como la fiebre: hay que ver si nace de una <strong>hiperactivación</strong> (ansiedad), un <strong>bucle cognitivo</strong> (TOC) o una <strong>herida externa</strong> (trauma)</td></tr>
+            <tr><td><strong>La jerarquía de la exclusión</strong></td><td>Primero sustancias, abstinencia y causas endocrinológicas o neurológicas: la medicina interna es el <strong>paso cero</strong></td></tr>
+            <tr><td><strong>El tiempo determina la estructura</strong></td><td>Un ataque de pánico dura <strong>minutos</strong>, un estrés agudo <strong>semanas</strong> y un TEPT, <strong>más de un mes</strong>. Interrogá siempre el cronograma</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «Navegando el espectro de la hiperactivación», Dra. Laura Bielli: fenomenología superpuesta, matriz de diagnóstico diferencial y reglas de oro para la práctica clínica.</p>
+    </section>
+
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>¿En qué tres capítulos separó el DSM-5 lo que antes era «ansiedad»?</summary>
+          <div class="fc__r"><strong>Trastornos de ansiedad</strong> (amenaza desregulada), <strong>TOC y afines</strong> (bucle cognitivo) y <strong>relacionados con traumas y estrés</strong> (herida externa).</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary>¿Qué causas médicas y tóxicas hay que descartar ante una ansiedad o un pánico?</summary>
+          <div class="fc__r"><strong>Hipertiroidismo</strong>, <strong>feocromocitoma</strong>, lesiones neurológicas; <strong>cocaína o anfetaminas</strong>; <strong>abstinencia</strong> de alcohol, sedantes o hipnóticos.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary>¿Qué laboratorio de base propone la guía canadiense?</summary>
+          <div class="fc__r">Hemograma, glucemia en ayunas, perfil lipídico, <strong>TSH</strong>, electrolitos y enzimas hepáticas; <strong>tóxicos en orina</strong> si está indicado.</div>
+        </details>
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué diferencia al miedo de la ansiedad?</summary>
+          <div class="fc__r">El miedo es la respuesta de lucha o huida ante un <strong>peligro inminente</strong>. La ansiedad es la <strong>anticipación</strong> de una amenaza futura.</div>
+        </details>
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué cambió en el DSM-5 con el pánico y la agorafobia?</summary>
+          <div class="fc__r">Son <strong>dos diagnósticos separados</strong>; si se cumplen los dos, se ponen ambos. El ataque de pánico pasó a ser un <strong>especificador</strong> aplicable a cualquier trastorno.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿Qué exige el criterio B del trastorno de pánico?</summary>
+          <div class="fc__r">Al menos <strong>1 mes</strong> de inquietud por nuevos ataques o de cambios desadaptativos de conducta.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿Cuántas situaciones pide la agorafobia y cuáles son?</summary>
+          <div class="fc__r"><strong>2 de 5</strong>: transporte público, espacios abiertos, sitios cerrados, filas o multitudes, estar solo fuera de casa.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Qué fármacos NO se usan en el trastorno de pánico según NICE?</summary>
+          <div class="fc__r"><strong>Benzodiacepinas</strong> (peor evolución a largo plazo), antihistamínicos sedantes y antipsicóticos.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿Cuánto dura y cuántos síntomas pide el TAG?</summary>
+          <div class="fc__r"><strong>6 meses o más</strong>, con <strong>3 de 6</strong> síntomas (solo 1 en niños).</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Cuál es el fármaco de primera línea en el TAG según NICE y cuánto tiempo se mantiene?</summary>
+          <div class="fc__r">Un <strong>ISRS</strong>, empezando por la <strong>sertralina</strong>. Si funciona, <strong>al menos un año</strong>.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿Cuáles son los especificadores de la fobia específica?</summary>
+          <div class="fc__r">Animal, entorno natural, sangre-inyección-heridas y situacional.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿Qué ya no exige el DSM-5 en las fobias?</summary>
+          <div class="fc__r">Que el paciente reconozca su miedo como <strong>irracional</strong>: basta que el clínico lo juzgue desproporcionado.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Cuál es la primera línea en la ansiedad social?</summary>
+          <div class="fc__r"><strong>TCC individual</strong> específica. Si prefiere un fármaco, <strong>escitalopram o sertralina</strong>.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿Por qué el TOC ya no es un trastorno de ansiedad?</summary>
+          <div class="fc__r">Porque el problema es la <strong>pérdida del control</strong> sobre los propios procesos cognitivos y conductuales; la ansiedad es un subproducto de la intrusión.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿Cuál es el umbral clínico del TOC?</summary>
+          <div class="fc__r">Más de <strong>1 hora por día</strong>, o malestar o deterioro significativo.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿Qué mantiene el bucle del TOC?</summary>
+          <div class="fc__r">El <strong>alivio transitorio</strong> de la compulsión, que funciona como <strong>refuerzo negativo</strong>.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Qué se ofrece en un TOC con deterioro grave?</summary>
+          <div class="fc__r">La <strong>combinación de ISRS y TCC con exposición y prevención de respuesta</strong>.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿Qué trastorno relacionado con el TOC es nuevo en el DSM-5?</summary>
+          <div class="fc__r">La <strong>excoriación</strong>.</div>
+        </details>
+        <details class="fc s-fisiopatologia">
+          <summary>¿Por qué vías se cumple el criterio A del trauma?</summary>
+          <div class="fc__r">Experiencia directa, testigo, saber que le pasó a alguien cercano y exposición repetida a detalles repulsivos.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿Cuáles son los cuatro grupos de síntomas del TEPT?</summary>
+          <div class="fc__r">Intrusión, evitación, <strong>alteraciones cognitivas y del ánimo</strong> (nuevo) e hiperalerta.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary>¿Cómo separa el tiempo al estrés agudo del TEPT?</summary>
+          <div class="fc__r">Estrés agudo: del <strong>día 3 al mes</strong>. TEPT: <strong>más de 1 mes</strong>; expresión retardada si aparece a los 6 meses o más.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary>¿Qué distingue al trastorno de adaptación del TEPT?</summary>
+          <div class="fc__r">El estresor <strong>no cumple el criterio A</strong>. Empieza dentro de los 3 meses y se resuelve antes de 6 meses de terminado el estresor.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Qué no hay que hacer para prevenir el TEPT según NICE?</summary>
+          <div class="fc__r"><strong>Debriefing psicológico</strong> ni fármacos, incluidas las <strong>benzodiacepinas</strong>.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Qué psicoterapias tienen indicación en el TEPT?</summary>
+          <div class="fc__r"><strong>TCC centrada en el trauma</strong> y <strong>EMDR</strong> (más de 3 meses después de un trauma no bélico), en general en 8-12 sesiones.</div>
+        </details>
+      </div>
+    </section>
+
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Triada clave</dt>
+        <dd>Ansiedad = <strong>amenaza anticipada</strong>; TOC = <strong>obsesión → compulsión → alivio</strong>; trauma = <strong>criterio A + intrusión, evitación e hiperalerta</strong>. El tiempo ordena: pánico en minutos, estrés agudo hasta el mes, TEPT después.</dd>
+
+        <dt class="r-gold">Estudio de elección</dt>
+        <dd>Diagnóstico <strong>clínico</strong> con los criterios del DSM-5-TR, <strong>después de descartar</strong> lo orgánico y lo tóxico: interrogatorio de sustancias, examen físico y laboratorio de base con <strong>TSH</strong> (tóxicos en orina si está indicado).</dd>
+
+        <dt class="r-tto">Tratamiento de 1ª línea</dt>
+        <dd><strong>TCC</strong> (con exposición y prevención de respuesta en el TOC, centrada en el trauma o EMDR en el TEPT) y/o <strong>ISRS</strong> (sertralina en el TAG). Mantener: TAG 1 año, pánico 6 meses tras la dosis óptima, TOC 12 meses.</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd><strong>No</strong> diagnosticar sin descartar hipertiroidismo, feocromocitoma, cocaína o abstinencia. <strong>No</strong> benzodiacepinas de mantenimiento en el pánico ni para prevenir el TEPT. En el estrés agudo, evaluar <strong>riesgo suicida</strong>, consumo y disociación.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir de la clase «Navegando el espectro de la hiperactivación: criterios diagnósticos DSM-5» de la Dra. Laura Bielli (Cátedra de Psiquiatría, 5.º año). Tratamiento según las guías NICE que cita la clase (CG113, CG31, NG116) y NICE CG159 para la ansiedad social. Exclusión orgánica y fobia específica según PubMed: Katzman y col., 2014. Criterios: American Psychiatric Association, DSM-5-TR, 2022. Material de estudio: no reemplaza el criterio clínico ni el protocolo institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+
+  // ---- Tema claro / oscuro ----
+  // Sin eleccion estampada manda el sistema; el boton la estampa y la guarda.
+  var raiz = document.documentElement;
+  var boton = document.getElementById('tema');
+
+  function temaActual(){
+    var estampado = raiz.getAttribute('data-theme');
+    if (estampado) return estampado;
+    return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+
+  if (boton){
+    var rotular = function(){
+      var actual = temaActual();
+      boton.setAttribute('aria-pressed', actual === 'dark' ? 'true' : 'false');
+      boton.setAttribute('aria-label', actual === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+    };
+    boton.addEventListener('click', function(){
+      var nuevo = temaActual() === 'dark' ? 'light' : 'dark';
+      raiz.setAttribute('data-theme', nuevo);
+      try { localStorage.setItem('wordmed-tema', nuevo); } catch (e) { /* sin persistencia */ }
+      rotular();
+    });
+    rotular();
+  }
+
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link, .ir-link'));
+
+  // Devuelve TODOS los enlaces al ancla: la misma seccion figura en el indice
+  // lateral y en el compacto, y los dos tienen que encenderse juntos.
+  function porMeta(hash){
+    return enlaces.filter(function(l){ return l.getAttribute('href') === '#' + hash; });
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var activos = porMeta(e.target.id);
+        if (!activos.length) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          activos.forEach(function(l){ l.setAttribute('aria-current', 'true'); });
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>

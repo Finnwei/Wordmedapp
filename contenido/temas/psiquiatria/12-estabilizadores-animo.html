@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<script>
+(function(){
+  var enApp = typeof window.WordmedApp !== "undefined";
+  if (!enApp) {
+    /* En la web el cuadernillo se maqueta al ancho del dispositivo. */
+    var m = document.createElement("meta");
+    m.name = "viewport";
+    m.content = "width=device-width, initial-scale=1";
+    document.head.appendChild(m);
+    return;
+  }
+  /* En la app no se emite viewport: el WebView maqueta a su ancho por
+     omision y lo encoge para que entre, igual que al abrir el archivo a
+     mano. Sacar el meta despues de parsearlo no reencuadra nada, por eso
+     directamente no se emite. */
+  var s = document.createElement("style");
+  s.textContent = ".tema{display:none !important}";
+  document.head.appendChild(s);
+})();
+</script>
+<title>Estabilizadores del Estado de Ánimo</title>
+<link rel="stylesheet" href="../../fuentes/fuentes.css">
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-bloque:1.95rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+
+  /* Que la barra de desplazamiento y los controles nativos acompanen al tema */
+  color-scheme: light dark;
+}
+
+/* Eleccion explicita de claro: solo hace falta para el color-scheme, los
+   tokens claros ya son la base sin estampar. */
+:root[data-theme="light"]{ color-scheme: light; }
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* Interruptor de tema claro / oscuro.
+   El estampado `data-theme` en la raíz ya lo respetan los bloques de tokens de
+   arriba; este botón sólo lo pone y lo guarda. Sin elección estampada mandan
+   las preferencias del sistema, que es el comportamiento por defecto. */
+.tema{
+  position:fixed; top:.7rem; right:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.tema:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.tema__icono{ width:1.15rem; height:1.15rem; display:block; }
+
+/* Se muestra el icono del tema al que se va a cambiar, no el actual.
+   Mismo escalonado que los tokens: base clara · sistema oscuro · elección explícita. */
+.tema__sol{ display:none; }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .tema__sol{ display:block; }
+  :root:not([data-theme="light"]) .tema__luna{ display:none; }
+}
+:root[data-theme="dark"] .tema__sol{ display:block; }
+:root[data-theme="dark"] .tema__luna{ display:none; }
+:root[data-theme="light"] .tema__sol{ display:none; }
+:root[data-theme="light"] .tema__luna{ display:block; }
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índices ---------- */
+/* Dos piezas complementarias y deliberadamente redundantes:
+   · .indice        — barra lateral fija, sólo en pantalla ancha, navegación permanente.
+   · .indice-rapido — tarjeta compacta al principio del cuerpo, visible en TODO ancho.
+   La lateral desaparece por debajo de 64rem, que es justo el ancho del panel de
+   Artifacts y del celular; sin la compacta el cuadernillo publicado se queda sin
+   índice. Las dos apuntan a los mismos anclajes y se resaltan juntas al desplazar. */
+
+/* 6.1 · Barra lateral */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+/* Rótulo de bloque intercalado en la lista lateral: no es un enlace, sólo
+   separa grupos de secciones para que 30 entradas no sean una tira plana. */
+.indice__bloque{
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+  margin:.9rem 0 .2rem; padding:0 .55rem;
+}
+.indice__bloque:first-child{ margin-top:0; }
+
+/* 6.2 · Índice compacto (va después de la portada, dentro del cuerpo) */
+.indice-rapido{
+  background:var(--hoja-hund);
+  border:1px solid var(--linea);
+  border-radius:var(--radio);
+  padding:1.1rem 1.2rem 1.2rem;
+}
+.indice-rapido__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .85rem;
+}
+/* auto-fit: una columna en el panel angosto, dos o tres en pantalla ancha */
+.indice-rapido__bloques{
+  list-style:none; margin:0; padding:0;
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(15rem, 1fr));
+  gap:1rem 2rem; align-items:start;
+}
+.ir-bloque{
+  display:block; margin-bottom:.4rem;
+  font-family:var(--f-titulo); font-size:.98rem; font-weight:700; line-height:1.3;
+  color:var(--tinta); text-decoration:none;
+  padding-bottom:.3rem; border-bottom:1px solid var(--linea-fuerte);
+}
+.ir-bloque:hover{ color:var(--cli-t); }
+.ir-secciones{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.05rem; }
+.ir-link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.55rem 1fr; align-items:baseline; gap:.4rem;
+  padding:.2rem .35rem; border-radius:2px;
+  font-size:.86rem; line-height:1.4; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.ir-link > b{
+  font-family:var(--f-dato); font-size:.76rem; font-weight:700;
+  font-variant-numeric:tabular-nums; color:var(--ct); opacity:.85;
+}
+.ir-link:hover{ background:var(--hoja); color:var(--tinta); }
+.ir-link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Título de bloque y ficha de sección ---------- */
+
+/* Anuncia un grupo de secciones. Neutro en color a propósito: los siete colores
+   tienen significado clínico fijo y un bloque agrupa secciones de varios. La
+   regla de abajo lleva el degradado completo de la paleta, igual que la pestaña
+   de repaso y la cabecera de la ficha relámpago.
+   Sin <svg> adentro: el exportador a Word aparea los diagramas con las figuras
+   por contador posicional sobre el HTML crudo (ver exportar_docx.py). */
+.bloque{
+  margin:1.4rem 0 0; padding:0;
+  text-align:center; scroll-margin-top:2.5rem;
+  display:flex; flex-direction:column; align-items:center; gap:.3rem;
+  font-weight:400;
+}
+.bloque:first-child{ margin-top:0; }
+.bloque__rotulo{
+  font-family:var(--f-texto);
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+}
+.bloque__nombre{
+  font-family:var(--f-titulo); font-size:var(--t-bloque); font-weight:700; line-height:1.15;
+  letter-spacing:-.01em; color:var(--tinta); text-wrap:balance; max-width:32ch;
+}
+.bloque::after{
+  content:""; width:7rem; height:2.5px; margin-top:.5rem; border-radius:2px;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+}
+
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.5rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-column:1; grid-row:1; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+/* El icono ocupa la columna 1 y NADA MAS. Todo el resto del contenido se
+   apila en la columna 2, una fila por elemento, sin importar cuantos
+   parrafos haya.
+
+   Sin esta regla la caja solo funciona con un unico <p>: a partir del
+   segundo, la autocolocacion del grid empieza a repartir contenido en la
+   columna del icono, que es `auto` y por lo tanto se ensancha hasta abarcar
+   el parrafo que le toco. La columna `1fr` queda entonces reducida a una
+   tira angosta, el texto se parte en dos columnas desbalanceadas y la caja
+   crece hasta volverse ilegible. */
+.importante > :not(.importante__icono){ grid-column:2; }
+.importante__titulo{
+  grid-row:1;
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante ul, .importante ol{ margin:0; padding-left:1.15rem; }
+.importante li + li{ margin-top:.3rem; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso, .tema{ display:none !important; }
+  /* La lateral no se imprime, pero la compacta sí: en papel es la tabla de
+     contenidos del cuadernillo. */
+  .indice-rapido{ display:block; break-inside:avoid; page-break-inside:avoid; margin-bottom:1.2rem; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .bloque{
+    margin:1.6rem 0 1rem;
+    break-after:avoid; page-break-after:avoid;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+<style>
+/* Fuentes de la capa de contenido. Va después del estilo del
+   cuadernillo para pisar las de Windows, que no se pueden
+   redistribuir y no existen en Android. */
+:root{
+  --f-titulo:'Spectral',Georgia,'Times New Roman',serif;
+  --f-texto:'Open Sans',system-ui,-apple-system,sans-serif;
+  --f-dato:'Cascadia Mono','Cascadia Code',ui-monospace,Consolas,monospace;
+}
+/* Botón de volver, espejo del de tema que ya trae el cuadernillo. */
+.volver{
+  position:fixed; top:.7rem; left:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.volver:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.volver__icono{ width:1.15rem; height:1.15rem; display:block; }
+</style>
+</head>
+<body data-clave="psiquiatria/12-estabilizadores-animo">
+<script>
+/* Aplica el tema guardado antes de pintar. Va aca arriba a proposito: si
+   esperara al script del final, el documento parpadearia en el tema del
+   sistema antes de corregirse. */
+(function(){
+  try {
+    var guardado = localStorage.getItem('wordmed-tema');
+    if (guardado === 'dark' || guardado === 'light') {
+      document.documentElement.setAttribute('data-theme', guardado);
+    }
+  } catch (e) { /* almacenamiento bloqueado: manda el sistema */ }
+})();
+</script>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<button class="tema" id="tema" type="button" aria-pressed="false" aria-label="Cambiar a modo oscuro">
+  <svg class="tema__icono tema__sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.2"></circle>
+    <path d="M12 2.6v2.1M12 19.3v2.1M5.1 5.1l1.5 1.5M17.4 17.4l1.5 1.5M2.6 12h2.1M19.3 12h2.1M5.1 18.9l1.5-1.5M17.4 6.6l1.5-1.5"></path>
+  </svg>
+  <svg class="tema__icono tema__luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20.4 14.2A8.6 8.6 0 0 1 9.8 3.6a8.6 8.6 0 1 0 10.6 10.6z"></path>
+  </svg>
+</button>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li class="indice__bloque">A · Marco</li>
+      <li><a class="indice__link i-generalidades"  href="#marco">Estabilizadores y bipolar</a></li>
+
+      <li class="indice__bloque">B · Litio</li>
+      <li><a class="indice__link i-fisiopatologia" href="#litio-mecanismo">Mecanismo</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#litio-uso">Uso y controles</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#intoxicacion">Intoxicación</a></li>
+
+      <li class="indice__bloque">C · Anticonvulsivantes</li>
+      <li><a class="indice__link i-tratamiento"    href="#valproato">Valproato y carbamazepina</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#lamotrigina">Lamotrigina y otros</a></li>
+
+      <li class="indice__bloque">D · Antipsicóticos y tratamiento</li>
+      <li><a class="indice__link i-fisiopatologia" href="#antipsicoticos">Antipsicóticos</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#mania">Manía</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#depresion">Depresión y largo plazo</a></li>
+
+      <li class="indice__bloque">E · Embarazo</li>
+      <li><a class="indice__link i-importantes"    href="#embarazo">Embarazo y edad fértil</a></li>
+
+      <li class="indice__bloque">Cierre</li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Psiquiatría · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Estabilizadores del Estado de Ánimo</h1>
+      <p class="portada__bajada">Litio, anticonvulsivantes y antipsicóticos en el trastorno bipolar: cómo actúa cada uno, qué vigilar, cómo reconocer y tratar la intoxicación por litio, qué dar en la manía, en la depresión bipolar y a largo plazo según NICE, y qué cambia en la mujer en edad fértil y en el embarazo.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">10 secciones</span>
+        <span class="etiqueta s-tratamiento">Litio: controles e intoxicación</span>
+        <span class="etiqueta s-tratamiento">Tratamiento según NICE</span>
+        <span class="etiqueta s-importantes">Valproato y embarazo</span>
+      </div>
+    </header>
+
+    <nav class="indice-rapido" aria-label="Contenido del cuadernillo">
+      <p class="indice-rapido__rotulo">Contenido</p>
+      <ol class="indice-rapido__bloques">
+        <li>
+          <a class="ir-bloque" href="#bloque-a">Bloque A · Marco</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades" href="#marco"><b>01</b> Qué es un estabilizador y qué grupos hay</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-b">Bloque B · Litio</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-fisiopatologia" href="#litio-mecanismo"><b>02</b> Mecanismo de acción del litio</a></li>
+            <li><a class="ir-link i-tratamiento"    href="#litio-uso"><b>03</b> Litio: farmacocinética, efectos adversos y controles</a></li>
+            <li><a class="ir-link i-tratamiento"    href="#intoxicacion"><b>04</b> Intoxicación por litio</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-c">Bloque C · Anticonvulsivantes</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-tratamiento" href="#valproato"><b>05</b> Valproato y carbamazepina</a></li>
+            <li><a class="ir-link i-tratamiento" href="#lamotrigina"><b>06</b> Lamotrigina, oxcarbazepina, topiramato y gabapentinoides</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-d">Bloque D · Antipsicóticos y tratamiento por fase</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-fisiopatologia" href="#antipsicoticos"><b>07</b> Antipsicóticos como estabilizadores e indicaciones</a></li>
+            <li><a class="ir-link i-tratamiento"    href="#mania"><b>08</b> Tratamiento de la manía</a></li>
+            <li><a class="ir-link i-tratamiento"    href="#depresion"><b>09</b> Depresión bipolar y tratamiento a largo plazo</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-e">Bloque E · Embarazo y edad fértil</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-importantes" href="#embarazo"><b>10</b> Embarazo y edad fértil</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#repaso">Cierre</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-clinica"     href="#repaso">Repaso activo</a></li>
+            <li><a class="ir-link i-importantes" href="#relampago">Ficha de Repaso Relámpago</a></li>
+          </ul>
+        </li>
+      </ol>
+    </nav>
+
+    <h2 class="bloque" id="bloque-a">
+      <span class="bloque__rotulo">Bloque A</span>
+      <span class="bloque__nombre">Marco</span>
+    </h2>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="marco">
+      <span class="seccion__pestana"><b>01</b> Generalidades</span>
+      <h2 class="seccion__titulo">Qué es un estabilizador y qué grupos hay</h2>
+
+      <p>Un <strong>estabilizador del estado de ánimo</strong> es un fármaco que <strong>estabiliza el ánimo</strong> y <strong>previene las recurrencias</strong>. Su terreno es el trastorno bipolar, que no es solo manía y depresión:</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 760 292" role="img" aria-label="Curso del trastorno bipolar: episodios de manía, hipomanía y depresión sobre una línea de eutimia, síntomas subclínicos entre episodios, un período de mantenimiento y un episodio mixto con síntomas maníacos y depresivos a la vez"><defs><marker id="mk-c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path></marker></defs><path d="M20 160 L740 160" stroke="currentColor" stroke-width="1" stroke-dasharray="4 3"></path><text x="24" y="176" text-anchor="start" font-size="11" font-style="italic" fill="currentColor">eutimia</text><path d="M40 160 C70 160 80 50 100 50 C120 50 125 160 140 178 C155 190 165 142 185 142 C205 142 210 162 230 160 C250 158 255 144 275 144 C295 144 300 160 320 160 C340 160 345 255 370 255 C395 255 400 160 420 150 C440 140 450 95 470 95 C490 95 495 160 520 160 L640 160 C655 160 660 60 675 60 C690 60 690 160 700 160 L740 160" fill="none" stroke="currentColor" stroke-width="2.2"></path><path d="M640 160 C655 160 660 250 675 250 C690 250 690 160 700 160" fill="none" stroke="currentColor" stroke-width="2.2"></path><text x="100" y="38" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Manía</text><text x="470" y="83" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Hipomanía</text><text x="370" y="276" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Depresión</text><text x="675" y="46" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Episodio mixto</text><text x="675" y="272" text-anchor="middle" font-size="11" font-style="italic" fill="currentColor">manía y depresión a la vez</text><text x="230" y="214" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Síntomas subclínicos</text><path d="M200 200 L190 164" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-c)"></path><path d="M262 200 L272 154" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-c)"></path><path d="M530 190 L630 190" fill="none" stroke="currentColor" stroke-width="2" marker-end="url(#mk-c)"></path><text x="580" y="210" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Mantenimiento</text></svg>
+        <figcaption>El trastorno bipolar es multidimensional: episodios de manía, hipomanía, depresión y mixtos, síntomas subclínicos entre ellos, y una fase de mantenimiento que es donde el estabilizador previene la recurrencia.</figcaption>
+      </figure>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Grupo</th><th>Fármacos</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Litio</strong></td><td>El primer estabilizador; el antimaníaco por excelencia</td></tr>
+            <tr><td><strong>Anticonvulsivantes</strong></td><td>Valproato, carbamazepina, oxcarbazepina, topiramato, gabapentina, lamotrigina, clonazepam</td></tr>
+            <tr><td><strong>Otros</strong></td><td><strong>Antipsicóticos</strong> típicos y atípicos; bloqueantes de los canales de calcio (verapamilo, nimodipina)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «Estabilizadores del estado de ánimo», Dra. Vanesa Marciano, Cátedra de Psiquiatría, Universidad de Mendoza, 2026: definición, el trastorno bipolar como cuadro multidimensional y grupos.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-b">
+      <span class="bloque__rotulo">Bloque B</span>
+      <span class="bloque__nombre">Litio</span>
+    </h2>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-fisiopatologia" id="litio-mecanismo">
+      <span class="seccion__pestana"><b>02</b> Fisiopatología</span>
+      <h2 class="seccion__titulo">Mecanismo de acción del litio</h2>
+
+      <p>El litio es un <strong>ion monovalente</strong> con una carga positiva. Su mecanismo es complejo y actúa sobre los <strong>segundos mensajeros</strong>:</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 760 256" role="img" aria-label="Mecanismo del litio: inhibe la inositol monofosfatasa del sistema fosfatidilinositol, inhibe la GSK3 y la proteína quinasa C, modula la proteína G y regula genes de factores de crecimiento, con efecto sobre la neuroplasticidad. Sobre los neurotransmisores, aumenta la producción y liberación de serotonina, aumenta la síntesis de noradrenalina y bloquea la supersensibilidad de los receptores dopaminérgicos postsinápticos"><defs><marker id="mk-l" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path></marker></defs><rect x="20" y="20" width="120" height="50" rx="7" fill="var(--c)" fill-opacity="0.42" stroke="currentColor" stroke-width="1.2"></rect><text x="80.0" y="42.0" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">Li⁺</text><text x="80.0" y="57.0" text-anchor="middle" font-size="13" fill="currentColor">ion monovalente</text><rect x="180" y="14" width="230" height="46" rx="7" fill="var(--c)" fill-opacity="0.2" stroke="currentColor" stroke-width="1.2"></rect><text x="295.0" y="34.0" text-anchor="middle" font-size="12" fill="currentColor">Inhibe la inositol</text><text x="295.0" y="49.0" text-anchor="middle" font-size="12" fill="currentColor">monofosfatasa (fosfatidilinositol)</text><rect x="180" y="72" width="230" height="46" rx="7" fill="var(--c)" fill-opacity="0.2" stroke="currentColor" stroke-width="1.2"></rect><text x="295.0" y="92.0" text-anchor="middle" font-size="12" fill="currentColor">Inhibe GSK3</text><text x="295.0" y="107.0" text-anchor="middle" font-size="12" fill="currentColor">y proteína quinasa C</text><rect x="180" y="130" width="230" height="46" rx="7" fill="var(--c)" fill-opacity="0.2" stroke="currentColor" stroke-width="1.2"></rect><text x="295.0" y="150.0" text-anchor="middle" font-size="12" fill="currentColor">Modula la proteína G</text><text x="295.0" y="165.0" text-anchor="middle" font-size="12" fill="currentColor">(segundo mensajero)</text><path d="M140 40 L178 37" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-l)"></path><path d="M140 50 L178 95" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-l)"></path><path d="M120 70 L178 150" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-l)"></path><rect x="180" y="196" width="230" height="46" rx="7" fill="var(--c)" fill-opacity="0.32" stroke="currentColor" stroke-width="1.2"></rect><text x="295.0" y="216.0" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Genes de factores de crecimiento</text><text x="295.0" y="231.0" text-anchor="middle" font-size="12" fill="currentColor">→ neuroplasticidad</text><path d="M295 176 L295 194" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-l)"></path><text x="470" y="30" text-anchor="start" font-size="12.5" font-weight="700" fill="currentColor">Sobre los neurotransmisores</text><rect x="470" y="40" width="270" height="50" rx="7" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1.2"></rect><text x="605.0" y="62.0" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Serotonina</text><text x="605.0" y="77.0" text-anchor="middle" font-size="12" fill="currentColor">↑ producción y liberación</text><rect x="470" y="98" width="270" height="50" rx="7" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1.2"></rect><text x="605.0" y="120.0" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Noradrenalina</text><text x="605.0" y="135.0" text-anchor="middle" font-size="12" fill="currentColor">↑ síntesis en el SNC</text><rect x="470" y="156" width="270" height="62" rx="7" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1.2"></rect><text x="605.0" y="176.5" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Dopamina</text><text x="605.0" y="191.5" text-anchor="middle" font-size="12" fill="currentColor">bloquea la supersensibilidad</text><text x="605.0" y="206.5" text-anchor="middle" font-size="12" fill="currentColor">postsináptica</text></svg>
+        <figcaption>A la izquierda, las cascadas de señales; a la derecha, el efecto sobre cada neurotransmisor.</figcaption>
+      </figure>
+
+      <h3>La hipótesis de la desregulación cíclica</h3>
+      <p>En la <strong>manía</strong> aumenta la neurotransmisión dopaminérgica. Eso lleva a una <strong>regulación a la baja</strong> de los receptores y, después, a una <strong>reducción de la neurotransmisión</strong>, asociada a la <strong>depresión</strong>. El litio <strong>inhibe la neurotransmisión dopaminérgica</strong> actuando sobre la proteína G acoplada al receptor D2.</p>
+
+      <p class="cita">Clase «Estabilizadores del estado de ánimo», Dra. Vanesa Marciano, Cátedra de Psiquiatría UM 2026: litio y mecanismo de acción (lámina adaptada de Malhi y col., CNS Drugs 2013).</p>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-tratamiento" id="litio-uso">
+      <span class="seccion__pestana"><b>03</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Litio: farmacocinética, efectos adversos y controles</h2>
+
+      <h3>Farmacocinética</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Etapa</th><th>Qué saber</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Absorción</strong></td><td><span class="dato">100 %</span> por vía oral. Pico a los <span class="dato">30 min-2 h</span> (liberación inmediata) o a las <span class="dato">2-4 h</span> (prolongada). El pico se relaciona con los <strong>efectos adversos tempranos</strong></td></tr>
+            <tr><td><strong>Distribución</strong></td><td>Generalizada. Puede tardar hasta <span class="dato">24 h</span> en llegar al cerebro, así que la toxicidad aguda puede aparecer tarde</td></tr>
+            <tr><td><strong>Metabolismo</strong></td><td><strong>No se metaboliza</strong>: es un ion</td></tr>
+            <tr><td><strong>Excreción</strong></td><td><span class="dato">95 %</span> renal; el resto por heces, sudor y saliva. <strong>Compite con el sodio</strong> en el riñón: si baja el sodio o el volumen, sube el litio</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Efectos adversos</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Tipo</th><th>Cuáles</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Tempranos</strong> (al inicio, durante el pico)</td><td>Náuseas, vómitos, diarrea, dolor abdominal y <strong>temblor</strong>: aparece en el <span class="dato">70 %</span>, es de acción, fino y de alta frecuencia. También <strong>poliuria y sed</strong>, que pueden persistir</td></tr>
+            <tr><td><strong>Tardíos</strong></td><td>Alteración de la memoria, embotamiento afectivo, bradipsiquia, despersonalización, disforia, enlentecimiento motor</td></tr>
+            <tr><td><strong>Endocrinos</strong></td><td><strong>Hipotiroidismo</strong> (también hipertiroidismo), <strong>hiperparatiroidismo e hipercalcemia</strong></td></tr>
+            <tr><td><strong>Renales</strong></td><td>Menor capacidad de concentrar la orina, <strong>diabetes insípida nefrogénica</strong>, deterioro renal</td></tr>
+            <tr><td><strong>Hematológicos</strong></td><td>Leucocitosis con neutrofilia y linfopenia</td></tr>
+            <tr><td><strong>Cardíacos</strong></td><td>Puede <strong>desenmascarar un síndrome de Brugada</strong>: evitarlo si se sospecha</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>El SNC es particularmente sensible. La <strong>neurotoxicidad</strong> (parestesias, ataxia, temblor, deterioro cognitivo) puede aparecer <strong>aun con litemias terapéuticas</strong>, así que hay que buscarla en cada consulta.</p>
+
+      <h3>Cuándo elegirlo</h3>
+      <ul>
+        <li>NICE lo indica como <strong>primera línea a largo plazo</strong> y dice que es el tratamiento a largo plazo <strong>más eficaz</strong> del trastorno bipolar.</li>
+        <li>Según PubMed, en un metaanálisis de 48 ensayos el litio <strong>redujo los suicidios</strong> frente al placebo (OR <span class="dato">0,13</span>) y las muertes por cualquier causa.</li>
+        <li>Necesita que el paciente acepte los <strong>controles de sangre</strong>. Si no los acepta, NICE propone otras opciones.</li>
+      </ul>
+
+      <h3>Controles según NICE</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Momento</th><th>Qué pedir</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Antes de empezar</strong></td><td>Peso o IMC; urea y electrolitos con <strong>calcio</strong>; <strong>filtrado glomerular</strong>; <strong>función tiroidea</strong>; hemograma. <strong>ECG</strong> si hay enfermedad o riesgo cardiovascular</td></tr>
+            <tr><td><strong>Al empezar y con cada cambio de dosis</strong></td><td><strong>Litemia</strong> a la semana, y semanal hasta que se estabilice. Objetivo: <span class="dato">0,6-0,8 mmol/L</span>. Se mide a las <span class="dato">12 horas</span> de la última dosis</td></tr>
+            <tr><td><strong>Primer año</strong></td><td>Litemia cada <span class="dato">3 meses</span></td></tr>
+            <tr><td><strong>Después</strong></td><td>Litemia cada <span class="dato">6 meses</span>; cada 3 meses en ancianos, con fármacos que interactúan, con riesgo renal, tiroideo o de calcio, mal control, mala adherencia o última litemia ≥ 0,8</td></tr>
+            <tr><td><strong>Cada 6 meses</strong></td><td>Peso o IMC, urea y electrolitos con calcio, filtrado y tiroides</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul>
+        <li>Si el paciente <strong>recayó</strong> con litio o tiene síntomas subumbrales que lo afectan, considerar una litemia de <span class="dato">0,8-1,0</span> por al menos 6 meses.</li>
+        <li><strong>Avisarle</strong> que consulte si tiene diarrea, vómitos o cualquier enfermedad aguda; que mantenga la hidratación (ejercicio, calor, fiebre, inmovilidad); que no tome <strong>AINE</strong> de venta libre, y que avise si busca un embarazo.</li>
+        <li><strong>Suspenderlo de a poco</strong>, en al menos 4 semanas y mejor hasta 3 meses, y vigilar la recaída los 3 meses siguientes.</li>
+      </ul>
+
+      <p><strong>Corrección del material</strong>: la lámina 9 pone la leucocitosis dentro de los efectos «endocrinos»; es un efecto hematológico. La ficha de la FDA da un rango terapéutico de 0,8-1,2 mEq/L; NICE apunta más bajo, a 0,6-0,8 mmol/L al empezar, en línea con lo que dice la clase: el tratamiento moderno usa las dosis más bajas del rango.</p>
+
+      <p class="cita">Clase «Estabilizadores del estado de ánimo», Dra. Vanesa Marciano, Cátedra de Psiquiatría UM 2026: farmacocinética y efectos adversos del litio. NICE CG185, «Bipolar disorder: assessment and management», 2014 (<a href="https://www.nice.org.uk/guidance/cg185">guía</a>): recomendaciones 1.7.5-1.7.8 y 1.10.14-1.10.26. Ficha del carbonato de litio, FDA, en <a href="https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=16ebe1f9-501d-468b-a37d-f6a46f8f32d1">DailyMed</a>. Según PubMed: Cipriani A y col., «Lithium in the prevention of suicide in mood disorders: updated systematic review and meta-analysis», BMJ 2013;346:f3646 (<a href="https://doi.org/10.1136/bmj.f3646">DOI</a>).</p>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-tratamiento" id="intoxicacion">
+      <span class="seccion__pestana"><b>04</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Intoxicación por litio</h2>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 760 290" role="img" aria-label="Escala de litemia: el objetivo al empezar es de 0,6 a 0,8 mmol por litro; desde 1,5 está el rango tóxico; por encima de 3 puede haber convulsiones y coma. La hemodiálisis está recomendada con más de 4 y falla renal, o con depresión de conciencia, convulsiones o arritmias graves sin importar la litemia, y sugerida con más de 5"><defs><marker id="mk-t" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path></marker></defs><rect x="40" y="120" width="690" height="26" fill="none" stroke="currentColor" stroke-width="1.2"></rect><rect x="115.3" y="120" width="25.1" height="26" fill="var(--c)" fill-opacity="0.45" stroke="none"></rect><rect x="228.2" y="120" width="188.2" height="26" fill="var(--c)" fill-opacity="0.32" stroke="none"></rect><rect x="416.4" y="120" width="313.6" height="26" fill="var(--c)" fill-opacity="0.5" stroke="none"></rect><path d="M40.0 146 L40.0 153" stroke="currentColor" stroke-width="1.2"></path><text x="40.0" y="167" text-anchor="middle" font-size="11.5" fill="currentColor">0</text><path d="M115.3 146 L115.3 153" stroke="currentColor" stroke-width="1.2"></path><text x="115.27272727272727" y="167" text-anchor="middle" font-size="11.5" fill="currentColor">0,6</text><path d="M165.5 146 L165.5 153" stroke="currentColor" stroke-width="1.2"></path><text x="165.45454545454544" y="167" text-anchor="middle" font-size="11.5" fill="currentColor">1,0</text><path d="M228.2 146 L228.2 153" stroke="currentColor" stroke-width="1.2"></path><text x="228.1818181818182" y="167" text-anchor="middle" font-size="11.5" fill="currentColor">1,5</text><path d="M290.9 146 L290.9 153" stroke="currentColor" stroke-width="1.2"></path><text x="290.9090909090909" y="167" text-anchor="middle" font-size="11.5" fill="currentColor">2</text><path d="M416.4 146 L416.4 153" stroke="currentColor" stroke-width="1.2"></path><text x="416.3636363636364" y="167" text-anchor="middle" font-size="11.5" fill="currentColor">3</text><path d="M541.8 146 L541.8 153" stroke="currentColor" stroke-width="1.2"></path><text x="541.8181818181818" y="167" text-anchor="middle" font-size="11.5" fill="currentColor">4</text><path d="M667.3 146 L667.3 153" stroke="currentColor" stroke-width="1.2"></path><text x="667.2727272727273" y="167" text-anchor="middle" font-size="11.5" fill="currentColor">5</text><text x="385.0" y="186" text-anchor="middle" font-size="12" font-style="italic" fill="currentColor">Litemia (mmol/L = mEq/L)</text><rect x="40" y="22" width="150" height="50" rx="7" fill="var(--c)" fill-opacity="0.45" stroke="currentColor" stroke-width="1.2"></rect><text x="115.0" y="44.0" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">0,6-0,8</text><text x="115.0" y="59.0" text-anchor="middle" font-size="12" fill="currentColor">objetivo al empezar</text><path d="M127.8 72 L127.8 118" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-t)"></path><rect x="210" y="22" width="150" height="50" rx="7" fill="var(--c)" fill-opacity="0.32" stroke="currentColor" stroke-width="1.2"></rect><text x="285.0" y="44.0" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">≥ 1,5</text><text x="285.0" y="59.0" text-anchor="middle" font-size="12" fill="currentColor">rango tóxico</text><path d="M228.2 72 L228.2 118" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-t)"></path><rect x="380" y="22" width="160" height="50" rx="7" fill="var(--c)" fill-opacity="0.5" stroke="currentColor" stroke-width="1.2"></rect><text x="460.0" y="44.0" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">> 3</text><text x="460.0" y="59.0" text-anchor="middle" font-size="12" fill="currentColor">convulsiones, coma</text><path d="M416.4 72 L416.4 118" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-t)"></path><rect x="529.2727272727273" y="214" width="200" height="62" rx="7" fill="var(--c)" fill-opacity="0.42" stroke="currentColor" stroke-width="1.2"></rect><text x="629.2727272727273" y="234.5" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">> 4 con falla renal</text><text x="629.2727272727273" y="249.5" text-anchor="middle" font-size="12" fill="currentColor">hemodiálisis</text><text x="629.2727272727273" y="264.5" text-anchor="middle" font-size="12" fill="currentColor">(> 5: sugerida igual)</text><path d="M541.8 212 L541.8 170" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-t)"></path><rect x="40" y="214" width="330" height="62" rx="7" fill="var(--c)" fill-opacity="0.24" stroke="currentColor" stroke-width="1.2"></rect><text x="205.0" y="234.5" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Hemodiálisis sin importar la litemia</text><text x="205.0" y="249.5" text-anchor="middle" font-size="12" fill="currentColor">si hay depresión de conciencia,</text><text x="205.0" y="264.5" text-anchor="middle" font-size="12" fill="currentColor">convulsiones o arritmias graves</text></svg>
+        <figcaption>El margen entre la litemia buscada y la tóxica es estrecho. Algunos pacientes, sobre todo los ancianos, se intoxican con litemias que en otros se toleran.</figcaption>
+      </figure>
+
+      <h3>Qué la desencadena</h3>
+      <ul>
+        <li><strong>Deshidratación</strong> o pérdida de volumen: diarrea, vómitos, sudor, fiebre; dieta sin sal.</li>
+        <li><strong>Fármacos</strong> que suben el litio: <strong>AINE</strong>, <strong>IECA y antagonistas de la angiotensina</strong>, <strong>diuréticos</strong>, metronidazol.</li>
+        <li><strong>Insuficiencia renal</strong>, enfermedad cardiovascular importante, cambios de sodio o potasio, una enfermedad febril reciente o un cambio brusco de la actividad física.</li>
+        <li><strong>Ingesta aguda</strong> (sobredosis).</li>
+      </ul>
+
+      <h3>Cómo se ve</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Órgano</th><th>Signos</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Neurológico leve</strong></td><td>Temblor fino, mareo, incoordinación, debilidad</td></tr>
+            <tr><td><strong>Neurológico moderado</strong></td><td>Apatía, somnolencia, <strong>hiperreflexia</strong>, fasciculaciones, <strong>ataxia</strong>, visión borrosa, acúfenos, disartria</td></tr>
+            <tr><td><strong>Neurológico grave</strong></td><td><strong>Clonus</strong>, <strong>confusión</strong>, <strong>convulsiones</strong>, coma y muerte. A veces quedan secuelas, con atrofia cerebelosa</td></tr>
+            <tr><td><strong>Cardíaco</strong></td><td>QT largo, cambios del ST y la T, miocarditis</td></tr>
+            <tr><td><strong>Renal</strong></td><td>Diabetes insípida nefrogénica, insuficiencia renal</td></tr>
+            <tr><td><strong>Digestivo y respiratorio</strong></td><td>Náuseas, vómitos, diarrea, distensión; disnea, neumonía aspirativa, falla respiratoria</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Qué hacer</h3>
+      <ul>
+        <li><strong>Leve</strong>: bajar la dosis o suspender el litio, y medir la litemia.</li>
+        <li><strong>Grave</strong>: el objetivo es <strong>eliminar el ion</strong>. No hay antídoto. El <strong>carbón activado no sirve</strong>, porque no adsorbe el litio. Soporte e hidratación.</li>
+        <li><strong>Hemodiálisis</strong>: es el tratamiento de elección en la intoxicación grave. Según el grupo EXTRIP:
+          <ul>
+            <li><strong>recomendada</strong> con litemia &gt; 4,0 y <strong>función renal alterada</strong>, o con <strong>depresión de la conciencia, convulsiones o arritmias graves</strong>, sea cual sea la litemia;</li>
+            <li><strong>sugerida</strong> con litemia &gt; 5,0, confusión importante, o si se espera que tarde más de 36 horas en bajar de 1,0;</li>
+            <li>seguir hasta que el paciente mejore o la litemia baje de 1,0, y al menos 6 horas si no se puede medir. La terapia de reemplazo renal continua es una alternativa.</li>
+          </ul>
+        </li>
+      </ul>
+      <p><strong>Otras interacciones</strong>: con fármacos serotoninérgicos, riesgo de síndrome serotoninérgico; con antipsicóticos, efectos neurológicos que van del extrapiramidalismo al síndrome neuroléptico maligno.</p>
+
+      <div class="importante">
+        <p><strong>¡Importante!</strong> Un paciente con litio que llega con <strong>diarrea o vómitos</strong>, o al que le indicaron un <strong>AINE, un IECA o un diurético</strong>, está en riesgo de intoxicarse. Ante ataxia, disartria o confusión, <strong>medí la litemia</strong> y la función renal.</p>
+      </div>
+
+      <p class="cita">Ficha del carbonato de litio, FDA, en <a href="https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=16ebe1f9-501d-468b-a37d-f6a46f8f32d1">DailyMed</a>: toxicidad, interacciones y sobredosis. Según PubMed: Decker BS y col., «Extracorporeal treatment for lithium poisoning: systematic review and recommendations from the EXTRIP workgroup», Clin J Am Soc Nephrol 2015;10(5):875-87 (<a href="https://doi.org/10.2215/CJN.10021014">DOI</a>). NICE CG185, 2014 (<a href="https://www.nice.org.uk/guidance/cg185">guía</a>): recomendaciones 1.10.17-1.10.18.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-c">
+      <span class="bloque__rotulo">Bloque C</span>
+      <span class="bloque__nombre">Anticonvulsivantes</span>
+    </h2>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-tratamiento" id="valproato">
+      <span class="seccion__pestana"><b>05</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Valproato y carbamazepina</h2>
+
+      <p>El litio no sirve para todos los bipolares ni todos lo toleran. Como una manía puede «encender» más episodios de manía, se hizo un paralelismo con las <strong>crisis epilépticas</strong> y se empezaron a usar anticonvulsivantes. Los más usados y eficaces son el <strong>valproato</strong> y la <strong>carbamazepina</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Aspecto</th><th>Valproato</th><th>Carbamazepina</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Mecanismo</strong></td><td>Inhibe los canales de sodio voltaje dependientes; potencia el GABA; inhibe la GSK3, como el litio</td><td>Actúa sobre la <strong>subunidad α</strong> de los canales de sodio voltaje dependientes, en otro sitio que el valproato: menos neurotransmisión excitatoria por glutamato</td></tr>
+            <tr><td><strong>Cuándo</strong></td><td>Manía aguda, sobre todo los <strong>estados mixtos</strong>; <strong>cicladores rápidos</strong>; profilaxis. FDA: episodios maníacos. NICE: sumarlo si el litio no alcanza en la manía, o combinado a largo plazo</td><td>Fue el primer anticonvulsivante eficaz en la manía. Profilaxis; <strong>cicladores rápidos</strong> (junto con litio o valproato); pacientes violentos</td></tr>
+            <tr><td><strong>Efectos adversos</strong></td><td>Alteración metabólica y aumento de peso, <strong>poliquistosis ovárica</strong>, temblor, trombocitopenia. Recuadro de la FDA: <strong>hepatotoxicidad</strong> (sobre todo los primeros 6 meses), <strong>pancreatitis</strong> y <strong>riesgo fetal</strong>. Hiperamonemia</td><td>Recuadro de la FDA: <strong>Stevens-Johnson y necrólisis epidérmica tóxica</strong>, y <strong>anemia aplásica y agranulocitosis</strong>. <strong>Hiponatremia</strong> por secreción inadecuada de ADH, más en ancianos y con diuréticos</td></tr>
+            <tr><td><strong>Controles</strong></td><td>NICE: peso o IMC, <strong>hemograma</strong> y <strong>hepatograma</strong> al empezar, a los 6 meses y después cada año. No medir los niveles de rutina. Suspender si hay alteración hepática o de la sangre</td><td><strong>Hemograma</strong> con plaquetas antes de empezar; si bajan los glóbulos blancos o las plaquetas, vigilar de cerca y considerar suspenderla. En pacientes de ascendencia asiática, buscar el alelo <strong>HLA-B*1502</strong> antes de empezar</td></tr>
+            <tr><td><strong>Interacciones</strong></td><td>Con carbamazepina, lamotrigina, olanzapina y el tabaco</td><td>Potente <strong>inductor enzimático</strong>: baja el efecto de muchos fármacos, entre ellos los <strong>anticonceptivos hormonales</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>En el anciano con valproato, NICE pide vigilar la <strong>sedación, el temblor y la marcha</strong>. Las restricciones del valproato en menores de 55 años y en la mujer en edad fértil están en la <a href="#embarazo">sección 10</a>.</p>
+
+      <div class="importante">
+        <p><strong>¡Importante!</strong> Con valproato, si aparece <strong>malestar, vómitos o dolor abdominal</strong>, descartá hepatotoxicidad y pancreatitis. Con carbamazepina, un <strong>rash</strong> en los primeros meses obliga a pensar en Stevens-Johnson (más del 90 % aparece en ese período), y una caída de los <strong>glóbulos blancos o las plaquetas</strong>, a vigilar de cerca o suspenderla.</p>
+      </div>
+
+      <p class="cita">Clase «Estabilizadores del estado de ánimo», Dra. Vanesa Marciano, Cátedra de Psiquiatría UM 2026: anticonvulsivantes como estabilizadores, ácido valproico y carbamazepina. Fichas de la FDA en DailyMed: <a href="https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=08a65cf4-7749-4ceb-6895-8f4805e2b01f">Depakote (divalproato)</a> y <a href="https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=8d409411-aa9f-4f3a-a52c-fbcb0c3ec053">Tegretol (carbamazepina)</a>. NICE CG185, 2014 (<a href="https://www.nice.org.uk/guidance/cg185">guía</a>): recomendaciones 1.10.29-1.10.35.</p>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-tratamiento" id="lamotrigina">
+      <span class="seccion__pestana"><b>06</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Lamotrigina, oxcarbazepina, topiramato y gabapentinoides</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Fármaco</th><th>Mecanismo</th><th>Cuándo</th><th>Qué vigilar</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Lamotrigina</strong></td><td>Canales de sodio voltaje dependientes, en el mismo sitio que la carbamazepina pero más lento: menos glutamato</td><td><strong>Mantenimiento</strong>: según la FDA, demora todos los episodios (depresión, manía, hipomanía, mixtos). NICE: opción en la <strong>depresión bipolar</strong>. <strong>No</strong> sirve en la manía aguda</td><td><strong>Rash</strong>: el más común. El temido es el <strong>Stevens-Johnson</strong> o la necrólisis (0,08-0,3 % en adultos), casi siempre entre las semanas 2 y 8. Más riesgo con <strong>valproato</strong> o si se sube rápido: <strong>titular lento</strong>. Los estrógenos le bajan los niveles</td></tr>
+            <tr><td><strong>Oxcarbazepina</strong></td><td>Como la carbamazepina, sobre la subunidad α de los canales de sodio</td><td>Mejor tolerada que la carbamazepina: menos toxicidad medular, menos sedación y menos interacciones por CYP3A4</td><td><strong>Hiponatremia</strong>: medir el sodio. Hipersensibilidad cruzada con la carbamazepina. Baja el efecto de los anticonceptivos hormonales</td></tr>
+            <tr><td><strong>Topiramato</strong></td><td>Potencia el GABA y reduce la neurotransmisión glutamatérgica</td><td><strong>Coadyuvante</strong>: ayuda a evitar el aumento de peso, el insomnio y la ansiedad; útil en el consumo comórbido de sustancias</td><td><strong>Acidosis metabólica</strong> (bicarbonato basal y periódico), <strong>litiasis renal</strong>, <strong>glaucoma agudo de ángulo cerrado</strong>, efectos cognitivos, menos sudoración, toxicidad fetal</td></tr>
+            <tr><td><strong>Gabapentina y pregabalina</strong></td><td>Ligandos <strong>α2-δ</strong> de los canales de calcio voltaje dependientes: menos glutamato</td><td><strong>No</strong> son estabilizadores, pero sirven como coadyuvantes</td><td>Dependencia y depresión respiratoria con opioides (ver <a href="https://claude.ai/artifact/M6SM7W9g873zD14V7xm8jo">Ansiolíticos e Hipnóticos</a>)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul>
+        <li><strong>Lamotrigina, según NICE</strong>: hemograma, urea y electrolitos y hepatograma al empezar. Titular según la ficha, lento en quien no la tomó antes. Si aparece un <strong>rash mientras se sube la dosis</strong>, el paciente tiene que consultar de inmediato.</li>
+        <li><strong>Lamotrigina con valproato</strong>: el valproato aumenta el riesgo de rash grave, así que hay que tener en cuenta la interacción al indicarla.</li>
+        <li><strong>Retiro</strong>: NICE pide bajar la lamotrigina y el valproato en al menos 4 semanas para evitar la recaída.</li>
+      </ul>
+      <p>La lámina 13 dice que la lamotrigina previene tanto las recurrencias maníacas como las depresivas, y la ficha de la FDA lo confirma para el mantenimiento. Lo que no hace es tratar la <strong>manía aguda</strong>: la FDA no lo recomienda y NICE dice que no se ofrezca.</p>
+
+      <p class="cita">Clase «Estabilizadores del estado de ánimo», Dra. Vanesa Marciano, Cátedra de Psiquiatría UM 2026: lamotrigina, oxcarbazepina, topiramato, gabapentina y pregabalina. Fichas de la FDA en DailyMed: <a href="https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=d7e3572d-56fe-4727-2bb4-013ccca22678">Lamictal (lamotrigina)</a>, <a href="https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=4c5c86c8-ab7f-4fcf-bc1b-5a0b1fd0691b">Trileptal (oxcarbazepina)</a> y <a href="https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=21628112-0c47-11df-95b3-498d55d89593">Topamax (topiramato)</a>. NICE CG185, 2014 (<a href="https://www.nice.org.uk/guidance/cg185">guía</a>): recomendaciones 1.5.12, 1.6.3 y 1.10.36-1.10.39.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-d">
+      <span class="bloque__rotulo">Bloque D</span>
+      <span class="bloque__nombre">Antipsicóticos y tratamiento por fase</span>
+    </h2>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-fisiopatologia" id="antipsicoticos">
+      <span class="seccion__pestana"><b>07</b> Fisiopatología</span>
+      <h2 class="seccion__titulo">Antipsicóticos como estabilizadores e indicaciones</h2>
+
+      <ul>
+        <li>Por el <strong>bloqueo D2</strong>, todos los antipsicóticos tratan los <strong>síntomas psicóticos y la agitación</strong> de la manía.</li>
+        <li>Los <strong>atípicos</strong>, por el antagonismo <strong>5-HT2A</strong>, reducirían también los síntomas maníacos no psicóticos y los <strong>depresivos</strong> del bipolar. Ese antagonismo disminuiría la hiperactividad glutamatérgica.</li>
+        <li>Combinar un atípico con un anticonvulsivante suma mecanismos que bajan el glutamato, lo que explicaría el beneficio de la combinación.</li>
+        <li>Por su acción sobre las monoaminas, los atípicos sirven también en la <strong>fase depresiva</strong>.</li>
+      </ul>
+      <p>El perfil de cada antipsicótico (qué vigilar, monitoreo metabólico) está en el cuadernillo de <a href="https://claude.ai/artifact/5fhZRKCA3vzEQatdbjKmt8">Antipsicóticos</a>.</p>
+
+      <h3>Indicaciones de los estabilizadores</h3>
+      <ul>
+        <li>Episodio maníaco y fase maníaca del trastorno bipolar.</li>
+        <li><strong>Profilaxis</strong> del trastorno bipolar.</li>
+        <li>Trastorno depresivo recurrente resistente.</li>
+        <li>Trastorno esquizoafectivo.</li>
+        <li>Trastorno límite de la personalidad y trastornos conductuales.</li>
+      </ul>
+
+      <h3>Cuándo elegir cada uno, según la clase</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Fármaco</th><th>Cuándo</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Litio</strong></td><td>Primera elección en el episodio maníaco y en la profilaxis</td></tr>
+            <tr><td><strong>Valproato</strong></td><td>Manía aguda, sobre todo los estados mixtos; profilaxis</td></tr>
+            <tr><td><strong>Carbamazepina</strong></td><td>Profilaxis; cicladores rápidos (con litio o valproato); pacientes violentos</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Corrección del material</strong>: la lámina 19 dice que el litio es la primera elección en el episodio maníaco. NICE, en cambio, empieza la manía con un <strong>antipsicótico</strong> y suma el litio si no alcanza (<a href="#mania">sección 08</a>). Donde coinciden es en el <strong>largo plazo</strong>: ahí el litio es primera línea.</p>
+
+      <p class="cita">Clase «Estabilizadores del estado de ánimo», Dra. Vanesa Marciano, Cátedra de Psiquiatría UM 2026: antipsicóticos, indicaciones y «a tener en cuenta». NICE CG185, 2014 (<a href="https://www.nice.org.uk/guidance/cg185">guía</a>): recomendaciones 1.5.3-1.5.5 y 1.7.7.</p>
+    </section>
+
+    <!-- ============ 8 ============ -->
+    <section class="seccion s-tratamiento" id="mania">
+      <span class="seccion__pestana"><b>08</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Tratamiento de la manía</h2>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 760 352" role="img" aria-label="Tratamiento de la manía según NICE: considerar suspender el antidepresivo; si no toma estabilizador, dar un antipsicótico (haloperidol, olanzapina, quetiapina o risperidona); si no alcanza, otro antipsicótico, y después sumar litio o, si no, valproato. Si ya toma litio, medir la litemia y optimizar; si toma valproato, revisar la adherencia; en ambos, considerar sumar un antipsicótico. No usar lamotrigina en la manía. Al resolverse, seguir 3 a 6 meses o pasar al tratamiento a largo plazo"><defs><marker id="mk-m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path></marker></defs><rect x="250" y="12" width="260" height="44" rx="7" fill="var(--c)" fill-opacity="0.3" stroke="currentColor" stroke-width="1.2"></rect><text x="380.0" y="38.5" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">Manía o hipomanía</text><path d="M380 56 L380 74" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-m)"></path><rect x="200" y="76" width="360" height="44" rx="7" fill="var(--c)" fill-opacity="0.12" stroke="currentColor" stroke-width="1.2"></rect><text x="380.0" y="95.0" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">¿Toma un antidepresivo?</text><text x="380.0" y="110.0" text-anchor="middle" font-size="12" fill="currentColor">considerar suspenderlo</text><path d="M300 120 L150 150" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-m)"></path><path d="M460 120 L610 150" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-m)"></path><text x="20" y="140" text-anchor="start" font-size="11.5" font-style="italic" fill="currentColor">sin estabilizador</text><text x="740" y="132" text-anchor="end" font-size="11.5" font-style="italic" fill="currentColor">ya toma litio o valproato</text><rect x="20" y="152" width="300" height="58" rx="7" fill="var(--c)" fill-opacity="0.36" stroke="currentColor" stroke-width="1.2"></rect><text x="170.0" y="170.5" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Antipsicótico</text><text x="170.0" y="185.5" text-anchor="middle" font-size="12" fill="currentColor">haloperidol, olanzapina,</text><text x="170.0" y="200.5" text-anchor="middle" font-size="12" fill="currentColor">quetiapina o risperidona</text><path d="M170 210 L170 228" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-m)"></path><rect x="20" y="230" width="300" height="44" rx="7" fill="var(--c)" fill-opacity="0.2" stroke="currentColor" stroke-width="1.2"></rect><text x="170.0" y="249.0" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">No alcanza o no se tolera</text><text x="170.0" y="264.0" text-anchor="middle" font-size="12" fill="currentColor">otro antipsicótico de la lista</text><path d="M170 274 L170 292" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-m)"></path><rect x="20" y="294" width="300" height="44" rx="7" fill="var(--c)" fill-opacity="0.2" stroke="currentColor" stroke-width="1.2"></rect><text x="170.0" y="313.0" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Sumar litio</text><text x="170.0" y="328.0" text-anchor="middle" font-size="12" fill="currentColor">y si no, valproato (restricciones)</text><rect x="440" y="152" width="300" height="74" rx="7" fill="var(--c)" fill-opacity="0.2" stroke="currentColor" stroke-width="1.2"></rect><text x="590.0" y="171.0" text-anchor="middle" font-size="12" fill="currentColor">Litio: medir la litemia y optimizar</text><text x="590.0" y="186.0" text-anchor="middle" font-size="12" fill="currentColor">Valproato: revisar adherencia</text><text x="590.0" y="201.0" text-anchor="middle" font-size="12" fill="currentColor">y considerar cambiarlo</text><text x="590.0" y="216.0" text-anchor="middle" font-size="12" fill="currentColor">sumar un antipsicótico de la lista</text><rect x="440" y="250" width="300" height="88" rx="7" fill="var(--c)" fill-opacity="0.06" stroke="currentColor" stroke-width="1.2"></rect><text x="590.0" y="276.0" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Nunca lamotrigina</text><text x="590.0" y="291.0" text-anchor="middle" font-size="12" fill="currentColor">en la manía</text><text x="590.0" y="306.0" text-anchor="middle" font-size="12" fill="currentColor">Al resolverse: seguir 3-6 meses</text><text x="590.0" y="321.0" text-anchor="middle" font-size="12" fill="currentColor">o pasar a largo plazo</text></svg>
+        <figcaption>Según NICE, la manía se empieza con un antipsicótico. El litio y el valproato entran si no alcanza, o si el paciente ya los tomaba.</figcaption>
+      </figure>
+
+      <ul>
+        <li><strong>Medidas generales</strong>: ambiente tranquilo y con pocos estímulos; aconsejar no tomar decisiones importantes hasta recuperarse.</li>
+        <li><strong>Antidepresivo</strong>: si lo toma solo, considerar suspenderlo y dar igual el antipsicótico; si lo toma con un estabilizador, considerar suspenderlo.</li>
+        <li><strong>Sin tratamiento previo</strong>: <strong>haloperidol, olanzapina, quetiapina o risperidona</strong>, según la preferencia y el contexto clínico. Si no se tolera (incluido un aumento rápido de peso) o no sirve en la dosis máxima, otro de la lista. Si tampoco alcanza, <strong>sumar litio</strong>; si el litio no sirve o no es adecuado, <strong>sumar valproato</strong>, respetando sus restricciones.</li>
+        <li><strong>Ya toma litio</strong>: medir la litemia para optimizar, y considerar sumar un antipsicótico.</li>
+        <li><strong>Ya toma un estabilizador como profilaxis</strong>: subir la dosis hasta el máximo si hace falta; si no mejora, sumar un antipsicótico.</li>
+        <li><strong>Estado mixto</strong>: se trata como la manía, vigilando que no aparezca una depresión.</li>
+        <li><strong>Lamotrigina</strong>: no se ofrece en la manía.</li>
+        <li><strong>Después</strong>: dentro de las 4 semanas de resueltos los síntomas, decidir con el paciente si seguir el tratamiento de la manía por <strong>3 a 6 meses más</strong> o empezar el tratamiento a largo plazo.</li>
+      </ul>
+
+      <div class="importante">
+        <p><strong>¡Importante!</strong> Ante una manía en un paciente que toma un <strong>antidepresivo</strong>, considerá suspenderlo. Y no uses lamotrigina para tratar una manía: sirve para prevenir episodios, no para cortarlos.</p>
+      </div>
+
+      <p class="cita">NICE CG185, «Bipolar disorder: assessment and management», 2014 (<a href="https://www.nice.org.uk/guidance/cg185">guía</a>): recomendaciones 1.5.1-1.5.15.</p>
+    </section>
+
+    <!-- ============ 9 ============ -->
+    <section class="seccion s-tratamiento" id="depresion">
+      <span class="seccion__pestana"><b>09</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Depresión bipolar y tratamiento a largo plazo</h2>
+
+      <h3>Depresión bipolar moderada o grave</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Situación</th><th>Qué ofrecer según NICE</th></tr></thead>
+          <tbody>
+            <tr><td><strong>No toma nada para el bipolar</strong></td><td><strong>Fluoxetina con olanzapina</strong>, o <strong>quetiapina</strong> sola. Si prefiere, olanzapina sola o <strong>lamotrigina</strong> sola. Si no responde a las primeras, lamotrigina sola</td></tr>
+            <tr><td><strong>Ya toma litio</strong></td><td>Medir la litemia y subir la dosis si es baja. Si ya está al máximo, sumar fluoxetina con olanzapina, o quetiapina; si no, olanzapina o lamotrigina</td></tr>
+            <tr><td><strong>Ya toma valproato</strong></td><td>Revisar la adherencia y subir la dosis si se tolera. Si ya está al máximo, sumar fluoxetina con olanzapina, o quetiapina; si no responde, sumar lamotrigina o cambiar el valproato</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Además, NICE ofrece una <strong>psicoterapia</strong> (TCC, interpersonal o de pareja), como en la depresión más grave.</p>
+
+      <h3>Largo plazo: prevenir recaídas</h3>
+      <ol>
+        <li><strong>Litio</strong>: primera línea. Es el tratamiento a largo plazo más eficaz.</li>
+        <li>Si el litio no sirve, no se tolera o no es adecuado (por ejemplo, si no acepta los controles): un <strong>antipsicótico</strong>, como asenapina, aripiprazol, olanzapina, quetiapina o risperidona.</li>
+        <li>Si no se tolera o no sirve en la dosis máxima: otro antipsicótico de la lista.</li>
+        <li>Si tampoco: <strong>valproato</strong> combinado con un antipsicótico o con litio, respetando sus restricciones.</li>
+      </ol>
+      <ul>
+        <li>Al planificar el largo plazo, tener en cuenta lo que sirvió en los episodios y hablar con el paciente si prefiere seguir con eso o pasar a litio.</li>
+        <li>Si se suspende el tratamiento a largo plazo, enseñarle a reconocer los signos tempranos de recaída y bajar los fármacos de a poco.</li>
+      </ul>
+
+      <p class="cita">NICE CG185, 2014 (<a href="https://www.nice.org.uk/guidance/cg185">guía</a>): recomendaciones 1.6.1-1.6.8 y 1.7.5-1.7.11.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-e">
+      <span class="bloque__rotulo">Bloque E</span>
+      <span class="bloque__nombre">Embarazo y edad fértil</span>
+    </h2>
+
+    <!-- ============ 10 ============ -->
+    <section class="seccion s-importantes" id="embarazo">
+      <span class="seccion__pestana"><b>10</b> Importantes</span>
+      <h2 class="seccion__titulo">Embarazo y edad fértil</h2>
+
+      <h3>Valproato: restricciones del MHRA que sigue NICE</h3>
+      <ul>
+        <li><strong>Menores de 55 años</strong>, varones o mujeres: no empezarlo por primera vez, salvo que <strong>2 especialistas</strong> acuerden y documenten que no hay otro tratamiento eficaz y tolerado, o que los riesgos reproductivos no aplican.</li>
+        <li><strong>Mujeres y niñas que pueden tener hijos</strong>: solo si los otros tratamientos no sirven o no se toleran, con los riesgos para el feto explicados y con el <strong>programa de prevención del embarazo</strong>.</li>
+        <li><strong>Si ya lo toma una mujer en edad fértil</strong>: aconsejarle suspenderlo de a poco, bajo control, por el riesgo de <strong>malformaciones y de alteraciones del neurodesarrollo</strong> con cualquier exposición.</li>
+        <li><strong>Si busca un embarazo, está embarazada o quiere amamantar</strong>: no ofrecerlo. Si se embaraza tomándolo, suspenderlo.</li>
+        <li><strong>Varones</strong>: posible asociación con trastornos del neurodesarrollo en los hijos. Usar anticoncepción eficaz (preservativo más el método de la pareja) durante el tratamiento y hasta 3 meses después.</li>
+      </ul>
+      <p>La ficha de la FDA lo confirma: el valproato da <strong>malformaciones mayores</strong>, sobre todo del <strong>tubo neural</strong> (espina bífida), y <strong>menor cociente intelectual</strong> y trastornos del neurodesarrollo.</p>
+
+      <h3>Los demás</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Fármaco</th><th>Qué hacer</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Carbamazepina</strong></td><td>No ofrecerla si busca un embarazo, está embarazada o quiere amamantar. Si ya la toma, hablar de suspenderla, por las <strong>interacciones</strong> y las <strong>malformaciones</strong>. Es inductora: <strong>baja la eficacia de los anticonceptivos hormonales</strong></td></tr>
+            <tr><td><strong>Oxcarbazepina</strong></td><td>También baja la eficacia de los anticonceptivos hormonales</td></tr>
+            <tr><td><strong>Lamotrigina</strong></td><td>Sus niveles <strong>varían mucho</strong> antes, durante y después del embarazo: medirlos seguido. Los anticonceptivos con estrógenos le bajan los niveles</td></tr>
+            <tr><td><strong>Topiramato</strong></td><td>Toxicidad fetal: malformaciones mayores</td></tr>
+            <tr><td><strong>Litio</strong></td><td>No ofrecerlo a quien busca un embarazo o está embarazada, salvo que los antipsicóticos no hayan servido. Riesgo de <strong>malformaciones cardíacas</strong> (anomalía de Ebstein) en el primer trimestre: según la ficha de la FDA, probablemente pequeño; según NICE, de tamaño incierto. Pasa en cantidad a la <strong>leche</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Si se embaraza tomando litio</h3>
+      <ul>
+        <li><strong>Si está bien</strong>: considerar suspenderlo de a poco en <strong>4 semanas</strong>, explicando que suspenderlo puede no eliminar el riesgo de malformación cardíaca y que hay riesgo de recaída, sobre todo en el puerperio.</li>
+        <li><strong>Si no está bien o el riesgo de recaída es alto</strong>: pasar de a poco a un antipsicótico; suspenderlo y retomarlo en el segundo trimestre (si no va a amamantar y respondió mejor al litio que a otros fármacos), o seguir con litio si el antipsicótico probablemente no sirva.</li>
+        <li><strong>Si sigue con litio</strong>: litemia cada <strong>4 semanas</strong> y semanal desde la <strong>semana 36</strong>, ajustando la dosis. En el parto, control obstétrico de la litemia y del balance de líquidos por el riesgo de deshidratación e intoxicación; suspenderlo durante el trabajo de parto y medir la litemia a las 12 horas de la última dosis.</li>
+      </ul>
+
+      <div class="importante">
+        <p><strong>¡Importante!</strong> En una mujer en edad fértil, <strong>el valproato no es una opción de rutina</strong>. Y si toma carbamazepina u oxcarbazepina, el anticonceptivo hormonal puede fallar: hay que hablar del método.</p>
+      </div>
+
+      <p class="cita">NICE CG185, 2014 (<a href="https://www.nice.org.uk/guidance/cg185">guía</a>): recuadro 1 (MHRA) y recomendaciones 1.10.27-1.10.28. NICE CG192, «Antenatal and postnatal mental health: clinical management and service guidance», 2014 (<a href="https://www.nice.org.uk/guidance/cg192">guía</a>): anticonvulsivantes y litio. Fichas de la FDA en DailyMed: <a href="https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=08a65cf4-7749-4ceb-6895-8f4805e2b01f">Depakote</a>, <a href="https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=8d409411-aa9f-4f3a-a52c-fbcb0c3ec053">Tegretol</a>, <a href="https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=4c5c86c8-ab7f-4fcf-bc1b-5a0b1fd0691b">Trileptal</a>, <a href="https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=d7e3572d-56fe-4727-2bb4-013ccca22678">Lamictal</a>, <a href="https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=21628112-0c47-11df-95b3-498d55d89593">Topamax</a> y <a href="https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=16ebe1f9-501d-468b-a37d-f6a46f8f32d1">carbonato de litio</a>.</p>
+    </section>
+
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>¿Cuáles son los tres grupos de estabilizadores?</summary>
+          <div class="fc__r"><strong>Litio</strong>; <strong>anticonvulsivantes</strong> (valproato, carbamazepina, oxcarbazepina, topiramato, gabapentina, lamotrigina, clonazepam); <strong>otros</strong> (antipsicóticos, bloqueantes cálcicos).</div>
+        </details>
+        <details class="fc s-fisiopatologia">
+          <summary>¿Sobre qué enzimas actúa el litio?</summary>
+          <div class="fc__r">Inhibe la <strong>inositol monofosfatasa</strong>, la <strong>GSK3</strong> y la <strong>proteína quinasa C</strong>, y modula la proteína G.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Cómo se elimina el litio y por qué importa el sodio?</summary>
+          <div class="fc__r">No se metaboliza; <strong>95 % renal</strong>. <strong>Compite con el sodio</strong>: la deshidratación o la falta de sodio suben la litemia.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Qué características tiene el temblor por litio?</summary>
+          <div class="fc__r">Aparece en el <strong>70 %</strong>; es <strong>de acción, fino y de alta frecuencia</strong>. Si aparecen ataxia, disartria o confusión, pensar en intoxicación.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Qué efectos endocrinos y renales da el litio a largo plazo?</summary>
+          <div class="fc__r"><strong>Hipotiroidismo</strong>, <strong>hiperparatiroidismo con hipercalcemia</strong>, <strong>diabetes insípida nefrogénica</strong> y deterioro renal.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Qué se pide antes de empezar el litio?</summary>
+          <div class="fc__r">Peso, urea y electrolitos con <strong>calcio</strong>, <strong>filtrado</strong>, <strong>tiroides</strong>, hemograma; <strong>ECG</strong> si hay riesgo cardiovascular.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Cuál es la litemia objetivo y cuándo se mide?</summary>
+          <div class="fc__r"><strong>0,6-0,8 mmol/L</strong> al empezar, a las <strong>12 h</strong> de la última dosis. A la semana de empezar y de cada cambio; cada 3 meses el primer año; después cada 6 meses.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Qué fármacos suben la litemia?</summary>
+          <div class="fc__r"><strong>AINE</strong>, <strong>IECA y antagonistas de la angiotensina</strong>, <strong>diuréticos</strong> y metronidazol.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Cómo se ve una intoxicación grave por litio?</summary>
+          <div class="fc__r"><strong>Clonus</strong>, <strong>confusión</strong>, <strong>convulsiones</strong> y coma; QT largo; insuficiencia renal. Desde 1,5 está el rango tóxico y por encima de 3 aparecen convulsiones y coma.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Cuándo está recomendada la hemodiálisis en la intoxicación por litio?</summary>
+          <div class="fc__r">Litemia <strong>&gt; 4,0 con falla renal</strong>, o <strong>depresión de conciencia, convulsiones o arritmias graves</strong> con cualquier litemia. Sugerida con &gt; 5,0.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Sirve el carbón activado en la intoxicación por litio?</summary>
+          <div class="fc__r"><strong>No</strong>: no adsorbe el ion. El tratamiento de elección en la grave es la <strong>hemodiálisis</strong>.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Qué tres advertencias en recuadro tiene el valproato?</summary>
+          <div class="fc__r"><strong>Hepatotoxicidad</strong> (sobre todo los primeros 6 meses), <strong>pancreatitis</strong> y <strong>riesgo fetal</strong> (tubo neural, menor cociente intelectual).</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿En qué cuadros es especialmente útil el valproato?</summary>
+          <div class="fc__r"><strong>Estados mixtos</strong> y <strong>cicladores rápidos</strong>, además de la manía aguda y la profilaxis.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Qué riesgos graves tiene la carbamazepina?</summary>
+          <div class="fc__r"><strong>Stevens-Johnson</strong> (buscar <strong>HLA-B*1502</strong> en ascendencia asiática), <strong>anemia aplásica y agranulocitosis</strong>, <strong>hiponatremia</strong>, e inducción enzimática.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Para qué sirve la lamotrigina y para qué no?</summary>
+          <div class="fc__r">Sirve en el <strong>mantenimiento</strong> y en la <strong>depresión bipolar</strong>. <strong>No</strong> sirve en la manía aguda.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Por qué se titula lento la lamotrigina?</summary>
+          <div class="fc__r">Por el riesgo de <strong>Stevens-Johnson</strong> y necrólisis epidérmica tóxica, mayor con valproato o con subidas rápidas, casi siempre entre las semanas 2 y 8.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Qué ventajas tiene la oxcarbazepina sobre la carbamazepina y qué vigilar?</summary>
+          <div class="fc__r">Menos toxicidad medular, menos sedación y menos interacciones. Vigilar la <strong>hiponatremia</strong>.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Para qué se usa el topiramato en el bipolar?</summary>
+          <div class="fc__r">Como <strong>coadyuvante</strong>: evitar el aumento de peso, el insomnio y la ansiedad; consumo comórbido de sustancias. Vigilar acidosis, litiasis y glaucoma.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Con qué se empieza una manía según NICE?</summary>
+          <div class="fc__r">Con un <strong>antipsicótico</strong>: haloperidol, olanzapina, quetiapina o risperidona. Si no alcanza, otro; después sumar litio, y si no, valproato.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Qué se ofrece en la depresión bipolar según NICE?</summary>
+          <div class="fc__r"><strong>Fluoxetina con olanzapina</strong> o <strong>quetiapina</strong>; como alternativas, olanzapina o lamotrigina solas.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Cuál es el tratamiento de primera línea a largo plazo?</summary>
+          <div class="fc__r">El <strong>litio</strong>. Si no sirve o no se tolera, un antipsicótico; después, valproato combinado.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Qué ventaja tiene el litio sobre el suicidio?</summary>
+          <div class="fc__r">Reduce los <strong>suicidios</strong> y las muertes por cualquier causa frente al placebo.</div>
+        </details>
+        <details class="fc s-importantes">
+          <summary>¿Cuándo se puede indicar valproato a una mujer en edad fértil?</summary>
+          <div class="fc__r">Solo si las otras opciones no sirven o no se toleran, con los riesgos explicados y el <strong>programa de prevención del embarazo</strong>. Si se embaraza, se suspende.</div>
+        </details>
+        <details class="fc s-importantes">
+          <summary>¿Cómo se controla el litio si se sigue en el embarazo?</summary>
+          <div class="fc__r">Litemia cada <strong>4 semanas</strong> y semanal desde la <strong>36</strong>; suspenderlo en el trabajo de parto y medir la litemia a las 12 h.</div>
+        </details>
+      </div>
+    </section>
+
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Triada clave</dt>
+        <dd><strong>Litio</strong> = primera línea a largo plazo y antisuicida, con rango estrecho (<strong>0,6-0,8</strong>). <strong>Valproato</strong> = mixtos y cicladores rápidos, pero teratógeno. <strong>Lamotrigina</strong> = mantenimiento y depresión, nunca la manía.</dd>
+
+        <dt class="r-gold">Controles del litio</dt>
+        <dd>Litemia a las <strong>12 h</strong>: a la semana, cada 3 meses el primer año y después cada 6. <strong>Filtrado, tiroides y calcio</strong> cada 6 meses.</dd>
+
+        <dt class="r-tto">Tratamiento por fase (NICE)</dt>
+        <dd>Manía: <strong>antipsicótico</strong> → otro → sumar litio → valproato. Depresión: <strong>fluoxetina + olanzapina</strong> o <strong>quetiapina</strong>. Largo plazo: <strong>litio</strong>.</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd>Litio + diarrea, AINE, IECA o diurético = riesgo de intoxicación; con convulsiones o falla renal y &gt; 4, <strong>hemodiálisis</strong>. <strong>Valproato</strong>: no de rutina en la mujer en edad fértil. Carbamazepina: inductora, falla el anticonceptivo.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir de la clase «Estabilizadores del estado de ánimo» de la Dra. Vanesa Marciano (Cátedra de Psiquiatría, Universidad de Mendoza, 2026). Tratamiento, controles y restricciones del valproato según NICE CG185 (2014, actualizada en 2025). Embarazo según NICE CG192 (2014). Intoxicación por litio según la ficha de la FDA y el grupo EXTRIP (Decker 2015). Efecto antisuicida según Cipriani 2013. Efectos adversos y advertencias según las fichas de la FDA (DailyMed). Material de estudio: no reemplaza el criterio clínico ni el protocolo institucional vigente.</p>
+
+
+  </main>
+</div>
+
+<script>
+(function(){
+
+  // ---- Tema claro / oscuro ----
+  // Sin eleccion estampada manda el sistema; el boton la estampa y la guarda.
+  var raiz = document.documentElement;
+  var boton = document.getElementById('tema');
+
+  function temaActual(){
+    var estampado = raiz.getAttribute('data-theme');
+    if (estampado) return estampado;
+    return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+
+  if (boton){
+    var rotular = function(){
+      var actual = temaActual();
+      boton.setAttribute('aria-pressed', actual === 'dark' ? 'true' : 'false');
+      boton.setAttribute('aria-label', actual === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+    };
+    boton.addEventListener('click', function(){
+      var nuevo = temaActual() === 'dark' ? 'light' : 'dark';
+      raiz.setAttribute('data-theme', nuevo);
+      try { localStorage.setItem('wordmed-tema', nuevo); } catch (e) { /* sin persistencia */ }
+      rotular();
+    });
+    rotular();
+  }
+
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link, .ir-link'));
+
+  // Devuelve TODOS los enlaces al ancla: la misma seccion figura en el indice
+  // lateral y en el compacto, y los dos tienen que encenderse juntos.
+  function porMeta(hash){
+    return enlaces.filter(function(l){ return l.getAttribute('href') === '#' + hash; });
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var activos = porMeta(e.target.id);
+        if (!activos.length) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          activos.forEach(function(l){ l.setAttribute('aria-current', 'true'); });
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>
+<script>
+(function(){
+  "use strict";
+  var clave = document.body.dataset.clave || "";
+  var enApp = typeof window.WordmedApp !== "undefined";
+  var MEM = "wordmed:progreso";
+
+  function leer(){ try{ return JSON.parse(localStorage.getItem(MEM)) || {}; }catch(e){ return {}; } }
+  function guardar(m){ try{ localStorage.setItem(MEM, JSON.stringify(m)); }catch(e){} }
+
+  function alto(){
+    return Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+  }
+
+  /* retomar donde quedó */
+  if (clave) {
+    var m = leer()[clave];
+    if (m && m.y > 0) {
+      window.addEventListener("load", function(){
+        window.scrollTo(0, Math.min(m.y, alto()));
+      });
+    }
+  }
+
+  /* anotar el avance, sin ahogar el scroll */
+  var pendiente = false;
+  window.addEventListener("scroll", function(){
+    if (pendiente || !clave) return;
+    pendiente = true;
+    requestAnimationFrame(function(){
+      pendiente = false;
+      var y = window.scrollY;
+      var pct = Math.round((y / alto()) * 100);
+      pct = Math.max(0, Math.min(100, pct));
+      var m = leer();
+      m[clave] = { y: y, pct: pct, ts: Date.now() };
+      guardar(m);
+      if (enApp && window.WordmedApp.progreso) window.WordmedApp.progreso(clave, pct, y);
+    });
+  }, { passive: true });
+
+  /* volver: solo cuando vinimos de la cáscara web */
+  if (!enApp && document.referrer && document.referrer.indexOf(location.origin) === 0) {
+    var b = document.createElement("button");
+    b.className = "volver";
+    b.type = "button";
+    b.setAttribute("aria-label", "Volver");
+    b.innerHTML = '<svg class="volver__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg>';
+    b.addEventListener("click", function(){ history.back(); });
+    document.body.appendChild(b);
+  }
+})();
+</script>
+</body>
+</html>

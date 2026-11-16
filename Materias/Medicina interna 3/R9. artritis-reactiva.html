@@ -1,0 +1,1138 @@
+<title>Artritis reactiva</title>
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-bloque:1.95rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+
+  /* Que la barra de desplazamiento y los controles nativos acompanen al tema */
+  color-scheme: light dark;
+}
+
+/* Eleccion explicita de claro: solo hace falta para el color-scheme, los
+   tokens claros ya son la base sin estampar. */
+:root[data-theme="light"]{ color-scheme: light; }
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* Interruptor de tema claro / oscuro.
+   El estampado `data-theme` en la raíz ya lo respetan los bloques de tokens de
+   arriba; este botón sólo lo pone y lo guarda. Sin elección estampada mandan
+   las preferencias del sistema, que es el comportamiento por defecto. */
+.tema{
+  position:fixed; top:.7rem; right:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.tema:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.tema__icono{ width:1.15rem; height:1.15rem; display:block; }
+
+/* Se muestra el icono del tema al que se va a cambiar, no el actual.
+   Mismo escalonado que los tokens: base clara · sistema oscuro · elección explícita. */
+.tema__sol{ display:none; }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .tema__sol{ display:block; }
+  :root:not([data-theme="light"]) .tema__luna{ display:none; }
+}
+:root[data-theme="dark"] .tema__sol{ display:block; }
+:root[data-theme="dark"] .tema__luna{ display:none; }
+:root[data-theme="light"] .tema__sol{ display:none; }
+:root[data-theme="light"] .tema__luna{ display:block; }
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índices ---------- */
+/* Dos piezas complementarias y deliberadamente redundantes:
+   · .indice        — barra lateral fija, sólo en pantalla ancha, navegación permanente.
+   · .indice-rapido — tarjeta compacta al principio del cuerpo, visible en TODO ancho.
+   La lateral desaparece por debajo de 64rem, que es justo el ancho del panel de
+   Artifacts y del celular; sin la compacta el cuadernillo publicado se queda sin
+   índice. Las dos apuntan a los mismos anclajes y se resaltan juntas al desplazar. */
+
+/* 6.1 · Barra lateral */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+/* Rótulo de bloque intercalado en la lista lateral: no es un enlace, sólo
+   separa grupos de secciones para que 30 entradas no sean una tira plana. */
+.indice__bloque{
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+  margin:.9rem 0 .2rem; padding:0 .55rem;
+}
+.indice__bloque:first-child{ margin-top:0; }
+
+/* 6.2 · Índice compacto (va después de la portada, dentro del cuerpo) */
+.indice-rapido{
+  background:var(--hoja-hund);
+  border:1px solid var(--linea);
+  border-radius:var(--radio);
+  padding:1.1rem 1.2rem 1.2rem;
+}
+.indice-rapido__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .85rem;
+}
+/* auto-fit: una columna en el panel angosto, dos o tres en pantalla ancha */
+.indice-rapido__bloques{
+  list-style:none; margin:0; padding:0;
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(15rem, 1fr));
+  gap:1rem 2rem; align-items:start;
+}
+.ir-bloque{
+  display:block; margin-bottom:.4rem;
+  font-family:var(--f-titulo); font-size:.98rem; font-weight:700; line-height:1.3;
+  color:var(--tinta); text-decoration:none;
+  padding-bottom:.3rem; border-bottom:1px solid var(--linea-fuerte);
+}
+.ir-bloque:hover{ color:var(--cli-t); }
+.ir-secciones{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.05rem; }
+.ir-link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.55rem 1fr; align-items:baseline; gap:.4rem;
+  padding:.2rem .35rem; border-radius:2px;
+  font-size:.86rem; line-height:1.4; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.ir-link > b{
+  font-family:var(--f-dato); font-size:.76rem; font-weight:700;
+  font-variant-numeric:tabular-nums; color:var(--ct); opacity:.85;
+}
+.ir-link:hover{ background:var(--hoja); color:var(--tinta); }
+.ir-link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Título de bloque y ficha de sección ---------- */
+
+/* Anuncia un grupo de secciones. Neutro en color a propósito: los siete colores
+   tienen significado clínico fijo y un bloque agrupa secciones de varios. La
+   regla de abajo lleva el degradado completo de la paleta, igual que la pestaña
+   de repaso y la cabecera de la ficha relámpago.
+   Sin <svg> adentro: el exportador a Word aparea los diagramas con las figuras
+   por contador posicional sobre el HTML crudo (ver exportar_docx.py). */
+.bloque{
+  margin:1.4rem 0 0; padding:0;
+  text-align:center; scroll-margin-top:2.5rem;
+  display:flex; flex-direction:column; align-items:center; gap:.3rem;
+  font-weight:400;
+}
+.bloque:first-child{ margin-top:0; }
+.bloque__rotulo{
+  font-family:var(--f-texto);
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+}
+.bloque__nombre{
+  font-family:var(--f-titulo); font-size:var(--t-bloque); font-weight:700; line-height:1.15;
+  letter-spacing:-.01em; color:var(--tinta); text-wrap:balance; max-width:32ch;
+}
+.bloque::after{
+  content:""; width:7rem; height:2.5px; margin-top:.5rem; border-radius:2px;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+}
+
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.5rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-column:1; grid-row:1; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+/* El icono ocupa la columna 1 y NADA MAS. Todo el resto del contenido se
+   apila en la columna 2, una fila por elemento, sin importar cuantos
+   parrafos haya.
+
+   Sin esta regla la caja solo funciona con un unico <p>: a partir del
+   segundo, la autocolocacion del grid empieza a repartir contenido en la
+   columna del icono, que es `auto` y por lo tanto se ensancha hasta abarcar
+   el parrafo que le toco. La columna `1fr` queda entonces reducida a una
+   tira angosta, el texto se parte en dos columnas desbalanceadas y la caja
+   crece hasta volverse ilegible. */
+.importante > :not(.importante__icono){ grid-column:2; }
+.importante__titulo{
+  grid-row:1;
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante ul, .importante ol{ margin:0; padding-left:1.15rem; }
+.importante li + li{ margin-top:.3rem; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso, .tema{ display:none !important; }
+  /* La lateral no se imprime, pero la compacta sí: en papel es la tabla de
+     contenidos del cuadernillo. */
+  .indice-rapido{ display:block; break-inside:avoid; page-break-inside:avoid; margin-bottom:1.2rem; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .bloque{
+    margin:1.6rem 0 1rem;
+    break-after:avoid; page-break-after:avoid;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+
+<script>
+/* Aplica el tema guardado antes de pintar. Va aca arriba a proposito: si
+   esperara al script del final, el documento parpadearia en el tema del
+   sistema antes de corregirse. */
+(function(){
+  try {
+    var guardado = localStorage.getItem('wordmed-tema');
+    if (guardado === 'dark' || guardado === 'light') {
+      document.documentElement.setAttribute('data-theme', guardado);
+    }
+  } catch (e) { /* almacenamiento bloqueado: manda el sistema */ }
+})();
+</script>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<button class="tema" id="tema" type="button" aria-pressed="false" aria-label="Cambiar a modo oscuro">
+  <svg class="tema__icono tema__sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.2"></circle>
+    <path d="M12 2.6v2.1M12 19.3v2.1M5.1 5.1l1.5 1.5M17.4 17.4l1.5 1.5M2.6 12h2.1M19.3 12h2.1M5.1 18.9l1.5-1.5M17.4 6.6l1.5-1.5"></path>
+  </svg>
+  <svg class="tema__icono tema__luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20.4 14.2A8.6 8.6 0 0 1 9.8 3.6a8.6 8.6 0 1 0 10.6 10.6z"></path>
+  </svg>
+</button>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li class="indice__bloque">A · Generalidades</li>
+      <li><a class="indice__link i-generalidades"  href="#generalidades">Definición, epidemiología y causas</a></li>
+
+      <li class="indice__bloque">B · Clínica</li>
+      <li><a class="indice__link i-clinica"        href="#articular">Compromiso articular</a></li>
+      <li><a class="indice__link i-clinica"        href="#extraarticular">Manifestaciones extraarticulares</a></li>
+
+      <li class="indice__bloque">C · Diagnóstico</li>
+      <li><a class="indice__link i-diagnostico"    href="#estudios">Estudios complementarios</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#criterios">Criterios diagnósticos</a></li>
+
+      <li class="indice__bloque">D · Tratamiento</li>
+      <li><a class="indice__link i-tratamiento"    href="#tratamiento">Fase aguda, crónica y antibióticos</a></li>
+      <li><a class="indice__link i-importantes"    href="#importantes">Lo que no se puede pasar</a></li>
+
+      <li class="indice__bloque">Cierre</li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Medicina Interna III · Reumatología · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Artritis reactiva</h1>
+      <p class="portada__bajada">Artritis aséptica que sigue a una infección intestinal o urogenital. Quién la tiene y qué gérmenes la disparan. La oligoartritis asimétrica, las entesitis y las manifestaciones de piel, ojo y vías urinarias. El líquido sinovial para descartar la artritis séptica, los criterios mayores y menores, y el tratamiento por fases con los antibióticos de la infección desencadenante.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">7 secciones</span>
+        <span class="etiqueta s-clinica">Espondiloartritis</span>
+        <span class="etiqueta s-diagnostico">Criterios mayores y menores</span>
+        <span class="etiqueta s-tratamiento">AINE, sulfasalazina y antibióticos</span>
+      </div>
+    </header>
+
+    <nav class="indice-rapido" aria-label="Contenido del cuadernillo">
+      <p class="indice-rapido__rotulo">Contenido</p>
+      <ol class="indice-rapido__bloques">
+        <li>
+          <a class="ir-bloque" href="#bloque-a">Bloque A · Generalidades</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades" href="#generalidades"><b>01</b> Definición, epidemiología y causas</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-b">Bloque B · Clínica</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-clinica" href="#articular"><b>02</b> Compromiso articular</a></li>
+            <li><a class="ir-link i-clinica" href="#extraarticular"><b>03</b> Manifestaciones extraarticulares</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-c">Bloque C · Diagnóstico</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-diagnostico" href="#estudios"><b>04</b> Estudios complementarios</a></li>
+            <li><a class="ir-link i-diagnostico" href="#criterios"><b>05</b> Criterios diagnósticos</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-d">Bloque D · Tratamiento</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-tratamiento" href="#tratamiento"><b>06</b> Fase aguda, crónica y antibióticos</a></li>
+            <li><a class="ir-link i-importantes" href="#importantes"><b>07</b> Lo que no se puede pasar</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#repaso">Cierre</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-clinica"     href="#repaso">Repaso activo</a></li>
+            <li><a class="ir-link i-importantes" href="#relampago">Ficha de Repaso Relámpago</a></li>
+          </ul>
+        </li>
+      </ol>
+    </nav>
+
+    <h2 class="bloque" id="bloque-a">
+      <span class="bloque__rotulo">Bloque A</span>
+      <span class="bloque__nombre">Generalidades</span>
+    </h2>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="generalidades">
+      <span class="seccion__pestana"><b>01</b> Generalidades</span>
+      <h2 class="seccion__titulo">Definición, epidemiología y causas</h2>
+
+      <p><strong>Artritis reactiva (ARe)</strong>: inflamación articular <strong>aséptica</strong> que aparece después de una infección <strong>intestinal o urogenital</strong>. Se la clasifica entre las <strong>espondiloartritis</strong>, por su clínica y su asociación con el HLA-B27.</p>
+      <p><strong>Síndrome de Reiter</strong>: artritis reactiva + <strong>conjuntivitis</strong> + <strong>uretritis</strong>.</p>
+
+      <ul>
+        <li>Aparece en el <strong>1-5 %</strong> de las uretritis no gonocócicas o de las salmonelosis.</li>
+        <li><strong>Incidencia</strong>: unos 4 a 28 casos por 100.000 habitantes por año; en general es <strong>más frecuente en varones</strong>.</li>
+        <li><strong>Sexo</strong>: la posdisentérica afecta por igual a varones y mujeres; la posurogenital es más frecuente en varones.</li>
+        <li><strong>Edad</strong>: tercera y cuarta décadas.</li>
+        <li><strong>HLA-B27</strong>: positivo en el 30-50 % según las series.</li>
+      </ul>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Infección desencadenante</th><th>Gérmenes</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Intestinal</strong></td><td><em>Salmonella</em>, <em>Shigella</em>, <em>Yersinia</em>, <em>Campylobacter</em></td></tr>
+            <tr><td><strong>Urogenital</strong></td><td><em>Chlamydia</em>, <em>Ureaplasma</em></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Latencia</strong>: de pocos días hasta alrededor de 1 mes después de la infección.</p>
+
+      <p class="cita">Clase «Artritis reactiva» (Reumatología, Medicina Interna III, Universidad de Mendoza, San Rafael): definición, epidemiología y etiopatogenia (páginas 2 a 4).</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-b">
+      <span class="bloque__rotulo">Bloque B</span>
+      <span class="bloque__nombre">Clínica</span>
+    </h2>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-clinica" id="articular">
+      <span class="seccion__pestana"><b>02</b> Clínica</span>
+      <h2 class="seccion__titulo">Compromiso articular</h2>
+
+      <p>Empieza, en general, cuando la infección ya se curó o está remitiendo: <strong>entre unos días y 6 semanas</strong> después.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 760 268" role="img" aria-label="Curso y diagnóstico de la artritis reactiva. Una infección intestinal por Salmonella, Shigella, Yersinia o Campylobacter, o urogenital por Chlamydia o Ureaplasma, precede en días a 6 semanas a una artritis aséptica: oligoartritis asimétrica de miembros inferiores, con entesitis, dactilitis y a veces sacroileítis, y manifestaciones como conjuntivitis, uretritis, queratodermia o balanitis. La punción articular muestra más de 2.000 células con predominio de polimorfonucleares, con cultivo y tinciones negativos y sin cristales, lo que excluye la artritis séptica y la microcristalina. Los criterios dan el diagnóstico probable con 2 criterios mayores o 1 mayor y 1 menor, y definido con 2 mayores y 1 menor"><defs><marker id="mk-cu" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path></marker></defs><rect x="10" y="10" width="230" height="92" rx="7" fill="var(--c)" fill-opacity="0.2" stroke="currentColor" stroke-width="1.2"></rect><text x="125.0" y="30.5" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">Infección previa</text><text x="125.0" y="45.5" text-anchor="middle" font-size="11.5" fill="currentColor">intestinal: Salmonella, Shigella,</text><text x="125.0" y="60.5" text-anchor="middle" font-size="11.5" fill="currentColor">Yersinia, Campylobacter</text><text x="125.0" y="75.5" text-anchor="middle" font-size="11.5" fill="currentColor">urogenital: Chlamydia,</text><text x="125.0" y="90.5" text-anchor="middle" font-size="11.5" fill="currentColor">Ureaplasma</text><path d="M240 56 L318 56" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-cu)"></path><text x="279" y="46" text-anchor="middle" font-size="11" font-style="italic" fill="currentColor">días a</text><text x="279" y="74" text-anchor="middle" font-size="11" font-style="italic" fill="currentColor">6 semanas</text><rect x="320" y="10" width="430" height="92" rx="7" fill="var(--c)" fill-opacity="0.35" stroke="currentColor" stroke-width="1.2"></rect><text x="535.0" y="38.0" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">Artritis reactiva (aséptica)</text><text x="535.0" y="53.0" text-anchor="middle" font-size="11.5" fill="currentColor">oligoartritis asimétrica de miembros inferiores</text><text x="535.0" y="68.0" text-anchor="middle" font-size="11.5" fill="currentColor">entesitis, dactilitis; a veces sacroileítis</text><text x="535.0" y="83.0" text-anchor="middle" font-size="11.5" fill="currentColor">conjuntivitis, uretritis, queratodermia, balanitis</text><path d="M535 102 L535 124" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-cu)"></path><rect x="320" y="126" width="430" height="62" rx="7" fill="var(--c)" fill-opacity="0.25" stroke="currentColor" stroke-width="1.2"></rect><text x="535.0" y="146.5" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">Punción articular</text><text x="535.0" y="161.5" text-anchor="middle" font-size="11.5" fill="currentColor">más de 2.000 células con predominio de polimorfonucleares</text><text x="535.0" y="176.5" text-anchor="middle" font-size="11.5" fill="currentColor">cultivo y tinciones negativos, sin cristales</text><path d="M320 157 L242 157" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-cu)"></path><text x="281" y="149" text-anchor="middle" font-size="11" font-style="italic" fill="currentColor">excluye</text><rect x="10" y="126" width="230" height="62" rx="7" fill="var(--c)" fill-opacity="0.08" stroke="currentColor" stroke-width="1.2"></rect><text x="125.0" y="154.0" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">Se descartan</text><text x="125.0" y="169.0" text-anchor="middle" font-size="11.5" fill="currentColor">artritis séptica y microcristalina</text><path d="M535 188 L535 210" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-cu)"></path><rect x="160" y="212" width="590" height="46" rx="7" fill="var(--c)" fill-opacity="0.4" stroke="currentColor" stroke-width="1.2"></rect><text x="455.0" y="232.0" text-anchor="middle" font-size="11.5" fill="currentColor">Criterios: probable con 2 mayores o 1 mayor + 1 menor</text><text x="455.0" y="247.0" text-anchor="middle" font-size="11.5" fill="currentColor">definida con 2 mayores + 1 menor</text></svg>
+        <figcaption>De la infección a la artritis, y cómo se confirma: el <strong>líquido sinovial</strong> descarta la artritis séptica y la microcristalina; los <strong>criterios</strong> cierran el diagnóstico.</figcaption>
+      </figure>
+
+      <h3>Artritis periférica</h3>
+      <ul>
+        <li>Típicamente <strong>asimétrica</strong>, <strong>monoartritis u oligoartritis</strong>, en <strong>miembros inferiores</strong> (así la definen los criterios mayores).</li>
+        <li>Puede ser <strong>incapacitante y erosiva</strong>.</li>
+        <li>La proliferación ósea puede llegar a parecerse a una espondilitis anquilosante clásica.</li>
+      </ul>
+
+      <h3>Entesitis y dactilitis</h3>
+      <p>Como otras espondiloartritis, puede dar <strong>entesitis</strong> en cualquiera de sus sitios característicos y <strong>dactilitis</strong> en dedos de manos o pies.</p>
+
+      <h3>Compromiso axial</h3>
+      <ul>
+        <li>La clase dice que el inicio es como una <strong>sacroileítis clínica</strong>.</li>
+        <li>La forma axial es <strong>mucho menos frecuente que la periférica</strong>: aparece sobre todo cuando la ARe se hace <strong>crónica</strong> y se asocia al <strong>HLA-B27</strong>.</li>
+      </ul>
+
+      <h3>Síntomas constitucionales</h3>
+      <p>Suelen ser <strong>leves</strong>; a veces hay fiebre alta, malestar general y hasta pérdida de peso.</p>
+
+      <p class="cita">Clase «Artritis reactiva»: manifestaciones clínicas y síntomas constitucionales (páginas 5 a 7 y 14).</p>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-clinica" id="extraarticular">
+      <span class="seccion__pestana"><b>03</b> Clínica</span>
+      <h2 class="seccion__titulo">Manifestaciones extraarticulares</h2>
+
+      <p>Pueden aparecer desde el inicio o a lo largo de la evolución.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Área</th><th>Manifestación</th><th>Rasgos clave</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Genitourinaria</strong></td><td>Uretritis, cervicitis, prostatitis o cistitis</td><td>Síndrome miccional; puede ser la infección original o un síntoma reactivo aséptico. Hematuria micro o macroscópica; la inflamación crónica puede llevar a <strong>estenosis uretral</strong></td></tr>
+            <tr><td><strong>Piel</strong></td><td><strong>Queratodermia blenorrágica</strong></td><td>La lesión cutánea <strong>más frecuente</strong>. Empieza como vesículas claras sobre base eritematosa y progresa a máculas, pápulas y nódulos; en <strong>plantas</strong></td></tr>
+            <tr><td><strong>Mucosa genital</strong></td><td><strong>Balanitis circinada</strong></td><td>Pequeñas úlceras superficiales en el glande, <strong>indoloras</strong> salvo en circuncidados</td></tr>
+            <tr><td><strong>Mucosa oral</strong></td><td>Úlceras orales</td><td><strong>No suelen doler</strong>, a diferencia de las de la enfermedad de Behçet</td></tr>
+            <tr><td><strong>Ojo</strong></td><td><strong>Conjuntivitis</strong></td><td>La más característica; frecuentemente <strong>bilateral</strong>, con secreción purulenta; puede hacerse crónica</td></tr>
+            <tr><td><strong>Ojo</strong></td><td>Uveítis</td><td>Sobre todo en la fase crónica; parecida a la de otras espondiloartritis</td></tr>
+            <tr><td><strong>Cardiovascular</strong></td><td>Aortitis, insuficiencia cardíaca, bloqueos</td><td>En la enfermedad <strong>crónica</strong> de larga evolución; los bloqueos se deben a fibrosis del tejido de conducción</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <figure class="esquema">
+        <img src="data:image/jpeg;base64,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" alt="Plantas de ambos pies con lesiones descamativas y costrosas, en blanco y negro">
+        <figcaption><strong>Queratodermia blenorrágica</strong> en las plantas.</figcaption>
+      </figure>
+
+      <p class="cita">Clase «Artritis reactiva»: síntomas genitourinarios, de piel y mucosas, oculares y cardiovasculares (páginas 6, 8 a 11).</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-c">
+      <span class="bloque__rotulo">Bloque C</span>
+      <span class="bloque__nombre">Diagnóstico</span>
+    </h2>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-diagnostico" id="estudios">
+      <span class="seccion__pestana"><b>04</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">Estudios complementarios</h2>
+
+      <h3>Laboratorio</h3>
+      <ul>
+        <li><strong>Fase inicial</strong>: leucocitosis, <strong>PCR y VSG elevadas</strong>.</li>
+        <li><strong>Fases crónicas</strong>: anemia normocítica normocrómica e hipergammaglobulinemia policlonal.</li>
+        <li><strong>Orina</strong>: puede haber <strong>piuria aséptica</strong>.</li>
+        <li><strong>HLA-B27</strong> puede ser positivo; <strong>ANA, FR y anti-CCP negativos</strong>.</li>
+      </ul>
+
+      <h3>Líquido sinovial</h3>
+      <p>Sirve para <strong>descartar la infección articular y la artritis microcristalina</strong>: recuento celular alto (más de 2.000 células) con <strong>predominio de polimorfonucleares</strong>, <strong>cultivos y tinciones negativos</strong> y <strong>sin cristales</strong>.</p>
+
+      <h3>Serología y microbiología</h3>
+      <ul>
+        <li><strong>Cultivo de exudados</strong> faríngeo, de heces o del tracto genital, según el caso, para aislar el germen.</li>
+        <li><strong>Anticuerpos</strong> contra <em>Salmonella</em>, <em>Yersinia</em>, <em>Campylobacter</em>, <em>Chlamydia</em>, <em>Neisseria gonorrhoeae</em>, <em>Borrelia burgdorferi</em> y estreptococo betahemolítico.</li>
+      </ul>
+
+      <h3>Imágenes</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Etapa</th><th>Hallazgos</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Inicio</strong></td><td>Aumento de partes blandas y, a veces, <strong>osteopenia yuxtaarticular</strong></td></tr>
+            <tr><td><strong>Crónica</strong></td><td><strong>Sacroileítis</strong> uni o bilateral, erosiones, reacciones periósticas, proliferación ósea en las entesis</td></tr>
+            <tr><td><strong>Columna</strong></td><td>Osificación paravertebral, en general <strong>asimétrica</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «Artritis reactiva»: pruebas complementarias (página 12).</p>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-diagnostico" id="criterios">
+      <span class="seccion__pestana"><b>05</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">Criterios diagnósticos</h2>
+
+      <p>El diagnóstico se basa en toda o parte de la clínica con el antecedente reciente (<strong>de varios días a 6 semanas</strong>) de la infección previa.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Tipo</th><th>Criterio</th><th>Qué se necesita</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Mayor</strong></td><td><strong>Artritis</strong> (2 de 3)</td><td>Asimétrica; monoartritis u oligoartritis; en miembros inferiores</td></tr>
+            <tr><td><strong>Mayor</strong></td><td><strong>Clínica de infección previa</strong> (1 de 2)</td><td><strong>Enteritis</strong>: diarrea de 1 día o más, entre 3 días y 6 semanas antes de la artritis. <strong>Uretritis</strong>: disuria o secreción de 1 día o más, entre 3 días y 6 semanas antes</td></tr>
+            <tr><td><strong>Menor</strong></td><td><strong>Evidencia de infección desencadenante</strong> (1 de 3)</td><td>Coprocultivo positivo para <em>Salmonella enteritidis</em>, <em>Shigella flexneri</em>, <em>Yersinia enterocolitica</em> o <em>Campylobacter jejuni</em>. Detección de <em>C. trachomatis</em> en la orina de la mañana o en el exudado uretral o cervical</td></tr>
+            <tr><td><strong>Menor</strong></td><td><strong>Infección sinovial persistente</strong></td><td>Inmunohistología o PCR para <em>C. trachomatis</em></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ul>
+        <li><strong>Probable</strong>: 2 criterios mayores, o 1 mayor + 1 menor.</li>
+        <li><strong>Definida</strong>: 2 criterios mayores + 1 menor.</li>
+        <li>Se considera ARe <strong>posible</strong> si el antecedente es una infección por <em>Chlamydia pneumoniae</em>, <em>Ureaplasma urealyticum</em>, <em>Mycoplasma hominis</em> o <em>Clostridium difficile</em>.</li>
+      </ul>
+
+      <p class="cita">Clase «Artritis reactiva»: diagnóstico y criterios mayores y menores (páginas 13 a 16).</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-d">
+      <span class="bloque__rotulo">Bloque D</span>
+      <span class="bloque__nombre">Tratamiento</span>
+    </h2>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-tratamiento" id="tratamiento">
+      <span class="seccion__pestana"><b>06</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Fase aguda, crónica y antibióticos</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Situación</th><th>Tratamiento</th><th>Dosis</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Fase aguda</strong></td><td><strong>AINE</strong> para los síntomas</td><td>Según el AINE</td></tr>
+            <tr><td><strong>Fase aguda con gran componente inflamatorio</strong></td><td><strong>Glucocorticoides</strong> orales o en infiltración articular o periarticular</td><td>Sin dosis en la clase</td></tr>
+            <tr><td><strong>ARe crónica</strong></td><td><strong>Sulfasalazina</strong></td><td><strong>2-3 g/día</strong></td></tr>
+            <tr><td><strong>ARe crónica</strong></td><td>Metotrexato</td><td>7,5-25 mg/semana</td></tr>
+            <tr><td><strong>ARe crónica</strong></td><td>Ciclosporina</td><td>3-5 mg/kg/día</td></tr>
+            <tr><td><strong>ARe crónica</strong></td><td>Azatioprina</td><td>1-2 mg/kg/día</td></tr>
+            <tr><td><strong>Refractaria</strong></td><td><strong>Anti-TNF-α</strong>: infliximab, etanercept o adalimumab</td><td>Sin dosis en la clase</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Antibióticos</h3>
+      <p>Están indicados en <strong>pauta corta</strong> en la <strong>infección genitourinaria aguda</strong> o con una infección previa.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Infección</th><th>Esquema</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Chlamydia</strong> (de elección)</td><td><strong>Doxiciclina 100 mg cada 12 horas</strong> por vía oral durante <strong>7 días</strong></td></tr>
+            <tr><td><strong>Chlamydia</strong> (alternativa)</td><td><strong>Azitromicina 1 g</strong> por vía oral en <strong>dosis única</strong></td></tr>
+            <tr><td><strong>Gonococo</strong></td><td><strong>Ceftriaxona 500 mg IM</strong> en <strong>dosis única</strong> (personas de menos de 150 kg); si no se descartó <em>Chlamydia</em>, sumar el tratamiento antichlamydia</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Corrección del material</strong>: en la lámina 18 la dosis de ceftriaxona aparece cortada («250 m»). Según PubMed, la guía de infecciones de transmisión sexual del CDC de 2021 recomienda <strong>500 mg IM en dosis única</strong> para la gonorrea no complicada; la doxiciclina por 7 días es el esquema de elección para <em>Chlamydia</em> y la azitromicina queda como alternativa.</p>
+
+      <p class="cita">Clase «Artritis reactiva»: tratamiento (páginas 17 y 18). Según PubMed: Workowski KA y col., «Sexually Transmitted Infections Treatment Guidelines, 2021», MMWR Recomm Rep 2021;70(4):1-187 (<a href="https://doi.org/10.15585/mmwr.rr7004a1">DOI</a>).</p>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-importantes" id="importantes">
+      <span class="seccion__pestana"><b>07</b> Importantes</span>
+      <h2 class="seccion__titulo">Lo que no se puede pasar</h2>
+
+      <ul>
+        <li>Antes de llamarla reactiva hay que <strong>punzar</strong>: el diagnóstico diferencial que importa es la <strong>artritis séptica</strong> (y la microcristalina).</li>
+        <li>Preguntar siempre por <strong>diarrea o uretritis</strong> en las 6 semanas previas.</li>
+        <li>FR, ANA y anti-CCP <strong>negativos</strong>: no es una AR.</li>
+        <li>Las úlceras orales <strong>indoloras</strong> orientan a ARe; las <strong>dolorosas</strong>, a Behçet.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Una monoartritis u oligoartritis aguda <strong>no es reactiva hasta que el líquido sinovial muestre cultivo y tinciones negativos y ausencia de cristales</strong>. Si hay uretritis activa, tratarla: <strong>doxiciclina 100 mg cada 12 horas por 7 días</strong> para <em>Chlamydia</em> y <strong>ceftriaxona 500 mg IM</strong> si se sospecha gonococo.</p>
+      </div>
+
+      <p class="cita">Clase «Artritis reactiva»: pruebas complementarias, diagnóstico y tratamiento (páginas 9, 12, 16 a 18). Según PubMed: Workowski KA y col., MMWR Recomm Rep 2021 (<a href="https://doi.org/10.15585/mmwr.rr7004a1">DOI</a>).</p>
+    </section>
+
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>¿Qué es la artritis reactiva?</summary>
+          <div class="fc__r">Una artritis <strong>aséptica</strong> que aparece tras una infección <strong>intestinal o urogenital</strong>.</div>
+        </details>
+        <details class="fc s-generalidades">
+          <summary>¿Qué tríada define el síndrome de Reiter?</summary>
+          <div class="fc__r"><strong>Artritis reactiva, conjuntivitis y uretritis.</strong></div>
+        </details>
+        <details class="fc s-generalidades">
+          <summary>¿Qué gérmenes intestinales la desencadenan?</summary>
+          <div class="fc__r"><em>Salmonella</em>, <em>Shigella</em>, <em>Yersinia</em> y <em>Campylobacter</em>.</div>
+        </details>
+        <details class="fc s-generalidades">
+          <summary>¿Y qué gérmenes urogenitales?</summary>
+          <div class="fc__r"><em>Chlamydia</em> y <em>Ureaplasma</em>.</div>
+        </details>
+        <details class="fc s-generalidades">
+          <summary>¿En qué grupo de enfermedades se clasifica y por qué?</summary>
+          <div class="fc__r">En las <strong>espondiloartritis</strong>, por su clínica y su asociación con el <strong>HLA-B27</strong> (30-50 %).</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿Cuánto tiempo después de la infección aparece?</summary>
+          <div class="fc__r">Entre <strong>unos días y 6 semanas</strong>, cuando la infección ya se curó o está remitiendo.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿Cómo es la artritis típica?</summary>
+          <div class="fc__r"><strong>Asimétrica</strong>, mono u oligoarticular, de <strong>miembros inferiores</strong>.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿Cuándo es más frecuente la afectación axial?</summary>
+          <div class="fc__r">Cuando la enfermedad se hace <strong>crónica</strong> y hay <strong>HLA-B27</strong>.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿Cuál es la lesión cutánea más frecuente y dónde aparece?</summary>
+          <div class="fc__r">La <strong>queratodermia blenorrágica</strong>, en las <strong>plantas</strong>.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿Duele la balanitis circinada?</summary>
+          <div class="fc__r">En general <strong>no</strong>, salvo en circuncidados.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿Qué diferencia las úlceras orales de la ARe de las de Behçet?</summary>
+          <div class="fc__r">Las de la ARe <strong>no suelen doler</strong>; las de Behçet sí.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿Cuál es la manifestación ocular más característica?</summary>
+          <div class="fc__r">La <strong>conjuntivitis</strong>, bilateral y purulenta. En la fase crónica, uveítis.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿Qué compromiso cardiovascular da la ARe crónica?</summary>
+          <div class="fc__r"><strong>Aortitis</strong>, insuficiencia cardíaca y <strong>bloqueos</strong> por fibrosis del tejido de conducción.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary>¿Qué muestra la orina?</summary>
+          <div class="fc__r">Puede haber <strong>piuria aséptica</strong>.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary>¿Cómo es el líquido sinovial?</summary>
+          <div class="fc__r">Recuento alto (más de 2.000 células) con <strong>polimorfonucleares</strong>, <strong>cultivo y tinciones negativos</strong> y <strong>sin cristales</strong>.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary>¿Qué muestra la radiografía en la fase crónica?</summary>
+          <div class="fc__r">Sacroileítis uni o bilateral, erosiones, periostitis y proliferación en las entesis; osificación paravertebral <strong>asimétrica</strong>.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary>¿Cuáles son los dos criterios mayores?</summary>
+          <div class="fc__r"><strong>Artritis</strong> (2 de 3: asimétrica, mono u oligo, MMII) y <strong>clínica de infección previa</strong> (enteritis o uretritis 3 días a 6 semanas antes).</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary>¿Qué hace falta para una ARe definida?</summary>
+          <div class="fc__r"><strong>2 criterios mayores + 1 menor.</strong> Probable: 2 mayores, o 1 mayor + 1 menor.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Qué se usa en la fase aguda?</summary>
+          <div class="fc__r"><strong>AINE</strong>; corticoides orales o infiltrados si hay mucha inflamación.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Qué FARME se usa en la ARe crónica y a qué dosis?</summary>
+          <div class="fc__r"><strong>Sulfasalazina 2-3 g/día</strong>; también metotrexato, ciclosporina o azatioprina.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Cómo se trata la infección por Chlamydia?</summary>
+          <div class="fc__r"><strong>Doxiciclina 100 mg cada 12 horas por 7 días</strong>; alternativa, azitromicina 1 g en dosis única.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Qué dosis de ceftriaxona se usa para la gonorrea?</summary>
+          <div class="fc__r"><strong>500 mg IM en dosis única</strong> (CDC 2021).</div>
+        </details>
+      </div>
+    </section>
+
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Triada clave</dt>
+        <dd>Varón joven con <strong>oligoartritis asimétrica de miembros inferiores</strong>, días a 6 semanas después de una <strong>diarrea o uretritis</strong>; puede sumar conjuntivitis, entesitis, dactilitis y queratodermia plantar. Espondiloartritis; HLA-B27 en el 30-50 %.</dd>
+
+        <dt class="r-gold">Diagnóstico</dt>
+        <dd>Clínico, con <strong>criterios mayores</strong> (artritis e infección previa) y <strong>menores</strong> (germen documentado o infección sinovial persistente). <strong>Líquido sinovial</strong>: inflamatorio, cultivo y cristales negativos. FR, ANA y anti-CCP negativos.</dd>
+
+        <dt class="r-tto">Conducta</dt>
+        <dd>Aguda: <strong>AINE</strong> ± corticoides. Crónica: <strong>sulfasalazina 2-3 g/día</strong>, metotrexato, ciclosporina o azatioprina; refractaria, anti-TNF. Infección activa: <strong>doxiciclina 100 mg c/12 h por 7 días</strong> o azitromicina 1 g; gonococo, <strong>ceftriaxona 500 mg IM</strong>.</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd><strong>Punzar antes de rotular</strong>: descartar artritis séptica y microcristalina. En la crónica, vigilar aortitis y bloqueos cardíacos.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir de la clase «Artritis reactiva» (Reumatología, Medicina Interna III, Universidad de Mendoza, San Rafael). Dosis de antibióticos según PubMed: guía de infecciones de transmisión sexual del CDC (Workowski y col., 2021). Material de estudio: no reemplaza el criterio clínico ni el protocolo institucional vigente.</p>
+
+
+  </main>
+</div>
+
+<script>
+(function(){
+
+  // ---- Tema claro / oscuro ----
+  // Sin eleccion estampada manda el sistema; el boton la estampa y la guarda.
+  var raiz = document.documentElement;
+  var boton = document.getElementById('tema');
+
+  function temaActual(){
+    var estampado = raiz.getAttribute('data-theme');
+    if (estampado) return estampado;
+    return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+
+  if (boton){
+    var rotular = function(){
+      var actual = temaActual();
+      boton.setAttribute('aria-pressed', actual === 'dark' ? 'true' : 'false');
+      boton.setAttribute('aria-label', actual === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+    };
+    boton.addEventListener('click', function(){
+      var nuevo = temaActual() === 'dark' ? 'light' : 'dark';
+      raiz.setAttribute('data-theme', nuevo);
+      try { localStorage.setItem('wordmed-tema', nuevo); } catch (e) { /* sin persistencia */ }
+      rotular();
+    });
+    rotular();
+  }
+
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link, .ir-link'));
+
+  // Devuelve TODOS los enlaces al ancla: la misma seccion figura en el indice
+  // lateral y en el compacto, y los dos tienen que encenderse juntos.
+  function porMeta(hash){
+    return enlaces.filter(function(l){ return l.getAttribute('href') === '#' + hash; });
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var activos = porMeta(e.target.id);
+        if (!activos.length) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          activos.forEach(function(l){ l.setAttribute('aria-current', 'true'); });
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>

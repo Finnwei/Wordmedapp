@@ -1,0 +1,1404 @@
+<title>Ansiolíticos e Hipnóticos</title>
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-bloque:1.95rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+
+  /* Que la barra de desplazamiento y los controles nativos acompanen al tema */
+  color-scheme: light dark;
+}
+
+/* Eleccion explicita de claro: solo hace falta para el color-scheme, los
+   tokens claros ya son la base sin estampar. */
+:root[data-theme="light"]{ color-scheme: light; }
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* Interruptor de tema claro / oscuro.
+   El estampado `data-theme` en la raíz ya lo respetan los bloques de tokens de
+   arriba; este botón sólo lo pone y lo guarda. Sin elección estampada mandan
+   las preferencias del sistema, que es el comportamiento por defecto. */
+.tema{
+  position:fixed; top:.7rem; right:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.tema:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.tema__icono{ width:1.15rem; height:1.15rem; display:block; }
+
+/* Se muestra el icono del tema al que se va a cambiar, no el actual.
+   Mismo escalonado que los tokens: base clara · sistema oscuro · elección explícita. */
+.tema__sol{ display:none; }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .tema__sol{ display:block; }
+  :root:not([data-theme="light"]) .tema__luna{ display:none; }
+}
+:root[data-theme="dark"] .tema__sol{ display:block; }
+:root[data-theme="dark"] .tema__luna{ display:none; }
+:root[data-theme="light"] .tema__sol{ display:none; }
+:root[data-theme="light"] .tema__luna{ display:block; }
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índices ---------- */
+/* Dos piezas complementarias y deliberadamente redundantes:
+   · .indice        — barra lateral fija, sólo en pantalla ancha, navegación permanente.
+   · .indice-rapido — tarjeta compacta al principio del cuerpo, visible en TODO ancho.
+   La lateral desaparece por debajo de 64rem, que es justo el ancho del panel de
+   Artifacts y del celular; sin la compacta el cuadernillo publicado se queda sin
+   índice. Las dos apuntan a los mismos anclajes y se resaltan juntas al desplazar. */
+
+/* 6.1 · Barra lateral */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+/* Rótulo de bloque intercalado en la lista lateral: no es un enlace, sólo
+   separa grupos de secciones para que 30 entradas no sean una tira plana. */
+.indice__bloque{
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+  margin:.9rem 0 .2rem; padding:0 .55rem;
+}
+.indice__bloque:first-child{ margin-top:0; }
+
+/* 6.2 · Índice compacto (va después de la portada, dentro del cuerpo) */
+.indice-rapido{
+  background:var(--hoja-hund);
+  border:1px solid var(--linea);
+  border-radius:var(--radio);
+  padding:1.1rem 1.2rem 1.2rem;
+}
+.indice-rapido__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .85rem;
+}
+/* auto-fit: una columna en el panel angosto, dos o tres en pantalla ancha */
+.indice-rapido__bloques{
+  list-style:none; margin:0; padding:0;
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(15rem, 1fr));
+  gap:1rem 2rem; align-items:start;
+}
+.ir-bloque{
+  display:block; margin-bottom:.4rem;
+  font-family:var(--f-titulo); font-size:.98rem; font-weight:700; line-height:1.3;
+  color:var(--tinta); text-decoration:none;
+  padding-bottom:.3rem; border-bottom:1px solid var(--linea-fuerte);
+}
+.ir-bloque:hover{ color:var(--cli-t); }
+.ir-secciones{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.05rem; }
+.ir-link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.55rem 1fr; align-items:baseline; gap:.4rem;
+  padding:.2rem .35rem; border-radius:2px;
+  font-size:.86rem; line-height:1.4; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.ir-link > b{
+  font-family:var(--f-dato); font-size:.76rem; font-weight:700;
+  font-variant-numeric:tabular-nums; color:var(--ct); opacity:.85;
+}
+.ir-link:hover{ background:var(--hoja); color:var(--tinta); }
+.ir-link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Título de bloque y ficha de sección ---------- */
+
+/* Anuncia un grupo de secciones. Neutro en color a propósito: los siete colores
+   tienen significado clínico fijo y un bloque agrupa secciones de varios. La
+   regla de abajo lleva el degradado completo de la paleta, igual que la pestaña
+   de repaso y la cabecera de la ficha relámpago.
+   Sin <svg> adentro: el exportador a Word aparea los diagramas con las figuras
+   por contador posicional sobre el HTML crudo (ver exportar_docx.py). */
+.bloque{
+  margin:1.4rem 0 0; padding:0;
+  text-align:center; scroll-margin-top:2.5rem;
+  display:flex; flex-direction:column; align-items:center; gap:.3rem;
+  font-weight:400;
+}
+.bloque:first-child{ margin-top:0; }
+.bloque__rotulo{
+  font-family:var(--f-texto);
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+}
+.bloque__nombre{
+  font-family:var(--f-titulo); font-size:var(--t-bloque); font-weight:700; line-height:1.15;
+  letter-spacing:-.01em; color:var(--tinta); text-wrap:balance; max-width:32ch;
+}
+.bloque::after{
+  content:""; width:7rem; height:2.5px; margin-top:.5rem; border-radius:2px;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+}
+
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.5rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-column:1; grid-row:1; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+/* El icono ocupa la columna 1 y NADA MAS. Todo el resto del contenido se
+   apila en la columna 2, una fila por elemento, sin importar cuantos
+   parrafos haya.
+
+   Sin esta regla la caja solo funciona con un unico <p>: a partir del
+   segundo, la autocolocacion del grid empieza a repartir contenido en la
+   columna del icono, que es `auto` y por lo tanto se ensancha hasta abarcar
+   el parrafo que le toco. La columna `1fr` queda entonces reducida a una
+   tira angosta, el texto se parte en dos columnas desbalanceadas y la caja
+   crece hasta volverse ilegible. */
+.importante > :not(.importante__icono){ grid-column:2; }
+.importante__titulo{
+  grid-row:1;
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante ul, .importante ol{ margin:0; padding-left:1.15rem; }
+.importante li + li{ margin-top:.3rem; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso, .tema{ display:none !important; }
+  /* La lateral no se imprime, pero la compacta sí: en papel es la tabla de
+     contenidos del cuadernillo. */
+  .indice-rapido{ display:block; break-inside:avoid; page-break-inside:avoid; margin-bottom:1.2rem; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .bloque{
+    margin:1.6rem 0 1rem;
+    break-after:avoid; page-break-after:avoid;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+
+<script>
+/* Aplica el tema guardado antes de pintar. Va aca arriba a proposito: si
+   esperara al script del final, el documento parpadearia en el tema del
+   sistema antes de corregirse. */
+(function(){
+  try {
+    var guardado = localStorage.getItem('wordmed-tema');
+    if (guardado === 'dark' || guardado === 'light') {
+      document.documentElement.setAttribute('data-theme', guardado);
+    }
+  } catch (e) { /* almacenamiento bloqueado: manda el sistema */ }
+})();
+</script>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<button class="tema" id="tema" type="button" aria-pressed="false" aria-label="Cambiar a modo oscuro">
+  <svg class="tema__icono tema__sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.2"></circle>
+    <path d="M12 2.6v2.1M12 19.3v2.1M5.1 5.1l1.5 1.5M17.4 17.4l1.5 1.5M2.6 12h2.1M19.3 12h2.1M5.1 18.9l1.5-1.5M17.4 6.6l1.5-1.5"></path>
+  </svg>
+  <svg class="tema__icono tema__luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20.4 14.2A8.6 8.6 0 0 1 9.8 3.6a8.6 8.6 0 1 0 10.6 10.6z"></path>
+  </svg>
+</button>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li class="indice__bloque">A · Marco</li>
+      <li><a class="indice__link i-generalidades"  href="#marco">Ansiolíticos y grupos</a></li>
+
+      <li class="indice__bloque">B · Benzodiacepinas</li>
+      <li><a class="indice__link i-fisiopatologia" href="#receptor">Receptor GABA-A</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#acciones">Acciones y sueño</a></li>
+      <li><a class="indice__link i-generalidades"  href="#cinetica">Farmacocinética</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#dosis">Dosis y perfiles</a></li>
+      <li><a class="indice__link i-clinica"        href="#adversos">Efectos adversos</a></li>
+      <li><a class="indice__link i-clinica"        href="#dependencia">Dependencia y abstinencia</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#retiro">Retiro</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#intoxicacion">Intoxicación y flumazenil</a></li>
+
+      <li class="indice__bloque">C · Otros ansiolíticos</li>
+      <li><a class="indice__link i-tratamiento"    href="#otros">Buspirona y pregabalina</a></li>
+
+      <li class="indice__bloque">D · Hipnóticos</li>
+      <li><a class="indice__link i-fisiopatologia" href="#hipnoticos">Drogas Z y sueño</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#drogasz">Perfil de cada droga Z</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#insomnio">Tratamiento del insomnio</a></li>
+
+      <li class="indice__bloque">E · Seguridad</li>
+      <li><a class="indice__link i-importantes"    href="#alertas">Alertas de seguridad</a></li>
+
+      <li class="indice__bloque">Cierre</li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Psiquiatría · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Ansiolíticos e Hipnóticos</h1>
+      <p class="portada__bajada">Cómo actúan las benzodiacepinas, qué hace cada una, cuánto dar, cómo se depende de ellas y cómo se retiran; qué hacer en una intoxicación; la buspirona y la pregabalina; las drogas Z; cómo tratar el insomnio, y en qué pacientes hay que tener más cuidado.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">14 secciones</span>
+        <span class="etiqueta s-tratamiento">Retiro de benzodiacepinas</span>
+        <span class="etiqueta s-tratamiento">Flumazenil</span>
+        <span class="etiqueta s-importantes">Criterios de Beers</span>
+      </div>
+    </header>
+
+    <nav class="indice-rapido" aria-label="Contenido del cuadernillo">
+      <p class="indice-rapido__rotulo">Contenido</p>
+      <ol class="indice-rapido__bloques">
+        <li>
+          <a class="ir-bloque" href="#bloque-a">Bloque A · Marco</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades" href="#marco"><b>01</b> Ansiolíticos: qué son y qué grupos hay</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-b">Bloque B · Benzodiacepinas</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-fisiopatologia" href="#receptor"><b>02</b> Mecanismo: el receptor GABA-A</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#acciones"><b>03</b> Acciones según la zona y efecto sobre el sueño</a></li>
+            <li><a class="ir-link i-generalidades"  href="#cinetica"><b>04</b> Farmacocinética y vida media</a></li>
+            <li><a class="ir-link i-tratamiento"    href="#dosis"><b>05</b> Dosis, equivalencias y perfil de cada una</a></li>
+            <li><a class="ir-link i-clinica"        href="#adversos"><b>06</b> Efectos adversos</a></li>
+            <li><a class="ir-link i-clinica"        href="#dependencia"><b>07</b> Tolerancia, dependencia y abstinencia</a></li>
+            <li><a class="ir-link i-tratamiento"    href="#retiro"><b>08</b> Cómo se retiran</a></li>
+            <li><a class="ir-link i-tratamiento"    href="#intoxicacion"><b>09</b> Intoxicación y flumazenil</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-c">Bloque C · Ansiolíticos no benzodiacepínicos</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-tratamiento" href="#otros"><b>10</b> Buspirona y pregabalina</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-d">Bloque D · Hipnóticos</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-fisiopatologia" href="#hipnoticos"><b>11</b> Hipnóticos y drogas Z: mecanismo y sueño</a></li>
+            <li><a class="ir-link i-tratamiento"    href="#drogasz"><b>12</b> Perfil de cada droga Z</a></li>
+            <li><a class="ir-link i-tratamiento"    href="#insomnio"><b>13</b> Tratamiento del insomnio</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-e">Bloque E · Seguridad</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-importantes" href="#alertas"><b>14</b> Alertas de seguridad según el paciente</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#repaso">Cierre</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-clinica"     href="#repaso">Repaso activo</a></li>
+            <li><a class="ir-link i-importantes" href="#relampago">Ficha de Repaso Relámpago</a></li>
+          </ul>
+        </li>
+      </ol>
+    </nav>
+
+    <h2 class="bloque" id="bloque-a">
+      <span class="bloque__rotulo">Bloque A</span>
+      <span class="bloque__nombre">Marco</span>
+    </h2>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="marco">
+      <span class="seccion__pestana"><b>01</b> Generalidades</span>
+      <h2 class="seccion__titulo">Ansiolíticos: qué son y qué grupos hay</h2>
+
+      <p>Un <strong>ansiolítico</strong> es un psicotrópico con <strong>acción depresora sobre el SNC</strong>: disminuye la hiperexcitabilidad neuronal y, con eso, los síntomas de ansiedad. Se dividen en tres grupos:</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Grupo</th><th>Qué incluye</th><th>Lugar en el tratamiento</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Moduladores del receptor GABA-A</strong></td><td><strong>Benzodiacepinas</strong></td><td>Alivio <strong>rápido</strong> y a <strong>corto plazo</strong>. Según NICE, en la ansiedad generalizada solo como medida corta en una crisis, y en el pánico no se usan</td></tr>
+            <tr><td><strong>Antidepresivos</strong></td><td>ISRS, IRSN y otros</td><td><strong>Tratamiento de base</strong> de los trastornos de ansiedad (ver <a href="https://claude.ai/artifact/9XjaFMDEpnak7X78iv4iCZ">Ansiedad, TOC y Trauma</a> y <a href="https://claude.ai/artifact/61nFs7o8Ec9TT33XVdD6NU">Psicofármacos y Antidepresivos</a>)</td></tr>
+            <tr><td><strong>Otros</strong></td><td>Antihistamínicos, neurolépticos, betabloqueantes, anticonvulsivantes; <strong>buspirona</strong> y <strong>pregabalina</strong></td><td>La pregabalina, según NICE, en la ansiedad generalizada si no se toleran los ISRS ni los IRSN (<a href="#otros">sección 10</a>)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <p><strong>¡Importante!</strong> La benzodiacepina <strong>alivia</strong>, pero no <strong>trata</strong> el trastorno de ansiedad. Si la indicás, que sea por <strong>poco tiempo</strong> y con el plan de retiro pensado desde el principio, mientras el antidepresivo o la psicoterapia hacen efecto.</p>
+      </div>
+
+      <p class="cita">Clase «Ansiolíticos e hipnóticos», Cátedra de Psiquiatría, Universidad de Mendoza, 2026: definición y clasificación. NICE CG113, «Generalised anxiety disorder and panic disorder in adults: management», 2011 (<a href="https://www.nice.org.uk/guidance/cg113">guía</a>).</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-b">
+      <span class="bloque__rotulo">Bloque B</span>
+      <span class="bloque__nombre">Benzodiacepinas</span>
+    </h2>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-fisiopatologia" id="receptor">
+      <span class="seccion__pestana"><b>02</b> Fisiopatología</span>
+      <h2 class="seccion__titulo">Mecanismo: el receptor GABA-A</h2>
+
+      <p>Las benzodiacepinas son moléculas con un <strong>anillo de benceno</strong> y un <strong>anillo diazepínico</strong>. Todas actúan sobre los <strong>receptores gabaérgicos</strong>.</p>
+      <ul>
+        <li>El <strong>GABA</strong> (ácido gamma-aminobutírico) es el <strong>principal neurotransmisor inhibitorio</strong> del SNC. Hay tres receptores: GABA-A, GABA-B y GABA-C. Las benzodiacepinas actúan sobre todo en el <strong>GABA-A</strong>.</li>
+        <li>El GABA-A es un complejo de <strong>cinco subunidades</strong> que forman un <strong>canal de cloro</strong>. Cuando el GABA se une, entra cloro y la membrana se <strong>hiperpolariza</strong>: la neurona se vuelve menos excitable.</li>
+        <li>La benzodiacepina se une a un <strong>sitio distinto</strong> del del GABA, el <strong>sitio alostérico</strong>, y desde ahí <strong>potencia</strong> la acción del GABA.</li>
+      </ul>
+
+      <figure class="esquema">
+        <img src="data:image/png;base64,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" alt="Receptor GABA-A en la membrana, con las subunidades alfa, beta y gamma alrededor del canal de cloro y los sitios de unión del GABA, la benzodiacepina, el etanol, el propofol, los anestésicos volátiles y los neuroesteroides">
+        <figcaption>Receptor GABA-A, dibujo de la clase con rótulos en inglés. El <strong>GABA</strong> se une entre las subunidades α y β; la <strong>benzodiazepine</strong> (benzodiacepina), entre α y γ. En el mismo complejo actúan el <strong>ethanol</strong> (etanol), el <strong>propofol</strong>, los <strong>volatile anesthetics</strong> (anestésicos volátiles) y los <strong>neurosteroids</strong> (neuroesteroides). Por eso, combinados con una benzodiacepina, suman efecto depresor.</figcaption>
+      </figure>
+
+      <p class="cita">Clase «Ansiolíticos e hipnóticos», Cátedra de Psiquiatría UM 2026: benzodiacepinas, mecanismo de acción y receptor GABA.</p>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-fisiopatologia" id="acciones">
+      <span class="seccion__pestana"><b>03</b> Fisiopatología</span>
+      <h2 class="seccion__titulo">Acciones según la zona y efecto sobre el sueño</h2>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 760 330" role="img" aria-label="Acciones de las benzodiacepinas según la zona del sistema nervioso: al potenciar el GABA en el receptor GABA-A son ansiolíticas en el sistema límbico, hipnóticas en la formación reticular, amnésicas en el hipocampo, antiepilépticas en la corteza y el tallo, miorrelajantes en la médula y producen ataxia en el cerebelo"><defs><marker id="mk-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path></marker></defs><rect x="250" y="128" width="260" height="74" rx="7" fill="var(--c)" fill-opacity="0.4" stroke="currentColor" stroke-width="1.2"></rect><text x="380.0" y="154.5" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Benzodiacepina</text><text x="380.0" y="169.5" text-anchor="middle" font-size="12.5" fill="currentColor">potencia al GABA en el receptor GABA-A</text><text x="380.0" y="184.5" text-anchor="middle" font-size="12.5" fill="currentColor">↑ entrada de Cl⁻ → hiperpolarización</text><rect x="20" y="20" width="180" height="58" rx="7" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1.2"></rect><text x="110.0" y="46.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Sistema límbico</text><text x="110.0" y="61.0" text-anchor="middle" font-size="12.5" fill="currentColor">ansiolítica</text><rect x="290" y="20" width="180" height="58" rx="7" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1.2"></rect><text x="380.0" y="46.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Formación reticular</text><text x="380.0" y="61.0" text-anchor="middle" font-size="12.5" fill="currentColor">hipnótica</text><rect x="560" y="20" width="180" height="58" rx="7" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1.2"></rect><text x="650.0" y="46.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Hipocampo</text><text x="650.0" y="61.0" text-anchor="middle" font-size="12.5" fill="currentColor">amnésica</text><rect x="20" y="250" width="180" height="58" rx="7" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1.2"></rect><text x="110.0" y="276.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Corteza y tallo cerebral</text><text x="110.0" y="291.0" text-anchor="middle" font-size="12.5" fill="currentColor">antiepiléptica</text><rect x="290" y="250" width="180" height="58" rx="7" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1.2"></rect><text x="380.0" y="276.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Médula espinal</text><text x="380.0" y="291.0" text-anchor="middle" font-size="12.5" fill="currentColor">miorrelajante</text><rect x="560" y="250" width="180" height="58" rx="7" fill="var(--c)" fill-opacity="0.06" stroke="currentColor" stroke-width="1.2"></rect><text x="650.0" y="276.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Cerebelo</text><text x="650.0" y="291.0" text-anchor="middle" font-size="12.5" fill="currentColor">ataxia (adverso)</text><path d="M300 128 L150 80" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-a)"></path><path d="M380 128 L380 80" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-a)"></path><path d="M460 128 L610 80" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-a)"></path><path d="M300 202 L150 248" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-a)"></path><path d="M380 202 L380 248" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-a)"></path><path d="M460 202 L610 248" fill="none" stroke="currentColor" stroke-width="1.3" stroke-dasharray="5 3" marker-end="url(#mk-a)"></path></svg>
+        <figcaption>El mismo mecanismo da efectos distintos según dónde actúe. La ataxia del cerebelo es un efecto adverso.</figcaption>
+      </figure>
+
+      <h3>Efecto sobre el sueño</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Parámetro</th><th>Benzodiacepinas</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Latencia</strong></td><td>La <strong>acortan</strong></td></tr>
+            <tr><td><strong>Despertares y vigilia</strong></td><td><strong>Menos</strong> despertares y menos tiempo despierto</td></tr>
+            <tr><td><strong>Etapa II del no REM</strong></td><td>La <strong>prolongan</strong></td></tr>
+            <tr><td><strong>Sueño de ondas lentas</strong></td><td>Lo <strong>acortan</strong></td></tr>
+            <tr><td><strong>REM</strong></td><td>Lo <strong>disminuyen</strong>, pero aumentan la cantidad de ciclos REM y, con eso, la actividad onírica</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Las benzodiacepinas cambian la arquitectura del sueño; las drogas Z casi no la tocan (<a href="#hipnoticos">sección 11</a>).</p>
+
+      <p class="cita">Clase «Ansiolíticos e hipnóticos», Cátedra de Psiquiatría UM 2026: funciones de las benzodiacepinas y acciones sobre el sueño.</p>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-generalidades" id="cinetica">
+      <span class="seccion__pestana"><b>04</b> Generalidades</span>
+      <h2 class="seccion__titulo">Farmacocinética y vida media</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Etapa</th><th>Qué saber</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Vía oral</strong></td><td>Con el estómago vacío, pico plasmático en alrededor de <span class="dato">1 hora</span></td></tr>
+            <tr><td><strong>Sublingual</strong></td><td>Lorazepam, alprazolam, clonazepam: similar a la oral</td></tr>
+            <tr><td><strong>Intramuscular</strong></td><td>Lorazepam, midazolam, diazepam</td></tr>
+            <tr><td><strong>Distribución</strong></td><td>Unión a proteínas del <span class="dato">80-100 %</span>; <strong>atraviesan la placenta</strong> y <strong>pasan a la leche</strong></td></tr>
+            <tr><td><strong>Metabolismo</strong></td><td>Oxidación, reducción y conjugación (CYP3A4 y CYP2C19)</td></tr>
+            <tr><td><strong>Excreción</strong></td><td>Renal</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Clasificación por vida media</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Acción</th><th>Benzodiacepinas</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Larga</strong></td><td>Bromazepam, clorazepato, diazepam, flurazepam, clordiazepóxido, clobazam</td></tr>
+            <tr><td><strong>Intermedia</strong></td><td>Clonazepam, flunitrazepam, nitrazepam</td></tr>
+            <tr><td><strong>Corta</strong></td><td>Lorazepam, oxazepam, temazepam, alprazolam</td></tr>
+            <tr><td><strong>Ultracorta</strong></td><td>Triazolam, midazolam</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Corrección del material</strong>: esta tabla es la de la lámina 7, y no coincide con la tabla de la lámina 14 en dos fármacos. El <strong>bromazepam</strong> figura como de acción larga en la 7 y como intermedia en la 14. El <strong>flunitrazepam</strong>, al revés: intermedia en la 7 y larga en la 14. Fijate cuál toma la cátedra.</p>
+
+      <p class="cita">Clase «Ansiolíticos e hipnóticos», Cátedra de Psiquiatría UM 2026: farmacocinética y tipos de benzodiacepinas.</p>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-tratamiento" id="dosis">
+      <span class="seccion__pestana"><b>05</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Dosis, equivalencias y perfil de cada una</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Fármaco</th><th>Dosis habitual</th><th>Rango</th><th>Tomas</th><th>Equivalencia (diazepam = 5 mg)</th><th>Vida media</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Midazolam</strong></td><td><span class="dato">7,5-15 mg</span></td><td>—</td><td>30 min antes de acostarse</td><td>—</td><td>Ultracorta</td></tr>
+            <tr><td><strong>Alprazolam</strong></td><td><span class="dato">0,5-2 mg</span></td><td><span class="dato">0,75-10 mg</span></td><td>2 a 4</td><td><span class="dato">0,5 mg</span></td><td>Corta</td></tr>
+            <tr><td><strong>Lorazepam</strong></td><td><span class="dato">2-4 mg</span></td><td><span class="dato">2-6 mg</span></td><td>2 a 3</td><td><span class="dato">1 mg</span></td><td>Corta</td></tr>
+            <tr><td><strong>Clonazepam</strong></td><td><span class="dato">0,5-1 mg</span></td><td><span class="dato">0,5-4 mg</span></td><td>1 a 2</td><td><span class="dato">0,25 mg</span></td><td>Intermedia</td></tr>
+            <tr><td><strong>Bromazepam</strong></td><td><span class="dato">1,5-3 mg</span></td><td><span class="dato">1,5-3 mg</span></td><td>2 a 3</td><td><span class="dato">3 mg</span></td><td>Intermedia</td></tr>
+            <tr><td><strong>Diazepam</strong></td><td><span class="dato">2-10 mg</span></td><td><span class="dato">2-10 mg</span></td><td>3 a 4</td><td><span class="dato">5 mg</span></td><td>Larga</td></tr>
+            <tr><td><strong>Flunitrazepam</strong></td><td><span class="dato">1-4 mg</span></td><td><span class="dato">1-4 mg</span></td><td>30 min antes de acostarse</td><td>—</td><td>Larga</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La equivalencia sirve para <strong>cambiar de una benzodiacepina a otra</strong> sin que el paciente quede con más o menos efecto. Es lo que se hace al pasar a una de vida media larga para retirarla (<a href="#retiro">sección 08</a>).</p>
+
+      <h3>Cuándo elegir cada una</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Fármaco</th><th>Cuándo</th><th>Qué tener en cuenta</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Alprazolam</strong></td><td>Ficha de la FDA: tratamiento <strong>agudo</strong> de la ansiedad generalizada y trastorno de pánico</td><td>Vida media corta: para retirarlo, NICE sugiere considerar pasar a una de vida media larga</td></tr>
+            <tr><td><strong>Clonazepam</strong></td><td>Ficha de la FDA: <strong>trastorno de pánico</strong> y <strong>crisis epilépticas</strong></td><td>Vía sublingual disponible</td></tr>
+            <tr><td><strong>Diazepam</strong></td><td>Ficha de la FDA: trastornos de ansiedad, <strong>abstinencia alcohólica</strong> (temblor, agitación, delirium tremens inminente o instalado), espasmo muscular y crisis epilépticas, como complemento</td><td>Vida media larga: es la candidata natural para el cambio previo al retiro. Vía intramuscular disponible</td></tr>
+            <tr><td><strong>Lorazepam</strong></td><td>Cuando se necesita la vía <strong>sublingual o intramuscular</strong></td><td>Vida media corta</td></tr>
+            <tr><td><strong>Midazolam</strong></td><td>Como <strong>hipnótico</strong>, 30 minutos antes de acostarse; también intramuscular</td><td>Ultracorta: según la clase, la vida media ultracorta y la alta potencia dan más <strong>alteraciones de la memoria</strong></td></tr>
+            <tr><td><strong>Flunitrazepam</strong></td><td>Como <strong>hipnótico</strong>, 30 minutos antes de acostarse</td><td>Vida media larga según la lámina 14: más sedación al otro día</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «Ansiolíticos e hipnóticos», Cátedra de Psiquiatría UM 2026: comparación entre benzodiacepinas, vías de administración y efectos adversos. Fichas de la FDA en DailyMed: <a href="https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=bb5cf72e-3a41-41a8-9a38-80f974eca33f">Xanax (alprazolam)</a>, <a href="https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=cfa0d79a-843c-4b88-95a1-e9511d649ca1">Klonopin (clonazepam)</a> y <a href="https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=260e2041-2bb3-482f-850e-b5d47a7bdbe6">Valium (diazepam)</a>. NICE NG215, 2022 (<a href="https://www.nice.org.uk/guidance/ng215">guía</a>): cambio a una benzodiacepina de vida media larga para el retiro.</p>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-clinica" id="adversos">
+      <span class="seccion__pestana"><b>06</b> Cuadro clínico</span>
+      <h2 class="seccion__titulo">Efectos adversos</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Efecto adverso</th><th>Más frecuente con</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Sedación excesiva</strong> y menor rendimiento</td><td>Vida media <strong>larga</strong></td></tr>
+            <tr><td><strong>Alteraciones de la memoria</strong></td><td>Vida media <strong>ultracorta</strong> y alta potencia</td></tr>
+            <tr><td><strong>Reacciones paradójicas</strong> (agitación en lugar de sedación)</td><td><strong>Niños y ancianos</strong></td></tr>
+            <tr><td><strong>Relajación muscular</strong>: caídas</td><td><strong>Ancianos</strong></td></tr>
+            <tr><td><strong>Depresión respiratoria</strong></td><td>Pacientes con <strong>SAHOS</strong> o enfermedad respiratoria</td></tr>
+            <tr><td><strong>Depresión</strong> y otros</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Recuadro de advertencia de la FDA</h3>
+      <p>Todas las fichas de benzodiacepinas de la FDA llevan tres advertencias en recuadro:</p>
+      <ul>
+        <li><strong>Con opioides</strong>: sedación profunda, <strong>depresión respiratoria, coma y muerte</strong>. Combinarlos solo si no hay alternativa, con la dosis y la duración mínimas, y vigilando.</li>
+        <li><strong>Abuso, mal uso y adicción</strong>, que pueden llevar a sobredosis o muerte. Suelen involucrar otros fármacos, <strong>alcohol</strong> o drogas.</li>
+        <li><strong>Dependencia y abstinencia</strong>: suspenderlas de golpe o bajarlas rápido puede dar una <strong>abstinencia grave, potencialmente mortal</strong> (<a href="#dependencia">sección 07</a>).</li>
+      </ul>
+      <p>Si aparece una reacción paradójica, la ficha del diazepam indica <strong>suspenderlo de a poco</strong>.</p>
+
+      <p class="cita">Clase «Ansiolíticos e hipnóticos», Cátedra de Psiquiatría UM 2026: efectos adversos. Fichas de la FDA en DailyMed: <a href="https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=260e2041-2bb3-482f-850e-b5d47a7bdbe6">Valium (diazepam)</a> y <a href="https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=bb5cf72e-3a41-41a8-9a38-80f974eca33f">Xanax (alprazolam)</a>: advertencias en recuadro.</p>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-clinica" id="dependencia">
+      <span class="seccion__pestana"><b>07</b> Cuadro clínico</span>
+      <h2 class="seccion__titulo">Tolerancia, dependencia y abstinencia</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Concepto</th><th>Qué es</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Tolerancia</strong></td><td>Se pierde el efecto con el tiempo: al <strong>efecto sedante</strong>, en <span class="dato">1-2 semanas</span>; al <strong>hipnótico</strong>, en <span class="dato">4-5 semanas</span></td></tr>
+            <tr><td><strong>Dependencia física</strong></td><td>Según PubMed, la desarrollan <strong>casi todos</strong> los que las toman todos o casi todos los días por <strong>más de un mes</strong>. Se manifiesta con tolerancia y con abstinencia al bajarlas</td></tr>
+            <tr><td><strong>Trastorno por consumo</strong></td><td>Distinto de la dependencia física: se estima en el <span class="dato">1,5 %</span> de los tratados, y es más probable con antecedentes de consumo de sustancias</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Corrección del material</strong>: la lámina 12 dice que la dependencia «se da en personas con tendencia al abuso de sustancias». Eso describe el <strong>trastorno por consumo</strong>. La <strong>dependencia física</strong> aparece en casi cualquier paciente que las toma a diario por más de un mes, tenga o no tendencia al abuso.</p>
+
+      <h3>Al discontinuar: tres cuadros</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Cuadro</th><th>Qué es</th><th>Cómo reconocerlo</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Recurrencia</strong></td><td>Vuelven los síntomas <strong>originales</strong> (la ansiedad o el insomnio)</td><td>Iguales a los de antes del tratamiento</td></tr>
+            <tr><td><strong>Rebote</strong></td><td>Vuelven los síntomas originales, pero <strong>más intensos</strong></td><td>Según NICE, síntomas de la enfermedad que el paciente siente <strong>distintos o más intensos</strong> que antes orientan a la retirada</td></tr>
+            <tr><td><strong>Abstinencia</strong></td><td>Aparecen síntomas <strong>nuevos</strong></td><td>Según NICE: comienzo <strong>rápido o temprano</strong> después de bajar la dosis, y síntomas que el paciente <strong>nunca había tenido</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Síndrome de abstinencia</h3>
+      <p><strong>Ansiedad</strong>, <strong>temblor</strong>, <strong>taquicardia</strong>, disnea, malestar gastrointestinal, <strong>sudoración</strong>, <strong>insomnio</strong>, contractura muscular, <strong>confusión</strong> y <strong>convulsiones</strong>. Según PubMed, algunos síntomas pueden ser <strong>prolongados</strong> y durar meses o años después de la suspensión.</p>
+
+      <div class="importante">
+        <p><strong>¡Importante!</strong> <strong>Nunca</strong> suspendas de golpe una benzodiacepina que el paciente toma hace más de un mes: la abstinencia puede dar <strong>convulsiones</strong> y ser mortal. Se retira bajando de a poco (<a href="#retiro">sección 08</a>).</p>
+      </div>
+
+      <p class="cita">Clase «Ansiolíticos e hipnóticos», Cátedra de Psiquiatría UM 2026: tolerancia, dependencia, discontinuación y síndrome de abstinencia. Según PubMed: Zgierska AE y col., «Supporting patients through benzodiazepine tapering: a new joint clinical practice guideline», J Gen Intern Med 2025 (<a href="https://doi.org/10.1007/s11606-025-09634-z">DOI</a>). NICE NG215, 2022 (<a href="https://www.nice.org.uk/guidance/ng215">guía</a>): recomendación 1.5.17.</p>
+    </section>
+
+    <!-- ============ 8 ============ -->
+    <section class="seccion s-tratamiento" id="retiro">
+      <span class="seccion__pestana"><b>08</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Cómo se retiran</h2>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 760 292" role="img" aria-label="Retiro escalonado de una benzodiacepina: la dosis baja en escalones proporcionales a la dosis actual, que se achican a medida que baja; se empieza con descensos de 5 a 10 por ciento cada 2 a 4 semanas, y si aparece abstinencia se pausa, se baja menos o se vuelve a la dosis anterior. El proceso puede durar meses o más de un año"><path d="M70 30 L70 250 L570 250" fill="none" stroke="currentColor" stroke-width="1.4"></path><text x="30" y="140" text-anchor="middle" font-size="12" fill="currentColor" transform="rotate(-90 30 140)">Dosis diaria</text><text x="315.0" y="278" text-anchor="middle" font-size="12" fill="currentColor">Tiempo: meses, a veces más de un año</text><path d="M70 30 L70 30.0 L98 30.0 L98 60.8 L126 60.8 L126 87.3 L154 87.3 L154 110.1 L182 110.1 L182 129.7 L212 129.7 L212 146.5 L242 146.5 L242 161.0 L274 161.0 L274 173.5 L306 173.5 L306 184.2 L340 184.2 L340 193.4 L376 193.4 L376 201.3 L414 201.3 L414 208.1 L454 208.1 L454 214.0 L498 214.0 L498 219.0 L548 219.0 L548 223.4 L548 250" fill="none" stroke="currentColor" stroke-width="2.2"></path><rect x="590" y="30" width="160" height="64" rx="7" fill="var(--c)" fill-opacity="0.2" stroke="currentColor" stroke-width="1.2"></rect><text x="670.0" y="51.5" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Empezar lento</text><text x="670.0" y="66.5" text-anchor="middle" font-size="12" fill="currentColor">5-10 % de la dosis</text><text x="670.0" y="81.5" text-anchor="middle" font-size="12" fill="currentColor">cada 2-4 semanas</text><rect x="590" y="108" width="160" height="64" rx="7" fill="var(--c)" fill-opacity="0.2" stroke="currentColor" stroke-width="1.2"></rect><text x="670.0" y="129.5" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Escalones</text><text x="670.0" y="144.5" text-anchor="middle" font-size="12" fill="currentColor">proporcionales: se</text><text x="670.0" y="159.5" text-anchor="middle" font-size="12" fill="currentColor">achican al bajar</text><rect x="590" y="186" width="160" height="80" rx="7" fill="var(--c)" fill-opacity="0.2" stroke="currentColor" stroke-width="1.2"></rect><text x="670.0" y="208.0" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Si hay abstinencia</text><text x="670.0" y="223.0" text-anchor="middle" font-size="12" fill="currentColor">pausar, bajar menos</text><text x="670.0" y="238.0" text-anchor="middle" font-size="12" fill="currentColor">o volver a la</text><text x="670.0" y="253.0" text-anchor="middle" font-size="12" fill="currentColor">dosis anterior</text></svg>
+        <figcaption>Cada escalón es una fracción de la dosis que está tomando ahora, así que los escalones se achican a medida que la dosis baja. El final suele ser lo más difícil.</figcaption>
+      </figure>
+
+      <h3>Según NICE</h3>
+      <ul>
+        <li><strong>No suspender de golpe</strong>, salvo una circunstancia médica excepcional, como un efecto adverso grave.</li>
+        <li>Bajar en forma <strong>lenta y escalonada</strong>, <strong>proporcional a la dosis actual</strong>, para que los escalones se achiquen a medida que baja.</li>
+        <li>Si es una benzodiacepina de <strong>vida media corta</strong>, considerar <strong>pasarla a una de vida media larga</strong> (<a href="#dosis">equivalencias en la sección 05</a>).</li>
+        <li><strong>Acordar el ritmo</strong> con el paciente y revisarlo a intervalos fijos. Si aparecen síntomas nuevos, demorar el próximo descenso, bajar menos o <strong>volver a la dosis anterior</strong>.</li>
+        <li><strong>No tratar</strong> la abstinencia con otro fármaco que dé dependencia. <strong>No usar valproato ni buspirona</strong> para ayudar a retirarla.</li>
+        <li>Considerar <strong>TCC grupal</strong> durante el retiro, y seguir tratando la enfermedad por la que se indicó.</li>
+      </ul>
+
+      <h3>Según la guía conjunta de 2025</h3>
+      <ul>
+        <li>Revaluar con regularidad a cada paciente y retirarla cuando los <strong>riesgos superen a los beneficios</strong>. En los <strong>adultos mayores</strong>, considerar el retiro de rutina salvo que haya motivos de peso para seguir.</li>
+        <li><strong>Empezar lento</strong>: por ejemplo, bajar un <span class="dato">5-10 %</span> de la dosis diaria cada <span class="dato">2-4 semanas</span>, y ajustar el ritmo a la respuesta.</li>
+        <li>Algunos toleran descensos rápidos (<span class="dato">25 %</span> cada 2-4 semanas); otros tienen problemas aun con un <span class="dato">5 %</span> cada 4-6 semanas. La tolerancia puede cambiar en el camino, y el <strong>final</strong> suele ser lo más difícil.</li>
+        <li>En quienes la toman hace mucho, el retiro puede llevar <strong>más de un año</strong>. A veces hace falta mantener una dosis menor, o incluso la original, por tiempo prolongado.</li>
+        <li>Durante el retiro, evitar el <strong>alcohol</strong> y otros sedantes, incluidas las drogas Z.</li>
+        <li>Si hay un <strong>trastorno por consumo</strong>, derivar a un equipo especializado en adicciones.</li>
+      </ul>
+
+      <p class="cita">NICE NG215, «Medicines associated with dependence or withdrawal symptoms: safe prescribing and withdrawal management for adults», 2022 (<a href="https://www.nice.org.uk/guidance/ng215">guía</a>): recomendaciones 1.5.6-1.5.23. Según PubMed: Brunner E y col., «Joint clinical practice guideline on benzodiazepine tapering: considerations when risks outweigh benefits», J Gen Intern Med 2025 (<a href="https://doi.org/10.1007/s11606-025-09499-2">DOI</a>); Zgierska AE y col., J Gen Intern Med 2025 (<a href="https://doi.org/10.1007/s11606-025-09634-z">DOI</a>).</p>
+    </section>
+
+    <!-- ============ 9 ============ -->
+    <section class="seccion s-tratamiento" id="intoxicacion">
+      <span class="seccion__pestana"><b>09</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Intoxicación y flumazenil</h2>
+
+      <p>El mayor riesgo está en la combinación con <strong>opioides</strong> (sedación profunda, depresión respiratoria, coma y muerte) y con <strong>alcohol</strong> u otros depresores. La sobredosis de drogas Z tiene un riesgo similar y también responde al flumazenil.</p>
+
+      <h3>Flumazenil</h3>
+      <p>Es el antagonista del sitio de las benzodiacepinas. Según su ficha de la FDA:</p>
+      <ul>
+        <li><strong>Antes de darlo</strong>: <strong>vía aérea asegurada</strong> y <strong>acceso venoso</strong>.</li>
+        <li><strong>Dosis</strong>: <span class="dato">0,2 mg</span> IV en 30 segundos. Si a los 30 segundos no alcanza, <span class="dato">0,3 mg</span> en otros 30 segundos. Después, <span class="dato">0,5 mg</span> cada minuto hasta un acumulado de <span class="dato">3 mg</span>. No apurar la administración.</li>
+        <li><strong>Sin respuesta con 5 mg</strong>: la sedación probablemente <strong>no es por benzodiacepinas</strong>, y más flumazenil no va a servir.</li>
+        <li><strong>Resedación</strong>: el flumazenil dura menos que muchas benzodiacepinas. Vigilar hasta que el paciente esté estable. Se puede repetir cada <span class="dato">20 minutos</span>, sin pasar de <span class="dato">1 mg</span> por vez ni de <span class="dato">3 mg</span> por hora.</li>
+      </ul>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Contraindicado</th><th>Por qué</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Signos de intoxicación grave por antidepresivos cíclicos</strong>: sacudidas, rigidez, convulsión focal; QRS ancho, arritmia ventricular, bloqueo; midriasis, mucosas secas, íleo; colapso cardiovascular</td><td>Puede desencadenar <strong>convulsiones</strong>. Se deja al paciente sedado, con soporte ventilatorio y circulatorio, hasta que pase la toxicidad</td></tr>
+            <tr><td>Benzodiacepina dada para controlar un cuadro <strong>potencialmente mortal</strong>: estado de mal epiléptico, hipertensión endocraneana</td><td>Revertirla destapa el cuadro</td></tr>
+            <tr><td>Hipersensibilidad al flumazenil o a las benzodiacepinas</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Las convulsiones son más frecuentes en quienes toman benzodiacepinas <strong>hace mucho</strong>, en quienes tienen una abstinencia de sedantes en curso, en quienes recibieron dosis repetidas por vía parenteral y en quienes ya tenían mioclonías o convulsiones antes del flumazenil.</p>
+
+      <p>El flumazenil <strong>no es un antídoto de rutina</strong>. En un consumidor crónico o en una intoxicación mixta con tricíclicos puede provocar <strong>convulsiones</strong>. Lo primero es la vía aérea y el soporte.</p>
+
+      <p class="cita">Clase «Ansiolíticos e hipnóticos», Cátedra de Psiquiatría UM 2026: sobredosis de drogas Z y flumazenil. Ficha del flumazenil inyectable, FDA, en <a href="https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=3eefb01b-3d6a-a3eb-e063-6394a90a4829">DailyMed</a>: contraindicaciones, advertencias y manejo de la sobredosis. Ficha de <a href="https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=260e2041-2bb3-482f-850e-b5d47a7bdbe6">Valium (diazepam)</a>, FDA: combinación con opioides.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-c">
+      <span class="bloque__rotulo">Bloque C</span>
+      <span class="bloque__nombre">Ansiolíticos no benzodiacepínicos</span>
+    </h2>
+
+    <!-- ============ 10 ============ -->
+    <section class="seccion s-tratamiento" id="otros">
+      <span class="seccion__pestana"><b>10</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Buspirona y pregabalina</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Aspecto</th><th>Buspirona</th><th>Pregabalina</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Grupo</strong></td><td>Azaspirodecanodionas; <strong>no</strong> se relaciona con las benzodiacepinas</td><td>Gabapentinoide</td></tr>
+            <tr><td><strong>Mecanismo</strong></td><td>Actúa sobre receptores <strong>5-HT1A</strong> postsinápticos y serotoninérgicos presinápticos</td><td><strong>Reduce la liberación</strong> de neurotransmisores excitatorios: glutamato, noradrenalina y sustancia P</td></tr>
+            <tr><td><strong>Qué no hace</strong></td><td><strong>No</strong> es sedante, hipnótica, anticonvulsivante ni miorrelajante</td><td>—</td></tr>
+            <tr><td><strong>Dosis</strong></td><td>Empezar con <span class="dato">15 mg/día</span> (7,5 mg 2 veces por día) y subir <span class="dato">5 mg/día</span> cada 2-3 días según la respuesta. <strong>Máximo 60 mg/día</strong>; en los estudios se usaron 20-30 mg/día repartidos</td><td><span class="dato">150-600 mg/día</span> en 2 o 3 tomas. Empezar con 150 mg; pasar a 300 mg a la semana, a 450 mg a la semana siguiente y a 600 mg una semana después, según la respuesta</td></tr>
+            <tr><td><strong>Cuándo</strong></td><td>—</td><td>Según NICE, en la <strong>ansiedad generalizada</strong> si no se toleran los ISRS ni los IRSN. Revaluar periódicamente si sigue haciendo falta</td></tr>
+            <tr><td><strong>Qué vigilar</strong></td><td><strong>Contraindicada con IMAO</strong> y hasta 14 días después de suspenderlos: síndrome serotoninérgico o aumento de la presión. El diltiazem y el verapamilo suben mucho sus niveles. Tomarla siempre igual respecto de las comidas</td><td><strong>Mareo y somnolencia</strong> (caídas); <strong>depresión respiratoria</strong>, con más riesgo en la enfermedad respiratoria o neurológica, la insuficiencia renal, con otros depresores y en ancianos. <strong>Con opioides</strong>, más riesgo de muerte. Da <strong>dependencia</strong> aun en dosis terapéuticas, y hay abuso. Ajustar la dosis a la <strong>función renal</strong></td></tr>
+            <tr><td><strong>Retiro</strong></td><td>NICE: <strong>no</strong> usarla para ayudar a retirar una benzodiacepina</td><td>De a poco, en <strong>al menos 1 semana</strong>; según NICE, bajando una <strong>cantidad fija</strong> en cada escalón</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Corrección del material</strong>: la lámina 15 dice que se sube la buspirona hasta «20-30 mg 3 veces por día», o sea 60 a 90 mg por día. La ficha de la FDA fija el <strong>máximo en 60 mg por día</strong>. Los 20-30 mg son la dosis <strong>diaria</strong> que se usó en los estudios, repartida en tomas.</p>
+
+      <div class="importante">
+        <p><strong>¡Importante!</strong> La pregabalina <strong>también da dependencia</strong> y abstinencia, y combinada con <strong>opioides</strong> aumenta el riesgo de muerte. No la pienses como un ansiolítico «sin riesgo» que reemplaza a la benzodiacepina.</p>
+      </div>
+
+      <p class="cita">Clase «Ansiolíticos e hipnóticos», Cátedra de Psiquiatría UM 2026: otros ansiolíticos no benzodiacepínicos. Ficha de la buspirona, FDA, en <a href="https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=b217f341-7d51-475d-887f-f16786164c7b">DailyMed</a>. Ficha de Lyrica (pregabalina), EMA (<a href="https://www.ema.europa.eu/en/medicines/human/EPAR/lyrica">EPAR</a>). NICE CG113, 2011 (<a href="https://www.nice.org.uk/guidance/cg113">guía</a>). NICE NG215, 2022 (<a href="https://www.nice.org.uk/guidance/ng215">guía</a>): recomendaciones 1.5.12 y 1.5.22.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-d">
+      <span class="bloque__rotulo">Bloque D</span>
+      <span class="bloque__nombre">Hipnóticos</span>
+    </h2>
+
+    <!-- ============ 11 ============ -->
+    <section class="seccion s-fisiopatologia" id="hipnoticos">
+      <span class="seccion__pestana"><b>11</b> Fisiopatología</span>
+      <h2 class="seccion__titulo">Hipnóticos y drogas Z: mecanismo y sueño</h2>
+
+      <p>Un <strong>hipnótico</strong> (del griego <em>hypnos</em>, sueño) es un psicotrópico cuya función principal es <strong>inducir el sueño</strong>, de manera parecida al sueño fisiológico. Su indicación principal es el <strong>insomnio</strong>.</p>
+
+      <h3>Drogas Z</h3>
+      <ul>
+        <li><strong>Cuáles</strong>: zolpidem, zaleplon, zopiclona y eszopiclona.</li>
+        <li><strong>Mecanismo</strong>: agonistas del receptor <strong>GABA-A</strong>, con preferencia por el subtipo <strong>BZ1</strong>. No son benzodiacepinas.</li>
+        <li><strong>Frente a las benzodiacepinas</strong>: son <strong>menos anticonvulsivantes y miorrelajantes</strong>, y según la clase tienen <strong>menos potencial de dependencia y abuso</strong>. Las reemplazaron en el tratamiento del insomnio.</li>
+        <li><strong>Sobredosis</strong>: riesgo similar al de las benzodiacepinas; se puede tratar con <strong>flumazenil</strong> (<a href="#intoxicacion">sección 09</a>).</li>
+      </ul>
+
+      <h3>Efecto sobre el sueño</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Parámetro</th><th>Benzodiacepinas</th><th>Drogas Z</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Latencia</strong></td><td>La acortan</td><td>La acortan</td></tr>
+            <tr><td><strong>Despertares</strong></td><td>Menos</td><td>Menos</td></tr>
+            <tr><td><strong>Duración total</strong></td><td>—</td><td>Aumenta</td></tr>
+            <tr><td><strong>Etapa II</strong></td><td>La prolongan</td><td>Efecto casi nulo o leve prolongación</td></tr>
+            <tr><td><strong>Etapas III y IV</strong> (ondas lentas)</td><td>Las acortan</td><td>Sin efecto o leve aumento</td></tr>
+            <tr><td><strong>REM</strong></td><td>Lo disminuyen; más ciclos REM</td><td>No cambia su duración, aunque puede retrasarse</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Las drogas Z respetan más la arquitectura del sueño. Pero en los ancianos tienen <strong>efectos adversos parecidos</strong> a los de las benzodiacepinas (<a href="#alertas">sección 14</a>).</p>
+
+      <p class="cita">Clase «Ansiolíticos e hipnóticos», Cátedra de Psiquiatría UM 2026: hipnóticos, drogas Z y efectos generales sobre el sueño.</p>
+    </section>
+
+    <!-- ============ 12 ============ -->
+    <section class="seccion s-tratamiento" id="drogasz">
+      <span class="seccion__pestana"><b>12</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Perfil de cada droga Z</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Fármaco</th><th>Dosis</th><th>Para qué</th><th>Qué vigilar</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Zolpidem</strong> (imidazopiridina)</td><td>Mujeres <span class="dato">5 mg</span>; hombres <span class="dato">5 o 10 mg</span>; ancianos y hepatopatía leve o moderada, <span class="dato">5 mg</span>. <strong>Máximo 10 mg</strong>, una vez, justo antes de acostarse y con <strong>7-8 horas</strong> por delante; no repetir en la noche</td><td>Corto plazo, en el insomnio de <strong>conciliación</strong>. Si el insomnio sigue a los <strong>7-10 días</strong>, revaluar</td><td>Sedación diurna, cefalea, molestias gastrointestinales, astenia, <strong>caídas y confusión</strong>, vértigo y mareos, <strong>amnesia anterógrada</strong>, <strong>sonambulismo y conductas complejas</strong>, visión borrosa, alucinaciones, cuadros psicóticos</td></tr>
+            <tr><td><strong>Zaleplon</strong> (pirazolopirimidina)</td><td><span class="dato">10 mg</span>; <span class="dato">5 mg</span> en bajo peso o ancianos; <span class="dato">20 mg</span> en casos puntuales; no más de 20 mg</td><td>Corto plazo, en la <strong>conciliación</strong>: acorta el tiempo hasta dormirse, pero <strong>no</strong> se demostró que alargue el sueño ni que reduzca los despertares</td><td>No en la hepatopatía grave</td></tr>
+            <tr><td><strong>Zopiclona</strong> (ciclopirrolona)</td><td><span class="dato">7,5 mg</span> antes de acostarse; empezar con <span class="dato">3,75 mg</span> en ancianos</td><td>Insomnio transitorio, <span class="dato">2-5 días</span>; de corto plazo, <span class="dato">2-3 semanas</span>. <strong>No más de 4 semanas</strong>, contando el descenso</td><td>Según la clase, puede dar tolerancia y abstinencia. <strong>Contraindicada</strong> en miastenia gravis, insuficiencia respiratoria, <strong>apnea del sueño grave</strong> e insuficiencia hepática grave</td></tr>
+            <tr><td><strong>Eszopiclona</strong> (ciclopirrolona)</td><td>Empezar con <span class="dato">1 mg</span>; subir a 2 o 3 mg si hace falta. <strong>Máximo 3 mg</strong>, justo antes de acostarse</td><td>Insomnio de <strong>conciliación y de mantenimiento</strong>: acorta la latencia y mejora el mantenimiento</td><td>Con 2-3 mg, más riesgo de <strong>alteración al día siguiente</strong>: no manejar después de 3 mg. Dosis menor en ancianos</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul>
+        <li><strong>Zopiclona y eszopiclona</strong>: actúan sobre el GABA-A con selectividad por las subunidades α1, α2, α3 y α5. Se absorben bien (alrededor del 80 %), se metabolizan por CYP3A4 y 2E1 y tienen una vida media de unas 6 horas. Según la clase, acortan la latencia, mejoran el sueño, reducen los despertares y no alteran el rendimiento psicomotor al otro día.</li>
+        <li><strong>Duración</strong>: la clase dice que zopiclona y eszopiclona están aprobadas a corto y largo plazo (hasta 12 meses). La ficha de la eszopiclona de la FDA describe un estudio de 6 meses, y la de la zopiclona del Reino Unido limita el tratamiento a 4 semanas.</li>
+      </ul>
+
+      <p><strong>Correcciones del material</strong>:</p>
+      <ul>
+        <li><strong>Zolpidem</strong>: la lámina 19 da 5 a 20 mg. La ficha de la FDA fija el <strong>máximo en 10 mg</strong>, y en las mujeres empieza en 5 mg porque alcanzan niveles en sangre más altos. Los «7 a 10 días» de la lámina son el momento de <strong>revaluar</strong> si el insomnio persiste, no el plazo de aprobación.</li>
+        <li><strong>Zopiclona</strong>: la lámina 20 le asigna las mismas dosis que a la eszopiclona (1, 2 o 3 mg). Esa es la dosis de la <strong>eszopiclona</strong>; la de la zopiclona es <strong>7,5 mg</strong>.</li>
+      </ul>
+
+      <p>Las fichas del zolpidem y de la eszopiclona llevan un recuadro de advertencia por <strong>conductas complejas del sueño</strong>: sonambulismo, manejar o hacer otras cosas sin estar despierto, a veces con lesiones graves o muerte. Si pasa, se <strong>suspende enseguida</strong> y no se vuelve a indicar.</p>
+
+      <p class="cita">Clase «Ansiolíticos e hipnóticos», Cátedra de Psiquiatría UM 2026: zolpidem, zaleplon, zopiclona y eszopiclona. Fichas de la FDA en DailyMed: <a href="https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=c36cadf4-65a4-4466-b409-c82020b42452">Ambien (zolpidem)</a>, <a href="https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=43ac81cb-1e3f-4d44-86bd-13db2721d060">Sonata (zaleplon)</a> y <a href="https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=3821f4b7-a3c8-4920-ba80-18aa96532c09">Lunesta (eszopiclona)</a>. Ficha de la zopiclona 3,75 mg, Reino Unido, en <a href="https://www.medicines.org.uk/emc/product/101310/smpc">EMC</a>.</p>
+    </section>
+
+    <!-- ============ 13 ============ -->
+    <section class="seccion s-tratamiento" id="insomnio">
+      <span class="seccion__pestana"><b>13</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Tratamiento del insomnio</h2>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 760 324" role="img" aria-label="Tratamiento del insomnio crónico: primero la terapia cognitivo-conductual para el insomnio, con control de estímulos, restricción del sueño, terapia cognitiva y educación en higiene del sueño; si no alcanza, un fármaco a corto plazo, de hasta 4 semanas: benzodiacepina, droga Z, daridorexant o antidepresivo sedante en dosis baja. No se recomiendan antihistamínicos, antipsicóticos, melatonina de liberación rápida ni fitoterapia. En mayores de 65, evitar benzodiacepinas y drogas Z"><defs><marker id="mk-i" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path></marker></defs><rect x="240" y="12" width="280" height="46" rx="7" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.2"></rect><text x="380.0" y="32.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Insomnio crónico</text><text x="380.0" y="47.0" text-anchor="middle" font-size="12.5" fill="currentColor">descartar causas y trastornos del sueño</text><path d="M380 58 L380 78" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-i)"></path><rect x="200" y="80" width="360" height="62" rx="7" fill="var(--c)" fill-opacity="0.4" stroke="currentColor" stroke-width="1.2"></rect><text x="380.0" y="100.5" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">1.ª línea: TCC-I</text><text x="380.0" y="115.5" text-anchor="middle" font-size="12" fill="currentColor">control de estímulos · restricción del sueño</text><text x="380.0" y="130.5" text-anchor="middle" font-size="12" fill="currentColor">terapia cognitiva · educación en higiene</text><path d="M380 142 L380 166" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-i)"></path><text x="392" y="159" text-anchor="start" font-size="11.5" font-style="italic" fill="currentColor">no alcanza</text><rect x="150" y="168" width="460" height="62" rx="7" fill="var(--c)" fill-opacity="0.26" stroke="currentColor" stroke-width="1.2"></rect><text x="380.0" y="188.5" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Fármaco a corto plazo (≤ 4 semanas)</text><text x="380.0" y="203.5" text-anchor="middle" font-size="12" fill="currentColor">benzodiacepina · droga Z · daridorexant</text><text x="380.0" y="218.5" text-anchor="middle" font-size="12" fill="currentColor">antidepresivo sedante en dosis baja</text><rect x="20" y="252" width="340" height="60" rx="7" fill="var(--c)" fill-opacity="0.06" stroke="currentColor" stroke-width="1.2"></rect><text x="190.0" y="271.5" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">No recomendados</text><text x="190.0" y="286.5" text-anchor="middle" font-size="12" fill="currentColor">antihistamínicos · antipsicóticos · melatonina</text><text x="190.0" y="301.5" text-anchor="middle" font-size="12" fill="currentColor">de liberación rápida · fitoterapia</text><rect x="400" y="252" width="340" height="60" rx="7" fill="var(--c)" fill-opacity="0.06" stroke="currentColor" stroke-width="1.2"></rect><text x="570.0" y="271.5" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Mayor de 65</text><text x="570.0" y="286.5" text-anchor="middle" font-size="12" fill="currentColor">evitar benzodiacepinas y drogas Z</text><text x="570.0" y="301.5" text-anchor="middle" font-size="12" fill="currentColor">(criterios de Beers)</text><path d="M300 230 L230 250" fill="none" stroke="currentColor" stroke-width="1.3" stroke-dasharray="5 3" marker-end="url(#mk-i)"></path><path d="M460 230 L530 250" fill="none" stroke="currentColor" stroke-width="1.3" stroke-dasharray="5 3" marker-end="url(#mk-i)"></path></svg>
+        <figcaption>El fármaco no es el primer paso: va después de la TCC-I, por poco tiempo y evitando las benzodiacepinas y las drogas Z en los mayores.</figcaption>
+      </figure>
+
+      <h3>Primera línea: terapia cognitivo-conductual para el insomnio (TCC-I)</h3>
+      <ul>
+        <li>Según PubMed, la guía europea de 2023 la recomienda como <strong>primera línea</strong> en el insomnio crónico de adultos <strong>de cualquier edad</strong>, también con comorbilidades, en forma presencial o <strong>digital</strong>.</li>
+        <li>El American College of Physicians la indica como <strong>tratamiento inicial</strong> en todos los adultos con insomnio crónico.</li>
+        <li><strong>Componentes</strong>: intervenciones cognitivas sobre las creencias erróneas sobre el sueño, <strong>restricción del sueño</strong>, <strong>control de estímulos</strong>, relajación y educación en <strong>higiene del sueño</strong>.</li>
+        <li>La <strong>higiene del sueño sola no alcanza</strong>: la AASM sugiere no usarla como única terapia.</li>
+        <li><strong>Estudios</strong>: la polisomnografía no es de rutina. Se pide si se sospecha otro trastorno del sueño (apneas, movimientos periódicos de las piernas) o si el insomnio no responde.</li>
+      </ul>
+
+      <h3>Si la TCC-I no alcanza: fármacos</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Fármaco</th><th>Hasta cuándo</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Benzodiacepinas</strong>, <strong>drogas Z</strong>, daridorexant</td><td><strong>Corto plazo, ≤ 4 semanas</strong>. Más tiempo solo en algunos casos, pesando ventajas y desventajas</td></tr>
+            <tr><td><strong>Antidepresivos sedantes en dosis baja</strong></td><td>Corto plazo</td></tr>
+            <tr><td><strong>Antagonistas de la orexina</strong></td><td>Hasta 3 meses, o más en algunos casos</td></tr>
+            <tr><td><strong>Melatonina de liberación prolongada</strong></td><td>Hasta 3 meses, en mayores de 55 años</td></tr>
+            <tr><td><strong>No recomendados</strong></td><td>Antihistamínicos, antipsicóticos, melatonina de liberación rápida, ramelteón y fitoterapia</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La decisión de sumar un fármaco se toma <strong>con el paciente</strong>, hablando de beneficios, riesgos y costos del uso a corto plazo. La <strong>luz</strong> y el <strong>ejercicio</strong> pueden sumarse a la TCC-I.</p>
+
+      <div class="importante">
+        <p><strong>¡Importante!</strong> Ante un insomnio crónico, <strong>empezá por la TCC-I</strong>, no por la pastilla. Si hace falta un hipnótico, indicalo por <strong>no más de 4 semanas</strong>, con fecha de fin y plan de retiro.</p>
+      </div>
+
+      <p class="cita">Según PubMed: Riemann D y col., «The European Insomnia Guideline: an update on the diagnosis and treatment of insomnia 2023», J Sleep Res 2023;32(6):e14035 (<a href="https://doi.org/10.1111/jsr.14035">DOI</a>); Qaseem A y col., «Management of chronic insomnia disorder in adults: a clinical practice guideline from the American College of Physicians», Ann Intern Med 2016;165(2):125-33 (<a href="https://doi.org/10.7326/M15-2175">DOI</a>); Edinger JD y col., «Behavioral and psychological treatments for chronic insomnia disorder in adults: an American Academy of Sleep Medicine clinical practice guideline», J Clin Sleep Med 2021;17(2):255-62 (<a href="https://doi.org/10.5664/jcsm.8986">DOI</a>); He H y col., Front Psychiatry 2026 (<a href="https://doi.org/10.3389/fpsyt.2026.1878379">DOI</a>): componentes de la TCC-I.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-e">
+      <span class="bloque__rotulo">Bloque E</span>
+      <span class="bloque__nombre">Seguridad</span>
+    </h2>
+
+    <!-- ============ 14 ============ -->
+    <section class="seccion s-importantes" id="alertas">
+      <span class="seccion__pestana"><b>14</b> Importantes</span>
+      <h2 class="seccion__titulo">Alertas de seguridad según el paciente</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Paciente</th><th>Riesgo</th><th>Qué hacer</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Mayor de 65</strong></td><td>Más sensibilidad y menos metabolismo de las de vida media larga. <strong>Deterioro cognitivo, delirium, caídas, fracturas</strong> y accidentes de tránsito. Las de vida media corta <strong>no son más seguras</strong>. Las drogas Z tienen efectos parecidos y mejoran poco el sueño</td><td>Criterios de Beers: <strong>evitar</strong> benzodiacepinas y drogas Z. Excepciones para las benzodiacepinas: epilepsia, trastorno de conducta del sueño REM, abstinencia de benzodiacepinas o de alcohol, ansiedad generalizada grave y anestesia de procedimientos. Considerar retirar las que ya toma</td></tr>
+            <tr><td><strong>Toma opioides</strong></td><td>Sedación profunda, depresión respiratoria, coma y muerte. También con la pregabalina</td><td>Combinar solo si no hay alternativa, en la menor dosis y por el menor tiempo, vigilando la respiración</td></tr>
+            <tr><td><strong>Toma alcohol</strong></td><td>Suma depresión del SNC; más caídas</td><td>Evitar el alcohol mientras las toma</td></tr>
+            <tr><td><strong>SAHOS o insuficiencia respiratoria</strong></td><td>Depresión respiratoria y apneas</td><td>Precaución con las benzodiacepinas; suspender si aparecen signos. Zopiclona <strong>contraindicada</strong> en la apnea grave y en la insuficiencia respiratoria</td></tr>
+            <tr><td><strong>Embarazada</strong></td><td>Atraviesan la placenta. Al final del embarazo: sedación en el recién nacido (depresión respiratoria, letargo, hipotonía) o abstinencia neonatal (hiperreflexia, irritabilidad, temblor, llanto inconsolable, dificultad para alimentarse)</td><td>Pesar el riesgo. Si se usó en el embarazo o el parto, vigilar al recién nacido por sedación y abstinencia</td></tr>
+            <tr><td><strong>Amamantando</strong></td><td>Pasan a la leche: sedación, mala alimentación y poco aumento de peso en el lactante</td><td>Con el alprazolam, la ficha no recomienda amamantar. Con las demás, pesar beneficios y riesgos</td></tr>
+            <tr><td><strong>Maneja o hace tareas de riesgo</strong></td><td>Menor alerta y coordinación, también a la mañana siguiente</td><td>Advertirle; con eszopiclona 3 mg, no manejar al otro día</td></tr>
+            <tr><td><strong>Niño o anciano</strong></td><td>Reacciones paradójicas</td><td>Si aparecen, retirar de a poco</td></tr>
+            <tr><td><strong>Antecedente de consumo de sustancias</strong></td><td>Más riesgo de abuso de benzodiacepinas y de pregabalina</td><td>Usarlas con precaución; si hay un trastorno por consumo, derivar</td></tr>
+            <tr><td><strong>Toma 3 o más psicofármacos</strong></td><td>Con 3 o más fármacos activos sobre el SNC (antiepilépticos, antidepresivos, antipsicóticos, benzodiacepinas, drogas Z, opioides) aumentan las caídas y las fracturas</td><td>Reducir los que se puedan</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <p><strong>¡Importante!</strong> Antes de indicar una benzodiacepina, preguntá siempre tres cosas: ¿toma <strong>opioides</strong>?, ¿toma <strong>alcohol</strong>?, ¿<strong>ronca o hace apneas</strong>? Cualquiera de las tres cambia la indicación.</p>
+      </div>
+
+      <p class="cita">Según PubMed: American Geriatrics Society 2023 Beers Criteria Update Expert Panel, «American Geriatrics Society 2023 updated AGS Beers Criteria for potentially inappropriate medication use in older adults», J Am Geriatr Soc 2023;71(7):2052-81 (<a href="https://doi.org/10.1111/jgs.18372">DOI</a>); Zgierska AE y col., J Gen Intern Med 2025 (<a href="https://doi.org/10.1007/s11606-025-09634-z">DOI</a>). Fichas de la FDA en DailyMed: <a href="https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=260e2041-2bb3-482f-850e-b5d47a7bdbe6">Valium (diazepam)</a>, <a href="https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=bb5cf72e-3a41-41a8-9a38-80f974eca33f">Xanax (alprazolam)</a> y <a href="https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=3821f4b7-a3c8-4920-ba80-18aa96532c09">Lunesta (eszopiclona)</a>. Ficha de la zopiclona, Reino Unido (<a href="https://www.medicines.org.uk/emc/product/101310/smpc">EMC</a>). Ficha de Lyrica, EMA (<a href="https://www.ema.europa.eu/en/medicines/human/EPAR/lyrica">EPAR</a>). Clase «Ansiolíticos e hipnóticos», Cátedra de Psiquiatría UM 2026: efectos adversos y farmacocinética.</p>
+    </section>
+
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>¿Qué lugar tienen las benzodiacepinas en los trastornos de ansiedad según NICE?</summary>
+          <div class="fc__r">En la ansiedad generalizada, solo como <strong>medida corta en una crisis</strong>; en el pánico, <strong>no</strong> se usan. El tratamiento de base es el antidepresivo o la psicoterapia.</div>
+        </details>
+        <details class="fc s-fisiopatologia">
+          <summary>¿Cómo actúan las benzodiacepinas?</summary>
+          <div class="fc__r">Se unen a un <strong>sitio alostérico</strong> del receptor <strong>GABA-A</strong> y <strong>potencian</strong> al GABA: entra más cloro y la membrana se hiperpolariza.</div>
+        </details>
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué efecto da la benzodiacepina en cada zona?</summary>
+          <div class="fc__r">Límbico: <strong>ansiolítico</strong>. Formación reticular: <strong>hipnótico</strong>. Hipocampo: <strong>amnesia</strong>. Corteza y tallo: <strong>antiepiléptico</strong>. Médula: <strong>miorrelajante</strong>. Cerebelo: <strong>ataxia</strong>.</div>
+        </details>
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué hacen las benzodiacepinas con el REM?</summary>
+          <div class="fc__r">Lo <strong>disminuyen</strong>, pero aumentan la cantidad de ciclos REM y la actividad onírica.</div>
+        </details>
+        <details class="fc s-generalidades">
+          <summary>¿Qué benzodiacepinas se pueden dar por vía intramuscular?</summary>
+          <div class="fc__r"><strong>Lorazepam, midazolam y diazepam</strong>.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Cuántos mg de alprazolam, lorazepam y clonazepam equivalen a 5 mg de diazepam?</summary>
+          <div class="fc__r">Alprazolam <strong>0,5 mg</strong>, lorazepam <strong>1 mg</strong>, clonazepam <strong>0,25 mg</strong> (tabla de la clase).</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Qué benzodiacepina está aprobada para la abstinencia alcohólica?</summary>
+          <div class="fc__r">El <strong>diazepam</strong>: temblor, agitación y delirium tremens inminente o instalado.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿Con qué vida media se asocia cada efecto adverso?</summary>
+          <div class="fc__r">Vida media <strong>larga</strong>: sedación excesiva. <strong>Ultracorta</strong> y alta potencia: alteraciones de la memoria.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿Qué tres advertencias en recuadro tienen todas las benzodiacepinas en la FDA?</summary>
+          <div class="fc__r">Combinación con <strong>opioides</strong> (depresión respiratoria y muerte); <strong>abuso y adicción</strong>; <strong>dependencia y abstinencia</strong> grave al suspenderlas rápido.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿En cuánto tiempo aparece tolerancia al efecto sedante y al hipnótico?</summary>
+          <div class="fc__r">Sedante: <strong>1-2 semanas</strong>. Hipnótico: <strong>4-5 semanas</strong>.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿Quiénes desarrollan dependencia física a las benzodiacepinas?</summary>
+          <div class="fc__r"><strong>Casi todos</strong> los que las toman a diario por más de un mes. El trastorno por consumo es otra cosa (alrededor del 1,5 %).</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿Qué orienta a abstinencia y no a recurrencia?</summary>
+          <div class="fc__r">Comienzo <strong>rápido</strong> después de bajar la dosis, síntomas <strong>distintos o más intensos</strong> que antes y síntomas <strong>nuevos</strong>.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Cómo se retira una benzodiacepina?</summary>
+          <div class="fc__r">Despacio y en escalones <strong>proporcionales</strong> a la dosis actual: empezar con <strong>5-10 % cada 2-4 semanas</strong>. Si es de vida media corta, considerar pasar a una larga.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Qué no se usa para ayudar a retirar una benzodiacepina?</summary>
+          <div class="fc__r"><strong>Valproato ni buspirona</strong>, ni otro fármaco que dé dependencia. Sí se puede sumar <strong>TCC grupal</strong>.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Cómo se da el flumazenil en una sobredosis?</summary>
+          <div class="fc__r"><strong>0,2 mg</strong> IV en 30 s; luego 0,3 mg; luego 0,5 mg por minuto hasta <strong>3 mg</strong>. Sin respuesta con 5 mg, no es por benzodiacepinas. Vigilar la resedación.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Cuándo está contraindicado el flumazenil?</summary>
+          <div class="fc__r">Signos de intoxicación grave por <strong>antidepresivos cíclicos</strong>, benzodiacepina dada por un cuadro <strong>potencialmente mortal</strong> (mal epiléptico, hipertensión endocraneana) e hipersensibilidad.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Cuál es la dosis máxima de buspirona y qué no hace?</summary>
+          <div class="fc__r"><strong>60 mg/día</strong>. No es sedante, hipnótica, anticonvulsivante ni miorrelajante.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Qué riesgos tiene la pregabalina?</summary>
+          <div class="fc__r">Mareo y somnolencia, <strong>depresión respiratoria</strong>, más muertes con <strong>opioides</strong> y <strong>dependencia</strong>. Ajustar a la función renal y retirar en al menos 1 semana.</div>
+        </details>
+        <details class="fc s-fisiopatologia">
+          <summary>¿En qué se diferencian las drogas Z de las benzodiacepinas?</summary>
+          <div class="fc__r">Agonistas del GABA-A con preferencia <strong>BZ1</strong>; menos anticonvulsivantes y miorrelajantes; respetan más la arquitectura del sueño; según la clase, menos dependencia.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Cuál es la dosis de zolpidem?</summary>
+          <div class="fc__r">Mujeres y ancianos <strong>5 mg</strong>; hombres 5 o 10 mg. <strong>Máximo 10 mg</strong>, justo antes de acostarse y con 7-8 h por delante.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Qué droga Z sirve solo para la conciliación?</summary>
+          <div class="fc__r">El <strong>zaleplon</strong>: acorta el tiempo hasta dormirse, pero no se demostró que alargue el sueño ni reduzca los despertares.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Cuál es el tratamiento de primera línea del insomnio crónico?</summary>
+          <div class="fc__r">La <strong>TCC-I</strong>: control de estímulos, restricción del sueño, terapia cognitiva y educación en higiene. La higiene sola no alcanza.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Por cuánto tiempo se usa un hipnótico?</summary>
+          <div class="fc__r">Benzodiacepinas y drogas Z: <strong>corto plazo, hasta 4 semanas</strong>. La zopiclona, no más de 4 semanas contando el descenso.</div>
+        </details>
+        <details class="fc s-importantes">
+          <summary>¿Qué dicen los criterios de Beers sobre benzodiacepinas y drogas Z?</summary>
+          <div class="fc__r"><strong>Evitarlas</strong> en mayores: deterioro cognitivo, delirium, caídas, fracturas y choques. Las de vida media corta no son más seguras.</div>
+        </details>
+      </div>
+    </section>
+
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Triada clave</dt>
+        <dd>Benzodiacepina = <strong>potencia al GABA-A</strong> (sitio alostérico). Alivia rápido, pero da <strong>tolerancia</strong> (sedación en 1-2 semanas) y <strong>dependencia física</strong> en casi todos después de un mes.</dd>
+
+        <dt class="r-gold">Elección</dt>
+        <dd>Ansiedad: <strong>antidepresivo</strong> de base, benzodiacepina solo por poco tiempo. Insomnio: <strong>TCC-I</strong> primero; hipnótico (droga Z o benzodiacepina) por <strong>≤ 4 semanas</strong>. Zolpidem máximo <strong>10 mg</strong> (5 mg en mujeres y ancianos).</dd>
+
+        <dt class="r-tto">Retiro e intoxicación</dt>
+        <dd>Bajar <strong>5-10 % cada 2-4 semanas</strong>, pasando a una de vida media larga si hace falta. <strong>Flumazenil</strong> 0,2 mg IV y titular hasta 3 mg, con vía aérea asegurada; no si hay intoxicación por tricíclicos.</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd><strong>Nunca</strong> suspender de golpe (convulsiones). <strong>Nunca</strong> combinar a la ligera con opioides o alcohol. <strong>Evitar</strong> en mayores de 65 (Beers). Conductas complejas del sueño con zolpidem o eszopiclona: suspender.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir de la clase «Ansiolíticos e hipnóticos» de la Cátedra de Psiquiatría de la Universidad de Mendoza (2026). Retiro según NICE NG215 (2022) y la guía conjunta de 2025 (Brunner y col.). Insomnio según la guía europea de 2023, el American College of Physicians y la AASM. Adultos mayores según los criterios de Beers 2023. Dosis, contraindicaciones y advertencias según las fichas oficiales de la FDA (DailyMed), la EMA y el Reino Unido (EMC). Material de estudio: no reemplaza el criterio clínico ni el protocolo institucional vigente.</p>
+
+
+  </main>
+</div>
+
+<script>
+(function(){
+
+  // ---- Tema claro / oscuro ----
+  // Sin eleccion estampada manda el sistema; el boton la estampa y la guarda.
+  var raiz = document.documentElement;
+  var boton = document.getElementById('tema');
+
+  function temaActual(){
+    var estampado = raiz.getAttribute('data-theme');
+    if (estampado) return estampado;
+    return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+
+  if (boton){
+    var rotular = function(){
+      var actual = temaActual();
+      boton.setAttribute('aria-pressed', actual === 'dark' ? 'true' : 'false');
+      boton.setAttribute('aria-label', actual === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+    };
+    boton.addEventListener('click', function(){
+      var nuevo = temaActual() === 'dark' ? 'light' : 'dark';
+      raiz.setAttribute('data-theme', nuevo);
+      try { localStorage.setItem('wordmed-tema', nuevo); } catch (e) { /* sin persistencia */ }
+      rotular();
+    });
+    rotular();
+  }
+
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link, .ir-link'));
+
+  // Devuelve TODOS los enlaces al ancla: la misma seccion figura en el indice
+  // lateral y en el compacto, y los dos tienen que encenderse juntos.
+  function porMeta(hash){
+    return enlaces.filter(function(l){ return l.getAttribute('href') === '#' + hash; });
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var activos = porMeta(e.target.id);
+        if (!activos.length) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          activos.forEach(function(l){ l.setAttribute('aria-current', 'true'); });
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>

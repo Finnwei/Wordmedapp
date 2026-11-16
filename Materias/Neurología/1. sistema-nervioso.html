@@ -1,0 +1,1740 @@
+<title>El Sistema Nervioso</title>
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-bloque:1.95rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+
+  /* Que la barra de desplazamiento y los controles nativos acompanen al tema */
+  color-scheme: light dark;
+}
+
+/* Eleccion explicita de claro: solo hace falta para el color-scheme, los
+   tokens claros ya son la base sin estampar. */
+:root[data-theme="light"]{ color-scheme: light; }
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* Interruptor de tema claro / oscuro.
+   El estampado `data-theme` en la raíz ya lo respetan los bloques de tokens de
+   arriba; este botón sólo lo pone y lo guarda. Sin elección estampada mandan
+   las preferencias del sistema, que es el comportamiento por defecto. */
+.tema{
+  position:fixed; top:.7rem; right:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.tema:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.tema__icono{ width:1.15rem; height:1.15rem; display:block; }
+
+/* Se muestra el icono del tema al que se va a cambiar, no el actual.
+   Mismo escalonado que los tokens: base clara · sistema oscuro · elección explícita. */
+.tema__sol{ display:none; }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .tema__sol{ display:block; }
+  :root:not([data-theme="light"]) .tema__luna{ display:none; }
+}
+:root[data-theme="dark"] .tema__sol{ display:block; }
+:root[data-theme="dark"] .tema__luna{ display:none; }
+:root[data-theme="light"] .tema__sol{ display:none; }
+:root[data-theme="light"] .tema__luna{ display:block; }
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índices ---------- */
+/* Dos piezas complementarias y deliberadamente redundantes:
+   · .indice        — barra lateral fija, sólo en pantalla ancha, navegación permanente.
+   · .indice-rapido — tarjeta compacta al principio del cuerpo, visible en TODO ancho.
+   La lateral desaparece por debajo de 64rem, que es justo el ancho del panel de
+   Artifacts y del celular; sin la compacta el cuadernillo publicado se queda sin
+   índice. Las dos apuntan a los mismos anclajes y se resaltan juntas al desplazar. */
+
+/* 6.1 · Barra lateral */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+/* Rótulo de bloque intercalado en la lista lateral: no es un enlace, sólo
+   separa grupos de secciones para que 30 entradas no sean una tira plana. */
+.indice__bloque{
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+  margin:.9rem 0 .2rem; padding:0 .55rem;
+}
+.indice__bloque:first-child{ margin-top:0; }
+
+/* 6.2 · Índice compacto (va después de la portada, dentro del cuerpo) */
+.indice-rapido{
+  background:var(--hoja-hund);
+  border:1px solid var(--linea);
+  border-radius:var(--radio);
+  padding:1.1rem 1.2rem 1.2rem;
+}
+.indice-rapido__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .85rem;
+}
+/* auto-fit: una columna en el panel angosto, dos o tres en pantalla ancha */
+.indice-rapido__bloques{
+  list-style:none; margin:0; padding:0;
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(15rem, 1fr));
+  gap:1rem 2rem; align-items:start;
+}
+.ir-bloque{
+  display:block; margin-bottom:.4rem;
+  font-family:var(--f-titulo); font-size:.98rem; font-weight:700; line-height:1.3;
+  color:var(--tinta); text-decoration:none;
+  padding-bottom:.3rem; border-bottom:1px solid var(--linea-fuerte);
+}
+.ir-bloque:hover{ color:var(--cli-t); }
+.ir-secciones{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.05rem; }
+.ir-link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.55rem 1fr; align-items:baseline; gap:.4rem;
+  padding:.2rem .35rem; border-radius:2px;
+  font-size:.86rem; line-height:1.4; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.ir-link > b{
+  font-family:var(--f-dato); font-size:.76rem; font-weight:700;
+  font-variant-numeric:tabular-nums; color:var(--ct); opacity:.85;
+}
+.ir-link:hover{ background:var(--hoja); color:var(--tinta); }
+.ir-link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Título de bloque y ficha de sección ---------- */
+
+/* Anuncia un grupo de secciones. Neutro en color a propósito: los siete colores
+   tienen significado clínico fijo y un bloque agrupa secciones de varios. La
+   regla de abajo lleva el degradado completo de la paleta, igual que la pestaña
+   de repaso y la cabecera de la ficha relámpago.
+   Sin <svg> adentro: el exportador a Word aparea los diagramas con las figuras
+   por contador posicional sobre el HTML crudo (ver exportar_docx.py). */
+.bloque{
+  margin:1.4rem 0 0; padding:0;
+  text-align:center; scroll-margin-top:2.5rem;
+  display:flex; flex-direction:column; align-items:center; gap:.3rem;
+  font-weight:400;
+}
+.bloque:first-child{ margin-top:0; }
+.bloque__rotulo{
+  font-family:var(--f-texto);
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+}
+.bloque__nombre{
+  font-family:var(--f-titulo); font-size:var(--t-bloque); font-weight:700; line-height:1.15;
+  letter-spacing:-.01em; color:var(--tinta); text-wrap:balance; max-width:32ch;
+}
+.bloque::after{
+  content:""; width:7rem; height:2.5px; margin-top:.5rem; border-radius:2px;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+}
+
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.5rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-column:1; grid-row:1; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+/* El icono ocupa la columna 1 y NADA MAS. Todo el resto del contenido se
+   apila en la columna 2, una fila por elemento, sin importar cuantos
+   parrafos haya.
+
+   Sin esta regla la caja solo funciona con un unico <p>: a partir del
+   segundo, la autocolocacion del grid empieza a repartir contenido en la
+   columna del icono, que es `auto` y por lo tanto se ensancha hasta abarcar
+   el parrafo que le toco. La columna `1fr` queda entonces reducida a una
+   tira angosta, el texto se parte en dos columnas desbalanceadas y la caja
+   crece hasta volverse ilegible. */
+.importante > :not(.importante__icono){ grid-column:2; }
+.importante__titulo{
+  grid-row:1;
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante ul, .importante ol{ margin:0; padding-left:1.15rem; }
+.importante li + li{ margin-top:.3rem; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso, .tema{ display:none !important; }
+  /* La lateral no se imprime, pero la compacta sí: en papel es la tabla de
+     contenidos del cuadernillo. */
+  .indice-rapido{ display:block; break-inside:avoid; page-break-inside:avoid; margin-bottom:1.2rem; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .bloque{
+    margin:1.6rem 0 1rem;
+    break-after:avoid; page-break-after:avoid;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+
+<script>
+/* Aplica el tema guardado antes de pintar. Va aca arriba a proposito: si
+   esperara al script del final, el documento parpadearia en el tema del
+   sistema antes de corregirse. */
+(function(){
+  try {
+    var guardado = localStorage.getItem('wordmed-tema');
+    if (guardado === 'dark' || guardado === 'light') {
+      document.documentElement.setAttribute('data-theme', guardado);
+    }
+  } catch (e) { /* almacenamiento bloqueado: manda el sistema */ }
+})();
+</script>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<button class="tema" id="tema" type="button" aria-pressed="false" aria-label="Cambiar a modo oscuro">
+  <svg class="tema__icono tema__sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.2"></circle>
+    <path d="M12 2.6v2.1M12 19.3v2.1M5.1 5.1l1.5 1.5M17.4 17.4l1.5 1.5M2.6 12h2.1M19.3 12h2.1M5.1 18.9l1.5-1.5M17.4 6.6l1.5-1.5"></path>
+  </svg>
+  <svg class="tema__icono tema__luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20.4 14.2A8.6 8.6 0 0 1 9.8 3.6a8.6 8.6 0 1 0 10.6 10.6z"></path>
+  </svg>
+</button>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li class="indice__bloque">A · Organización</li>
+      <li><a class="indice__link i-generalidades"  href="#celulas">Neuronas y glía</a></li>
+      <li><a class="indice__link i-generalidades"  href="#divisiones">Estímulos y divisiones</a></li>
+      <li><a class="indice__link i-generalidades"  href="#meninges">Meninges y espacios</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#embriologia">Embriología y ventrículos</a></li>
+
+      <li class="indice__bloque">B · Fisiología</li>
+      <li><a class="indice__link i-fisiopatologia" href="#reposo">Potencial de reposo</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#accion">Potencial de acción</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#neurotransmisores">Neurotransmisores</a></li>
+
+      <li class="indice__bloque">C · El cerebro</li>
+      <li><a class="indice__link i-generalidades"  href="#encefalo">Forma y hemisferios</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#nucleos">Gris, blanca y núcleos</a></li>
+      <li><a class="indice__link i-generalidades"  href="#cisuras">Cisuras y circunvoluciones</a></li>
+
+      <li class="indice__bloque">D · Áreas de Brodmann</li>
+      <li><a class="indice__link i-clinica"        href="#frontal">Lóbulo frontal</a></li>
+      <li><a class="indice__link i-clinica"        href="#parietal">Lóbulo parietal</a></li>
+      <li><a class="indice__link i-clinica"        href="#occipital">Lóbulo occipital</a></li>
+      <li><a class="indice__link i-clinica"        href="#temporal">Lóbulo temporal</a></li>
+
+      <li class="indice__bloque">Cierre</li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Neurología · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">El Sistema Nervioso</h1>
+      <p class="portada__bajada">La base sobre la que se apoya toda la semiología neurológica: de qué células está hecho el sistema nervioso, cómo transmite un impulso, cómo está armado el cerebro y qué función cumple cada área de la corteza, con lo que produce su lesión.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">14 secciones</span>
+        <span class="etiqueta s-fisiopatologia">Potencial de acción</span>
+        <span class="etiqueta s-clinica">Áreas de Brodmann</span>
+        <span class="etiqueta s-importantes">Correlación lesional</span>
+      </div>
+    </header>
+
+    <nav class="indice-rapido" aria-label="Contenido del cuadernillo">
+      <p class="indice-rapido__rotulo">Contenido</p>
+      <ol class="indice-rapido__bloques">
+        <li>
+          <a class="ir-bloque" href="#bloque-a">Bloque A · Organización del sistema nervioso</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades"  href="#celulas"><b>01</b> Neuronas y neuroglía</a></li>
+            <li><a class="ir-link i-generalidades"  href="#divisiones"><b>02</b> Estímulos y divisiones</a></li>
+            <li><a class="ir-link i-generalidades"  href="#meninges"><b>03</b> Las meninges y sus espacios</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#embriologia"><b>04</b> Recuerdo embriológico y ventrículos</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-b">Bloque B · Fisiología</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-fisiopatologia" href="#reposo"><b>05</b> Potencial de reposo</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#accion"><b>06</b> Potencial de acción</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#neurotransmisores"><b>07</b> Neurotransmisores</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-c">Bloque C · El cerebro</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades"  href="#encefalo"><b>08</b> Forma, medidas y hemisferios</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#nucleos"><b>09</b> Sustancia gris, blanca y núcleos</a></li>
+            <li><a class="ir-link i-generalidades"  href="#cisuras"><b>10</b> Cisuras, surcos y circunvoluciones</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-d">Bloque D · Áreas de Brodmann</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-clinica" href="#frontal"><b>11</b> Lóbulo frontal</a></li>
+            <li><a class="ir-link i-clinica" href="#parietal"><b>12</b> Lóbulo parietal</a></li>
+            <li><a class="ir-link i-clinica" href="#occipital"><b>13</b> Lóbulo occipital</a></li>
+            <li><a class="ir-link i-clinica" href="#temporal"><b>14</b> Lóbulo temporal</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#repaso">Cierre</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-clinica"     href="#repaso"><b>·</b> Repaso activo</a></li>
+            <li><a class="ir-link i-importantes" href="#relampago"><b>·</b> Ficha Relámpago</a></li>
+          </ul>
+        </li>
+      </ol>
+    </nav>
+
+    <h2 class="bloque" id="bloque-a">
+      <span class="bloque__rotulo">Bloque A</span>
+      <span class="bloque__nombre">Organización del sistema nervioso</span>
+    </h2>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="celulas">
+      <span class="seccion__pestana"><b>01</b> Base</span>
+      <h2 class="seccion__titulo">Neuronas y neuroglía</h2>
+
+      <p>El sistema nervioso es un <strong>conjunto de células especializadas</strong> cuya función es <strong>recibir estímulos, procesarlos y transmitirlos a los órganos efectores</strong>, que pueden ser <strong>musculares o glandulares</strong>. Esa secuencia —recibir, procesar, transmitir— es la que después se recorre en cada vía nerviosa.</p>
+
+      <h3>Las dos poblaciones celulares</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Tipo</th><th>Qué es</th><th>Rasgos clave</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Especializadas: neuronas</strong></td><td>La célula nerviosa con todas sus prolongaciones</td><td><strong>Dendritas</strong>: prolongaciones cortas que <strong>reciben</strong> la información. <strong>Axón</strong>: prolongación larga que <strong>conduce el impulso</strong> desde la célula hacia los efectores</td></tr>
+            <tr><td><strong>No especializadas: neuroglía</strong></td><td>Células de <strong>sostén</strong></td><td><strong>No son excitables</strong>. Se distinguen 4 tipos: astrocitos, oligodendrocitos, microglía y epéndimo</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Qué hace cada tipo de glía</h3>
+      <p>La clase nombra los cuatro tipos; su función es lo que explica buena parte de la patología que viene después —la desmielinización, la cicatriz glial, la respuesta inflamatoria del sistema nervioso central—.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Glía</th><th>Función principal</th><th>Para qué sirve recordarla</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Astrocitos</strong></td><td>Sostén estructural y metabólico de las neuronas; sus prolongaciones rodean los capilares y participan de la <strong>barrera hematoencefálica</strong>; regulan el medio iónico extracelular</td><td>Forman la <strong>cicatriz glial</strong> (gliosis) cuando el tejido se lesiona</td></tr>
+            <tr><td><strong>Oligodendrocitos</strong></td><td>Forman la <strong>mielina del sistema nervioso central</strong>; uno solo mieliniza segmentos de varios axones</td><td>En el sistema periférico la mielina la forma otra célula, la <strong>célula de Schwann</strong></td></tr>
+            <tr><td><strong>Microglía</strong></td><td><strong>Defensa</strong> del sistema nervioso central: fagocitosis y respuesta inmune local</td><td>Es la única glía de origen mesodérmico (monocítico)</td></tr>
+            <tr><td><strong>Epéndimo</strong></td><td><strong>Reviste los ventrículos</strong> y el conducto central de la médula</td><td>Junto con los plexos coroideos participa de la producción y circulación del <strong>líquido cefalorraquídeo</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «El sistema nervioso», Dr. Gustavo Grilli. Funciones de la glía: Snell RS, <em>Neuroanatomía clínica</em>; Kandel ER y col., <em>Principios de neurociencia</em>.</p>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-generalidades" id="divisiones">
+      <span class="seccion__pestana"><b>02</b> Base</span>
+      <h2 class="seccion__titulo">Estímulos y divisiones</h2>
+
+      <h3>El sentido del estímulo</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Estímulo</th><th>Dirección</th><th>Naturaleza</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Aferente</strong></td><td><strong>Centrípeto</strong>: de la periferia hacia el centro</td><td><strong>Sensitivo</strong></td></tr>
+            <tr><td><strong>Eferente</strong></td><td><strong>Centrífugo</strong>: del centro hacia la periferia</td><td><strong>Motor</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Sistema nervioso central</h3>
+      <p>Está <strong>contenido en la caja craneana y en el conducto raquídeo</strong> y envuelto por las <strong>meninges</strong>. En sentido <strong>cráneo-caudal</strong> se ordena así:</p>
+      <ol>
+        <li><strong>Cerebro.</strong></li>
+        <li><strong>Cerebelo</strong>, unido al tronco por tres pares de <strong>pedúnculos cerebelosos</strong>: superior, medio e inferior.</li>
+        <li><strong>Mesencéfalo</strong>, con los <strong>pedúnculos cerebrales</strong>.</li>
+        <li><strong>Protuberancia anular</strong>.</li>
+        <li><strong>Bulbo raquídeo</strong>.</li>
+        <li><strong>Médula espinal</strong>.</li>
+      </ol>
+      <p>Mesencéfalo, protuberancia y bulbo forman en conjunto el tronco del encéfalo; conviene tenerlos en este orden porque es el mismo en que se localizan después las lesiones del tronco.</p>
+
+      <h3>Sistema nervioso periférico</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>División</th><th>Componentes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Somático</strong></td><td><strong>Nervios craneales</strong> (12 pares) · <strong>nervios periféricos</strong> (31 pares) · ganglios anexos</td></tr>
+            <tr><td><strong>Autónomo</strong></td><td><strong>Simpático</strong> y <strong>parasimpático</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «El sistema nervioso», Dr. Gustavo Grilli.</p>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-generalidades" id="meninges">
+      <span class="seccion__pestana"><b>03</b> Anatomía</span>
+      <h2 class="seccion__titulo">Las meninges y sus espacios</h2>
+
+      <p>Las meninges son tres membranas —<strong>duramadre, aracnoides y piamadre</strong>— y entre ellas, y por fuera de la dura, quedan tres espacios. Se aprenden juntos, de afuera hacia adentro, alternando espacio y membrana.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 760 330" role="img" aria-label="Capas que envuelven al sistema nervioso central de afuera hacia adentro: hueso, espacio extradural, duramadre, espacio subdural, aracnoides, espacio subaracnoideo, piamadre y tejido nervioso">
+          <rect x="40" y="16" width="470" height="34" rx="4" fill="currentColor" fill-opacity="0.18" stroke="currentColor" stroke-width="1"></rect>
+          <text x="275" y="38" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Hueso: caja craneana o conducto raquídeo</text>
+
+          <rect x="40" y="54" width="470" height="30" rx="4" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="4 3"></rect>
+          <text x="275" y="74" text-anchor="middle" font-size="12" fill="currentColor">Espacio extradural</text>
+
+          <rect x="40" y="88" width="470" height="34" rx="4" fill="var(--c)" fill-opacity="0.45" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="275" y="110" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Duramadre</text>
+
+          <rect x="40" y="126" width="470" height="30" rx="4" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="4 3"></rect>
+          <text x="275" y="146" text-anchor="middle" font-size="12" fill="currentColor">Espacio subdural</text>
+
+          <rect x="40" y="160" width="470" height="34" rx="4" fill="var(--c)" fill-opacity="0.30" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="275" y="182" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Aracnoides</text>
+
+          <rect x="40" y="198" width="470" height="30" rx="4" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="4 3"></rect>
+          <text x="275" y="218" text-anchor="middle" font-size="12" fill="currentColor">Espacio subaracnoideo</text>
+
+          <rect x="40" y="232" width="470" height="34" rx="4" fill="var(--c)" fill-opacity="0.18" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="275" y="254" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Piamadre</text>
+
+          <rect x="40" y="270" width="470" height="40" rx="4" fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-width="1"></rect>
+          <text x="275" y="295" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Encéfalo o médula espinal</text>
+
+          <path d="M528 88 L540 88 L540 266 L528 266" fill="none" stroke="currentColor" stroke-width="1.4"></path>
+          <text x="552" y="140" font-size="12.5" font-weight="700" fill="currentColor">Meninges</text>
+          <text x="552" y="158" font-size="11.5" fill="currentColor">3 membranas</text>
+
+          <text x="552" y="72" font-size="11.5" fill="currentColor">espacio por fuera de la dura</text>
+          <text x="552" y="218" font-size="11.5" fill="currentColor">espacio entre aracnoides y piamadre</text>
+        </svg>
+        <figcaption>De afuera hacia adentro: <strong>hueso → espacio extradural → duramadre → espacio subdural → aracnoides → espacio subaracnoideo → piamadre → tejido nervioso</strong>. Las membranas van en relleno y los espacios en línea punteada.</figcaption>
+      </figure>
+
+      <p class="cita">Clase «El sistema nervioso», Dr. Gustavo Grilli.</p>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-fisiopatologia" id="embriologia">
+      <span class="seccion__pestana"><b>04</b> Desarrollo</span>
+      <h2 class="seccion__titulo">Recuerdo embriológico y ventrículos</h2>
+
+      <p>Todo el sistema nervioso central sale del <strong>tubo neural</strong>, que se forma a partir del <strong>ectodermo</strong>. Su extremo cefálico se dilata en <strong>tres vesículas primarias</strong>, que después se dividen en <strong>cinco vesículas secundarias</strong>; el resto del tubo queda como <strong>médula espinal</strong>. La luz del tubo no desaparece: persiste como el <strong>sistema ventricular</strong>, y por eso cada vesícula tiene su cavidad.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 880 360" role="img" aria-label="Del tubo neural a las vesículas: el prosencéfalo da telencéfalo y diencéfalo, el mesencéfalo persiste y el rombencéfalo da metencéfalo y mielencéfalo; cada una con sus derivados y su cavidad ventricular">
+          <defs>
+            <marker id="sn-emb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <text x="100" y="26" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Vesículas primarias</text>
+          <text x="330" y="26" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Vesículas secundarias</text>
+          <text x="560" y="26" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Derivados</text>
+          <text x="775" y="26" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Cavidad</text>
+
+          <rect x="20" y="70" width="160" height="70" rx="6" fill="var(--c)" fill-opacity="0.28" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="100" y="110" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Prosencéfalo</text>
+          <rect x="20" y="168" width="160" height="46" rx="6" fill="var(--c)" fill-opacity="0.28" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="100" y="196" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Mesencéfalo</text>
+          <rect x="20" y="236" width="160" height="104" rx="6" fill="var(--c)" fill-opacity="0.28" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="100" y="293" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Rombencéfalo</text>
+
+          <rect x="250" y="44" width="160" height="46" rx="6" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="330" y="72" text-anchor="middle" font-size="12.5" fill="currentColor">Telencéfalo</text>
+          <rect x="250" y="106" width="160" height="46" rx="6" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="330" y="134" text-anchor="middle" font-size="12.5" fill="currentColor">Diencéfalo</text>
+          <rect x="250" y="168" width="160" height="46" rx="6" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="330" y="196" text-anchor="middle" font-size="12.5" fill="currentColor">Mesencéfalo</text>
+          <rect x="250" y="230" width="160" height="46" rx="6" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="330" y="258" text-anchor="middle" font-size="12.5" fill="currentColor">Metencéfalo</text>
+          <rect x="250" y="292" width="160" height="46" rx="6" fill="var(--c)" fill-opacity="0.14" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="330" y="320" text-anchor="middle" font-size="12.5" fill="currentColor">Mielencéfalo</text>
+
+          <line x1="180" y1="95" x2="246" y2="67" stroke="currentColor" stroke-width="1.4" marker-end="url(#sn-emb)"></line>
+          <line x1="180" y1="115" x2="246" y2="129" stroke="currentColor" stroke-width="1.4" marker-end="url(#sn-emb)"></line>
+          <line x1="180" y1="191" x2="246" y2="191" stroke="currentColor" stroke-width="1.4" marker-end="url(#sn-emb)"></line>
+          <line x1="180" y1="276" x2="246" y2="253" stroke="currentColor" stroke-width="1.4" marker-end="url(#sn-emb)"></line>
+          <line x1="180" y1="300" x2="246" y2="315" stroke="currentColor" stroke-width="1.4" marker-end="url(#sn-emb)"></line>
+
+          <rect x="480" y="44" width="160" height="46" rx="6" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="560" y="72" text-anchor="middle" font-size="12" fill="currentColor">Hemisferios cerebrales</text>
+          <rect x="480" y="106" width="160" height="46" rx="6" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="560" y="134" text-anchor="middle" font-size="12" fill="currentColor">Tálamo e hipotálamo</text>
+          <rect x="480" y="168" width="160" height="46" rx="6" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="560" y="196" text-anchor="middle" font-size="12" fill="currentColor">Mesencéfalo</text>
+          <rect x="480" y="230" width="160" height="46" rx="6" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="560" y="258" text-anchor="middle" font-size="12" fill="currentColor">Puente y cerebelo</text>
+          <rect x="480" y="292" width="160" height="46" rx="6" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="560" y="320" text-anchor="middle" font-size="12" fill="currentColor">Bulbo raquídeo</text>
+
+          <line x1="410" y1="67" x2="476" y2="67" stroke="currentColor" stroke-width="1.4" marker-end="url(#sn-emb)"></line>
+          <line x1="410" y1="129" x2="476" y2="129" stroke="currentColor" stroke-width="1.4" marker-end="url(#sn-emb)"></line>
+          <line x1="410" y1="191" x2="476" y2="191" stroke="currentColor" stroke-width="1.4" marker-end="url(#sn-emb)"></line>
+          <line x1="410" y1="253" x2="476" y2="253" stroke="currentColor" stroke-width="1.4" marker-end="url(#sn-emb)"></line>
+          <line x1="410" y1="315" x2="476" y2="315" stroke="currentColor" stroke-width="1.4" marker-end="url(#sn-emb)"></line>
+
+          <rect x="700" y="44" width="150" height="46" rx="6" fill="var(--c)" fill-opacity="0.22" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="775" y="72" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Ventrículos laterales</text>
+          <rect x="700" y="106" width="150" height="46" rx="6" fill="var(--c)" fill-opacity="0.22" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="775" y="134" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">III ventrículo</text>
+          <rect x="700" y="168" width="150" height="46" rx="6" fill="var(--c)" fill-opacity="0.22" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="775" y="196" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Acueducto de Silvio</text>
+          <rect x="700" y="230" width="150" height="108" rx="6" fill="var(--c)" fill-opacity="0.22" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="775" y="288" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">IV ventrículo</text>
+
+          <line x1="640" y1="67" x2="696" y2="67" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3"></line>
+          <line x1="640" y1="129" x2="696" y2="129" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3"></line>
+          <line x1="640" y1="191" x2="696" y2="191" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3"></line>
+          <line x1="640" y1="253" x2="696" y2="253" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3"></line>
+          <line x1="640" y1="315" x2="696" y2="315" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3"></line>
+        </svg>
+        <figcaption>Las flechas se leen «se divide en» y «da origen a»; la línea punteada une cada derivado con su cavidad. El <strong>IV ventrículo es común a metencéfalo y mielencéfalo</strong>: por eso queda entre el puente y el bulbo, por delante del cerebelo.</figcaption>
+      </figure>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Vesícula primaria</th><th>Secundaria</th><th>Derivados</th><th>Cavidad</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Prosencéfalo</strong></td><td>Telencéfalo</td><td>Hemisferios cerebrales</td><td>Ventrículos laterales</td></tr>
+            <tr><td><strong>Prosencéfalo</strong></td><td>Diencéfalo</td><td>Tálamo e hipotálamo</td><td>III ventrículo</td></tr>
+            <tr><td><strong>Mesencéfalo</strong></td><td>Mesencéfalo</td><td>Mesencéfalo</td><td>Acueducto de Silvio</td></tr>
+            <tr><td><strong>Rombencéfalo</strong></td><td>Metencéfalo</td><td>Puente y cerebelo</td><td>IV ventrículo</td></tr>
+            <tr><td><strong>Rombencéfalo</strong></td><td>Mielencéfalo</td><td>Bulbo raquídeo</td><td>IV ventrículo</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «El sistema nervioso», Dr. Gustavo Grilli: esquema de embriología del sistema nervioso central.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-b">
+      <span class="bloque__rotulo">Bloque B</span>
+      <span class="bloque__nombre">Fisiología</span>
+    </h2>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-fisiopatologia" id="reposo">
+      <span class="seccion__pestana"><b>05</b> Mecanismo</span>
+      <h2 class="seccion__titulo">Potencial de reposo</h2>
+
+      <p>La <strong>membrana plasmática</strong> que recubre al cuerpo neuronal <strong>regula los intercambios iónicos</strong>. En reposo, el interior de la célula queda <strong>negativo respecto del exterior</strong>, y esa diferencia es el potencial de membrana en reposo.</p>
+
+      <h3>De dónde sale la diferencia</h3>
+      <ol>
+        <li><strong>Aniones fijos</strong> dentro de la célula, que no pueden salir.</li>
+        <li><strong>Permeabilidad desigual</strong> de la membrana: <strong>más permeable al K<sup>+</sup></strong> y <strong>menos permeable al Na<sup>+</sup></strong>.</li>
+        <li>Resultado: <strong>K<sup>+</sup> más alto en el interior</strong> y <strong>Na<sup>+</sup> más alto en el exterior</strong>, es decir, una distribución desigual de iones a ambos lados de la membrana.</li>
+      </ol>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Valor</th><th>Cifra</th><th>Qué significa</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Potencial de equilibrio del K<sup>+</sup></strong></td><td><span class="dato">−90 mV</span></td><td>Hacia donde llevaría la membrana el K<sup>+</sup> solo</td></tr>
+            <tr><td><strong>Potencial de equilibrio del Na<sup>+</sup></strong></td><td><span class="dato">+66 mV</span></td><td>Hacia donde la llevaría el Na<sup>+</sup> solo</td></tr>
+            <tr><td><strong>Potencial de reposo de la neurona</strong></td><td><span class="dato">−70 mV</span></td><td>Queda <strong>cerca del K<sup>+</sup></strong> porque la membrana es mucho más permeable a él</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>El potencial de reposo <strong>es distinto según el tipo de célula</strong>; <strong>−70 mV es el valor típico de las neuronas</strong>.</p>
+
+      <p class="cita">Clase «El sistema nervioso», Dr. Gustavo Grilli: esquema del potencial de membrana en reposo.</p>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-fisiopatologia" id="accion">
+      <span class="seccion__pestana"><b>06</b> Mecanismo</span>
+      <h2 class="seccion__titulo">Potencial de acción</h2>
+
+      <p>Es la inversión transitoria del potencial de membrana que constituye el impulso nervioso. Se entiende como una secuencia de canales que se abren y se cierran.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 840 330" role="img" aria-label="Curva del potencial de acción: desde el reposo, un estímulo lleva la membrana al umbral, sigue la despolarización por entrada de sodio hasta un pico positivo, luego la repolarización por salida de potasio, una breve hiperpolarización y el regreso al reposo">
+          <defs>
+            <marker id="sn-pa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <line x1="60" y1="300" x2="60" y2="20" stroke="currentColor" stroke-width="1.3"></line>
+          <line x1="60" y1="300" x2="540" y2="300" stroke="currentColor" stroke-width="1.3"></line>
+          <text x="300" y="322" text-anchor="middle" font-size="11.5" fill="currentColor">Tiempo</text>
+          <text x="20" y="160" font-size="11.5" fill="currentColor" transform="rotate(-90 20 160)" text-anchor="middle">Potencial de membrana</text>
+
+          <line x1="60" y1="110" x2="540" y2="110" stroke="currentColor" stroke-width="0.8" stroke-dasharray="3 3"></line>
+          <text x="54" y="114" text-anchor="end" font-size="11" fill="currentColor">0</text>
+          <line x1="60" y1="190" x2="540" y2="190" stroke="currentColor" stroke-width="0.8" stroke-dasharray="6 3"></line>
+          <text x="535" y="184" text-anchor="end" font-size="11" fill="currentColor">Umbral</text>
+          <text x="54" y="234" text-anchor="end" font-size="11" fill="currentColor">−70</text>
+
+          <path d="M60 230 L150 230 C170 230 180 210 195 190 C205 150 212 70 228 52 C240 70 250 200 262 248 C270 262 285 258 300 250 C330 236 350 230 380 230 L540 230" fill="none" stroke="var(--c)" stroke-width="3"></path>
+
+          <line x1="150" y1="272" x2="150" y2="236" stroke="currentColor" stroke-width="1.3" marker-end="url(#sn-pa)"></line>
+          <text x="150" y="288" text-anchor="middle" font-size="11" fill="currentColor">Estímulo</text>
+
+          <circle cx="212" cy="238" r="10" fill="var(--c)" fill-opacity="0.25" stroke="currentColor"></circle>
+          <text x="212" y="242" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">1</text>
+          <circle cx="196" cy="128" r="10" fill="var(--c)" fill-opacity="0.25" stroke="currentColor"></circle>
+          <text x="196" y="132" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">2</text>
+          <circle cx="228" cy="34" r="10" fill="var(--c)" fill-opacity="0.25" stroke="currentColor"></circle>
+          <text x="228" y="38" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">3</text>
+          <circle cx="262" cy="150" r="10" fill="var(--c)" fill-opacity="0.25" stroke="currentColor"></circle>
+          <text x="262" y="154" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">4</text>
+          <circle cx="285" cy="276" r="10" fill="var(--c)" fill-opacity="0.25" stroke="currentColor"></circle>
+          <text x="285" y="280" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">5</text>
+
+          <text x="575" y="50" font-size="12" font-weight="700" fill="currentColor">1 · Estímulo</text>
+          <text x="575" y="66" font-size="11.5" fill="currentColor">abren canales de Na+ y la membrana</text>
+          <text x="575" y="81" font-size="11.5" fill="currentColor">empieza a despolarizarse</text>
+          <text x="575" y="108" font-size="12" font-weight="700" fill="currentColor">2 · Umbral</text>
+          <text x="575" y="124" font-size="11.5" fill="currentColor">se abren más canales de Na+: entra</text>
+          <text x="575" y="139" font-size="11.5" fill="currentColor">más Na+ y la despolarización se acelera</text>
+          <text x="575" y="166" font-size="12" font-weight="700" fill="currentColor">3 · Pico positivo</text>
+          <text x="575" y="182" font-size="11.5" fill="currentColor">se cierran los canales de Na+</text>
+          <text x="575" y="209" font-size="12" font-weight="700" fill="currentColor">4 · Repolarización</text>
+          <text x="575" y="225" font-size="11.5" fill="currentColor">abren canales de K+: sale K+</text>
+          <text x="575" y="252" font-size="12" font-weight="700" fill="currentColor">5 · Hiperpolarización</text>
+          <text x="575" y="268" font-size="11.5" fill="currentColor">breve; luego la bomba Na+/K+</text>
+          <text x="575" y="283" font-size="11.5" fill="currentColor">restablece el reposo</text>
+        </svg>
+        <figcaption>La <strong>despolarización depende del Na<sup>+</sup> que entra</strong> y la <strong>repolarización del K<sup>+</sup> que sale</strong>. Por debajo del umbral no hay potencial de acción; por encima, se dispara completo.</figcaption>
+      </figure>
+
+      <h3>La secuencia, paso a paso</h3>
+      <ol>
+        <li>El <strong>estímulo induce la apertura de canales de Na<sup>+</sup></strong>; su difusión al citoplasma <strong>despolariza</strong> la membrana.</li>
+        <li>Al alcanzarse el <strong>potencial umbral</strong> se abren <strong>más canales de Na<sup>+</sup></strong>, y el aumento de la entrada de Na<sup>+</sup> despolariza aún más la membrana.</li>
+        <li>Cuando el potencial llega a su <strong>máximo, con valores positivos</strong>, <strong>se cierran los canales de Na<sup>+</sup></strong>.</li>
+        <li>La <strong>apertura de los canales de K<sup>+</sup></strong> permite la salida del catión y la <strong>repolarización</strong>.</li>
+        <li>Tras un breve período de <strong>hiperpolarización</strong>, la <strong>bomba Na<sup>+</sup>/K<sup>+</sup></strong> restablece el potencial de reposo.</li>
+      </ol>
+      <p>Un matiz sobre el último paso: lo que devuelve la membrana a su valor de reposo después de la hiperpolarización es, sobre todo, el <strong>cierre de los canales de K<sup>+</sup></strong>. La bomba Na<sup>+</sup>/K<sup>+</sup> trabaja en forma continua y es la que <strong>mantiene los gradientes</strong> de concentración a largo plazo. Para el examen alcanza con la secuencia de la clase; conviene no decir que la bomba «genera» la repolarización.</p>
+
+      <p class="cita">Clase «El sistema nervioso», Dr. Gustavo Grilli. Papel de la bomba Na<sup>+</sup>/K<sup>+</sup>: Kandel ER y col., <em>Principios de neurociencia</em>.</p>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-fisiopatologia" id="neurotransmisores">
+      <span class="seccion__pestana"><b>07</b> Mecanismo</span>
+      <h2 class="seccion__titulo">Neurotransmisores</h2>
+
+      <p>Son <strong>mediadores químicos sintetizados por las neuronas</strong> que se <strong>liberan al espacio sináptico</strong> cuando llega el potencial de acción. <strong>Ejercen su acción y después se eliminan</strong> de dos maneras: <strong>degradación</strong> —la acetilcolina, por la <strong>acetilcolinesterasa</strong>— o <strong>recaptación</strong>.</p>
+
+      <h3>Excitatorios e inhibitorios</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Tipo</th><th>Efecto postsináptico</th><th>Potencial que generan</th><th>Ejemplos de la clase</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Excitatorios</strong></td><td><strong>Despolarización</strong></td><td>Potencial postsináptico excitatorio (PPS E)</td><td><strong>Acetilcolina, glutamato</strong></td></tr>
+            <tr><td><strong>Inhibitorios</strong></td><td><strong>Hiperpolarización</strong></td><td>Potencial postsináptico inhibitorio (PPS I)</td><td><strong>GABA</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Los que hay que ubicar</h3>
+      <p>Se conocen <strong>más de 60</strong>; la clase destaca estos, y de los tres primeros, dónde actúan.</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Neurotransmisor</th><th>Sinapsis</th><th>Dónde actúa</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Acetilcolina</strong></td><td>Colinérgicas</td><td><strong>Placa neuromuscular</strong>, sistema <strong>parasimpático</strong> y <strong>sinapsis ganglionares del simpático</strong></td></tr>
+            <tr><td><strong>Noradrenalina</strong></td><td>Noradrenérgicas</td><td><strong>Sinapsis periféricas del simpático</strong></td></tr>
+            <tr><td><strong>Dopamina</strong></td><td>Dopaminérgicas</td><td><strong>Sistema extrapiramidal</strong></td></tr>
+            <tr><td>Serotonina, histamina, adrenalina, GABA, ácido glutámico, glicina</td><td>—</td><td>Mencionados en la clase sin localización</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La fila de la acetilcolina es la que más se pregunta: es el transmisor de <strong>todas las sinapsis ganglionares del autónomo</strong>, incluidas las del simpático, y de la placa motora. El simpático recién usa noradrenalina en la sinapsis con el órgano efector.</p>
+
+      <p class="cita">Clase «El sistema nervioso», Dr. Gustavo Grilli.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-c">
+      <span class="bloque__rotulo">Bloque C</span>
+      <span class="bloque__nombre">El cerebro</span>
+    </h2>
+
+    <!-- ============ 8 ============ -->
+    <section class="seccion s-generalidades" id="encefalo">
+      <span class="seccion__pestana"><b>08</b> Anatomía</span>
+      <h2 class="seccion__titulo">Forma, medidas y hemisferios</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Rasgo</th><th>Dato</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Forma</strong></td><td><strong>Ovoide</strong>, con el extremo posterior más grueso</td></tr>
+            <tr><td><strong>Medidas</strong></td><td><span class="dato">16 cm</span> anteroposterior · <span class="dato">14 cm</span> transverso · <span class="dato">12 cm</span> vertical</td></tr>
+            <tr><td><strong>Peso</strong></td><td>Aproximadamente <span class="dato">1400 g</span></td></tr>
+            <tr><td><strong>Ubicación</strong></td><td>Ocupa las <strong>fosas anterior y media</strong> del cráneo; la <strong>tienda del cerebelo</strong> lo separa de la fosa posterior</td></tr>
+            <tr><td><strong>Envolturas</strong></td><td>Piamadre, aracnoides y duramadre</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Los dos hemisferios</h3>
+      <p>El cerebro tiene un <strong>hemisferio derecho y uno izquierdo</strong>. Están <strong>separados</strong> en su parte superior, anterior y posterior por la <strong>cisura interhemisférica</strong>, y <strong>unidos</strong> en su parte media e inferior por las <strong>formaciones interhemisféricas</strong>:</p>
+      <ul>
+        <li><strong>Cuerpo calloso</strong>, la gran comisura entre ambos hemisferios.</li>
+        <li><strong>Trígono cerebral</strong>.</li>
+        <li><strong>Septum lucidum</strong>.</li>
+        <li><strong>Comisuras blancas anterior y posterior</strong>.</li>
+        <li><strong>Epífisis o glándula pineal</strong>.</li>
+        <li>La <strong>base del cerebro</strong>.</li>
+      </ul>
+
+      <p class="cita">Clase «El sistema nervioso», Dr. Gustavo Grilli.</p>
+    </section>
+
+    <!-- ============ 9 ============ -->
+    <section class="seccion s-fisiopatologia" id="nucleos">
+      <span class="seccion__pestana"><b>09</b> Anatomía funcional</span>
+      <h2 class="seccion__titulo">Sustancia gris, blanca y núcleos</h2>
+
+      <p>Cada hemisferio tiene cinco componentes, de afuera hacia adentro:</p>
+      <ol>
+        <li><strong>Sustancia gris cortical</strong> —la <strong>corteza o manto</strong>—, donde se ubican las <strong>áreas motoras, sensitivas y sensoriales</strong>.</li>
+        <li><strong>Sustancia blanca subcortical y periventricular</strong>, formada por las prolongaciones celulares: las <strong>fibras nerviosas</strong>.</li>
+        <li><strong>Núcleos grises centrales</strong>.</li>
+        <li><strong>Núcleos grises subtalámicos</strong>.</li>
+        <li><strong>Cavidades ventriculares</strong>: los ventrículos laterales y, en el centro, el III ventrículo.</li>
+      </ol>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 900 400" role="img" aria-label="Clasificación de los núcleos grises: centrales, que incluyen el tálamo y el cuerpo estriado con núcleo caudado, núcleo lenticular y antemuro, que forman parte del sistema extrapiramidal; y subtalámicos, que incluyen núcleo rojo, locus niger y núcleo subtalámico de Luys">
+          <rect x="20" y="176" width="150" height="50" rx="6" fill="var(--c)" fill-opacity="0.30" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="95" y="206" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Núcleos grises</text>
+
+          <rect x="220" y="110" width="150" height="44" rx="6" fill="var(--c)" fill-opacity="0.20" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="295" y="137" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Centrales</text>
+          <rect x="220" y="304" width="150" height="44" rx="6" fill="var(--c)" fill-opacity="0.20" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="295" y="331" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Subtalámicos</text>
+
+          <path d="M170 201 L195 201 L195 132 L220 132 M195 201 L195 326 L220 326" fill="none" stroke="currentColor" stroke-width="1.3"></path>
+
+          <rect x="420" y="26" width="170" height="44" rx="6" fill="var(--c)" fill-opacity="0.12" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="505" y="53" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Tálamo</text>
+          <text x="604" y="44" font-size="11" fill="currentColor">relevo de todas las vías</text>
+          <text x="604" y="59" font-size="11" fill="currentColor">ascendentes, salvo la olfatoria</text>
+
+          <rect x="420" y="146" width="170" height="44" rx="6" fill="var(--c)" fill-opacity="0.12" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="505" y="173" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Cuerpo estriado</text>
+
+          <path d="M370 132 L395 132 L395 48 L420 48 M395 132 L395 168 L420 168" fill="none" stroke="currentColor" stroke-width="1.3"></path>
+
+          <rect x="640" y="100" width="210" height="36" rx="6" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="745" y="123" text-anchor="middle" font-size="12" fill="currentColor">Núcleo caudado</text>
+          <rect x="640" y="146" width="210" height="44" rx="6" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="745" y="164" text-anchor="middle" font-size="12" fill="currentColor">Núcleo lenticular</text>
+          <text x="745" y="181" text-anchor="middle" font-size="11" fill="currentColor">putamen + globo pálido</text>
+          <rect x="640" y="200" width="210" height="36" rx="6" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="745" y="223" text-anchor="middle" font-size="12" fill="currentColor">Antemuro o claustro</text>
+
+          <path d="M590 168 L615 168 L615 118 L640 118 M615 168 L640 168 M615 168 L615 218 L640 218" fill="none" stroke="currentColor" stroke-width="1.3"></path>
+
+          <path d="M858 100 L868 100 L868 236 L858 236" fill="none" stroke="currentColor" stroke-width="1.3"></path>
+          <text x="884" y="168" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle" transform="rotate(-90 884 168)">Extrapiramidal</text>
+
+          <rect x="420" y="262" width="170" height="36" rx="6" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="505" y="285" text-anchor="middle" font-size="12" fill="currentColor">Núcleo rojo</text>
+          <rect x="420" y="308" width="170" height="36" rx="6" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="505" y="331" text-anchor="middle" font-size="12" fill="currentColor">Locus niger</text>
+          <rect x="420" y="354" width="170" height="36" rx="6" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="505" y="377" text-anchor="middle" font-size="12" fill="currentColor">Subtalámico de Luys</text>
+
+          <path d="M370 326 L395 326 L395 280 L420 280 M395 326 L420 326 M395 326 L395 372 L420 372" fill="none" stroke="currentColor" stroke-width="1.3"></path>
+        </svg>
+        <figcaption>El <strong>cuerpo estriado</strong> —caudado, lenticular y antemuro— integra el <strong>sistema extrapiramidal</strong>. El <strong>tálamo</strong> es la estación de relevo de todas las vías ascendentes, con una sola excepción: la <strong>olfatoria</strong>.</figcaption>
+      </figure>
+
+      <h3>Lo que agrega el corte horizontal</h3>
+      <p>En el corte horizontal del cerebro, la sustancia blanca que pasa entre estos núcleos es la <strong>cápsula interna</strong>, y su forma se lee por los núcleos que la limitan:</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Parte de la cápsula interna</th><th>Entre</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Brazo anterior</strong></td><td>Cabeza del <strong>núcleo caudado</strong> y núcleo lenticular</td></tr>
+            <tr><td><strong>Rodilla</strong></td><td>El ángulo que forman ambos brazos, abierto hacia afuera</td></tr>
+            <tr><td><strong>Brazo posterior</strong></td><td><strong>Tálamo</strong> y núcleo lenticular</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Por fuera del lenticular siguen, en orden, la cápsula externa, el <strong>antemuro</strong>, la cápsula extrema y la <strong>corteza de la ínsula</strong>. El <strong>brazo posterior</strong> concentra las fibras motoras que bajan de la corteza: por eso una lesión pequeña en ese punto puede dar una <strong>hemiplejía contralateral completa</strong>, mientras que en la corteza haría falta una lesión mucho más extensa.</p>
+      <p>Dos nombres que aparecen en la bibliografía: el caudado y el putamen, de estructura igual, forman el <strong>neoestriado</strong>; el globo pálido es el <strong>paleoestriado</strong>. El <strong>locus niger</strong> es dopaminérgico y proyecta al estriado: es la conexión entre la dopamina y el sistema extrapiramidal que menciona la clase, y su degeneración es la base de la enfermedad de Parkinson.</p>
+
+      <p class="cita">Clase «El sistema nervioso», Dr. Gustavo Grilli: corte horizontal del cerebro. Cápsula interna y estriado: Snell RS, <em>Neuroanatomía clínica</em>.</p>
+    </section>
+
+    <!-- ============ 10 ============ -->
+    <section class="seccion s-generalidades" id="cisuras">
+      <span class="seccion__pestana"><b>10</b> Anatomía</span>
+      <h2 class="seccion__titulo">Cisuras, surcos y circunvoluciones</h2>
+
+      <p>La clase pide repasar las cisuras, surcos y circunvoluciones de las <strong>tres caras</strong> del hemisferio. Las <strong>cisuras</strong> son los surcos profundos y constantes que separan lóbulos; los <strong>surcos</strong> menores dividen cada lóbulo en <strong>circunvoluciones</strong>. Este mapa es el que después se usa para ubicar las áreas de Brodmann.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 360" role="img" aria-label="Cara externa del hemisferio izquierdo con la cisura de Silvio, la cisura de Rolando y la cisura perpendicular externa, los cuatro lóbulos y las principales circunvoluciones">
+          <path d="M90 210 C70 120 180 45 360 40 C540 35 700 90 735 185 C755 245 720 290 660 300 L560 305 C480 330 380 335 300 318 C240 305 215 285 205 262 C170 268 110 260 90 210 Z" fill="var(--c)" fill-opacity="0.10" stroke="currentColor" stroke-width="1.6"></path>
+
+          <path d="M215 250 C300 236 400 216 480 188" fill="none" stroke="currentColor" stroke-width="2.6"></path>
+          <path d="M252 243 L222 232 M268 240 L274 210" fill="none" stroke="currentColor" stroke-width="2"></path>
+          <path d="M445 41 C432 95 405 150 388 198" fill="none" stroke="currentColor" stroke-width="2.6"></path>
+          <path d="M640 64 L656 104" fill="none" stroke="currentColor" stroke-width="2.6"></path>
+
+          <path d="M398 42 C384 95 362 150 348 205" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="4 3"></path>
+          <path d="M490 46 C476 98 452 150 438 186" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="4 3"></path>
+          <path d="M378 92 L215 100" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="4 3"></path>
+          <path d="M362 152 L180 165" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="4 3"></path>
+          <path d="M470 122 C530 128 590 140 640 150" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="4 3"></path>
+          <path d="M250 280 C350 266 470 248 560 226 C580 220 590 208 596 192" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="4 3"></path>
+          <path d="M270 305 C380 300 480 290 600 270" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="4 3"></path>
+
+          <text x="290" y="74" font-size="11.5" font-weight="700" fill="currentColor">F1</text>
+          <text x="272" y="134" font-size="11.5" font-weight="700" fill="currentColor">F2</text>
+          <text x="232" y="196" font-size="11.5" font-weight="700" fill="currentColor">F3</text>
+          <text x="398" y="120" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">FA</text>
+          <text x="441" y="120" font-size="11.5" font-weight="700" fill="currentColor" text-anchor="middle">PA</text>
+          <text x="560" y="104" font-size="11.5" font-weight="700" fill="currentColor">P1</text>
+          <text x="500" y="182" font-size="11.5" font-weight="700" fill="currentColor">SM</text>
+          <text x="604" y="178" font-size="11.5" font-weight="700" fill="currentColor">Ang</text>
+          <text x="370" y="248" font-size="11.5" font-weight="700" fill="currentColor">T1</text>
+          <text x="400" y="290" font-size="11.5" font-weight="700" fill="currentColor">T2</text>
+          <text x="440" y="318" font-size="11.5" font-weight="700" fill="currentColor">T3</text>
+
+          <text x="140" y="190" font-size="12" fill="currentColor" font-style="italic">frontal</text>
+          <text x="600" y="124" font-size="12" fill="currentColor" font-style="italic">parietal</text>
+          <text x="672" y="236" font-size="12" fill="currentColor" font-style="italic">occipital</text>
+          <text x="290" y="300" font-size="12" fill="currentColor" font-style="italic">temporal</text>
+
+          <line x1="445" y1="41" x2="470" y2="22" stroke="currentColor" stroke-width="0.8"></line>
+          <text x="474" y="20" font-size="11.5" font-weight="700" fill="currentColor">Cisura de Rolando</text>
+          <line x1="648" y1="70" x2="680" y2="46" stroke="currentColor" stroke-width="0.8"></line>
+          <text x="684" y="44" font-size="11.5" font-weight="700" fill="currentColor">Perpendicular externa</text>
+          <line x1="300" y1="236" x2="150" y2="320" stroke="currentColor" stroke-width="0.8"></line>
+          <text x="40" y="336" font-size="11.5" font-weight="700" fill="currentColor">Cisura de Silvio</text>
+        </svg>
+        <figcaption>Hemisferio izquierdo visto de costado, con el polo frontal a la izquierda. Trazo grueso: las tres <strong>cisuras</strong>; punteado: los <strong>surcos</strong>. <strong>F1, F2, F3</strong>: circunvoluciones frontales superior, media e inferior; <strong>FA</strong>: frontal ascendente; <strong>PA</strong>: parietal ascendente; <strong>P1</strong>: parietal superior; <strong>SM</strong>: supramarginal; <strong>Ang</strong>: angular; <strong>T1, T2, T3</strong>: temporales superior, media e inferior. Las dos ramas cortas de Silvio, anterior y ascendente, cortan a F3.</figcaption>
+      </figure>
+
+      <h3>Cara externa</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Lóbulo</th><th>Límites</th><th>Circunvoluciones</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Frontal</strong></td><td>Por delante de la <strong>cisura de Rolando</strong> y por encima de la <strong>de Silvio</strong></td><td><strong>Frontal ascendente</strong> (precentral), delante de Rolando. <strong>F1, F2 y F3</strong>, separadas por los surcos frontales superior e inferior. F3 queda dividida por las ramas anterior y ascendente de Silvio en <strong>porción orbitaria, triangular y opercular</strong></td></tr>
+            <tr><td><strong>Parietal</strong></td><td>Detrás de Rolando, por encima de Silvio y por delante de la <strong>perpendicular externa</strong></td><td><strong>Parietal ascendente</strong> (poscentral), detrás de Rolando. El <strong>surco interparietal</strong> separa el lobulillo parietal superior (<strong>P1</strong>) del inferior (<strong>P2</strong>), que tiene dos partes: la <strong>supramarginal</strong>, que rodea el extremo de Silvio, y la <strong>angular</strong>, que rodea el extremo del surco temporal superior</td></tr>
+            <tr><td><strong>Temporal</strong></td><td>Por debajo de Silvio</td><td><strong>T1, T2 y T3</strong>, separadas por los surcos temporales superior (o paralelo) e inferior. Escondidas en el piso de Silvio, sobre T1, están las <strong>circunvoluciones transversas de Heschl</strong></td></tr>
+            <tr><td><strong>Occipital</strong></td><td>Detrás de la perpendicular externa</td><td>Circunvoluciones occipitales <strong>O1, O2 y O3</strong></td></tr>
+            <tr><td><strong>Ínsula</strong></td><td>En el fondo de la cisura de Silvio</td><td>No se ve desde afuera: la cubren los <strong>opérculos</strong> frontal, parietal y temporal</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Cara interna</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Cisura</th><th>Qué separa</th><th>Circunvoluciones vecinas</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Callosomarginal</strong> (del cíngulo)</td><td>La <strong>circunvolución del cuerpo calloso</strong> (cíngulo), por debajo, de la frontal interna y el lobulillo paracentral, por encima</td><td><strong>Frontal interna</strong> (cara medial de F1) y <strong>lobulillo paracentral</strong>, que rodea el extremo superior de Rolando</td></tr>
+            <tr><td><strong>Perpendicular interna</strong> (parietooccipital)</td><td>El lóbulo parietal del occipital en la cara medial</td><td><strong>Precuña</strong> (lobulillo cuadrilátero), por delante, y <strong>cuña</strong>, por detrás</td></tr>
+            <tr><td><strong>Calcarina</strong></td><td>La <strong>cuña</strong>, por encima, de la <strong>circunvolución lingual</strong>, por debajo</td><td>En sus paredes está el <strong>área visual primaria</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>El <strong>lobulillo paracentral</strong> es la continuación medial de la frontal y la parietal ascendentes, y en él se representan el <strong>miembro inferior</strong> motor y sensitivo. Es un dato que se usa en clínica: una lesión de la cara medial del hemisferio afecta sobre todo la pierna contralateral.</p>
+
+      <h3>Cara inferior</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Porción</th><th>Surcos</th><th>Circunvoluciones</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Orbitaria</strong> (frontal), por delante de Silvio</td><td><strong>Surco olfatorio</strong>, donde apoyan el bulbo y la cintilla olfatoria; surco orbitario en forma de H</td><td><strong>Circunvolución recta</strong>, por dentro del surco olfatorio, y <strong>circunvoluciones orbitarias</strong>, por fuera</td></tr>
+            <tr><td><strong>Temporooccipital</strong>, por detrás de Silvio</td><td>Surco occipitotemporal y <strong>surco colateral</strong></td><td><strong>Occipitotemporal lateral</strong> o fusiforme (T4 en la nomenclatura clásica) y <strong>parahipocampal</strong> (T5), que termina adelante en el <strong>uncus</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «El sistema nervioso», Dr. Gustavo Grilli: cisuras de las tres caras. Surcos y circunvoluciones: Snell RS, <em>Neuroanatomía clínica</em>; Testut L, Latarjet A, <em>Anatomía humana</em>.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-d">
+      <span class="bloque__rotulo">Bloque D</span>
+      <span class="bloque__nombre">Áreas de Brodmann</span>
+    </h2>
+
+    <!-- ============ 11 ============ -->
+    <section class="seccion s-clinica" id="frontal">
+      <span class="seccion__pestana"><b>11</b> Correlación clínica</span>
+      <h2 class="seccion__titulo">Lóbulo frontal</h2>
+
+      <p>Brodmann dividió la corteza en áreas numeradas según su estructura celular. Para el clínico, cada número vale por dos cosas: <strong>qué función cumple</strong> y <strong>qué produce su lesión</strong>. Este mapa sirve para los cuatro lóbulos del bloque.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 360" role="img" aria-label="Cara externa del hemisferio izquierdo con las áreas de Brodmann clave: prefrontal 9 a 12 y 46, ocular frontal 8, premotora 6, motora 4, Broca 44 y 45, somatoestésica 3, 1 y 2, gustativa 43, asociación parietal 5 y 7, supramarginal 40, angular 39, auditivas 41 y 42, Wernicke 22, temporal 21, polo temporal 38, occipitotemporal 37, visual primaria 17 y visual secundaria 18 y 19">
+          <path d="M90 210 C70 120 180 45 360 40 C540 35 700 90 735 185 C755 245 720 290 660 300 L560 305 C480 330 380 335 300 318 C240 305 215 285 205 262 C170 268 110 260 90 210 Z" fill="none" stroke="currentColor" stroke-width="1.6"></path>
+          <path d="M215 250 C300 236 400 216 480 188" fill="none" stroke="currentColor" stroke-width="2.2"></path>
+          <path d="M445 41 C432 95 405 150 388 198" fill="none" stroke="currentColor" stroke-width="2.2"></path>
+          <path d="M640 64 L656 104" fill="none" stroke="currentColor" stroke-width="2.2"></path>
+
+          <rect x="110" y="138" width="84" height="26" rx="13" fill="var(--c)" fill-opacity="0.35" stroke="currentColor"></rect>
+          <text x="152" y="155" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">9·10·11·12</text>
+          <circle cx="232" cy="134" r="14" fill="var(--c)" fill-opacity="0.18" stroke="currentColor" stroke-dasharray="3 2"></circle>
+          <text x="232" y="138" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">46</text>
+          <circle cx="290" cy="96" r="14" fill="var(--c)" fill-opacity="0.35" stroke="currentColor"></circle>
+          <text x="290" y="100" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">8</text>
+          <circle cx="348" cy="86" r="14" fill="var(--c)" fill-opacity="0.35" stroke="currentColor"></circle>
+          <text x="348" y="90" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">6</text>
+          <circle cx="408" cy="94" r="14" fill="var(--c)" fill-opacity="0.35" stroke="currentColor"></circle>
+          <text x="408" y="98" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">4</text>
+          <rect x="236" y="200" width="56" height="26" rx="13" fill="var(--c)" fill-opacity="0.35" stroke="currentColor"></rect>
+          <text x="264" y="217" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">44·45</text>
+
+          <rect x="436" y="80" width="50" height="26" rx="13" fill="var(--c)" fill-opacity="0.22" stroke="currentColor"></rect>
+          <text x="461" y="97" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">3·1·2</text>
+          <circle cx="428" cy="176" r="14" fill="var(--c)" fill-opacity="0.22" stroke="currentColor"></circle>
+          <text x="428" y="180" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">43</text>
+          <rect x="528" y="84" width="44" height="26" rx="13" fill="var(--c)" fill-opacity="0.22" stroke="currentColor"></rect>
+          <text x="550" y="101" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">5·7</text>
+          <circle cx="508" cy="160" r="14" fill="var(--c)" fill-opacity="0.18" stroke="currentColor" stroke-dasharray="3 2"></circle>
+          <text x="508" y="164" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">40</text>
+          <circle cx="602" cy="178" r="14" fill="var(--c)" fill-opacity="0.18" stroke="currentColor" stroke-dasharray="3 2"></circle>
+          <text x="602" y="182" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">39</text>
+
+          <rect x="404" y="210" width="56" height="26" rx="13" fill="var(--c)" fill-opacity="0.28" stroke="currentColor"></rect>
+          <text x="432" y="227" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">41·42</text>
+          <circle cx="522" cy="234" r="14" fill="var(--c)" fill-opacity="0.28" stroke="currentColor"></circle>
+          <text x="522" y="238" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">22</text>
+          <circle cx="470" cy="290" r="14" fill="var(--c)" fill-opacity="0.28" stroke="currentColor"></circle>
+          <text x="470" y="294" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">21</text>
+          <circle cx="238" cy="276" r="14" fill="var(--c)" fill-opacity="0.18" stroke="currentColor" stroke-dasharray="3 2"></circle>
+          <text x="238" y="280" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">38</text>
+          <circle cx="610" cy="262" r="14" fill="var(--c)" fill-opacity="0.18" stroke="currentColor" stroke-dasharray="3 2"></circle>
+          <text x="610" y="266" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">37</text>
+
+          <rect x="642" y="158" width="56" height="26" rx="13" fill="var(--c)" fill-opacity="0.40" stroke="currentColor"></rect>
+          <text x="670" y="175" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">18·19</text>
+          <circle cx="716" cy="220" r="14" fill="var(--c)" fill-opacity="0.40" stroke="currentColor"></circle>
+          <text x="716" y="224" text-anchor="middle" font-size="11.5" font-weight="700" fill="currentColor">17</text>
+
+          <text x="40" y="340" font-size="11.5" fill="currentColor">Trazo lleno: áreas de la clase · Trazo punteado: áreas agregadas</text>
+        </svg>
+        <figcaption>Ubicación aproximada sobre la cara externa del hemisferio izquierdo. El <strong>17</strong> está sobre todo en la <strong>cara interna</strong>, en las paredes de la calcarina, y asoma apenas en el polo occipital. Las <strong>41 y 42</strong> están escondidas en el piso de Silvio. Las áreas olfatorias, en la cara medial del lóbulo temporal, no se ven en esta vista.</figcaption>
+      </figure>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Área</th><th>Brodmann</th><th>Ubicación y función</th><th>Lesión</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Motora primaria</strong></td><td><span class="dato">4</span></td><td>Área precentral: circunvolución frontal ascendente</td><td><strong>Paresia contralateral</strong></td></tr>
+            <tr><td><strong>Motora secundaria o premotora</strong></td><td><span class="dato">6</span></td><td>Por delante del área 4</td><td><strong>Dificultad para realizar movimientos</strong></td></tr>
+            <tr><td><strong>Ocular frontal</strong></td><td><span class="dato">8</span></td><td>Su estimulación produce <strong>movimiento conjugado de los ojos hacia el lado contrario</strong></td><td><strong>Desviación conjugada de la mirada hacia el lado lesionado</strong></td></tr>
+            <tr><td><strong>Broca</strong>: palabra articulada</td><td><span class="dato">44 y 45</span></td><td>3.ª circunvolución frontal, entre las ramas anterior y ascendente de Silvio</td><td>En el hemisferio dominante: <strong>afasia motora</strong></td></tr>
+            <tr><td><strong>Prefrontal</strong></td><td><span class="dato">9, 10, 11 y 12</span></td><td>Parte anterior e interna del lóbulo frontal</td><td><strong>Pérdida de la iniciativa, euforia, mala conducta social, desinhibición, hipersexualidad</strong></td></tr>
+            <tr><td><strong>Prefrontal dorsolateral</strong></td><td><span class="dato">46</span></td><td>Parte anterior de F2; <strong>funciones ejecutivas y memoria de trabajo</strong></td><td>Dificultad para planificar y sostener una tarea</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>Las áreas motoras y sensitivas trabajan con el lado contrario del cuerpo</strong>: la lesión del 4 o del 3-1-2 da el déficit en el hemicuerpo opuesto. El <strong>área 8</strong> sigue la misma lógica desde otro ángulo: cada área ocular frontal empuja los ojos hacia el lado contrario. Si se destruye una, gana la otra, y <strong>los ojos se desvían hacia el lado de la lesión</strong> —el paciente «mira su lesión» y no su hemiplejía—. Si en cambio el área está <strong>irritada</strong>, como en una crisis convulsiva, los ojos se desvían <strong>hacia el lado contrario</strong>.</p>
+      </div>
+
+      <p class="cita">Clase «El sistema nervioso», Dr. Gustavo Grilli. Área 46: Kandel ER y col., <em>Principios de neurociencia</em>.</p>
+    </section>
+
+    <!-- ============ 12 ============ -->
+    <section class="seccion s-clinica" id="parietal">
+      <span class="seccion__pestana"><b>12</b> Correlación clínica</span>
+      <h2 class="seccion__titulo">Lóbulo parietal</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Área</th><th>Brodmann</th><th>Ubicación y función</th><th>Lesión</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Somatoestésica primaria</strong></td><td><span class="dato">3, 1 y 2</span></td><td>Circunvolución parietal ascendente</td><td><strong>Alteraciones sensitivas contralaterales</strong></td></tr>
+            <tr><td><strong>Somatoestésica secundaria</strong></td><td>—</td><td>Labio superior del brazo posterior de Silvio; <strong>conexiones con el haz espinotalámico</strong></td><td>—</td></tr>
+            <tr><td><strong>Somatoestésica de asociación</strong></td><td><span class="dato">5 y 7</span></td><td>Circunvolución parietal superior</td><td><strong>Astereognosia</strong>: no reconoce los objetos por el tacto</td></tr>
+            <tr><td><strong>Gustativa</strong></td><td><span class="dato">43</span></td><td>Extremo inferior de la parietal ascendente, <strong>contigua a la ínsula</strong></td><td>—</td></tr>
+            <tr><td><strong>Supramarginal</strong></td><td><span class="dato">40</span></td><td>Lobulillo parietal inferior, alrededor del extremo de Silvio</td><td>En el hemisferio dominante se asocia a <strong>apraxia ideomotora</strong></td></tr>
+            <tr><td><strong>Angular</strong></td><td><span class="dato">39</span></td><td>Lobulillo parietal inferior, alrededor del extremo del surco temporal superior</td><td>En el hemisferio dominante: <strong>síndrome de Gerstmann</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Las dos áreas que agrega el mapa</h3>
+      <p>El <strong>síndrome de Gerstmann</strong> es la tétrada de <strong>agrafia, acalculia, agnosia digital y desorientación derecha-izquierda</strong>, y se vincula al <strong>lobulillo parietal inferior del hemisferio dominante</strong>, en especial la circunvolución angular. Las revisiones actuales advierten que la tétrada completa es rara y que los síntomas aparecen también con lesiones vecinas, pero la localización clásica sigue siendo esa. La lesión del lóbulo parietal del hemisferio <strong>no dominante</strong>, en cambio, da típicamente <strong>heminegligencia</strong>: el paciente ignora el hemiespacio contralateral.</p>
+
+      <h3>Las áreas olfatorias</h3>
+      <p>La clase incluye en esta diapositiva el <strong>área olfatoria primaria (29), en la región periamigdalina</strong>, y la <strong>secundaria (28), en el hipocampo</strong>. Hay dos aclaraciones:</p>
+      <ul>
+        <li>La corteza olfatoria <strong>no está en el lóbulo parietal</strong>. Está en la cara medial del lóbulo temporal, en el <strong>uncus</strong> y la porción anterior de la <strong>circunvolución parahipocampal</strong>.</li>
+        <li>En el mapa de Brodmann, el <strong>área 29 es la corteza retrosplenial</strong>, en el cíngulo posterior, y el <strong>28 es la corteza entorrinal</strong> de la parahipocampal. Para el examen de la cátedra, usá los números de la clase, pero sabé que la bibliografía los asigna distinto.</li>
+      </ul>
+
+      <p class="cita">Clase «El sistema nervioso», Dr. Gustavo Grilli. Según PubMed: Alare K y col., Neurocrit Care 2024;42(1):26-31 (<a href="https://doi.org/10.1007/s12028-024-02013-2">DOI</a>); Seghier ML, Cortex 2024;179:77-90 (<a href="https://doi.org/10.1016/j.cortex.2024.07.005">DOI</a>); Vogt BA y col., J Comp Neurol 2001;438(3):353-76 (<a href="https://doi.org/10.1002/cne.1320">DOI</a>).</p>
+    </section>
+
+    <!-- ============ 13 ============ -->
+    <section class="seccion s-clinica" id="occipital">
+      <span class="seccion__pestana"><b>13</b> Correlación clínica</span>
+      <h2 class="seccion__titulo">Lóbulo occipital</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Área</th><th>Brodmann</th><th>Ubicación y función</th><th>Lesión</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Visual primaria</strong></td><td><span class="dato">17</span></td><td>Paredes de la <strong>cisura calcarina</strong>. Recibe fibras de la <strong>mitad temporal de la retina del mismo lado</strong> y de la <strong>mitad nasal de la retina contralateral</strong></td><td><strong>Hemianopsia homónima</strong></td></tr>
+            <tr><td><strong>Visual secundaria</strong></td><td><span class="dato">18 y 19</span></td><td>Rodea al área primaria; <strong>reconoce lo que se ve</strong></td><td><strong>Pérdida de la capacidad de reconocer objetos</strong>: agnosia visual</td></tr>
+            <tr><td><strong>Occipitotemporal</strong></td><td><span class="dato">37</span></td><td>Unión occipitotemporal, incluida la circunvolución fusiforme; reconocimiento de rostros</td><td>Lesiones generalmente bilaterales: <strong>prosopagnosia</strong>, que es no reconocer caras conocidas</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>Por qué la hemianopsia es homónima y contralateral.</strong> La retina temporal del ojo derecho y la nasal del izquierdo miran las dos hacia el <strong>campo visual izquierdo</strong>, y ambas llegan al área 17 derecha. Cada corteza visual ve, entonces, el <strong>hemicampo opuesto de los dos ojos</strong>. Una lesión del 17 derecho da una <strong>hemianopsia homónima izquierda</strong>: es el «derecha o izquierda» de la clase, siempre del lado contrario a la lesión.</p>
+
+      <p class="cita">Clase «El sistema nervioso», Dr. Gustavo Grilli. Área 37: Kandel ER y col., <em>Principios de neurociencia</em>.</p>
+    </section>
+
+    <!-- ============ 14 ============ -->
+    <section class="seccion s-clinica" id="temporal">
+      <span class="seccion__pestana"><b>14</b> Correlación clínica</span>
+      <h2 class="seccion__titulo">Lóbulo temporal</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Área</th><th>Brodmann</th><th>Ubicación y función</th><th>Lesión</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Auditiva primaria</strong></td><td><span class="dato">41 y 42</span></td><td>Pared inferior de la cisura de Silvio: circunvoluciones de Heschl</td><td><strong>Pérdida leve y bilateral de la audición</strong></td></tr>
+            <tr><td><strong>Auditiva secundaria</strong></td><td><span class="dato">22</span></td><td>Por detrás de la anterior</td><td>No interpreta lo que oye: <strong>sordera verbal</strong></td></tr>
+            <tr><td><strong>Wernicke</strong></td><td><span class="dato">21 y 22</span>, posiblemente también 41 y 42</td><td>Hemisferio dominante. <strong>Comprensión de las palabras</strong>: decodificación auditiva</td><td><strong>Afasia fluente</strong>, de comprensión</td></tr>
+            <tr><td><strong>Polo temporal</strong></td><td><span class="dato">38</span></td><td>Extremo anterior del lóbulo; área de asociación vinculada al sistema límbico</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La lesión unilateral de la corteza auditiva primaria da <strong>poca hipoacusia y bilateral</strong> porque cada oído envía información a las <strong>dos</strong> cortezas auditivas. Con un solo lado sano, la audición se conserva casi entera.</p>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p><strong>La diapositiva del lóbulo temporal dice que la lesión del área de Wernicke da «afasia no fluente». Es un error.</strong> La afasia de Wernicke es <strong>fluente</strong>: el paciente habla con fluidez, pero no comprende y lo que dice tiene poco sentido. La <strong>no fluente</strong> es la de <strong>Broca</strong>, que la misma clase llama «afasia motora».</p>
+      </div>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Rasgo</th><th>Afasia de Broca</th><th>Afasia de Wernicke</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Áreas</strong></td><td>44 y 45, frontal</td><td>21 y 22, temporal</td></tr>
+            <tr><td><strong>Fluencia</strong></td><td><strong>No fluente</strong>: habla escasa y con esfuerzo</td><td><strong>Fluente</strong>: habla abundante, con palabras cambiadas o inventadas</td></tr>
+            <tr><td><strong>Comprensión</strong></td><td><strong>Conservada</strong></td><td><strong>Alterada</strong></td></tr>
+            <tr><td><strong>Otro nombre</strong></td><td>Motora, de expresión</td><td>Sensitiva, de comprensión</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Clase «El sistema nervioso», Dr. Gustavo Grilli. Fluencia en la afasia de Wernicke: Harrison, <em>Principios de Medicina Interna</em>, capítulo de afasia; Kandel ER y col., <em>Principios de neurociencia</em>.</p>
+    </section>
+
+    <!-- ============ Repaso ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>¿Cuáles son los 4 tipos de neuroglía y qué hace cada uno?</summary>
+          <div class="fc__r"><strong>Astrocitos</strong>: sostén, barrera hematoencefálica, cicatriz glial. <strong>Oligodendrocitos</strong>: mielina del SNC. <strong>Microglía</strong>: defensa y fagocitosis. <strong>Epéndimo</strong>: reviste los ventrículos y participa del LCR. Ninguna es excitable.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Quién forma la mielina en el sistema nervioso central y quién en el periférico?</summary>
+          <div class="fc__r"><strong>Central</strong>: el <strong>oligodendrocito</strong>. <strong>Periférico</strong>: la <strong>célula de Schwann</strong>.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Aferente y eferente: dirección y naturaleza.</summary>
+          <div class="fc__r"><strong>Aferente</strong>: centrípeto y sensitivo. <strong>Eferente</strong>: centrífugo y motor.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Ordená el sistema nervioso central en sentido cráneo-caudal.</summary>
+          <div class="fc__r"><strong>Cerebro → cerebelo → mesencéfalo → protuberancia → bulbo → médula espinal.</strong> El cerebelo se une al tronco por los pedúnculos cerebelosos superior, medio e inferior.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Cómo se ordenan las meninges y sus espacios de afuera hacia adentro?</summary>
+          <div class="fc__r">Espacio <strong>extradural</strong> → <strong>duramadre</strong> → espacio <strong>subdural</strong> → <strong>aracnoides</strong> → espacio <strong>subaracnoideo</strong> → <strong>piamadre</strong>.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué cavidad ventricular corresponde a cada vesícula secundaria?</summary>
+          <div class="fc__r"><strong>Telencéfalo</strong>: ventrículos laterales. <strong>Diencéfalo</strong>: III ventrículo. <strong>Mesencéfalo</strong>: acueducto de Silvio. <strong>Metencéfalo y mielencéfalo</strong>: IV ventrículo.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué deriva del metencéfalo y qué del diencéfalo?</summary>
+          <div class="fc__r"><strong>Metencéfalo</strong>: puente y cerebelo. <strong>Diencéfalo</strong>: tálamo e hipotálamo.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Por qué el potencial de reposo de la neurona es −70 mV y no −90?</summary>
+          <div class="fc__r">Porque la membrana es <strong>mucho más permeable al K<sup>+</sup></strong> —cuyo equilibrio es −90 mV— pero <strong>algo permeable al Na<sup>+</sup></strong> —equilibrio +66 mV—. El resultado queda cerca del K<sup>+</sup>, en <strong>−70 mV</strong>.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué ion explica la despolarización y cuál la repolarización?</summary>
+          <div class="fc__r"><strong>Despolarización</strong>: entrada de <strong>Na<sup>+</sup></strong>, que se acelera al llegar al umbral. <strong>Repolarización</strong>: salida de <strong>K<sup>+</sup></strong>. En el pico se cierran los canales de Na<sup>+</sup>.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué potencial postsináptico genera un neurotransmisor excitatorio y cuál uno inhibitorio? Un ejemplo de cada uno.</summary>
+          <div class="fc__r"><strong>Excitatorio</strong>: despolarización, PPS E (acetilcolina, glutamato). <strong>Inhibitorio</strong>: hiperpolarización, PPS I (GABA).</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Dónde actúan la acetilcolina, la noradrenalina y la dopamina?</summary>
+          <div class="fc__r"><strong>Acetilcolina</strong>: placa neuromuscular, parasimpático y sinapsis ganglionares del simpático. <strong>Noradrenalina</strong>: sinapsis periféricas del simpático. <strong>Dopamina</strong>: sistema extrapiramidal.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Medidas, peso y ubicación del cerebro.</summary>
+          <div class="fc__r"><strong>16 × 14 × 12 cm</strong> (anteroposterior, transverso y vertical), <strong>unos 1400 g</strong>. Ocupa las <strong>fosas anterior y media</strong>; la <strong>tienda del cerebelo</strong> lo separa de la fosa posterior.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué forma el cuerpo estriado y a qué sistema pertenece?</summary>
+          <div class="fc__r"><strong>Núcleo caudado + núcleo lenticular (putamen y globo pálido) + antemuro</strong>. Integra el <strong>sistema extrapiramidal</strong>.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué vía ascendente no hace relevo en el tálamo?</summary>
+          <div class="fc__r">La <strong>olfatoria</strong>. Todas las demás pasan por el tálamo.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Entre qué núcleos pasa el brazo posterior de la cápsula interna y por qué importa?</summary>
+          <div class="fc__r">Entre el <strong>tálamo</strong> y el <strong>núcleo lenticular</strong>. Concentra las fibras motoras: una lesión pequeña ahí puede dar una <strong>hemiplejía contralateral completa</strong>.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>¿Qué separan las cisuras de Rolando, Silvio y perpendicular externa?</summary>
+          <div class="fc__r"><strong>Rolando</strong>: frontal de parietal. <strong>Silvio</strong>: frontal y parietal, por arriba, del temporal, por abajo. <strong>Perpendicular externa</strong>: parietal de occipital.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>En la cara interna, ¿qué hay por encima y por debajo de la calcarina?</summary>
+          <div class="fc__r">Por encima, la <strong>cuña</strong>; por debajo, la <strong>circunvolución lingual</strong>. En sus paredes está el <strong>área 17</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué produce la lesión del área 8 y qué la de una crisis que la irrita?</summary>
+          <div class="fc__r"><strong>Lesión destructiva</strong>: desviación conjugada de la mirada <strong>hacia el lado lesionado</strong>. <strong>Irritación</strong> (crisis): desviación <strong>hacia el lado contrario</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Dónde está el área de Broca y qué da su lesión?</summary>
+          <div class="fc__r"><strong>Áreas 44 y 45</strong>, en la 3.ª circunvolución frontal, entre las ramas anterior y ascendente de Silvio. En el hemisferio dominante: <strong>afasia motora, no fluente</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Lesión prefrontal (9 a 12): ¿qué se ve?</summary>
+          <div class="fc__r"><strong>Pérdida de la iniciativa, euforia, mala conducta social, desinhibición e hipersexualidad.</strong></div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué es la astereognosia y qué área se lesiona?</summary>
+          <div class="fc__r">No reconocer los objetos por el tacto. <strong>Áreas 5 y 7</strong>: somatoestésica de asociación, en la parietal superior.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Qué es el síndrome de Gerstmann y dónde se localiza?</summary>
+          <div class="fc__r"><strong>Agrafia, acalculia, agnosia digital y desorientación derecha-izquierda.</strong> Lobulillo parietal inferior del hemisferio dominante, en especial la <strong>circunvolución angular (39)</strong>.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Lesión del área 17 derecha: ¿qué defecto de campo da y por qué?</summary>
+          <div class="fc__r"><strong>Hemianopsia homónima izquierda.</strong> El área 17 derecha recibe la retina temporal derecha y la nasal izquierda, que miran ambas el campo visual izquierdo.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>¿Por qué la lesión del área auditiva primaria da una pérdida leve y bilateral?</summary>
+          <div class="fc__r">Porque <strong>cada oído proyecta a las dos cortezas auditivas</strong>; con un lado sano, la audición se conserva casi entera.</div>
+        </details>
+
+        <details class="fc s-clinica">
+          <summary>Afasia de Wernicke: áreas, fluencia y comprensión.</summary>
+          <div class="fc__r"><strong>Áreas 21 y 22</strong> del hemisferio dominante. <strong>Fluente</strong>, con <strong>comprensión alterada</strong>. La diapositiva que dice «no fluente» está equivocada.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ Ficha Relámpago ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Organización en tres líneas</dt>
+        <dd><strong>Neuronas</strong> (dendritas reciben, axón conduce) y <strong>glía</strong> no excitable: astrocitos, oligodendrocitos, microglía y epéndimo. <strong>SNC</strong>: cerebro, cerebelo, mesencéfalo, protuberancia, bulbo y médula, envueltos por <strong>dura, aracnoides y piamadre</strong>. <strong>Vesículas</strong>: telencéfalo con ventrículos laterales, diencéfalo con el III, mesencéfalo con el acueducto, y metencéfalo y mielencéfalo con el IV.</dd>
+
+        <dt class="r-gold">Fisiología esencial</dt>
+        <dd><strong>Reposo −70 mV</strong>, cerca del equilibrio del K<sup>+</sup> (−90). <strong>Potencial de acción</strong>: el Na<sup>+</sup> entra y despolariza; en el pico se cierran sus canales; el K<sup>+</sup> sale y repolariza; hay una breve hiperpolarización. <strong>Acetilcolina</strong>: placa motora y ganglios. <strong>Noradrenalina</strong>: simpático periférico. <strong>Dopamina</strong>: extrapiramidal. <strong>GABA</strong>: inhibe.</dd>
+
+        <dt class="r-tto">Números de Brodmann obligados</dt>
+        <dd><strong>4</strong> motora · <strong>6</strong> premotora · <strong>8</strong> ocular frontal · <strong>44-45</strong> Broca · <strong>9-12</strong> prefrontal · <strong>3-1-2</strong> sensitiva · <strong>5-7</strong> asociación (astereognosia) · <strong>43</strong> gustativa · <strong>39</strong> angular (Gerstmann) · <strong>17</strong> visual primaria · <strong>18-19</strong> visual secundaria · <strong>41-42</strong> auditiva primaria · <strong>22</strong> auditiva secundaria · <strong>21-22</strong> Wernicke.</dd>
+
+        <dt class="r-alerta">Trampas de examen</dt>
+        <dd><strong>Wernicke es fluente</strong>; la no fluente es Broca, aunque la diapositiva diga lo contrario. La lesión motora o sensitiva da el déficit <strong>contralateral</strong>. En la lesión destructiva del <strong>área 8</strong>, el paciente <strong>mira su lesión</strong>; en la crisis, mira al lado contrario. El área 17 da <strong>hemianopsia homónima contralateral</strong>. El <strong>tálamo</strong> releva todo menos la vía olfatoria.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir de la clase «El sistema nervioso» del Dr. Gustavo Grilli (Neurología). Ampliaciones de los bloques de glía, cerebro y áreas de Brodmann tomadas de Snell, <em>Neuroanatomía clínica</em>; Kandel y col., <em>Principios de neurociencia</em>; Testut y Latarjet, <em>Anatomía humana</em>; y de los artículos de PubMed citados en la sección del lóbulo parietal. Material de estudio: no reemplaza el criterio clínico.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+
+  // ---- Tema claro / oscuro ----
+  // Sin eleccion estampada manda el sistema; el boton la estampa y la guarda.
+  var raiz = document.documentElement;
+  var boton = document.getElementById('tema');
+
+  function temaActual(){
+    var estampado = raiz.getAttribute('data-theme');
+    if (estampado) return estampado;
+    return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+
+  if (boton){
+    var rotular = function(){
+      var actual = temaActual();
+      boton.setAttribute('aria-pressed', actual === 'dark' ? 'true' : 'false');
+      boton.setAttribute('aria-label', actual === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+    };
+    boton.addEventListener('click', function(){
+      var nuevo = temaActual() === 'dark' ? 'light' : 'dark';
+      raiz.setAttribute('data-theme', nuevo);
+      try { localStorage.setItem('wordmed-tema', nuevo); } catch (e) { /* sin persistencia */ }
+      rotular();
+    });
+    rotular();
+  }
+
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link, .ir-link'));
+
+  // Devuelve TODOS los enlaces al ancla: la misma seccion figura en el indice
+  // lateral y en el compacto, y los dos tienen que encenderse juntos.
+  function porMeta(hash){
+    return enlaces.filter(function(l){ return l.getAttribute('href') === '#' + hash; });
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var activos = porMeta(e.target.id);
+        if (!activos.length) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          activos.forEach(function(l){ l.setAttribute('aria-current', 'true'); });
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>

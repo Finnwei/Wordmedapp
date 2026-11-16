@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<script>
+(function(){
+  var enApp = typeof window.WordmedApp !== "undefined";
+  if (!enApp) {
+    /* En la web el cuadernillo se maqueta al ancho del dispositivo. */
+    var m = document.createElement("meta");
+    m.name = "viewport";
+    m.content = "width=device-width, initial-scale=1";
+    document.head.appendChild(m);
+    return;
+  }
+  /* En la app no se emite viewport: el WebView maqueta a su ancho por
+     omision y lo encoge para que entre, igual que al abrir el archivo a
+     mano. Sacar el meta despues de parsearlo no reencuadra nada, por eso
+     directamente no se emite. */
+  var s = document.createElement("style");
+  s.textContent = ".tema{display:none !important}";
+  document.head.appendChild(s);
+})();
+</script>
+<title>Embarazo Cronológicamente Prolongado</title>
+<link rel="stylesheet" href="../../fuentes/fuentes.css">
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-bloque:1.95rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+
+  /* Que la barra de desplazamiento y los controles nativos acompanen al tema */
+  color-scheme: light dark;
+}
+
+/* Eleccion explicita de claro: solo hace falta para el color-scheme, los
+   tokens claros ya son la base sin estampar. */
+:root[data-theme="light"]{ color-scheme: light; }
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* Interruptor de tema claro / oscuro.
+   El estampado `data-theme` en la raíz ya lo respetan los bloques de tokens de
+   arriba; este botón sólo lo pone y lo guarda. Sin elección estampada mandan
+   las preferencias del sistema, que es el comportamiento por defecto. */
+.tema{
+  position:fixed; top:.7rem; right:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.tema:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.tema__icono{ width:1.15rem; height:1.15rem; display:block; }
+
+/* Se muestra el icono del tema al que se va a cambiar, no el actual.
+   Mismo escalonado que los tokens: base clara · sistema oscuro · elección explícita. */
+.tema__sol{ display:none; }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .tema__sol{ display:block; }
+  :root:not([data-theme="light"]) .tema__luna{ display:none; }
+}
+:root[data-theme="dark"] .tema__sol{ display:block; }
+:root[data-theme="dark"] .tema__luna{ display:none; }
+:root[data-theme="light"] .tema__sol{ display:none; }
+:root[data-theme="light"] .tema__luna{ display:block; }
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índices ---------- */
+/* Dos piezas complementarias y deliberadamente redundantes:
+   · .indice        — barra lateral fija, sólo en pantalla ancha, navegación permanente.
+   · .indice-rapido — tarjeta compacta al principio del cuerpo, visible en TODO ancho.
+   La lateral desaparece por debajo de 64rem, que es justo el ancho del panel de
+   Artifacts y del celular; sin la compacta el cuadernillo publicado se queda sin
+   índice. Las dos apuntan a los mismos anclajes y se resaltan juntas al desplazar. */
+
+/* 6.1 · Barra lateral */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+/* Rótulo de bloque intercalado en la lista lateral: no es un enlace, sólo
+   separa grupos de secciones para que 30 entradas no sean una tira plana. */
+.indice__bloque{
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+  margin:.9rem 0 .2rem; padding:0 .55rem;
+}
+.indice__bloque:first-child{ margin-top:0; }
+
+/* 6.2 · Índice compacto (va después de la portada, dentro del cuerpo) */
+.indice-rapido{
+  background:var(--hoja-hund);
+  border:1px solid var(--linea);
+  border-radius:var(--radio);
+  padding:1.1rem 1.2rem 1.2rem;
+}
+.indice-rapido__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .85rem;
+}
+/* auto-fit: una columna en el panel angosto, dos o tres en pantalla ancha */
+.indice-rapido__bloques{
+  list-style:none; margin:0; padding:0;
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(15rem, 1fr));
+  gap:1rem 2rem; align-items:start;
+}
+.ir-bloque{
+  display:block; margin-bottom:.4rem;
+  font-family:var(--f-titulo); font-size:.98rem; font-weight:700; line-height:1.3;
+  color:var(--tinta); text-decoration:none;
+  padding-bottom:.3rem; border-bottom:1px solid var(--linea-fuerte);
+}
+.ir-bloque:hover{ color:var(--cli-t); }
+.ir-secciones{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.05rem; }
+.ir-link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.55rem 1fr; align-items:baseline; gap:.4rem;
+  padding:.2rem .35rem; border-radius:2px;
+  font-size:.86rem; line-height:1.4; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.ir-link > b{
+  font-family:var(--f-dato); font-size:.76rem; font-weight:700;
+  font-variant-numeric:tabular-nums; color:var(--ct); opacity:.85;
+}
+.ir-link:hover{ background:var(--hoja); color:var(--tinta); }
+.ir-link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Título de bloque y ficha de sección ---------- */
+
+/* Anuncia un grupo de secciones. Neutro en color a propósito: los siete colores
+   tienen significado clínico fijo y un bloque agrupa secciones de varios. La
+   regla de abajo lleva el degradado completo de la paleta, igual que la pestaña
+   de repaso y la cabecera de la ficha relámpago.
+   Sin <svg> adentro: el exportador a Word aparea los diagramas con las figuras
+   por contador posicional sobre el HTML crudo (ver exportar_docx.py). */
+.bloque{
+  margin:1.4rem 0 0; padding:0;
+  text-align:center; scroll-margin-top:2.5rem;
+  display:flex; flex-direction:column; align-items:center; gap:.3rem;
+  font-weight:400;
+}
+.bloque:first-child{ margin-top:0; }
+.bloque__rotulo{
+  font-family:var(--f-texto);
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+}
+.bloque__nombre{
+  font-family:var(--f-titulo); font-size:var(--t-bloque); font-weight:700; line-height:1.15;
+  letter-spacing:-.01em; color:var(--tinta); text-wrap:balance; max-width:32ch;
+}
+.bloque::after{
+  content:""; width:7rem; height:2.5px; margin-top:.5rem; border-radius:2px;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+}
+
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.5rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-column:1; grid-row:1; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+/* El icono ocupa la columna 1 y NADA MAS. Todo el resto del contenido se
+   apila en la columna 2, una fila por elemento, sin importar cuantos
+   parrafos haya.
+
+   Sin esta regla la caja solo funciona con un unico <p>: a partir del
+   segundo, la autocolocacion del grid empieza a repartir contenido en la
+   columna del icono, que es `auto` y por lo tanto se ensancha hasta abarcar
+   el parrafo que le toco. La columna `1fr` queda entonces reducida a una
+   tira angosta, el texto se parte en dos columnas desbalanceadas y la caja
+   crece hasta volverse ilegible. */
+.importante > :not(.importante__icono){ grid-column:2; }
+.importante__titulo{
+  grid-row:1;
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante ul, .importante ol{ margin:0; padding-left:1.15rem; }
+.importante li + li{ margin-top:.3rem; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso, .tema{ display:none !important; }
+  /* La lateral no se imprime, pero la compacta sí: en papel es la tabla de
+     contenidos del cuadernillo. */
+  .indice-rapido{ display:block; break-inside:avoid; page-break-inside:avoid; margin-bottom:1.2rem; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .bloque{
+    margin:1.6rem 0 1rem;
+    break-after:avoid; page-break-after:avoid;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+<style>
+/* Fuentes de la capa de contenido. Va después del estilo del
+   cuadernillo para pisar las de Windows, que no se pueden
+   redistribuir y no existen en Android. */
+:root{
+  --f-titulo:'Spectral',Georgia,'Times New Roman',serif;
+  --f-texto:'Open Sans',system-ui,-apple-system,sans-serif;
+  --f-dato:'Cascadia Mono','Cascadia Code',ui-monospace,Consolas,monospace;
+}
+/* Botón de volver, espejo del de tema que ya trae el cuadernillo. */
+.volver{
+  position:fixed; top:.7rem; left:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.volver:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.volver__icono{ width:1.15rem; height:1.15rem; display:block; }
+</style>
+</head>
+<body data-clave="obstetricia/15-embarazo-prolongado">
+<script>
+/* Aplica el tema guardado antes de pintar. Va aca arriba a proposito: si
+   esperara al script del final, el documento parpadearia en el tema del
+   sistema antes de corregirse. */
+(function(){
+  try {
+    var guardado = localStorage.getItem('wordmed-tema');
+    if (guardado === 'dark' || guardado === 'light') {
+      document.documentElement.setAttribute('data-theme', guardado);
+    }
+  } catch (e) { /* almacenamiento bloqueado: manda el sistema */ }
+})();
+</script>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<button class="tema" id="tema" type="button" aria-pressed="false" aria-label="Cambiar a modo oscuro">
+  <svg class="tema__icono tema__sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.2"></circle>
+    <path d="M12 2.6v2.1M12 19.3v2.1M5.1 5.1l1.5 1.5M17.4 17.4l1.5 1.5M2.6 12h2.1M19.3 12h2.1M5.1 18.9l1.5-1.5M17.4 6.6l1.5-1.5"></path>
+  </svg>
+  <svg class="tema__icono tema__luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20.4 14.2A8.6 8.6 0 0 1 9.8 3.6a8.6 8.6 0 1 0 10.6 10.6z"></path>
+  </svg>
+</button>
+
+<div class="marco">
+
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li class="indice__bloque">A · Qué es</li>
+      <li><a class="indice__link i-generalidades"  href="#definicion">Definición y frecuencia</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#datacion">Causas y datación</a></li>
+
+      <li class="indice__bloque">B · Riesgos</li>
+      <li><a class="indice__link i-clinica"        href="#riesgo-fetal">Feto y recién nacido</a></li>
+      <li><a class="indice__link i-clinica"        href="#riesgo-materno">Madre</a></li>
+
+      <li class="indice__bloque">C · Control y conducta</li>
+      <li><a class="indice__link i-diagnostico"    href="#control">Control fetal</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#cuando">Cuándo inducir</a></li>
+      <li><a class="indice__link i-diagnostico"    href="#bishop">Puntaje de Bishop</a></li>
+      <li><a class="indice__link i-tratamiento"    href="#induccion">Maduración e inducción</a></li>
+
+      <li class="indice__bloque">Cierre</li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Obstetricia · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Embarazo Cronológicamente Prolongado</h1>
+      <p class="portada__bajada">Qué es un embarazo prolongado, por qué una buena datación cambia el diagnóstico, qué riesgos trae para el feto y la madre, cómo se controla, cuándo se induce y cómo se madura el cuello con el puntaje de Bishop como guía.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">8 secciones</span>
+        <span class="etiqueta s-diagnostico">Datación con ecografía precoz</span>
+        <span class="etiqueta s-tratamiento">Inducción desde las 41 semanas</span>
+        <span class="etiqueta s-tratamiento">Métodos de maduración</span>
+      </div>
+    </header>
+
+    <nav class="indice-rapido" aria-label="Contenido del cuadernillo">
+      <p class="indice-rapido__rotulo">Contenido</p>
+      <ol class="indice-rapido__bloques">
+        <li>
+          <a class="ir-bloque" href="#bloque-a">Bloque A · Qué es</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades" href="#definicion"><b>01</b> Definición y frecuencia</a></li>
+            <li><a class="ir-link i-diagnostico"   href="#datacion"><b>02</b> Por qué pasa y cómo se fecha el embarazo</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-b">Bloque B · Riesgos</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-clinica" href="#riesgo-fetal"><b>03</b> Riesgos para el feto y el recién nacido</a></li>
+            <li><a class="ir-link i-clinica" href="#riesgo-materno"><b>04</b> Riesgos para la madre</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-c">Bloque C · Control y conducta</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-diagnostico" href="#control"><b>05</b> Control del bienestar fetal</a></li>
+            <li><a class="ir-link i-tratamiento" href="#cuando"><b>06</b> Cuándo inducir y qué hacer si se espera</a></li>
+            <li><a class="ir-link i-diagnostico" href="#bishop"><b>07</b> El puntaje de Bishop</a></li>
+            <li><a class="ir-link i-tratamiento" href="#induccion"><b>08</b> Maduración cervical e inducción</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#repaso">Cierre</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-clinica"     href="#repaso">Repaso activo</a></li>
+            <li><a class="ir-link i-importantes" href="#relampago">Ficha de Repaso Relámpago</a></li>
+          </ul>
+        </li>
+      </ol>
+    </nav>
+
+    <h2 class="bloque" id="bloque-a">
+      <span class="bloque__rotulo">Bloque A</span>
+      <span class="bloque__nombre">Qué es</span>
+    </h2>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="definicion">
+      <span class="seccion__pestana"><b>01</b> Generalidades</span>
+      <h2 class="seccion__titulo">Definición y frecuencia</h2>
+
+      <p>Es el embarazo que <strong>sobrepasa los 293 días</strong>, es decir, las <strong>41 semanas y 6 días</strong>, contados desde el primer día de la última menstruación. En otras palabras: es prolongado desde las <span class="dato">42+0 semanas</span> (294 días). La clase lo escribe como «41,6 semanas», que se lee como 41 semanas y 6 días, no como un decimal.</p>
+
+      <p>Según PubMed, el ACOG y la Sociedad de Medicina Materno-Fetal dividen el término así (Félix y col., Healthcare 2026; DOI <a href="https://doi.org/10.3390/healthcare14152242">10.3390/healthcare14152242</a>):</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Categoría</th><th>Semanas</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Término precoz</strong></td><td><span class="dato">37+0</span> a <span class="dato">38+6</span></td></tr>
+            <tr><td><strong>Término</strong></td><td><span class="dato">39+0</span> a <span class="dato">40+6</span></td></tr>
+            <tr><td><strong>Término tardío</strong></td><td><span class="dato">41+0</span> a <span class="dato">41+6</span></td></tr>
+            <tr><td><strong>Prolongado o postérmino</strong></td><td><span class="dato">42+0</span> o más</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Frecuencia según cómo se fechó el embarazo</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Método</th><th>Frecuencia</th></tr></thead>
+          <tbody>
+            <tr><td>Solo fecha de última menstruación</td><td><span class="dato">7,5 %</span></td></tr>
+            <tr><td>Ecografía precoz</td><td><span class="dato">2,5 %</span></td></tr>
+            <tr><td>Las dos</td><td><span class="dato">1 %</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La diferencia muestra que muchos embarazos «prolongados» por fecha de menstruación son en realidad <strong>errores de fecha</strong>. En los datos de NICE, solo el <span class="dato">0,9 %</span> de los trabajos de parto espontáneos empezó a las 42+0 o después, en embarazos fechados por ecografía.</p>
+
+      <p class="cita">Clase «Embarazo cronológicamente prolongado», Dr. Cristián Fornara, Cátedra de Obstetricia, Universidad de Mendoza: definición y frecuencia. Proporción de partos espontáneos por semana según <a href="https://www.nice.org.uk/guidance/ng207/chapter/Recommendations">NICE NG207, Inducing labour (2021)</a>.</p>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-diagnostico" id="datacion">
+      <span class="seccion__pestana"><b>02</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">Por qué pasa y cómo se fecha el embarazo</h2>
+
+      <h3>Etiología</h3>
+      <ul>
+        <li>En la mayoría de los casos es <strong>desconocida</strong>.</li>
+        <li>La teoría más aceptada es un <strong>fallo en los mecanismos que inician el trabajo de parto</strong>.</li>
+        <li>Un <strong>error en la datación</strong> de la edad gestacional.</li>
+        <li>La <strong>edad materna</strong>: la clase señala a las menores de 35 años. Según PubMed, en 4,7 millones de nacimientos en Japón, el embarazo postérmino se asoció a la primiparidad y, ajustando por los otros factores, a la edad materna mayor (Okui y col., J Prev Med Public Health 2024; DOI <a href="https://doi.org/10.3961/jpmph.24.355">10.3961/jpmph.24.355</a>). La relación con la edad no es clara.</li>
+      </ul>
+
+      <h3>Diagnóstico</h3>
+      <p>Se hace con la <strong>fecha de última menstruación</strong> y la <strong>ecografía precoz</strong>. El problema no es reconocerlo, sino tener una fecha confiable.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Regla</th><th>Qué dice</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Cuándo hacer la ecografía</strong></td><td>NICE ofrece una ecografía entre las <span class="dato">11+2 y 14+1 semanas</span> para determinar la edad gestacional</td></tr>
+            <tr><td><strong>Cuándo fijar la fecha</strong></td><td>El ACOG pide fijar la fecha probable de parto en cuanto se tienen la fecha de última menstruación, la primera ecografía confiable o las dos, y documentarla. Los cambios posteriores tienen que ser <strong>raros</strong></td></tr>
+            <tr><td><strong>Datación subóptima</strong></td><td>Para el ACOG, un embarazo sin una ecografía que confirme o corrija la fecha <strong>antes de las 22+0 semanas</strong> está mal fechado</td></tr>
+            <tr><td><strong>Cuándo manda la ecografía</strong></td><td>Según PubMed, se usa la fecha de menstruación salvo que difiera de la ecografía en <strong>más de 5 días antes de las 9+0</strong> semanas o <strong>más de 7 días entre las 9+0 y 14+0</strong>. Entonces se usa la longitud cráneo-caudal (Cowell y col., Environ Int 2023, que aplica la Committee Opinion 700 del ACOG; DOI <a href="https://doi.org/10.1016/j.envint.2023.107922">10.1016/j.envint.2023.107922</a>)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Ante un embarazo que parece prolongado, lo primero es <strong>confirmar la edad gestacional</strong> con la ecografía más temprana disponible. La fecha de menstruación sola lo sobrediagnostica.</p>
+      </div>
+
+      <p class="cita">Clase del Dr. Fornara: etiología y diagnóstico. Ecografía de datación según <a href="https://www.nice.org.uk/guidance/ng201/chapter/Recommendations">NICE NG201, Antenatal care (2021)</a>. Reglas de datación según el ACOG, <a href="https://doi.org/10.1097/AOG.0000000000002046">Committee Opinion n.º 700 (2017, reafirmada en 2025)</a>, y según PubMed (DOI indicados).</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-b">
+      <span class="bloque__rotulo">Bloque B</span>
+      <span class="bloque__nombre">Riesgos</span>
+    </h2>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-clinica" id="riesgo-fetal">
+      <span class="seccion__pestana"><b>03</b> Pronóstico</span>
+      <h2 class="seccion__titulo">Riesgos para el feto y el recién nacido</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Riesgo</th><th>Qué produce</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Mortalidad</strong></td><td>Mayor mortalidad <strong>perinatal y neonatal</strong></td></tr>
+            <tr><td><strong>Macrosomía fetal</strong></td><td>En el <span class="dato">13 %</span>. Riesgo de <strong>distocia de hombros</strong></td></tr>
+            <tr><td><strong>Oligoamnios</strong></td><td><strong>Compresión del cordón</strong> y sufrimiento fetal</td></tr>
+            <tr><td><strong>Síndrome de aspiración meconial</strong></td><td>Dificultad respiratoria del recién nacido</td></tr>
+            <tr><td><strong>Insuficiencia placentaria</strong></td><td><strong>Hipoxia fetal</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>NICE agrega que, pasadas las <span class="dato">41+0 semanas</span>, aumentan con el tiempo las probabilidades de cesárea, de internación del recién nacido en terapia intensiva y de muerte fetal o neonatal.</p>
+
+      <p class="cita">Clase del Dr. Fornara: pronóstico fetal y del recién nacido. Riesgos después de las 41 semanas según <a href="https://www.nice.org.uk/guidance/ng207/chapter/Recommendations">NICE NG207 (2021)</a>.</p>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-clinica" id="riesgo-materno">
+      <span class="seccion__pestana"><b>04</b> Pronóstico</span>
+      <h2 class="seccion__titulo">Riesgos para la madre</h2>
+
+      <ul>
+        <li>Mayor tasa de <strong>inducción del parto</strong> y de <strong>cesárea</strong>.</li>
+        <li>Riesgo de <strong>hemorragia posparto</strong>.</li>
+        <li>Complicaciones de los <strong>partos instrumentales</strong>.</li>
+      </ul>
+
+      <p class="cita">Clase del Dr. Fornara: pronóstico materno.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-c">
+      <span class="bloque__rotulo">Bloque C</span>
+      <span class="bloque__nombre">Control y conducta</span>
+    </h2>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-diagnostico" id="control">
+      <span class="seccion__pestana"><b>05</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">Control del bienestar fetal</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Paso</th><th>Qué busca</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Confirmar la edad gestacional</strong></td><td>Que de verdad sea prolongado (<a href="#datacion">sección 02</a>)</td></tr>
+            <tr><td><strong>Ecografía obstétrica</strong></td><td><strong>Macrosomía</strong> y <strong>oligoamnios</strong></td></tr>
+            <tr><td><strong>Doppler fetal</strong></td><td><strong>Insuficiencia placentaria</strong> e hipoxia</td></tr>
+            <tr><td><strong>Monitoreo sin estrés</strong> (NST)</td><td>Bienestar fetal en el momento</td></tr>
+            <tr><td><strong>Perfil biofísico</strong></td><td>Bienestar fetal en el momento</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>NICE advierte que el monitoreo muestra <strong>cómo está el feto ese día</strong>: no predice lo que puede pasar después ni evita con seguridad la muerte fetal.</p>
+
+      <p class="cita">Clase del Dr. Fornara: control y manejo. Alcance del monitoreo según <a href="https://www.nice.org.uk/guidance/ng207/chapter/Recommendations">NICE NG207 (2021)</a>.</p>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-tratamiento" id="cuando">
+      <span class="seccion__pestana"><b>06</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Cuándo inducir y qué hacer si se espera</h2>
+
+      <p>La clase indica la <strong>inducción de rutina a partir de la semana 41</strong>, porque disminuye el riesgo de muerte fetal en el embarazo prolongado.</p>
+      <p>Según PubMed, en una revisión Cochrane de ensayos con inducción a las 37 semanas o más, la inducción redujo las <strong>muertes perinatales</strong> (4 contra 25; RR <span class="dato">0,31</span>) y los mortinatos frente a esperar. También redujo un poco las <strong>cesáreas</strong> (RR <span class="dato">0,90</span>) y las internaciones en terapia intensiva neonatal (Middleton y col., Cochrane 2020; DOI <a href="https://doi.org/10.1002/14651858.CD004945.pub5">10.1002/14651858.CD004945.pub5</a>). Inducir no aumenta las cesáreas.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 760 232" role="img" aria-label="Línea de semanas de gestación: término precoz de 37+0 a 38+6, término de 39+0 a 40+6, término tardío de 41+0 a 41+6 y prolongado desde 42+0. Desde las 39 semanas se ofrece el barrido de membranas, a las 41+0 se ofrece la inducción y, si la paciente la rechazó, desde las 42+0 se hace monitoreo fetal y medición del líquido amniótico dos veces por semana. El 99 por ciento de los trabajos de parto espontáneos empieza antes de las 42 semanas"><defs><marker id="mk-s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path></marker></defs><rect x="60" y="122" width="220" height="28" fill="var(--c)" fill-opacity="0.08" stroke="currentColor" stroke-width="1.2"></rect><text x="170.0" y="141" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">término precoz</text><rect x="280" y="122" width="220" height="28" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1.2"></rect><text x="390.0" y="141" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">término</text><rect x="500" y="122" width="110" height="28" fill="var(--c)" fill-opacity="0.32" stroke="currentColor" stroke-width="1.2"></rect><text x="555.0" y="141" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">término tardío</text><rect x="610" y="122" width="110" height="28" fill="var(--c)" fill-opacity="0.52" stroke="currentColor" stroke-width="1.2"></rect><text x="665.0" y="141" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">prolongado</text><path d="M60 150 L60 157" stroke="currentColor" stroke-width="1.2"></path><text x="60" y="172" text-anchor="middle" font-size="11.5" fill="currentColor">37+0</text><path d="M170 150 L170 157" stroke="currentColor" stroke-width="1.2"></path><text x="170" y="172" text-anchor="middle" font-size="11.5" fill="currentColor">38+0</text><path d="M280 150 L280 157" stroke="currentColor" stroke-width="1.2"></path><text x="280" y="172" text-anchor="middle" font-size="11.5" fill="currentColor">39+0</text><path d="M390 150 L390 157" stroke="currentColor" stroke-width="1.2"></path><text x="390" y="172" text-anchor="middle" font-size="11.5" fill="currentColor">40+0</text><path d="M500 150 L500 157" stroke="currentColor" stroke-width="1.2"></path><text x="500" y="172" text-anchor="middle" font-size="11.5" fill="currentColor">41+0</text><path d="M610 150 L610 157" stroke="currentColor" stroke-width="1.2"></path><text x="610" y="172" text-anchor="middle" font-size="11.5" fill="currentColor">42+0</text><path d="M720 150 L720 157" stroke="currentColor" stroke-width="1.2"></path><text x="720" y="172" text-anchor="middle" font-size="11.5" fill="currentColor">43+0</text><text x="380" y="192" text-anchor="middle" font-size="11.5" font-style="italic" fill="currentColor">semanas de gestación, fechadas por ecografía precoz</text><rect x="200" y="14" width="160" height="64" rx="7" fill="var(--c)" fill-opacity="0.12" stroke="currentColor" stroke-width="1.2"></rect><text x="280.0" y="35.5" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">39+0</text><text x="280.0" y="50.5" text-anchor="middle" font-size="12" fill="currentColor">ofrecer el barrido</text><text x="280.0" y="65.5" text-anchor="middle" font-size="12" fill="currentColor">de membranas</text><path d="M280 78 L280 120" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-s)"></path><rect x="400" y="14" width="180" height="64" rx="7" fill="var(--c)" fill-opacity="0.32" stroke="currentColor" stroke-width="1.2"></rect><text x="490.0" y="43.0" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">41+0</text><text x="490.0" y="58.0" text-anchor="middle" font-size="12" fill="currentColor">ofrecer la inducción</text><path d="M500 78 L500 120" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-s)"></path><rect x="596" y="14" width="156" height="78" rx="7" fill="var(--c)" fill-opacity="0.46" stroke="currentColor" stroke-width="1.2"></rect><text x="674.0" y="35.0" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">42+0</text><text x="674.0" y="50.0" text-anchor="middle" font-size="12" fill="currentColor">si la rechazó: monitoreo</text><text x="674.0" y="65.0" text-anchor="middle" font-size="12" fill="currentColor">y líquido amniótico</text><text x="674.0" y="80.0" text-anchor="middle" font-size="12" fill="currentColor">2 veces por semana</text><path d="M624 92 L612 120" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-s)"></path><text x="380" y="220" text-anchor="middle" font-size="11.5" font-style="italic" fill="currentColor">El 99 % de los trabajos de parto espontáneos empieza antes de las 42+0 semanas.</text></svg>
+        <figcaption>Qué se ofrece en cada semana según NICE. La inducción se ofrece a las 41+0; si la paciente prefiere esperar, desde las 42+0 se le propone un control más estrecho.</figcaption>
+      </figure>
+
+      <h3>El momento según NICE</h3>
+      <ul>
+        <li>En el embarazo sin complicaciones, dar a la mujer <strong>toda la oportunidad</strong> de un trabajo de parto espontáneo.</li>
+        <li>Desde las <span class="dato">39+0 semanas</span>, ofrecer en cada control el <strong>barrido de membranas</strong>: aumenta la probabilidad de que el parto empiece solo. Puede causar dolor y un sangrado leve.</li>
+        <li>Desde las <span class="dato">41+0 semanas</span>, explicar que la inducción puede reducir los riesgos, y que también hay que tener en cuenta cómo la vive cada mujer.</li>
+      </ul>
+
+      <h3>Si la paciente no quiere inducción</h3>
+      <ul>
+        <li>Conversar las opciones (conducta expectante o cesárea) y <strong>registrar la decisión</strong> en la historia clínica.</li>
+        <li>Desde las <span class="dato">42+0 semanas</span>, ofrecer más controles fetales: <strong>monitoreo y medición del bolsillo mayor de líquido amniótico dos veces por semana</strong>.</li>
+        <li>Volver a conversar la decisión en cada control.</li>
+        <li>Pedirle que consulte enseguida si cambia de opinión o si nota que <strong>el bebé se mueve menos</strong>.</li>
+      </ul>
+
+      <h3>Antes de empezar la inducción</h3>
+      <p>Revisar los <strong>antecedentes</strong> (edad, paridad, etc.), hacer el <strong>examen físico</strong> y el <strong>tacto vaginal</strong>. El éxito de la inducción depende directamente de la <strong>madurez del cuello</strong>, que se mide con el puntaje de Bishop. NICE además pide:</p>
+      <ul>
+        <li>que la cabeza fetal esté encajada o cerca del estrecho superior y estable; si hay dudas sobre la presentación, ecografía;</li>
+        <li>un <strong>monitoreo fetal normal</strong> y que no haya contracciones significativas;</li>
+        <li>que ninguna ecografía previa haya mostrado una <strong>placenta baja</strong>, antes del barrido o la inducción.</li>
+      </ul>
+
+      <p class="cita">Clase del Dr. Fornara: conducta y evaluación previa. Momento, barrido de membranas, conducta expectante y controles previos según <a href="https://www.nice.org.uk/guidance/ng207/chapter/Recommendations">NICE NG207 (2021)</a>. Revisión Cochrane según PubMed (DOI indicado).</p>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-diagnostico" id="bishop">
+      <span class="seccion__pestana"><b>07</b> Diagnóstico</span>
+      <h2 class="seccion__titulo">El puntaje de Bishop</h2>
+
+      <p>Se obtiene por tacto vaginal y suma cinco características del cuello y la presentación:</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Característica</th><th>0</th><th>1</th><th>2</th><th>3</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Dilatación</strong> (cm)</td><td>Cerrado</td><td>1-2</td><td>3-4</td><td>5-6</td></tr>
+            <tr><td><strong>Borramiento</strong> (%)</td><td>0-30</td><td>40-50</td><td>60-70</td><td>80</td></tr>
+            <tr><td><strong>Altura de la presentación</strong></td><td>−3</td><td>−2, −1</td><td>0</td><td>+1, +2</td></tr>
+            <tr><td><strong>Consistencia</strong></td><td>Firme</td><td>Media</td><td>Blanda</td><td>—</td></tr>
+            <tr><td><strong>Posición</strong></td><td>Posterior</td><td>Media</td><td>Anterior</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Cómo se interpreta</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Puntaje</th><th>Según la clase</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Menos de 5</strong></td><td><strong>Cuello desfavorable</strong>: hay que madurarlo</td></tr>
+            <tr><td><strong>6 a 8</strong></td><td>Moderadamente favorable: se puede intentar la inducción</td></tr>
+            <tr><td><strong>Más de 9</strong></td><td><strong>Cuello favorable</strong>: alta probabilidad de éxito</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>NICE usa un solo corte: con <strong>6 o menos</strong> se madura el cuello; con <strong>más de 6</strong> se induce con amniotomía y oxitocina. Un puntaje de <span class="dato">8</span> o más indica en general que el cuello está listo para dilatarse. La clase no ubica los puntajes de 5 ni de 9: con el corte de NICE, el 5 va a maduración y el 9 a inducción directa.</p>
+
+      <p class="cita">Clase del Dr. Fornara: score de Bishop (lámina 11, rehecha como tabla) e interpretación clínica (lámina 12). Cortes y definición según <a href="https://www.nice.org.uk/guidance/ng207/chapter/Recommendations">NICE NG207 (2021)</a>.</p>
+    </section>
+
+    <!-- ============ 8 ============ -->
+    <section class="seccion s-tratamiento" id="induccion">
+      <span class="seccion__pestana"><b>08</b> Tratamiento</span>
+      <h2 class="seccion__titulo">Maduración cervical e inducción</h2>
+
+      <p>La clase propone tres pasos:</p>
+      <ol>
+        <li><strong>Maduración cervical con misoprostol</strong>: <span class="dato">25 mcg</span> por vía vaginal cada <span class="dato">6-8 h</span>.</li>
+        <li><strong>Inducción con oxitocina</strong> en bomba de infusión.</li>
+        <li><strong>Cesárea</strong>.</li>
+      </ol>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 760 392" role="img" aria-label="Algoritmo de inducción: antes de inducir confirmar la cabeza estable en la pelvis, monitoreo normal, ausencia de contracciones y placenta no baja. Con puntaje de Bishop de 6 o menos, madurar el cuello con misoprostol 25 microgramos o dinoprostona, o con balón si hay cesárea previa o riesgo de hiperestimulación, y reevaluar el Bishop. Con más de 6, amniotomía y oxitocina en bomba de infusión con monitoreo fetal. El resultado es el parto vaginal o, si la inducción falla, reposo, nuevo intento o cesárea. Si hay hiperestimulación, evaluar al feto, no dar más dosis, retirar los dispositivos vaginales y considerar la tocolisis"><defs><marker id="mk-n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path></marker></defs><rect x="60" y="10" width="640" height="46" rx="7" fill="var(--c)" fill-opacity="0.12" stroke="currentColor" stroke-width="1.2"></rect><text x="380.0" y="30.0" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Antes de inducir</text><text x="380.0" y="45.0" text-anchor="middle" font-size="12" fill="currentColor">cabeza estable en la pelvis, monitoreo normal, sin contracciones, placenta no baja</text><path d="M380 56 L380 74" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-n)"></path><rect x="280" y="76" width="200" height="36" rx="7" fill="var(--c)" fill-opacity="0.3" stroke="currentColor" stroke-width="1.2"></rect><text x="380.0" y="98.5" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Puntaje de Bishop</text><path d="M300 112 L195 146" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-n)"></path><path d="M460 112 L575 146" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-n)"></path><text x="232" y="124" text-anchor="end" font-size="11.5" font-style="italic" fill="currentColor">6 o menos</text><text x="528" y="124" text-anchor="start" font-size="11.5" font-style="italic" fill="currentColor">más de 6</text><rect x="20" y="148" width="350" height="74" rx="7" fill="var(--c)" fill-opacity="0.2" stroke="currentColor" stroke-width="1.2"></rect><text x="195.0" y="167.0" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Madurar el cuello</text><text x="195.0" y="182.0" text-anchor="middle" font-size="12" fill="currentColor">misoprostol 25 mcg o dinoprostona</text><text x="195.0" y="197.0" text-anchor="middle" font-size="12" fill="currentColor">balón si hay cesárea previa</text><text x="195.0" y="212.0" text-anchor="middle" font-size="12" fill="currentColor">o riesgo de hiperestimulación</text><rect x="410" y="148" width="330" height="74" rx="7" fill="var(--c)" fill-opacity="0.32" stroke="currentColor" stroke-width="1.2"></rect><text x="575.0" y="174.5" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Amniotomía y oxitocina</text><text x="575.0" y="189.5" text-anchor="middle" font-size="12" fill="currentColor">oxitocina en bomba de infusión</text><text x="575.0" y="204.5" text-anchor="middle" font-size="12" fill="currentColor">con monitoreo fetal</text><path d="M195 222 L195 244" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-n)"></path><rect x="105" y="246" width="180" height="36" rx="7" fill="var(--c)" fill-opacity="0.12" stroke="currentColor" stroke-width="1.2"></rect><text x="195.0" y="268.5" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Reevaluar el Bishop</text><path d="M285 264 C380 264 432 250 440 224" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-n)"></path><text x="345" y="252" text-anchor="middle" font-size="11.5" font-style="italic" fill="currentColor">ya es favorable</text><path d="M500 222 L480 296" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-n)"></path><path d="M650 222 L660 296" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#mk-n)"></path><rect x="410" y="298" width="150" height="44" rx="7" fill="var(--c)" fill-opacity="0.2" stroke="currentColor" stroke-width="1.2"></rect><text x="485.0" y="324.5" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Parto vaginal</text><rect x="575" y="298" width="165" height="74" rx="7" fill="var(--c)" fill-opacity="0.42" stroke="currentColor" stroke-width="1.2"></rect><text x="657.5" y="324.5" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Inducción fallida</text><text x="657.5" y="339.5" text-anchor="middle" font-size="12" fill="currentColor">reposo, nuevo intento</text><text x="657.5" y="354.5" text-anchor="middle" font-size="12" fill="currentColor">o cesárea</text><rect x="20" y="306" width="350" height="74" rx="7" fill="var(--c)" fill-opacity="0.08" stroke="currentColor" stroke-width="1.2"></rect><text x="195.0" y="332.5" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Si hay hiperestimulación</text><text x="195.0" y="347.5" text-anchor="middle" font-size="12" fill="currentColor">evaluar al feto, no dar más dosis,</text><text x="195.0" y="362.5" text-anchor="middle" font-size="12" fill="currentColor">retirar lo vaginal, considerar tocolisis</text></svg>
+        <figcaption>El Bishop decide por dónde empezar. Si el cuello madura, se pasa a amniotomía y oxitocina; si hay hiperestimulación, se frena todo.</figcaption>
+      </figure>
+
+      <h3>Qué método elegir</h3>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Situación</th><th>Método según NICE</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Bishop de 6 o menos</strong></td><td><strong>Dinoprostona</strong> vaginal (comprimido, gel o dispositivo de liberación controlada) o <strong>misoprostol oral</strong> en dosis baja, <span class="dato">25 mcg</span></td></tr>
+            <tr><td><strong>Bishop de 6 o menos</strong> sin poder usar fármacos</td><td><strong>Método mecánico</strong>: sonda con balón o dilatador osmótico. Se considera si hay más riesgo de hiperestimulación, si hay <strong>cesárea previa</strong> o si la mujer lo prefiere</td></tr>
+            <tr><td><strong>Bishop de más de 6</strong></td><td><strong>Amniotomía y oxitocina</strong> intravenosa. NICE no recomienda la oxitocina sola, sin amniotomía</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Misoprostol: oral o vaginal</h3>
+      <ul>
+        <li>Según PubMed, el misoprostol <strong>oral en dosis baja</strong> logra tasas de parto vaginal parecidas a las de la vía vaginal. Da <strong>menos hiperestimulación con cambios en la frecuencia cardíaca fetal</strong> y menos cesáreas por sufrimiento fetal, aunque tarda más (Kerr y col., Cochrane 2021; DOI <a href="https://doi.org/10.1002/14651858.CD014484">10.1002/14651858.CD014484</a>).</li>
+        <li>Según PubMed, el misoprostol <strong>vaginal en dosis mayores a 25 mcg cada 4 h</strong> fue más eficaz, pero con más hiperestimulación. Las dosis menores tuvieron una eficacia y unos riesgos similares a los métodos convencionales (Hofmeyr y col., Cochrane 2010; DOI <a href="https://doi.org/10.1002/14651858.CD000941.pub2">10.1002/14651858.CD000941.pub2</a>). La dosis de la clase, 25 mcg cada 6-8 h, está en el rango bajo.</li>
+      </ul>
+
+      <h3>Seguridad</h3>
+      <ul>
+        <li><strong>Vigilancia</strong>: con prostaglandinas, controlar la actividad uterina y el estado fetal. Cuando empiezan las contracciones, se hace un monitoreo. Si es normal y el riesgo es bajo, se puede pasar a la auscultación intermitente.</li>
+        <li><strong>Hiperestimulación</strong>: evaluar al feto, <strong>no dar más dosis</strong>, <strong>retirar</strong> los dispositivos vaginales si se puede y considerar la <strong>tocolisis</strong>.</li>
+        <li><strong>Cesárea previa</strong>: la inducción aumenta el riesgo de cesárea de urgencia y de <strong>rotura uterina</strong>. Se prefiere el método mecánico, y se ofrece elegir entre inducción y cesárea programada.</li>
+        <li><strong>Procidencia de cordón</strong>: antes de inducir, palpar que la cabeza esté encajada y estable. Durante el tacto, buscar el cordón y no desplazar la cabeza. Si se rompen las membranas con la presentación alta, monitoreo continuo.</li>
+        <li><strong>Rotura uterina sospechada</strong> durante la inducción: <strong>cesárea inmediata</strong>, de máxima urgencia.</li>
+        <li><strong>Inducción fallida</strong>: reevaluar a la madre y al feto, y acordar con ella el plan. Las opciones son un período de reposo, la conducta expectante, un nuevo intento o la cesárea.</li>
+      </ul>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>Con <strong>cesárea previa</strong>, la inducción aumenta el riesgo de rotura uterina y NICE prefiere madurar con <strong>balón</strong>. Ante una <strong>hiperestimulación</strong>, cortar las dosis y retirar el dispositivo vaginal.</p>
+      </div>
+
+      <p class="cita">Clase del Dr. Fornara: maduración cervical, inducción y cesárea (lámina 13). Métodos, vigilancia, hiperestimulación, cesárea previa, procidencia, rotura e inducción fallida según <a href="https://www.nice.org.uk/guidance/ng207/chapter/Recommendations">NICE NG207 (2021)</a>. Comparación de vías del misoprostol según PubMed (DOI indicados).</p>
+    </section>
+
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>¿Desde cuándo un embarazo es prolongado?</summary>
+          <div class="fc__r">Cuando sobrepasa los <strong>293 días</strong> (41+6 semanas) desde la última menstruación, es decir, desde las <strong>42+0</strong>.</div>
+        </details>
+        <details class="fc s-generalidades">
+          <summary>¿Qué es el término tardío?</summary>
+          <div class="fc__r">De las <strong>41+0 a las 41+6</strong> semanas. El término va de 39+0 a 40+6.</div>
+        </details>
+        <details class="fc s-generalidades">
+          <summary>¿Por qué la frecuencia baja de 7,5 % a 1 % según el método de datación?</summary>
+          <div class="fc__r">Porque muchos embarazos «prolongados» por fecha de menstruación son <strong>errores de fecha</strong> que la ecografía precoz corrige.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary>¿Cuál es la teoría más aceptada sobre su causa?</summary>
+          <div class="fc__r">Un <strong>fallo en los mecanismos que inician el trabajo de parto</strong>. En la mayoría de los casos la causa es desconocida.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary>¿Cuándo manda la ecografía sobre la fecha de última menstruación?</summary>
+          <div class="fc__r">Si difieren en <strong>más de 5 días antes de las 9+0</strong> semanas o en <strong>más de 7 días entre las 9+0 y 14+0</strong>: se usa la longitud cráneo-caudal.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary>¿Qué embarazo está mal fechado según el ACOG?</summary>
+          <div class="fc__r">El que no tiene una ecografía que confirme o corrija la fecha <strong>antes de las 22+0 semanas</strong>.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿Qué riesgos fetales tiene el embarazo prolongado?</summary>
+          <div class="fc__r">Mayor <strong>mortalidad perinatal</strong>, <strong>macrosomía</strong> (13 %, distocia de hombros), <strong>oligoamnios</strong> con compresión del cordón, <strong>aspiración meconial</strong> e <strong>insuficiencia placentaria</strong> con hipoxia.</div>
+        </details>
+        <details class="fc s-clinica">
+          <summary>¿Qué riesgos maternos tiene?</summary>
+          <div class="fc__r">Más <strong>inducciones y cesáreas</strong>, <strong>hemorragia posparto</strong> y complicaciones de los partos instrumentales.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary>¿Qué estudios se piden para controlarlo?</summary>
+          <div class="fc__r">Confirmar la edad gestacional, <strong>ecografía</strong> (macrosomía, oligoamnios), <strong>Doppler</strong> (insuficiencia placentaria), <strong>monitoreo sin estrés</strong> y <strong>perfil biofísico</strong>.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Desde qué semana se indica la inducción y por qué?</summary>
+          <div class="fc__r">Desde la <strong>41</strong>: disminuye la mortalidad fetal. Según Cochrane, también reduce un poco las cesáreas.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Qué se ofrece desde las 39 semanas?</summary>
+          <div class="fc__r">El <strong>barrido de membranas</strong>, que aumenta la probabilidad de un parto espontáneo.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Qué controles se ofrecen si la paciente rechaza la inducción?</summary>
+          <div class="fc__r">Desde las <strong>42+0</strong>: <strong>monitoreo fetal y bolsillo mayor de líquido amniótico dos veces por semana</strong>, sabiendo que no predicen lo que viene.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary>¿Qué cinco elementos suma el puntaje de Bishop?</summary>
+          <div class="fc__r"><strong>Dilatación</strong>, <strong>borramiento</strong>, <strong>altura de la presentación</strong>, <strong>consistencia</strong> y <strong>posición</strong> del cuello.</div>
+        </details>
+        <details class="fc s-diagnostico">
+          <summary>¿Qué corte de Bishop usa NICE para decidir el método?</summary>
+          <div class="fc__r"><strong>6 o menos</strong>: madurar el cuello. <strong>Más de 6</strong>: amniotomía y oxitocina.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Qué dosis de misoprostol usa la clase para madurar el cuello?</summary>
+          <div class="fc__r"><strong>25 mcg vaginal cada 6-8 h</strong>. NICE propone 25 mcg por vía oral, o dinoprostona vaginal.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Qué ventaja tiene el misoprostol oral sobre el vaginal?</summary>
+          <div class="fc__r">Menos <strong>hiperestimulación con cambios en la frecuencia cardíaca fetal</strong> y menos cesáreas por sufrimiento fetal, aunque tarda más.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Cómo se madura el cuello si hay cesárea previa?</summary>
+          <div class="fc__r">Con un <strong>método mecánico</strong> (sonda con balón), por el riesgo de rotura uterina. Se ofrece elegir entre inducción y cesárea programada.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Qué se hace ante una hiperestimulación?</summary>
+          <div class="fc__r">Evaluar al feto, <strong>no dar más dosis</strong>, <strong>retirar</strong> el dispositivo vaginal y considerar la <strong>tocolisis</strong>.</div>
+        </details>
+        <details class="fc s-tratamiento">
+          <summary>¿Qué opciones hay si la inducción falla?</summary>
+          <div class="fc__r">Un <strong>período de reposo</strong> y reevaluar, la conducta expectante, un <strong>nuevo intento</strong> o la <strong>cesárea</strong>.</div>
+        </details>
+      </div>
+    </section>
+
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Triada clave</dt>
+        <dd>Prolongado = <strong>más de 293 días (42+0)</strong>. La mayoría son <strong>errores de fecha</strong>: confirmar con ecografía precoz. Inducir desde las <strong>41</strong> baja la mortalidad y no aumenta las cesáreas.</dd>
+
+        <dt class="r-gold">Diagnóstico</dt>
+        <dd>Fecha de última menstruación + <strong>ecografía precoz</strong>; manda la ecografía si difiere más de 5 días antes de las 9 semanas o más de 7 entre las 9 y 14.</dd>
+
+        <dt class="r-tto">Conducta</dt>
+        <dd>Bishop de <strong>6 o menos</strong>: madurar (misoprostol <strong>25 mcg</strong> o dinoprostona; balón si hay cesárea previa). <strong>Más de 6</strong>: amniotomía y oxitocina en bomba. Si falla: reposo, nuevo intento o cesárea.</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd><strong>Hiperestimulación</strong>: cortar las dosis y retirar lo vaginal. <strong>Cesárea previa</strong>: riesgo de rotura uterina. Si rechaza la inducción: monitoreo y líquido <strong>dos veces por semana</strong> desde las 42.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir de la clase «Embarazo cronológicamente prolongado» del Dr. Cristián Fornara (Cátedra de Obstetricia, Facultad de Ciencias Médicas, Universidad de Mendoza). Momento de la inducción, conducta expectante, métodos, vigilancia y complicaciones según NICE NG207, Inducing labour (2021). Ecografía de datación según NICE NG201, Antenatal care (2021). Datación según la Committee Opinion n.º 700 del ACOG. Efecto de la inducción, comparación de vías del misoprostol, terminología, edad materna y reglas de datación según PubMed (Middleton 2020, Kerr 2021, Hofmeyr 2010, Félix 2026, Okui 2024, Cowell 2023). Material de estudio: no reemplaza el criterio clínico ni el protocolo institucional vigente.</p>
+
+
+  </main>
+</div>
+
+<script>
+(function(){
+
+  // ---- Tema claro / oscuro ----
+  // Sin eleccion estampada manda el sistema; el boton la estampa y la guarda.
+  var raiz = document.documentElement;
+  var boton = document.getElementById('tema');
+
+  function temaActual(){
+    var estampado = raiz.getAttribute('data-theme');
+    if (estampado) return estampado;
+    return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+
+  if (boton){
+    var rotular = function(){
+      var actual = temaActual();
+      boton.setAttribute('aria-pressed', actual === 'dark' ? 'true' : 'false');
+      boton.setAttribute('aria-label', actual === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+    };
+    boton.addEventListener('click', function(){
+      var nuevo = temaActual() === 'dark' ? 'light' : 'dark';
+      raiz.setAttribute('data-theme', nuevo);
+      try { localStorage.setItem('wordmed-tema', nuevo); } catch (e) { /* sin persistencia */ }
+      rotular();
+    });
+    rotular();
+  }
+
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link, .ir-link'));
+
+  // Devuelve TODOS los enlaces al ancla: la misma seccion figura en el indice
+  // lateral y en el compacto, y los dos tienen que encenderse juntos.
+  function porMeta(hash){
+    return enlaces.filter(function(l){ return l.getAttribute('href') === '#' + hash; });
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var activos = porMeta(e.target.id);
+        if (!activos.length) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          activos.forEach(function(l){ l.setAttribute('aria-current', 'true'); });
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>
+<script>
+(function(){
+  "use strict";
+  var clave = document.body.dataset.clave || "";
+  var enApp = typeof window.WordmedApp !== "undefined";
+  var MEM = "wordmed:progreso";
+
+  function leer(){ try{ return JSON.parse(localStorage.getItem(MEM)) || {}; }catch(e){ return {}; } }
+  function guardar(m){ try{ localStorage.setItem(MEM, JSON.stringify(m)); }catch(e){} }
+
+  function alto(){
+    return Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+  }
+
+  /* retomar donde quedó */
+  if (clave) {
+    var m = leer()[clave];
+    if (m && m.y > 0) {
+      window.addEventListener("load", function(){
+        window.scrollTo(0, Math.min(m.y, alto()));
+      });
+    }
+  }
+
+  /* anotar el avance, sin ahogar el scroll */
+  var pendiente = false;
+  window.addEventListener("scroll", function(){
+    if (pendiente || !clave) return;
+    pendiente = true;
+    requestAnimationFrame(function(){
+      pendiente = false;
+      var y = window.scrollY;
+      var pct = Math.round((y / alto()) * 100);
+      pct = Math.max(0, Math.min(100, pct));
+      var m = leer();
+      m[clave] = { y: y, pct: pct, ts: Date.now() };
+      guardar(m);
+      if (enApp && window.WordmedApp.progreso) window.WordmedApp.progreso(clave, pct, y);
+    });
+  }, { passive: true });
+
+  /* volver: solo cuando vinimos de la cáscara web */
+  if (!enApp && document.referrer && document.referrer.indexOf(location.origin) === 0) {
+    var b = document.createElement("button");
+    b.className = "volver";
+    b.type = "button";
+    b.setAttribute("aria-label", "Volver");
+    b.innerHTML = '<svg class="volver__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg>';
+    b.addEventListener("click", function(){ history.back(); });
+    document.body.appendChild(b);
+  }
+})();
+</script>
+</body>
+</html>

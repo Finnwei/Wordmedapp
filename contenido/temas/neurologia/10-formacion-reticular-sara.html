@@ -1,0 +1,1610 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<script>
+(function(){
+  var enApp = typeof window.WordmedApp !== "undefined";
+  if (!enApp) {
+    /* En la web el cuadernillo se maqueta al ancho del dispositivo. */
+    var m = document.createElement("meta");
+    m.name = "viewport";
+    m.content = "width=device-width, initial-scale=1";
+    document.head.appendChild(m);
+    return;
+  }
+  /* En la app no se emite viewport: el WebView maqueta a su ancho por
+     omision y lo encoge para que entre, igual que al abrir el archivo a
+     mano. Sacar el meta despues de parsearlo no reencuadra nada, por eso
+     directamente no se emite. */
+  var s = document.createElement("style");
+  s.textContent = ".tema{display:none !important}";
+  document.head.appendChild(s);
+})();
+</script>
+<title>Formación Reticular y SARA</title>
+<link rel="stylesheet" href="../../fuentes/fuentes.css">
+<style>
+/* ============================================================
+   WORDMED · Sistema de diseño para cuadernillos médicos
+   Estética: Fichas de Color con pestaña de carpeta clínica
+   ============================================================ */
+
+/* ---------- 1. TOKENS: tema claro (base sin estampar) ---------- */
+:root{
+  /* Papel y tinta — neutro frío con sesgo azulado, no crema */
+  --papel:        #F5F7F9;
+  --hoja:         #FFFFFF;
+  --hoja-alt:     #FAFBFC;
+  --hoja-hund:    #EFF3F6;
+  --linea:        #DFE5EB;
+  --linea-fuerte: #C2CBD5;
+  --tinta:        #323232;   /* Gris antracita — texto base (spec) */
+  --tinta-media:  #5A6472;
+  --tinta-tenue:  #7C8797;   /* citas de fuente */
+  --sombra:       0 1px 2px rgba(28,40,54,.05), 0 6px 18px -12px rgba(28,40,54,.22);
+
+  /* Paleta clínica por sección: --*-c = relleno/riel · --*-t = texto legible */
+  --gen-c:#27AE60;  --gen-t:#1B8348;
+  --fis-c:#8E44AD;  --fis-t:#7D399A;
+  --cli-c:#2980B9;  --cli-t:#1F6797;
+  --dia-c:#D4AC0D;  --dia-t:#8E7300;
+  --tto-c:#008CBA;  --tto-t:#00708F;
+  --imp-c:#C0392B;  --imp-t:#A62F22;
+  --ddx-c:#505050;  --ddx-t:#454545;
+
+  --tinte: 8%;               /* opacidad de fondos teñidos */
+  --tinte-fuerte: 14%;
+  --sobre-color: #FFFFFF;    /* texto sobre relleno de color */
+
+  /* Escala tipográfica */
+  --f-titulo: "Sitka Heading","Sitka Text",Constantia,"Iowan Old Style","Hoefler Text",Georgia,"Times New Roman",serif;
+  --f-texto:  "Segoe UI Variable Text","Segoe UI",Corbel,"Lucida Grande",system-ui,-apple-system,sans-serif;
+  --f-dato:   "Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --t-cita:  .78rem;
+  --t-nota:  .84rem;
+  --t-rotulo:.79rem;
+  --t-base:  1.0625rem;
+  --t-guia:  1.19rem;
+  --t-h3:    1.32rem;
+  --t-h2:    1.66rem;
+  --t-bloque:1.95rem;
+  --t-h1:    2.5rem;
+
+  --ancho: 68ch;
+  --radio: 3px;
+
+  /* Que la barra de desplazamiento y los controles nativos acompanen al tema */
+  color-scheme: light dark;
+}
+
+/* Eleccion explicita de claro: solo hace falta para el color-scheme, los
+   tokens claros ya son la base sin estampar. */
+:root[data-theme="light"]{ color-scheme: light; }
+
+/* ---------- 2. TOKENS: tema oscuro ---------- */
+/* Preferencia del sistema (documento sin estampar), sin pisar un claro explícito */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+    --linea:#2D343D; --linea-fuerte:#414A56;
+    --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+    --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+    --gen-c:#4ED88A; --gen-t:#5FE096;
+    --fis-c:#C387E8; --fis-t:#CE9AEE;
+    --cli-c:#62B4EE; --cli-t:#77C0F2;
+    --dia-c:#E8C63C; --dia-t:#EFD25C;
+    --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+    --imp-c:#F2705F; --imp-t:#F58878;
+    --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+    --tinte:16%; --tinte-fuerte:24%;
+    --sobre-color:#12161A;
+  }
+}
+/* Elección explícita de oscuro (gana sobre un SO en claro) */
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --papel:#14171B; --hoja:#1B1F25; --hoja-alt:#20252C; --hoja-hund:#111418;
+  --linea:#2D343D; --linea-fuerte:#414A56;
+  --tinta:#DDE3EA; --tinta-media:#A3ADBA; --tinta-tenue:#7F8B99;
+  --sombra: 0 1px 2px rgba(0,0,0,.35), 0 8px 22px -14px rgba(0,0,0,.7);
+  --gen-c:#4ED88A; --gen-t:#5FE096;
+  --fis-c:#C387E8; --fis-t:#CE9AEE;
+  --cli-c:#62B4EE; --cli-t:#77C0F2;
+  --dia-c:#E8C63C; --dia-t:#EFD25C;
+  --tto-c:#3FC2EC; --tto-t:#5BCDF0;
+  --imp-c:#F2705F; --imp-t:#F58878;
+  --ddx-c:#A7B0BB; --ddx-t:#B6BEC8;
+  --tinte:16%; --tinte-fuerte:24%;
+  --sobre-color:#12161A;
+}
+
+/* ---------- 3. Base ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--papel);           /* explícito: nunca heredar el fondo del host */
+  color:var(--tinta);
+  font-family:var(--f-texto);
+  font-size:var(--t-base);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+:where(a){ color:var(--cli-t); text-underline-offset:2px; }
+:where(:focus-visible){ outline:2.5px solid var(--cli-c); outline-offset:3px; border-radius:2px; }
+
+strong,b{ font-weight:700; color:var(--tinta); }   /* negrita foveal */
+em,i{ font-style:italic; }
+
+/* Barra de progreso de lectura */
+.progreso{
+  position:fixed; inset:0 0 auto 0; height:3px; z-index:60;
+  background:transparent; pointer-events:none;
+}
+.progreso__barra{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  transition:width .12s linear;
+}
+
+/* Interruptor de tema claro / oscuro.
+   El estampado `data-theme` en la raíz ya lo respetan los bloques de tokens de
+   arriba; este botón sólo lo pone y lo guarda. Sin elección estampada mandan
+   las preferencias del sistema, que es el comportamiento por defecto. */
+.tema{
+  position:fixed; top:.7rem; right:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.tema:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.tema__icono{ width:1.15rem; height:1.15rem; display:block; }
+
+/* Se muestra el icono del tema al que se va a cambiar, no el actual.
+   Mismo escalonado que los tokens: base clara · sistema oscuro · elección explícita. */
+.tema__sol{ display:none; }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .tema__sol{ display:block; }
+  :root:not([data-theme="light"]) .tema__luna{ display:none; }
+}
+:root[data-theme="dark"] .tema__sol{ display:block; }
+:root[data-theme="dark"] .tema__luna{ display:none; }
+:root[data-theme="light"] .tema__sol{ display:none; }
+:root[data-theme="light"] .tema__luna{ display:block; }
+
+/* ---------- 4. Estructura de página ---------- */
+.marco{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0 3rem;
+  max-width:min(100% - 2.5rem, 78rem);
+  margin-inline:auto;
+  padding:2.5rem 0 5rem;
+}
+@media (min-width:64rem){
+  .marco{ grid-template-columns:15.5rem minmax(0,var(--ancho)); justify-content:center; }
+}
+
+.cuerpo{ display:flex; flex-direction:column; gap:2.9rem; min-width:0; }
+
+/* ---------- 5. Portada ---------- */
+.portada{ display:flex; flex-direction:column; gap:.75rem; }
+
+.portada__materia{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-media);
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+}
+.portada__materia::before{
+  content:""; width:1.7rem; height:2px; background:var(--cli-c); flex:none;
+}
+.portada__tema{
+  font-family:var(--f-titulo); font-size:var(--t-h1); font-weight:700; line-height:1.08;
+  letter-spacing:-.015em; margin:0; text-wrap:balance; color:var(--tinta);
+}
+.portada__bajada{
+  font-size:var(--t-guia); color:var(--tinta-media); margin:0; max-width:60ch; text-wrap:pretty;
+}
+.portada__meta{
+  display:flex; flex-wrap:wrap; gap:.45rem .5rem; margin-top:.5rem;
+  padding-top:1rem; border-top:1px solid var(--linea);
+}
+.etiqueta{
+  font-size:var(--t-cita); font-weight:600; letter-spacing:.03em;
+  padding:.25rem .6rem; border-radius:99px;
+  color:var(--ct,var(--tinta-media));
+  background:color-mix(in srgb, var(--c,var(--linea-fuerte)) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--c,var(--linea-fuerte)) 30%, transparent);
+}
+
+/* ---------- 6. Índices ---------- */
+/* Dos piezas complementarias y deliberadamente redundantes:
+   · .indice        — barra lateral fija, sólo en pantalla ancha, navegación permanente.
+   · .indice-rapido — tarjeta compacta al principio del cuerpo, visible en TODO ancho.
+   La lateral desaparece por debajo de 64rem, que es justo el ancho del panel de
+   Artifacts y del celular; sin la compacta el cuadernillo publicado se queda sin
+   índice. Las dos apuntan a los mismos anclajes y se resaltan juntas al desplazar. */
+
+/* 6.1 · Barra lateral */
+.indice{ display:none; }
+@media (min-width:64rem){
+  .indice{
+    display:block; position:sticky; top:2.5rem; align-self:start;
+    max-height:calc(100vh - 5rem); overflow-y:auto;
+  }
+}
+.indice__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .9rem;
+}
+.indice__lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.15rem; }
+.indice__link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.1rem 1fr; align-items:baseline; gap:.65rem;
+  padding:.4rem .55rem; border-radius:var(--radio);
+  font-size:.9rem; line-height:1.35; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.indice__link::before{
+  content:""; width:.55rem; height:.55rem; border-radius:50%;
+  background:color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow:inset 0 0 0 1.5px var(--c);
+  transform:translateY(-.05rem);
+}
+.indice__link:hover{ background:var(--hoja-hund); color:var(--tinta); }
+.indice__link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+.indice__link[aria-current="true"]::before{ background:var(--c); }
+
+/* Rótulo de bloque intercalado en la lista lateral: no es un enlace, sólo
+   separa grupos de secciones para que 30 entradas no sean una tira plana. */
+.indice__bloque{
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+  margin:.9rem 0 .2rem; padding:0 .55rem;
+}
+.indice__bloque:first-child{ margin-top:0; }
+
+/* 6.2 · Índice compacto (va después de la portada, dentro del cuerpo) */
+.indice-rapido{
+  background:var(--hoja-hund);
+  border:1px solid var(--linea);
+  border-radius:var(--radio);
+  padding:1.1rem 1.2rem 1.2rem;
+}
+.indice-rapido__rotulo{
+  font-size:var(--t-rotulo); font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-tenue); margin:0 0 .85rem;
+}
+/* auto-fit: una columna en el panel angosto, dos o tres en pantalla ancha */
+.indice-rapido__bloques{
+  list-style:none; margin:0; padding:0;
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(15rem, 1fr));
+  gap:1rem 2rem; align-items:start;
+}
+.ir-bloque{
+  display:block; margin-bottom:.4rem;
+  font-family:var(--f-titulo); font-size:.98rem; font-weight:700; line-height:1.3;
+  color:var(--tinta); text-decoration:none;
+  padding-bottom:.3rem; border-bottom:1px solid var(--linea-fuerte);
+}
+.ir-bloque:hover{ color:var(--cli-t); }
+.ir-secciones{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.05rem; }
+.ir-link{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  display:grid; grid-template-columns:1.55rem 1fr; align-items:baseline; gap:.4rem;
+  padding:.2rem .35rem; border-radius:2px;
+  font-size:.86rem; line-height:1.4; color:var(--tinta-media);
+  text-decoration:none; border-left:2px solid transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.ir-link > b{
+  font-family:var(--f-dato); font-size:.76rem; font-weight:700;
+  font-variant-numeric:tabular-nums; color:var(--ct); opacity:.85;
+}
+.ir-link:hover{ background:var(--hoja); color:var(--tinta); }
+.ir-link[aria-current="true"]{
+  color:var(--ct); font-weight:650;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  border-left-color:var(--c);
+}
+
+.i-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.i-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.i-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.i-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.i-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.i-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.i-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 7. Título de bloque y ficha de sección ---------- */
+
+/* Anuncia un grupo de secciones. Neutro en color a propósito: los siete colores
+   tienen significado clínico fijo y un bloque agrupa secciones de varios. La
+   regla de abajo lleva el degradado completo de la paleta, igual que la pestaña
+   de repaso y la cabecera de la ficha relámpago.
+   Sin <svg> adentro: el exportador a Word aparea los diagramas con las figuras
+   por contador posicional sobre el HTML crudo (ver exportar_docx.py). */
+.bloque{
+  margin:1.4rem 0 0; padding:0;
+  text-align:center; scroll-margin-top:2.5rem;
+  display:flex; flex-direction:column; align-items:center; gap:.3rem;
+  font-weight:400;
+}
+.bloque:first-child{ margin-top:0; }
+.bloque__rotulo{
+  font-family:var(--f-texto);
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--tinta-tenue);
+}
+.bloque__nombre{
+  font-family:var(--f-titulo); font-size:var(--t-bloque); font-weight:700; line-height:1.15;
+  letter-spacing:-.01em; color:var(--tinta); text-wrap:balance; max-width:32ch;
+}
+.bloque::after{
+  content:""; width:7rem; height:2.5px; margin-top:.5rem; border-radius:2px;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+}
+
+.seccion{
+  --c:var(--ddx-c); --ct:var(--ddx-t);
+  position:relative;
+  background:var(--hoja);
+  border:1px solid var(--linea);
+  border-left:4px solid var(--c);
+  border-radius:var(--radio);
+  box-shadow:var(--sombra);
+  padding:1.6rem 1.75rem 1.75rem;
+  display:flex; flex-direction:column; gap:1rem;
+  scroll-margin-top:2.5rem;
+}
+/* Pestaña de carpeta clínica, colgando del borde superior */
+.seccion__pestana{
+  position:absolute; top:-1.5rem; left:-4px;
+  height:1.5rem; padding:0 .7rem;
+  display:inline-flex; align-items:center; gap:.45rem;
+  background:var(--c); color:var(--sobre-color);
+  border-radius:var(--radio) var(--radio) 0 0;
+  font-size:var(--t-cita); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.seccion__pestana b{ color:inherit; font-variant-numeric:tabular-nums; }
+
+.seccion__titulo{
+  font-family:var(--f-titulo); font-size:var(--t-h2); font-weight:700; line-height:1.16;
+  color:var(--ct); margin:0; text-wrap:balance;
+  padding-bottom:.7rem;
+  border-bottom:1px solid color-mix(in srgb, var(--c) 28%, transparent);
+}
+.seccion > p{ margin:0; text-wrap:pretty; }
+.seccion h3{
+  font-family:var(--f-texto); font-size:var(--t-h3); font-weight:650; line-height:1.25;
+  color:var(--tinta); margin:.4rem 0 -.35rem;
+}
+.seccion h4{
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ct); margin:.35rem 0 -.45rem;
+}
+
+/* Colores por sección */
+.s-generalidades{ --c:var(--gen-c); --ct:var(--gen-t); }
+.s-fisiopatologia{ --c:var(--fis-c); --ct:var(--fis-t); }
+.s-clinica{ --c:var(--cli-c); --ct:var(--cli-t); }
+.s-diagnostico{ --c:var(--dia-c); --ct:var(--dia-t); }
+.s-tratamiento{ --c:var(--tto-c); --ct:var(--tto-t); }
+.s-importantes{ --c:var(--imp-c); --ct:var(--imp-t); }
+.s-diferenciales{ --c:var(--ddx-c); --ct:var(--ddx-t); }
+
+/* ---------- 8. Listas ---------- */
+.seccion ul, .seccion ol{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:.55rem; }
+.seccion ul > li{ position:relative; padding-left:1.25rem; text-wrap:pretty; }
+.seccion ul > li::before{
+  content:""; position:absolute; left:.15rem; top:.62em;
+  width:.42rem; height:.42rem; border-radius:1px; background:var(--c); transform:rotate(45deg);
+}
+.seccion ul ul{ margin-top:.5rem; }
+.seccion ul ul > li::before{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--c); }
+.seccion ol{ counter-reset:paso; }
+.seccion ol > li{ position:relative; padding-left:2.1rem; counter-increment:paso; text-wrap:pretty; }
+.seccion ol > li::before{
+  content:counter(paso); position:absolute; left:0; top:.12em;
+  width:1.5rem; height:1.5rem; border-radius:50%;
+  display:grid; place-items:center;
+  font-family:var(--f-dato); font-size:.75rem; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--ct);
+  background:color-mix(in srgb, var(--c) var(--tinte-fuerte), transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* Datos duros: dosis, valores, escalas */
+.dato{
+  font-family:var(--f-dato); font-size:.94em; font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--ct); white-space:nowrap;
+  background:color-mix(in srgb, var(--c) var(--tinte), transparent);
+  padding:.06em .34em; border-radius:2px;
+}
+
+/* ---------- 9. Caja ¡Importante! ---------- */
+.importante{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  display:grid; grid-template-columns:auto 1fr; gap:.5rem .8rem;
+  margin:.35rem 0;
+  padding:.95rem 1.1rem;
+  background:color-mix(in srgb, var(--imp-c) var(--tinte), transparent);
+  border:1px solid color-mix(in srgb, var(--imp-c) 34%, transparent);
+  border-left:4px solid var(--imp-c);
+  border-radius:var(--radio);
+}
+.importante__icono{
+  grid-column:1; grid-row:1; width:1.3rem; height:1.3rem; flex:none;
+  color:var(--imp-c); transform:translateY(.15rem);
+}
+/* El icono ocupa la columna 1 y NADA MAS. Todo el resto del contenido se
+   apila en la columna 2, una fila por elemento, sin importar cuantos
+   parrafos haya.
+
+   Sin esta regla la caja solo funciona con un unico <p>: a partir del
+   segundo, la autocolocacion del grid empieza a repartir contenido en la
+   columna del icono, que es `auto` y por lo tanto se ensancha hasta abarcar
+   el parrafo que le toco. La columna `1fr` queda entonces reducida a una
+   tira angosta, el texto se parte en dos columnas desbalanceadas y la caja
+   crece hasta volverse ilegible. */
+.importante > :not(.importante__icono){ grid-column:2; }
+.importante__titulo{
+  grid-row:1;
+  font-size:var(--t-nota); font-weight:750; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--imp-t); margin:0;
+}
+.importante p{ margin:0; text-wrap:pretty; }
+.importante ul, .importante ol{ margin:0; padding-left:1.15rem; }
+.importante li + li{ margin-top:.3rem; }
+.importante strong{ color:var(--imp-t); }
+
+/* ---------- 10. Cita de fuente ---------- */
+.cita{
+  font-size:var(--t-cita); line-height:1.5; color:var(--tinta-tenue);
+  font-style:normal; margin:.15rem 0 0;
+  padding-top:.5rem; border-top:1px dotted var(--linea-fuerte);
+}
+
+/* ---------- 11. Tablas comparativas ---------- */
+.tabla-envoltura{ overflow-x:auto; border-radius:var(--radio); border:1px solid var(--linea); }
+.seccion table{
+  width:100%; border-collapse:collapse; font-size:var(--t-nota); line-height:1.5;
+  background:var(--hoja); min-width:34rem;
+}
+.seccion thead th{
+  background:var(--c); color:var(--sobre-color);
+  font-weight:700; text-align:left; letter-spacing:.02em;
+  padding:.6rem .8rem; vertical-align:bottom;
+  border-right:1px solid color-mix(in srgb, var(--sobre-color) 22%, transparent);
+}
+.seccion thead th:last-child{ border-right:0; }
+.seccion tbody td{
+  padding:.6rem .8rem; border-top:1px solid var(--linea); vertical-align:top;
+  font-variant-numeric:tabular-nums;
+}
+.seccion tbody tr:nth-child(even) td{ background:var(--hoja-alt); }
+.seccion tbody td:first-child{ font-weight:650; color:var(--tinta); }
+
+/* ---------- 12. Esquema / diagrama SVG ---------- */
+.esquema{
+  margin:.4rem 0; padding:1.1rem 1rem .85rem;
+  background:var(--hoja-hund); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow-x:auto;
+}
+.esquema svg{ display:block; width:100%; height:auto; max-width:100%; }
+.esquema figcaption{
+  margin-top:.7rem; font-size:var(--t-cita); color:var(--tinta-tenue); text-align:center; text-wrap:balance;
+}
+
+/* ---------- 13. Flashcards ---------- */
+.repaso{ display:flex; flex-direction:column; gap:.55rem; }
+.fc{
+  background:var(--hoja); border:1px solid var(--linea);
+  border-left:3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius:var(--radio); overflow:hidden;
+}
+.fc > summary{
+  cursor:pointer; list-style:none; padding:.75rem 1rem;
+  font-weight:650; color:var(--tinta); display:flex; gap:.7rem; align-items:baseline;
+  transition:background .15s;
+}
+.fc > summary::-webkit-details-marker{ display:none; }
+.fc > summary::before{
+  content:"?"; flex:none; width:1.4rem; height:1.4rem; border-radius:50%;
+  display:grid; place-items:center; font-family:var(--f-dato); font-size:.78rem; font-weight:700;
+  color:var(--sobre-color); background:var(--c); transform:translateY(.1rem);
+}
+.fc > summary:hover{ background:var(--hoja-hund); }
+.fc[open] > summary{ background:color-mix(in srgb, var(--c) var(--tinte), transparent); }
+.fc[open] > summary::before{ content:"!"; }
+.fc__r{
+  padding:.15rem 1rem 1rem 3.1rem; color:var(--tinta-media); text-wrap:pretty;
+  animation:revelar .22s ease-out;
+}
+.fc__r strong{ color:var(--ct); }
+@keyframes revelar{ from{ opacity:0; transform:translateY(-3px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .fc__r{ animation:none; }
+  .progreso__barra{ transition:none; }
+}
+
+/* Bloque de repaso: no es una de las 7 secciones canónicas, por eso no lleva
+   numeral y su pestaña muestra el espectro completo de la paleta. */
+.seccion--repaso{ --c:var(--linea-fuerte); --ct:var(--tinta-media); }
+.seccion--repaso .seccion__pestana{
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF; text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.seccion--repaso .seccion__titulo{
+  color:var(--tinta);
+  border-bottom-color:var(--linea-fuerte);
+}
+
+/* ---------- 14. Ficha de Repaso Relámpago ---------- */
+.relampago{
+  --c:var(--imp-c); --ct:var(--imp-t);
+  border:1.5px solid var(--linea-fuerte); border-radius:var(--radio);
+  background:var(--hoja); box-shadow:var(--sombra); overflow:hidden;
+  scroll-margin-top:2.5rem;
+}
+.relampago__cab{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.85rem 1.2rem;
+  background:linear-gradient(90deg,var(--gen-c),var(--fis-c),var(--cli-c),var(--dia-c),var(--tto-c),var(--imp-c));
+  color:#FFFFFF;
+  font-family:var(--f-titulo); font-size:1.15rem; font-weight:700; letter-spacing:.01em;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+.relampago dl{ margin:0; display:grid; grid-template-columns:1fr; }
+@media (min-width:34rem){ .relampago dl{ grid-template-columns:13.5rem 1fr; } }
+.relampago dt{
+  padding:.75rem 1.2rem .2rem;
+  font-size:var(--t-nota); font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ct); border-top:1px solid var(--linea);
+}
+.relampago dd{
+  margin:0; padding:.2rem 1.2rem .75rem;
+  text-wrap:pretty;
+}
+@media (min-width:34rem){
+  .relampago dt{ padding:.8rem 1.2rem; border-right:1px solid var(--linea); background:var(--hoja-alt); }
+  .relampago dd{ padding:.8rem 1.2rem; border-top:1px solid var(--linea); }
+}
+.relampago dt:first-of-type{ border-top:0; }
+@media (min-width:34rem){
+  .relampago dt:first-of-type + dd{ border-top:0; }
+}
+.r-triada{ --c:var(--cli-c); --ct:var(--cli-t); }
+.r-gold{   --c:var(--dia-c); --ct:var(--dia-t); }
+.r-tto{    --c:var(--tto-c); --ct:var(--tto-t); }
+.r-alerta{ --c:var(--imp-c); --ct:var(--imp-t); }
+
+/* ---------- 15. Pie ---------- */
+.pie{
+  font-size:var(--t-cita); color:var(--tinta-tenue); line-height:1.6;
+  padding-top:1.2rem; border-top:1px solid var(--linea); text-wrap:pretty;
+}
+
+/* ---------- 16. Impresión A4 ---------- */
+@media print{
+  @page{ size:A4; margin:14mm 15mm; }
+  :root{
+    --papel:#FFFFFF; --hoja:#FFFFFF; --hoja-alt:#FFFFFF; --hoja-hund:#FFFFFF;
+    --linea:#C9D0D8; --tinta:#232323; --tinta-media:#3D3D3D; --tinta-tenue:#6B6B6B;
+    --sombra:none; --tinte:10%; --tinte-fuerte:16%;
+  }
+  body{ background:#FFFFFF; font-size:10.5pt; line-height:1.5; }
+  .indice, .progreso, .tema{ display:none !important; }
+  /* La lateral no se imprime, pero la compacta sí: en papel es la tabla de
+     contenidos del cuadernillo. */
+  .indice-rapido{ display:block; break-inside:avoid; page-break-inside:avoid; margin-bottom:1.2rem; }
+  .marco{ display:block; max-width:none; padding:0; }
+  .cuerpo{ display:block; }
+  .bloque{
+    margin:1.6rem 0 1rem;
+    break-after:avoid; page-break-after:avoid;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion{
+    box-shadow:none; margin:0 0 1.5rem; padding:.9rem 1rem 1rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .seccion__pestana{ position:static; display:inline-flex; margin-bottom:.5rem; border-radius:2px; }
+  .seccion__titulo, .seccion h3, .seccion h4{ break-after:avoid; page-break-after:avoid; }
+  .tabla-envoltura, table, .importante, .esquema, .relampago, .fc{ break-inside:avoid; page-break-inside:avoid; }
+  .fc__r{ display:block; }   /* respuestas siempre visibles en papel */
+  .relampago{ break-before:page; page-break-before:always; }
+  a{ color:inherit; text-decoration:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+
+</style>
+<style>
+/* Fuentes de la capa de contenido. Va después del estilo del
+   cuadernillo para pisar las de Windows, que no se pueden
+   redistribuir y no existen en Android. */
+:root{
+  --f-titulo:'Spectral',Georgia,'Times New Roman',serif;
+  --f-texto:'Open Sans',system-ui,-apple-system,sans-serif;
+  --f-dato:'Cascadia Mono','Cascadia Code',ui-monospace,Consolas,monospace;
+}
+/* Botón de volver, espejo del de tema que ya trae el cuadernillo. */
+.volver{
+  position:fixed; top:.7rem; left:.7rem; z-index:70;
+  width:2.35rem; height:2.35rem; padding:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  color:var(--tinta-media);
+  background:var(--hoja);
+  border:1px solid var(--linea-fuerte);
+  border-radius:50%;
+  box-shadow:var(--sombra);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.volver:hover{ color:var(--cli-t); border-color:var(--cli-c); background:var(--hoja-alt); }
+.volver__icono{ width:1.15rem; height:1.15rem; display:block; }
+</style>
+</head>
+<body data-clave="neurologia/10-formacion-reticular-sara">
+<script>
+/* Aplica el tema guardado antes de pintar. Va aca arriba a proposito: si
+   esperara al script del final, el documento parpadearia en el tema del
+   sistema antes de corregirse. */
+(function(){
+  try {
+    var guardado = localStorage.getItem('wordmed-tema');
+    if (guardado === 'dark' || guardado === 'light') {
+      document.documentElement.setAttribute('data-theme', guardado);
+    }
+  } catch (e) { /* almacenamiento bloqueado: manda el sistema */ }
+})();
+</script>
+
+<div class="progreso" aria-hidden="true"><div class="progreso__barra" id="barra"></div></div>
+
+<button class="tema" id="tema" type="button" aria-pressed="false" aria-label="Cambiar a modo oscuro">
+  <svg class="tema__icono tema__sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.2"></circle>
+    <path d="M12 2.6v2.1M12 19.3v2.1M5.1 5.1l1.5 1.5M17.4 17.4l1.5 1.5M2.6 12h2.1M19.3 12h2.1M5.1 18.9l1.5-1.5M17.4 6.6l1.5-1.5"></path>
+  </svg>
+  <svg class="tema__icono tema__luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20.4 14.2A8.6 8.6 0 0 1 9.8 3.6a8.6 8.6 0 1 0 10.6 10.6z"></path>
+  </svg>
+</button>
+
+<div class="marco">
+  <nav class="indice" aria-label="Índice del cuadernillo">
+    <p class="indice__rotulo">Cuadernillo</p>
+    <ul class="indice__lista">
+      <li class="indice__bloque">A · Organización</li>
+      <li><a class="indice__link i-generalidades"  href="#concepto">Conceptos fundamentales</a></li>
+      <li><a class="indice__link i-generalidades"  href="#topografia">Extensión topográfica</a></li>
+      <li><a class="indice__link i-importantes"    href="#columnas">Las tres columnas</a></li>
+      <li><a class="indice__link i-generalidades"  href="#nucleos">Grupos de núcleos</a></li>
+
+      <li class="indice__bloque">B · Conexiones</li>
+      <li><a class="indice__link i-fisiopatologia" href="#aferentes">Aferentes</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#eferentes">Eferentes</a></li>
+
+      <li class="indice__bloque">C · Funciones</li>
+      <li><a class="indice__link i-fisiopatologia" href="#motor">Control motor</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#sensitivo">Control sensitivo</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#autonomo">Autónomo y endocrino</a></li>
+      <li><a class="indice__link i-importantes"    href="#conciencia">Conciencia y SARA</a></li>
+
+      <li class="indice__bloque">D · Sistemas químicos</li>
+      <li><a class="indice__link i-fisiopatologia" href="#colinergico">Colinérgico</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#dopaminergico">Dopaminérgico</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#noradrenergico">Noradrenérgico</a></li>
+      <li><a class="indice__link i-fisiopatologia" href="#serotoninergico">Serotoninérgico</a></li>
+      <li><a class="indice__link i-clinica"        href="#correlacion">Correlación clínica</a></li>
+
+      <li class="indice__bloque">Cierre</li>
+      <li><a class="indice__link i-clinica"        href="#repaso">Repaso activo</a></li>
+      <li><a class="indice__link i-importantes"    href="#relampago">Ficha Relámpago</a></li>
+    </ul>
+  </nav>
+
+  <main class="cuerpo">
+
+    <header class="portada">
+      <p class="portada__materia">Neurología · Cuadernillo de estudio</p>
+      <h1 class="portada__tema">Formación Reticular y SARA</h1>
+      <p class="portada__bajada">La red de neuronas que ocupa el centro del tronco encefálico: dónde está, cómo se organiza en columnas, con qué se conecta, qué funciones controla, cómo mantiene la conciencia a través del sistema activador reticular ascendente y qué sistemas de neurotransmisores nacen de ella.</p>
+      <div class="portada__meta">
+        <span class="etiqueta s-generalidades">15 secciones</span>
+        <span class="etiqueta s-importantes">Tres columnas</span>
+        <span class="etiqueta s-fisiopatologia">SARA y conciencia</span>
+        <span class="etiqueta s-clinica">Monoaminas</span>
+      </div>
+    </header>
+
+    <nav class="indice-rapido" aria-label="Contenido del cuadernillo">
+      <p class="indice-rapido__rotulo">Contenido</p>
+      <ol class="indice-rapido__bloques">
+        <li>
+          <a class="ir-bloque" href="#bloque-a">Bloque A · Organización</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-generalidades" href="#concepto"><b>01</b> Conceptos fundamentales</a></li>
+            <li><a class="ir-link i-generalidades" href="#topografia"><b>02</b> Extensión topográfica</a></li>
+            <li><a class="ir-link i-importantes"   href="#columnas"><b>03</b> Organización en tres columnas</a></li>
+            <li><a class="ir-link i-generalidades" href="#nucleos"><b>04</b> Grupos de núcleos reticulares</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-b">Bloque B · Conexiones</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-fisiopatologia" href="#aferentes"><b>05</b> Conexiones aferentes</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#eferentes"><b>06</b> Conexiones eferentes</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-c">Bloque C · Funciones</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-fisiopatologia" href="#motor"><b>07</b> Control motor somático</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#sensitivo"><b>08</b> Control de las sensaciones</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#autonomo"><b>09</b> Control autónomo y endocrino</a></li>
+            <li><a class="ir-link i-importantes"    href="#conciencia"><b>10</b> Control de la conciencia: el SARA</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#bloque-d">Bloque D · Sistemas químicos</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-fisiopatologia" href="#colinergico"><b>11</b> Sistema reticular colinérgico</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#dopaminergico"><b>12</b> Formación reticular dopaminérgica</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#noradrenergico"><b>13</b> Formación reticular noradrenérgica</a></li>
+            <li><a class="ir-link i-fisiopatologia" href="#serotoninergico"><b>14</b> Formación reticular serotoninérgica</a></li>
+            <li><a class="ir-link i-clinica"        href="#correlacion"><b>15</b> Correlación clínica</a></li>
+          </ul>
+        </li>
+        <li>
+          <a class="ir-bloque" href="#repaso">Cierre</a>
+          <ul class="ir-secciones">
+            <li><a class="ir-link i-clinica"     href="#repaso"><b>·</b> Repaso activo</a></li>
+            <li><a class="ir-link i-importantes" href="#relampago"><b>·</b> Ficha Relámpago</a></li>
+          </ul>
+        </li>
+      </ol>
+    </nav>
+
+    <h2 class="bloque" id="bloque-a">
+      <span class="bloque__rotulo">Bloque A</span>
+      <span class="bloque__nombre">Organización</span>
+    </h2>
+
+    <!-- ============ 1 ============ -->
+    <section class="seccion s-generalidades" id="concepto">
+      <span class="seccion__pestana"><b>01</b> Generalidades</span>
+      <h2 class="seccion__titulo">Conceptos fundamentales</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Aspecto</th><th>Qué hay que saber</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Qué es</strong></td><td>Una <strong>masa de neuronas y fibras nerviosas</strong> que forma la parte <strong>central y profunda de la región dorsal del tallo encefálico</strong></td></tr>
+            <tr><td><strong>Neurotransmisores</strong></td><td>Es el principal <strong>sitio de origen de las monoaminas</strong> del SNC: grupos <strong>colinérgico</strong> y <strong>monoaminérgico</strong> (dopaminérgico, noradrenérgico y serotoninérgico)</td></tr>
+            <tr><td><strong>Filogenia</strong></td><td>Es la <strong>parte más antigua</strong> del tallo encefálico</td></tr>
+            <tr><td><strong>Estructura</strong></td><td>Neuronas de distintos tipos con <strong>dendritas largas</strong>, organizadas en agregados compactos y difusos, dentro de una compleja <strong>red de fibras</strong></td></tr>
+            <tr><td><strong>Organización</strong></td><td>Al principio se la describió como mal organizada, porque sus grupos celulares no tienen límites netos y los atraviesan haces de fibras largas que le dan el aspecto <strong>reticulado</strong>. Hoy se sabe que está <strong>muy organizada</strong>, en grupos de neuronas con funciones específicas</td></tr>
+            <tr><td><strong>Funciones</strong></td><td>Por sus conexiones con todo el sistema nervioso, participa en el control <strong>motor, sensitivo, autónomo, endocrino y de la conciencia</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>La clave para entenderla es su diseño: neuronas con <strong>dendritas largas</strong> que reciben información de muchas vías distintas, y axones que se proyectan a regiones muy amplias. Es una estructura hecha para <strong>integrar</strong> y para <strong>modular a gran escala</strong>, no para transmitir un dato puntual.</p>
+
+      <p class="cita">Apunte «Formación reticular», Prof. Juan Pablo Peñaloza (Facultad de Medicina, Universidad de Los Andes), material de la clase SARA: conceptos fundamentales.</p>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section class="seccion s-generalidades" id="topografia">
+      <span class="seccion__pestana"><b>02</b> Generalidades</span>
+      <h2 class="seccion__titulo">Extensión topográfica</h2>
+
+      <p>La formación reticular se describe como un <strong>núcleo continuo de neuronas que atraviesa todo el tallo encefálico</strong>: bulbo, protuberancia y mesencéfalo.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 262" role="img" aria-label="Límites de la formación reticular: cranealmente se continúa con el diencéfalo, núcleos inespecíficos del tálamo, hipotálamo lateral y subtálamo; caudalmente con las láminas reticulares intermedias de la sustancia gris de la médula cervical; ventralmente la rodean el lemnisco medio y las vías motoras descendentes; dorsal y lateralmente, los núcleos de los pares craneales y las vías sensitivas secundarias">
+          <rect x="200" y="10" width="420" height="50" rx="6" fill="var(--c)" fill-opacity="0.18" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="410" y="31" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Cranealmente · diencéfalo</text>
+          <text x="410" y="50" text-anchor="middle" font-size="11" fill="currentColor">núcleos inespecíficos del tálamo · hipotálamo lateral · subtálamo</text>
+          <rect x="300" y="96" width="220" height="70" rx="8" fill="var(--c)" fill-opacity="0.45" stroke="currentColor" stroke-width="1.5"></rect>
+          <text x="410" y="124" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">Formación reticular</text>
+          <text x="410" y="145" text-anchor="middle" font-size="11" fill="currentColor">núcleo continuo a lo largo</text>
+          <text x="410" y="160" text-anchor="middle" font-size="11" fill="currentColor">de todo el tallo</text>
+          <rect x="200" y="202" width="420" height="50" rx="6" fill="var(--c)" fill-opacity="0.18" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="410" y="223" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Caudalmente · médula espinal</text>
+          <text x="410" y="242" text-anchor="middle" font-size="11" fill="currentColor">láminas reticulares intermedias de la sustancia gris cervical</text>
+          <rect x="20" y="96" width="240" height="70" rx="6" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="140" y="120" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Ventralmente</text>
+          <text x="140" y="140" text-anchor="middle" font-size="11" fill="currentColor">lemnisco medio</text>
+          <text x="140" y="156" text-anchor="middle" font-size="11" fill="currentColor">vías motoras descendentes</text>
+          <rect x="560" y="96" width="240" height="70" rx="6" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="680" y="120" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Dorsal y lateralmente</text>
+          <text x="680" y="140" text-anchor="middle" font-size="11" fill="currentColor">núcleos de los pares craneales</text>
+          <text x="680" y="156" text-anchor="middle" font-size="11" fill="currentColor">vías sensitivas secundarias</text>
+          <line x1="410" y1="60" x2="410" y2="96" stroke="currentColor" stroke-width="1.6"></line>
+          <line x1="410" y1="166" x2="410" y2="202" stroke="currentColor" stroke-width="1.6"></line>
+          <line x1="260" y1="131" x2="300" y2="131" stroke="currentColor" stroke-width="1.6" stroke-dasharray="4 3"></line>
+          <line x1="520" y1="131" x2="560" y2="131" stroke="currentColor" stroke-width="1.6" stroke-dasharray="4 3"></line>
+        </svg>
+        <figcaption>Arriba y abajo, la formación reticular <strong>se continúa</strong> (líneas llenas); a los costados, <strong>está rodeada</strong> por otras estructuras (líneas punteadas). Queda en el centro, entre las grandes vías motoras por delante y los núcleos de los pares craneales por detrás.</figcaption>
+      </figure>
+
+      <p>El apunte la ilustra en un corte sagital del tronco: una columna que va desde la sustancia gris lateral de la médula hasta el tálamo y el hipotálamo, pasando junto a los núcleos motores del <strong>V</strong> y del <strong>VII</strong> par y el <strong>núcleo ambiguo</strong>, por detrás del lemnisco medio y de las vías motoras descendentes.</p>
+
+      <p class="cita">Apunte «Formación reticular», Prof. J. P. Peñaloza: extensión topográfica y esquema sagital.</p>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section class="seccion s-importantes" id="columnas">
+      <span class="seccion__pestana"><b>03</b> Organización</span>
+      <h2 class="seccion__titulo">Organización en tres columnas</h2>
+
+      <p>Por su citoarquitectura y su función, la formación reticular se organiza en <strong>tres columnas longitudinales</strong>, de la línea media hacia afuera.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 268" role="img" aria-label="Tres columnas de la formación reticular desde la línea media hacia lateral: columna mediana o del rafe, de neuronas medianas, con serotonina y acetilcolina; columna medial o magnocelular, con las células más grandes, con noradrenalina del núcleo cerúleo y acetilcolina; columna lateral o parvocelular, de neuronas pequeñas y dispersas. La mediana y la medial forman la región efectora principal; la lateral, la región afectora principal">
+          <defs>
+            <marker id="sara-col" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <line x1="120" y1="20" x2="120" y2="160" stroke="currentColor" stroke-width="1.4" stroke-dasharray="5 4"></line>
+          <text x="112" y="34" text-anchor="end" font-size="11" fill="currentColor">línea</text>
+          <text x="112" y="49" text-anchor="end" font-size="11" fill="currentColor">media</text>
+          <rect x="130" y="30" width="120" height="110" rx="8" fill="var(--c)" fill-opacity="0.50" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="190" y="66" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Mediana</text>
+          <text x="190" y="84" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">o del rafe</text>
+          <text x="190" y="110" text-anchor="middle" font-size="10.5" fill="currentColor">neuronas</text>
+          <text x="190" y="124" text-anchor="middle" font-size="10.5" fill="currentColor">medianas</text>
+          <rect x="260" y="30" width="220" height="110" rx="8" fill="var(--c)" fill-opacity="0.34" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="370" y="66" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Medial</text>
+          <text x="370" y="84" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">magnocelular</text>
+          <text x="370" y="110" text-anchor="middle" font-size="10.5" fill="currentColor">neuronas intermedias, con</text>
+          <text x="370" y="124" text-anchor="middle" font-size="10.5" fill="currentColor">las células más grandes</text>
+          <rect x="490" y="30" width="300" height="110" rx="8" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="640" y="66" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">Lateral</text>
+          <text x="640" y="84" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor">parvocelular</text>
+          <text x="640" y="110" text-anchor="middle" font-size="10.5" fill="currentColor">neuronas pequeñas</text>
+          <text x="640" y="124" text-anchor="middle" font-size="10.5" fill="currentColor">y muy dispersas</text>
+          <text x="190" y="164" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">serotonina</text>
+          <text x="190" y="180" text-anchor="middle" font-size="11" fill="currentColor">(y acetilcolina)</text>
+          <text x="370" y="164" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">noradrenalina (cerúleo)</text>
+          <text x="370" y="180" text-anchor="middle" font-size="11" fill="currentColor">y acetilcolina</text>
+          <text x="640" y="164" text-anchor="middle" font-size="11" fill="currentColor">recibe la mayoría</text>
+          <text x="640" y="180" text-anchor="middle" font-size="11" fill="currentColor">de las aferencias</text>
+          <path d="M130 200 L130 210 L480 210 L480 200" fill="none" stroke="currentColor" stroke-width="1.4"></path>
+          <text x="305" y="230" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">región EFECTORA principal</text>
+          <path d="M490 200 L490 210 L790 210 L790 200" fill="none" stroke="currentColor" stroke-width="1.4"></path>
+          <text x="640" y="230" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">región AFECTORA principal</text>
+          <line x1="130" y1="254" x2="790" y2="254" stroke="currentColor" stroke-width="1.2" marker-end="url(#sara-col)"></line>
+          <text x="460" y="250" text-anchor="middle" font-size="10.5" fill="currentColor">de la línea media hacia lateral</text>
+        </svg>
+        <figcaption>Regla para recordar: <strong>adentro sale, afuera entra</strong>. Las columnas mediana y medial son la región <strong>efectora</strong> (de donde salen las proyecciones); la lateral, la región <strong>afectora</strong> (la que recibe).</figcaption>
+      </figure>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Columna</th><th>Extensión y células</th><th>Neurotransmisor</th><th>Función</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>1 · Mediana</strong> o <strong>núcleos del rafe</strong></td><td>Se extiende por <strong>bulbo, protuberancia y mesencéfalo</strong>. Agregados de neuronas medianas en láminas estrechas, bilaterales y verticales, que se entremezclan en el plano medio y ocupan también la zona paramediana</td><td><strong>Serotonina</strong> (su principal neurotransmisor); otras células, <strong>acetilcolina</strong></td><td>Región <strong>efectora</strong></td></tr>
+            <tr><td><strong>2 · Medial</strong> o zona reticular <strong>magnocelular</strong></td><td>Fondo de neuronas de tamaño intermedio, con las <strong>células más grandes</strong> de todos estos núcleos en ciertas regiones</td><td><strong>Noradrenalina</strong> (núcleo cerúleo); otras, <strong>acetilcolina</strong></td><td>Región <strong>efectora</strong></td></tr>
+            <tr><td><strong>3 · Lateral</strong> o zona reticular <strong>parvocelular</strong></td><td>Casi exclusivamente <strong>neuronas pequeñas y muy dispersas</strong></td><td>—</td><td>Región <strong>afectora</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Apunte «Formación reticular», Prof. J. P. Peñaloza: organización topográfica y funcional, con las anotaciones de neurotransmisores de la clase.</p>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section class="seccion s-generalidades" id="nucleos">
+      <span class="seccion__pestana"><b>04</b> Organización</span>
+      <h2 class="seccion__titulo">Grupos de núcleos reticulares</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Columna</th><th>Núcleos</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>1 · Mediana o del rafe</strong></td><td>Rafe dorsal · central superior · rafe pontino · rafe magno · rafe pálido · rafe oscuro</td></tr>
+            <tr><td><strong>2 · Medial</strong></td><td>Cuneiforme y subcuneiforme · <strong>cerúleo</strong> y subcerúleo · reticular de la calota protuberancial · reticular pontino oral o pontino bucal · reticular pontino caudal · <strong>gigantocelular bulbar</strong></td></tr>
+            <tr><td><strong>3 · Lateral</strong></td><td><strong>Pedunculopontino</strong> · <strong>parabraquial</strong> · parvocelular reticular · reticular lateral de la médula espinal</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Los núcleos <strong>cuneiforme y subcuneiforme</strong> pertenecen anatómicamente a la columna lateral, pero se los ubica en la medial porque tienen un <strong>patrón de conectividad y una función</strong> similares a los de ella. En el esquema del apunte, los núcleos del rafe se ordenan de rostral a caudal: el <strong>rafe dorsal</strong> y el <strong>central superior</strong> en el mesencéfalo y la parte alta de la protuberancia, el <strong>pontino</strong> en la protuberancia, y el <strong>magno</strong>, el <strong>pálido</strong> y el <strong>oscuro</strong> hacia el bulbo.</p>
+
+      <p class="cita">Apunte «Formación reticular», Prof. J. P. Peñaloza: grupos de núcleos reticulares y esquema dorsal del tronco.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-b">
+      <span class="bloque__rotulo">Bloque B</span>
+      <span class="bloque__nombre">Conexiones</span>
+    </h2>
+
+    <!-- ============ 5 ============ -->
+    <section class="seccion s-fisiopatologia" id="aferentes">
+      <span class="seccion__pestana"><b>05</b> Conexiones</span>
+      <h2 class="seccion__titulo">Conexiones aferentes</h2>
+
+      <p>Llegan a la formación reticular vías desde casi todo el sistema nervioso central, y muchas son <strong>recíprocas</strong>: es una <strong>función autorreguladora</strong>, porque la formación reticular devuelve proyecciones a las mismas regiones que la informan.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 316" role="img" aria-label="Aferencias a la formación reticular desde la médula espinal, la sustancia gris periacueductal, los núcleos sensitivos de los pares craneales, el cerebelo, la corteza, el hipotálamo y el sistema límbico, y el cuerpo estriado. Eferencias hacia la médula espinal y los núcleos motores de los pares craneales, el cerebelo, el tálamo, la corteza, el hipotálamo y el sistema límbico, el núcleo rojo y la sustancia negra">
+          <defs>
+            <marker id="sara-con" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <text x="135" y="14" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">AFERENCIAS</text>
+          <text x="685" y="14" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">EFERENCIAS</text>
+          <rect x="20" y="24" width="230" height="32" rx="4" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1"></rect>
+          <text x="135" y="45" text-anchor="middle" font-size="11" fill="currentColor">Espino-reticular · médula</text>
+          <rect x="20" y="64" width="230" height="32" rx="4" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1"></rect>
+          <text x="135" y="85" text-anchor="middle" font-size="11" fill="currentColor">Mesencéfalo-reticular · periacueductal</text>
+          <rect x="20" y="104" width="230" height="32" rx="4" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1"></rect>
+          <text x="135" y="125" text-anchor="middle" font-size="11" fill="currentColor">Núcleo-reticular · pares craneales</text>
+          <rect x="20" y="144" width="230" height="32" rx="4" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1"></rect>
+          <text x="135" y="165" text-anchor="middle" font-size="11" fill="currentColor">Cerebelo-reticular</text>
+          <rect x="20" y="184" width="230" height="32" rx="4" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1"></rect>
+          <text x="135" y="205" text-anchor="middle" font-size="11" fill="currentColor">Córtico-reticular</text>
+          <rect x="20" y="224" width="230" height="32" rx="4" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1"></rect>
+          <text x="135" y="245" text-anchor="middle" font-size="11" fill="currentColor">Hipotálamo y límbico-reticular</text>
+          <rect x="20" y="264" width="230" height="32" rx="4" fill="var(--c)" fill-opacity="0.16" stroke="currentColor" stroke-width="1"></rect>
+          <text x="135" y="285" text-anchor="middle" font-size="11" fill="currentColor">Estrío-reticular · globo pálido</text>
+
+          <rect x="330" y="110" width="160" height="100" rx="10" fill="var(--c)" fill-opacity="0.45" stroke="currentColor" stroke-width="1.6"></rect>
+          <text x="410" y="150" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">Formación</text>
+          <text x="410" y="168" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">reticular</text>
+          <text x="410" y="190" text-anchor="middle" font-size="10.5" fill="currentColor">integra y modula</text>
+
+          <line x1="250" y1="40" x2="328" y2="128" stroke="currentColor" stroke-width="1.1" marker-end="url(#sara-con)"></line>
+          <line x1="250" y1="80" x2="328" y2="138" stroke="currentColor" stroke-width="1.1" marker-end="url(#sara-con)"></line>
+          <line x1="250" y1="120" x2="328" y2="148" stroke="currentColor" stroke-width="1.1" marker-end="url(#sara-con)"></line>
+          <line x1="250" y1="160" x2="328" y2="160" stroke="currentColor" stroke-width="1.1" marker-end="url(#sara-con)"></line>
+          <line x1="250" y1="200" x2="328" y2="172" stroke="currentColor" stroke-width="1.1" marker-end="url(#sara-con)"></line>
+          <line x1="250" y1="240" x2="328" y2="182" stroke="currentColor" stroke-width="1.1" marker-end="url(#sara-con)"></line>
+          <line x1="250" y1="280" x2="328" y2="192" stroke="currentColor" stroke-width="1.1" marker-end="url(#sara-con)"></line>
+
+          <rect x="570" y="34" width="230" height="32" rx="4" fill="var(--c)" fill-opacity="0.30" stroke="currentColor" stroke-width="1"></rect>
+          <text x="685" y="55" text-anchor="middle" font-size="11" fill="currentColor">Retículo-espinal y retículo-bulbar</text>
+          <rect x="570" y="80" width="230" height="32" rx="4" fill="var(--c)" fill-opacity="0.30" stroke="currentColor" stroke-width="1"></rect>
+          <text x="685" y="101" text-anchor="middle" font-size="11" fill="currentColor">Retículo-cerebelosa</text>
+          <rect x="570" y="126" width="230" height="32" rx="4" fill="var(--c)" fill-opacity="0.55" stroke="currentColor" stroke-width="1.3"></rect>
+          <text x="685" y="147" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">Retículo-talámica · SARA</text>
+          <rect x="570" y="172" width="230" height="32" rx="4" fill="var(--c)" fill-opacity="0.30" stroke="currentColor" stroke-width="1"></rect>
+          <text x="685" y="193" text-anchor="middle" font-size="11" fill="currentColor">Retículo-cortical</text>
+          <rect x="570" y="218" width="230" height="32" rx="4" fill="var(--c)" fill-opacity="0.30" stroke="currentColor" stroke-width="1"></rect>
+          <text x="685" y="239" text-anchor="middle" font-size="11" fill="currentColor">Retículo-hipotalámica y límbica</text>
+          <rect x="570" y="264" width="230" height="32" rx="4" fill="var(--c)" fill-opacity="0.30" stroke="currentColor" stroke-width="1"></rect>
+          <text x="685" y="285" text-anchor="middle" font-size="11" fill="currentColor">Retículo-rúbrica y retículo-nígrica</text>
+
+          <line x1="492" y1="130" x2="568" y2="50" stroke="currentColor" stroke-width="1.1" marker-end="url(#sara-con)"></line>
+          <line x1="492" y1="142" x2="568" y2="96" stroke="currentColor" stroke-width="1.1" marker-end="url(#sara-con)"></line>
+          <line x1="492" y1="154" x2="568" y2="142" stroke="currentColor" stroke-width="1.4" marker-end="url(#sara-con)"></line>
+          <line x1="492" y1="166" x2="568" y2="188" stroke="currentColor" stroke-width="1.1" marker-end="url(#sara-con)"></line>
+          <line x1="492" y1="178" x2="568" y2="234" stroke="currentColor" stroke-width="1.1" marker-end="url(#sara-con)"></line>
+          <line x1="492" y1="190" x2="568" y2="280" stroke="currentColor" stroke-width="1.1" marker-end="url(#sara-con)"></line>
+        </svg>
+        <figcaption>Entra información de casi todo el sistema nervioso y sale hacia casi todo el sistema nervioso. La salida que más importa en clínica es la <strong>retículo-talámica</strong>, que forma el SARA (sección 10).</figcaption>
+      </figure>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Aferencia</th><th>Origen</th><th>Qué aporta</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>a · Espino-reticular</strong></td><td>Médula espinal: fascículos <strong>espinotalámicos, espinorreticulares</strong> y <strong>lemnisco medial</strong></td><td>Sensibilidad termoalgésica, propioceptiva consciente, posicional, vibratoria, táctil protopática y visceral</td></tr>
+            <tr><td><strong>b · Mesencéfalo-reticular</strong></td><td><strong>Sustancia gris periacueductal</strong> → núcleos del rafe del bulbo</td><td>La aferencia facilitadora de la periacueductal al rafe, y las proyecciones inhibitorias del rafe sobre las neuronas espinotalámicas del asta dorsal, son el <strong>sustrato anatómico del efecto analgésico</strong> de la estimulación eléctrica de la periacueductal</td></tr>
+            <tr><td><strong>c · Núcleo-reticular</strong></td><td>Núcleos sensitivos de <strong>todos los pares craneales</strong>: espinal del trigémino (V, aferencias somáticas generales) · tracto solitario (VII, IX y X, aferencias viscerales) · vestibulares y cocleares (VIII) · ópticos (II, por fibras retinotectales y tectorreticulares) · olfatorios (I, por el fascículo medio del cerebro anterior)</td><td>Información necesaria para los <strong>centros vegetativos</strong> de la formación reticular</td></tr>
+            <tr><td><strong>d · Cerebelo-reticular</strong></td><td>Núcleos del <strong>techo</strong> (vestibulocerebelo) y <strong>dentado</strong> (pontocerebelo), por el fascículo uncinado, directa y cruzada, hasta la formación reticular bulbar y protuberancial</td><td>Circuito de retroalimentación para la <strong>regulación de las actividades motoras</strong></td></tr>
+            <tr><td><strong>e · Córtico-reticular</strong></td><td>Amplias áreas corticales, sobre todo las <strong>sensoriomotoras</strong></td><td>Las regiones que las reciben dan origen a las <strong>fibras reticuloespinales</strong></td></tr>
+            <tr><td><strong>f · Hipotálamo y límbico-reticular</strong></td><td>Hipotálamo medial y lateral, hipocampo, amígdala y área septal, por el fascículo medio del cerebro anterior, el tubérculo mamilar y el sistema periventricular</td><td>Control de los centros <strong>simpáticos y parasimpáticos</strong> y de las manifestaciones <strong>vegetativas y emocionales</strong></td></tr>
+            <tr><td><strong>g · Estrío-reticular</strong></td><td><strong>Globo pálido</strong></td><td>Regulación de la actividad motora a través de las fibras reticuloespinales</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Apunte «Formación reticular», Prof. J. P. Peñaloza: conexiones aferentes y cuadro de las principales aferencias.</p>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section class="seccion s-fisiopatologia" id="eferentes">
+      <span class="seccion__pestana"><b>06</b> Conexiones</span>
+      <h2 class="seccion__titulo">Conexiones eferentes</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Eferencia</th><th>Destino y vía</th><th>Función</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>a · Retículo-espinal</strong></td><td>Centros autonómicos, locomotores e interneuronas de la médula, por los fascículos <strong>reticuloespinal medial y lateral</strong>; núcleos motores de los pares craneales, por el fascículo <strong>reticulobulbar</strong></td><td>Control motor y autonómico</td></tr>
+            <tr><td><strong>b · Retículo-cerebelosa</strong></td><td>Cerebelo, desde la columna lateral del bulbo y la protuberancia</td><td>Retroalimentación sobre el cerebelo y la regulación motora de la médula</td></tr>
+            <tr><td><strong>c · Retículo-talámica</strong></td><td><strong>Núcleos inespecíficos del tálamo</strong>, que a su vez se proyectan a amplias zonas de la corteza y la activan: es el <strong>sistema reticular activador ascendente</strong></td><td>Fundamental para mantener un <strong>estado de conciencia normal</strong></td></tr>
+            <tr><td><strong>d · Retículo-cortical</strong></td><td>Amplias áreas de la corteza, con retroalimentación constante</td><td><strong>Reacción del despertar</strong> y mantenimiento de la <strong>vigilia</strong></td></tr>
+            <tr><td><strong>e · Retículo-hipotalámica y límbica</strong></td><td>Hipotálamo medial y lateral, tubérculos mamilares y área septal</td><td>Regulación de procesos <strong>autónomos, endocrinos y de la conducta</strong></td></tr>
+            <tr><td><strong>f · Retículo-rúbrica y retículo-nígrica</strong></td><td>Neuronas <strong>colinérgicas</strong> de la formación reticular pontina y bulbar → núcleo rojo y sustancia negra</td><td>Control motor, reacción del despertar y mantenimiento de la conciencia</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>Una inconsistencia del apunte.</strong> El texto define a las columnas mediana y medial como la región <strong>efectora</strong>, pero el cuadro de las principales eferencias pone en el centro a los «núcleos de la columna lateral». Para el examen conviene quedarse con la regla del texto: la columna <strong>lateral recibe</strong> y la <strong>medial emite</strong>. De la zona medial magnocelular nacen las fibras reticuloespinales largas.</p>
+
+      <p class="cita">Apunte «Formación reticular», Prof. J. P. Peñaloza: conexiones eferentes y cuadro de las principales eferencias. Origen medial de las fibras reticuloespinales: Snell, <em>Neuroanatomía clínica</em>, capítulo de la formación reticular.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-c">
+      <span class="bloque__rotulo">Bloque C</span>
+      <span class="bloque__nombre">Funciones</span>
+    </h2>
+
+    <!-- ============ 7 ============ -->
+    <section class="seccion s-fisiopatologia" id="motor">
+      <span class="seccion__pestana"><b>07</b> Funciones</span>
+      <h2 class="seccion__titulo">Control motor del músculo esquelético</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Conexión</th><th>Cómo actúa</th><th>Efecto</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>a · Con el cerebelo y el núcleo rojo</strong></td><td>Recibe fibras espinorreticulares directas, colaterales de las espinotalámicas y del núcleo rojo, que se proyectan al cerebelo. Junto con el <strong>aparato vestibular</strong> y el <strong>tracto vestibuloespinal</strong></td><td>Mantiene el <strong>tono de los músculos antigravitatorios</strong> en la posición de pie</td></tr>
+            <tr><td><strong>b · Con la médula, la sustancia negra y la corteza</strong></td><td>Por los tractos <strong>reticuloespinal</strong> y <strong>reticulobulbar</strong>, y sus conexiones con los ganglios basales, la sustancia negra y la corteza</td><td>Influye sobre las <strong>motoneuronas alfa y gamma</strong> (tono muscular y actividad refleja) y sobre el <strong>patrón central del movimiento</strong> (fuerza y dirección de la contracción)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La formación reticular no inicia el movimiento voluntario: <strong>regula el tono</strong> y la postura sobre la que se apoya ese movimiento. Por eso recibe tanto del cerebelo, de los ganglios basales y de la corteza motora.</p>
+
+      <p class="cita">Apunte «Formación reticular», Prof. J. P. Peñaloza: función motora somática.</p>
+    </section>
+
+    <!-- ============ 8 ============ -->
+    <section class="seccion s-fisiopatologia" id="sensitivo">
+      <span class="seccion__pestana"><b>08</b> Funciones</span>
+      <h2 class="seccion__titulo">Control de las sensaciones somáticas y viscerales</h2>
+
+      <p>Las neuronas reticulares controlan la actividad de los <strong>arcos reflejos medulares</strong> y el <strong>acceso de la información sensitiva</strong> a las vías ascendentes que van a niveles supraespinales. Esa influencia puede ser <strong>facilitadora o inhibidora</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Mecanismo</th><th>Qué pasa</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Mecanismo de la puerta</strong></td><td>La estimulación de ciertas áreas de la formación reticular <strong>bulbar</strong> inhibe interneuronas y células fasciculares sensitivas de la médula: regula la <strong>percepción del dolor</strong></td></tr>
+            <tr><td><strong>Analgesia desde la periacueductal</strong></td><td>La sustancia gris periacueductal facilita a los núcleos del rafe bulbar, y el rafe inhibe a las neuronas espinotalámicas del asta dorsal: por eso la <strong>estimulación eléctrica de la periacueductal produce analgesia</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>El dolor no llega a la conciencia tal como entra por la médula: el tronco decide <strong>cuánto deja pasar</strong>. Esa compuerta descendente, desde la periacueductal y el rafe hacia el asta dorsal, es uno de los mecanismos de control del dolor.</p>
+
+      <p class="cita">Apunte «Formación reticular», Prof. J. P. Peñaloza: función sensorial somática y aferencia mesencéfalo-reticular.</p>
+    </section>
+
+    <!-- ============ 9 ============ -->
+    <section class="seccion s-fisiopatologia" id="autonomo">
+      <span class="seccion__pestana"><b>09</b> Funciones</span>
+      <h2 class="seccion__titulo">Control autónomo y endocrino</h2>
+
+      <p>A la formación reticular llega mucha información visceral; con ella programa las respuestas adecuadas a los cambios del entorno y las proyecta a los <strong>núcleos autónomos del tronco y de la médula</strong>. Hay centros reticulares para varias funciones viscerales:</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Grupo estimulado</th><th>Respiración</th><th>Circulación</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Núcleos reticulares mediales del bulbo</strong></td><td>Reacción <strong>inspiratoria</strong></td><td>Efecto <strong>depresor</strong>: baja la frecuencia cardíaca y la presión arterial</td></tr>
+            <tr><td><strong>Núcleos reticulares laterales del bulbo</strong></td><td>Respuesta <strong>espiratoria</strong></td><td>Acción <strong>presora</strong>: sube la frecuencia cardíaca y la presión arterial</td></tr>
+            <tr><td><strong>Núcleos parabraquiales de la protuberancia</strong></td><td>Regulación del <strong>ritmo respiratorio</strong>: <strong>centro neumotáxico</strong></td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Control endocrino</h3>
+      <p>Por su conexión con los <strong>núcleos hipotalámicos</strong>, la formación reticular controla en forma <strong>indirecta</strong> la actividad de la <strong>hipófisis</strong>: influye en la síntesis y liberación de los factores hormonales liberadores o inhibidores.</p>
+
+      <p class="cita">Apunte «Formación reticular», Prof. J. P. Peñaloza: función motora visceral y control endocrino.</p>
+    </section>
+
+    <!-- ============ 10 ============ -->
+    <section class="seccion s-importantes" id="conciencia">
+      <span class="seccion__pestana"><b>10</b> Funciones</span>
+      <h2 class="seccion__titulo">Control de la conciencia: el SARA</h2>
+
+      <p>El <strong>despertar</strong> y el <strong>nivel de conciencia</strong> dependen de la formación reticular. Las múltiples vías ascendentes que llevan información sensitiva a los centros superiores pasan por ella, y ella la proyecta al <strong>diencéfalo</strong> (núcleos inespecíficos del tálamo, subtálamo e hipotálamo), a los ganglios basales y después a distintas partes de la corteza. Eso produce el <strong>despertamiento cortical</strong>, la <strong>atención</strong> y la <strong>alerta</strong> ante los estímulos. Los distintos grados de vigilia dependen del grado de actividad de la formación reticular.</p>
+
+      <p>La parte de la formación reticular que proporciona estas aferencias es el <strong>sistema de activación reticular ascendente (SARA)</strong>.</p>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 300" role="img" aria-label="Elementos del SARA: las vías sensitivas llegan por colaterales a la formación reticular del tallo encefálico, que se proyecta al diencéfalo, núcleos inespecíficos del tálamo, hipotálamo y subtálamo, y de ahí a la corteza cerebral. La corteza devuelve una retroalimentación constante a la formación reticular">
+          <defs>
+            <marker id="sara-act" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <rect x="270" y="14" width="280" height="46" rx="6" fill="var(--c)" fill-opacity="0.22" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="410" y="36" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">1 · Corteza cerebral</text>
+          <text x="410" y="52" text-anchor="middle" font-size="10.5" fill="currentColor">despertamiento · atención · alerta</text>
+          <rect x="250" y="108" width="320" height="80" rx="6" fill="var(--c)" fill-opacity="0.32" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="410" y="130" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">2 · Diencéfalo</text>
+          <text x="410" y="150" text-anchor="middle" font-size="11" fill="currentColor">núcleos inespecíficos del tálamo</text>
+          <text x="410" y="166" text-anchor="middle" font-size="11" fill="currentColor">hipotálamo · subtálamo</text>
+          <rect x="270" y="236" width="280" height="52" rx="6" fill="var(--c)" fill-opacity="0.50" stroke="currentColor" stroke-width="1.5"></rect>
+          <text x="410" y="258" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">3 · Formación reticular</text>
+          <text x="410" y="276" text-anchor="middle" font-size="11" fill="currentColor">del tallo encefálico</text>
+          <line x1="410" y1="236" x2="410" y2="192" stroke="currentColor" stroke-width="1.8" marker-end="url(#sara-act)"></line>
+          <line x1="410" y1="108" x2="410" y2="64" stroke="currentColor" stroke-width="1.8" marker-end="url(#sara-act)"></line>
+          <path d="M550 37 L680 37 L680 262 L554 262" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#sara-act)"></path>
+          <text x="690" y="140" font-size="11" font-weight="700" fill="currentColor">retroalimentación</text>
+          <text x="690" y="156" font-size="11" fill="currentColor">cortical constante</text>
+          <line x1="40" y1="262" x2="266" y2="262" stroke="currentColor" stroke-width="1.6" marker-end="url(#sara-act)"></line>
+          <text x="40" y="232" font-size="11" font-weight="700" fill="currentColor">vías sensitivas ascendentes</text>
+          <text x="40" y="248" font-size="11" fill="currentColor">(colaterales) y receptores periféricos</text>
+          <text x="40" y="118" font-size="11" font-weight="700" fill="currentColor">convergencia:</text>
+          <text x="40" y="134" font-size="11" fill="currentColor">muchas aferencias entran</text>
+          <text x="40" y="160" font-size="11" font-weight="700" fill="currentColor">divergencia:</text>
+          <text x="40" y="176" font-size="11" fill="currentColor">sale hacia toda la corteza</text>
+        </svg>
+        <figcaption>El SARA no lleva información sensitiva específica: lleva <strong>activación</strong>. Por eso un estímulo intenso de cualquier modalidad puede despertar, y una lesión del sistema apaga la corteza aunque ella esté sana.</figcaption>
+      </figure>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Característica</th><th>Por qué importa</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Convergencia</strong> de varias aferencias sensoriales</td><td>Cualquier modalidad sensitiva puede activarlo</td></tr>
+            <tr><td><strong>Conexiones multisinápticas</strong></td><td>No transmite un dato puntual, sino un nivel general de activación</td></tr>
+            <tr><td><strong>Divergencia</strong> de sus proyecciones a toda la corteza</td><td>Lo hace el sistema más adecuado para el <strong>despertamiento</strong></td></tr>
+            <tr><td><strong>Retroalimentación</strong> constante de la corteza y de los receptores periféricos</td><td>La corteza también regula su propio nivel de activación</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="importante">
+        <svg class="importante__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <p class="importante__titulo">¡Importante!</p>
+        <p>En los experimentos, la <strong>estimulación del SARA mejora el aprendizaje</strong> y su <strong>destrucción produce somnolencia o coma</strong>. Es la base para entender el coma: la conciencia necesita una formación reticular que active y una corteza que responda. Si se lesiona el SARA en el tronco o en el diencéfalo, el paciente queda en coma aunque la corteza esté sana.</p>
+      </div>
+
+      <p class="cita">Apunte «Formación reticular», Prof. J. P. Peñaloza: control de la conciencia y elementos del SARA.</p>
+    </section>
+
+    <h2 class="bloque" id="bloque-d">
+      <span class="bloque__rotulo">Bloque D</span>
+      <span class="bloque__nombre">Sistemas químicos</span>
+    </h2>
+
+    <!-- ============ 11 ============ -->
+    <section class="seccion s-fisiopatologia" id="colinergico">
+      <span class="seccion__pestana"><b>11</b> Neurotransmisores</span>
+      <h2 class="seccion__titulo">Sistema reticular colinérgico</h2>
+
+      <p>Las neuronas de la formación reticular son el principal origen de las <strong>monoaminas</strong> del SNC. Se reconocen dos sistemas químicos: el <strong>colinérgico</strong> y el <strong>monoaminérgico</strong>, que a su vez incluye los subsistemas <strong>dopaminérgico, noradrenérgico y serotoninérgico</strong>. Las neuronas dopaminérgicas tienen una distribución <strong>localizada</strong>; las noradrenérgicas y serotoninérgicas, una proyección <strong>difusa</strong>.</p>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Aspecto</th><th>Sistema colinérgico</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Ubicación principal</strong></td><td>Núcleos de la columna lateral de la formación reticular bulbar y protuberancial (<strong>núcleo pedunculopontino</strong>), junto a los núcleos motores o sensitivos de los pares craneales, en particular los que forman parte del <strong>SARA</strong></td></tr>
+            <tr><td><strong>Otras ubicaciones según el apunte</strong></td><td>Formación reticular mesencefálica (sustancia negra) y unión bulbo-protuberancial (rafe dorsal, cuneiforme y subcuneiforme)</td></tr>
+            <tr><td><strong>Funciones</strong></td><td>Control del <strong>movimiento</strong> y del <strong>ciclo sueño-vigilia</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Ojo con la sustancia negra: el mismo apunte describe su porción compacta como el grupo <strong>dopaminérgico A9</strong> (sección 12). Las neuronas colinérgicas que se relacionan con ella son las de la formación reticular pontina y bulbar que se proyectan a la sustancia negra (sección 06).</p>
+
+      <p class="cita">Apunte «Formación reticular», Prof. J. P. Peñaloza: sistemas de monoaminas y sistema reticular colinérgico.</p>
+    </section>
+
+    <!-- ============ 12 ============ -->
+    <section class="seccion s-fisiopatologia" id="dopaminergico">
+      <span class="seccion__pestana"><b>12</b> Neurotransmisores</span>
+      <h2 class="seccion__titulo">Formación reticular dopaminérgica</h2>
+
+      <p>Hay tres grupos de neuronas reticulares dopaminérgicas en el <strong>mesencéfalo</strong>, formados por láminas de células interconectadas:</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Grupo</th><th>Estructura</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>A8</strong></td><td>Parte de la formación reticular mesencefálica; la parte externa de la sustancia negra</td></tr>
+            <tr><td><strong>A9</strong></td><td>La totalidad de la <strong>porción compacta de la sustancia negra</strong></td></tr>
+            <tr><td><strong>A10</strong></td><td>El apunte lo llama «núcleo parabraquial». Corresponde al <strong>área tegmental ventral</strong>, que incluye los núcleos <strong>parabraquial pigmentado</strong> y <strong>paranigral</strong>. No hay que confundirlo con el núcleo parabraquial de la protuberancia (columna lateral, centro neumotáxico)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <figure class="esquema">
+        <svg viewBox="0 0 820 250" role="img" aria-label="Las tres vías dopaminérgicas: nigroestriada, desde la porción compacta de la sustancia negra, A9, al estriado, caudado y putamen, cuya interrupción da enfermedad de Parkinson; mesolímbica, desde el área tegmental ventral, A10, a los núcleos límbicos, cuya hiperactividad se relaciona con alucinaciones esquizofrénicas; mesocortical, desde el área tegmental ventral a la corteza prefrontal, cuya lesión se acompaña de déficit cognitivo en el Parkinson">
+          <defs>
+            <marker id="sara-da" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <rect x="30" y="34" width="230" height="56" rx="6" fill="var(--c)" fill-opacity="0.45" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="145" y="58" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Sustancia negra compacta</text>
+          <text x="145" y="77" text-anchor="middle" font-size="11" fill="currentColor">A9</text>
+          <rect x="30" y="148" width="230" height="56" rx="6" fill="var(--c)" fill-opacity="0.45" stroke="currentColor" stroke-width="1.4"></rect>
+          <text x="145" y="172" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Área tegmental ventral</text>
+          <text x="145" y="191" text-anchor="middle" font-size="11" fill="currentColor">A10 · zona paramediana</text>
+          <rect x="540" y="14" width="250" height="60" rx="6" fill="var(--c)" fill-opacity="0.18" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="665" y="38" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Estriado: caudado y putamen</text>
+          <text x="665" y="58" text-anchor="middle" font-size="11" fill="currentColor">interrupción: Parkinson</text>
+          <rect x="540" y="96" width="250" height="60" rx="6" fill="var(--c)" fill-opacity="0.18" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="665" y="120" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Núcleos límbicos</text>
+          <text x="665" y="140" text-anchor="middle" font-size="11" fill="currentColor">hiperactividad: alucinaciones</text>
+          <rect x="540" y="178" width="250" height="60" rx="6" fill="var(--c)" fill-opacity="0.18" stroke="currentColor" stroke-width="1.2"></rect>
+          <text x="665" y="202" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Corteza prefrontal</text>
+          <text x="665" y="222" text-anchor="middle" font-size="11" fill="currentColor">lesión: déficit cognitivo</text>
+          <line x1="260" y1="60" x2="536" y2="44" stroke="currentColor" stroke-width="1.6" marker-end="url(#sara-da)"></line>
+          <text x="400" y="42" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">nigroestriada (mesoestriada)</text>
+          <line x1="260" y1="170" x2="536" y2="128" stroke="currentColor" stroke-width="1.6" marker-end="url(#sara-da)"></line>
+          <text x="400" y="138" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">mesolímbica</text>
+          <line x1="260" y1="184" x2="536" y2="208" stroke="currentColor" stroke-width="1.6" marker-end="url(#sara-da)"></line>
+          <text x="400" y="214" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">mesocortical</text>
+        </svg>
+        <figcaption>Cada vía dopaminérgica tiene su enfermedad: la <strong>nigroestriada</strong>, el Parkinson motor; la <strong>mesolímbica</strong>, las alucinaciones de la esquizofrenia; la <strong>mesocortical</strong>, el déficit cognitivo del Parkinson.</figcaption>
+      </figure>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Vía</th><th>Origen → destino</th><th>Correlato clínico</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>a · Mesoestriada</strong> (nigroestriada)</td><td>Porción compacta de la sustancia negra → cuerpo estriado (caudado y putamen)</td><td>Su interrupción se acompaña de <strong>enfermedad de Parkinson</strong></td></tr>
+            <tr><td><strong>b · Mesolímbica</strong></td><td>Núcleos de la zona paramediana del mesencéfalo, como el tegmental ventral → núcleos límbicos</td><td>Su <strong>hiperactividad</strong> se relaciona con las <strong>alucinaciones esquizofrénicas</strong></td></tr>
+            <tr><td><strong>c · Mesocortical</strong></td><td>Zona paramediana, como el tegmental ventral → corteza prefrontal</td><td>Sus lesiones se acompañan de <strong>déficit cognitivo</strong> en la enfermedad de Parkinson</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Apunte «Formación reticular», Prof. J. P. Peñaloza: formación reticular dopaminérgica. Subdivisiones del grupo A10 (área tegmental ventral, núcleos parabraquial pigmentado y paranigral): Según PubMed, Rodríguez M y col., Exp Neurol 2001;169(1):163-81 (<a href="https://doi.org/10.1006/exnr.2000.7624">DOI</a>).</p>
+    </section>
+
+    <!-- ============ 13 ============ -->
+    <section class="seccion s-fisiopatologia" id="noradrenergico">
+      <span class="seccion__pestana"><b>13</b> Neurotransmisores</span>
+      <h2 class="seccion__titulo">Formación reticular noradrenérgica</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Aspecto</th><th>Sistema noradrenérgico</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Componentes</strong></td><td>a) El sistema del <strong>núcleo cerúleo</strong> (grupo <strong>A6</strong>) · b) los grupos noradrenérgicos de la formación reticular bulbar y protuberancial</td></tr>
+            <tr><td><strong>Proyecciones</strong></td><td>Médula espinal, tallo encefálico, cerebelo, diencéfalo y telencéfalo: <strong>difusas</strong></td></tr>
+            <tr><td><strong>Sistema ascendente</strong></td><td>Modula la <strong>atención</strong>, el <strong>ciclo sueño-vigilia</strong> y el <strong>estado de ánimo</strong></td></tr>
+            <tr><td><strong>Proyecciones a tallo, cerebelo, hipotálamo y médula</strong></td><td>Modulan las funciones autónomas <strong>simpáticas</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Corrección:</strong> el apunte dice que los grupos noradrenérgicos van de <strong>A1 a A10</strong>, pero en la nomenclatura estándar los noradrenérgicos son <strong>A1 a A7</strong> (el A6 es el cerúleo). A8, A9 y A10 son los grupos <strong>dopaminérgicos</strong> del mesencéfalo, como dice el mismo apunte en la sección anterior.</p>
+
+      <p class="cita">Apunte «Formación reticular», Prof. J. P. Peñaloza: formación reticular noradrenérgica. Nomenclatura de los grupos catecolaminérgicos (noradrenérgicos A1, A2, A6 y A7; dopaminérgicos A8 a A10): Según PubMed, Hay-Schmidt A y col., Neuroendocrinology 2001;73(4):215-26 (<a href="https://doi.org/10.1159/000054638">DOI</a>).</p>
+    </section>
+
+    <!-- ============ 14 ============ -->
+    <section class="seccion s-fisiopatologia" id="serotoninergico">
+      <span class="seccion__pestana"><b>14</b> Neurotransmisores</span>
+      <h2 class="seccion__titulo">Formación reticular serotoninérgica</h2>
+
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Aspecto</th><th>Sistema serotoninérgico</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Grupos</strong></td><td>Nueve grupos celulares: <strong>B1 a B9</strong></td></tr>
+            <tr><td><strong>Ubicación</strong></td><td>La mayoría, en los <strong>núcleos del rafe protuberancial y bulbar</strong></td></tr>
+            <tr><td><strong>Proyecciones</strong></td><td>Rafe protuberancial <strong>anterior</strong> → <strong>cerebro anterior</strong> · rafe protuberancial <strong>caudal y bulbar</strong> → bulbo, cerebelo y <strong>médula espinal</strong></td></tr>
+            <tr><td><strong>Sueño</strong></td><td>Inhibir la síntesis de serotonina o destruir sus neuronas del rafe causa <strong>insomnio</strong></td></tr>
+            <tr><td><strong>Psiquiatría</strong></td><td>Su alteración se observa en <strong>depresión</strong>, <strong>obsesión-compulsión</strong>, <strong>agresividad</strong> y <strong>ansiedad</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La división de las proyecciones explica las dos caras del rafe: la parte <strong>rostral</strong> modula el cerebro (sueño, ánimo), y la <strong>caudal</strong> baja a la médula, donde participa en el control descendente del dolor visto en la sección 08.</p>
+
+      <p class="cita">Apunte «Formación reticular», Prof. J. P. Peñaloza: formación reticular serotoninérgica.</p>
+    </section>
+
+    <!-- ============ 15 ============ -->
+    <section class="seccion s-clinica" id="correlacion">
+      <span class="seccion__pestana"><b>15</b> Clínica</span>
+      <h2 class="seccion__titulo">Correlación clínica</h2>
+
+      <p>Todo lo que el apunte vincula con la clínica, reunido en una tabla:</p>
+      <div class="tabla-envoltura">
+        <table>
+          <thead>
+            <tr><th>Alteración</th><th>Consecuencia</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Destrucción del SARA</strong></td><td><strong>Somnolencia o coma</strong></td></tr>
+            <tr><td><strong>Interrupción de la vía nigroestriada</strong></td><td><strong>Enfermedad de Parkinson</strong></td></tr>
+            <tr><td><strong>Lesión de la vía mesocortical</strong></td><td>Déficit cognitivo en el Parkinson</td></tr>
+            <tr><td><strong>Hiperactividad de la vía mesolímbica</strong></td><td>Alucinaciones esquizofrénicas</td></tr>
+            <tr><td><strong>Inhibición de la serotonina o destrucción del rafe</strong></td><td><strong>Insomnio</strong></td></tr>
+            <tr><td><strong>Alteración del sistema serotoninérgico</strong></td><td>Depresión, obsesión-compulsión, agresividad, ansiedad</td></tr>
+            <tr><td><strong>Sistema noradrenérgico ascendente</strong></td><td>Modula la atención, el ciclo sueño-vigilia y el estado de ánimo</td></tr>
+            <tr><td><strong>Estimulación de la sustancia gris periacueductal</strong></td><td><strong>Analgesia</strong></td></tr>
+            <tr><td><strong>Estimulación de la formación reticular bulbar</strong></td><td>Inhibe la transmisión sensitiva medular: mecanismo de la puerta del dolor</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="cita">Apunte «Formación reticular», Prof. J. P. Peñaloza: correlatos clínicos mencionados en las funciones y en los sistemas de monoaminas.</p>
+    </section>
+
+    <!-- ============ REPASO ============ -->
+    <section class="seccion seccion--repaso" id="repaso">
+      <span class="seccion__pestana">Repaso activo</span>
+      <h2 class="seccion__titulo">Autoevaluación</h2>
+      <p>Respondé mentalmente antes de abrir. El color del borde indica de qué sección proviene la pregunta.</p>
+
+      <div class="repaso">
+        <details class="fc s-generalidades">
+          <summary>¿Dónde está la formación reticular y qué neurotransmisores se originan en ella?</summary>
+          <div class="fc__r">En la parte <strong>central y profunda de la región dorsal del tallo encefálico</strong>. Es el principal origen de las monoaminas: sistemas <strong>colinérgico, dopaminérgico, noradrenérgico y serotoninérgico</strong>.</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Límites de la formación reticular.</summary>
+          <div class="fc__r">Cranealmente, <strong>diencéfalo</strong>; caudalmente, <strong>sustancia gris de la médula cervical</strong>; ventralmente, <strong>lemnisco medio y vías motoras</strong>; dorsal y lateralmente, <strong>núcleos de los pares craneales y vías sensitivas secundarias</strong>.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>Las tres columnas, su tipo celular y su neurotransmisor principal.</summary>
+          <div class="fc__r"><strong>Mediana o del rafe</strong>: neuronas medianas, serotonina. <strong>Medial magnocelular</strong>: células grandes, noradrenalina (cerúleo) y acetilcolina. <strong>Lateral parvocelular</strong>: neuronas pequeñas y dispersas.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Qué columnas son efectoras y cuál es afectora?</summary>
+          <div class="fc__r"><strong>Mediana y medial: efectoras</strong> (emiten). <strong>Lateral: afectora</strong> (recibe).</div>
+        </details>
+
+        <details class="fc s-generalidades">
+          <summary>Núcleos de la columna lateral.</summary>
+          <div class="fc__r"><strong>Pedunculopontino</strong>, <strong>parabraquial</strong>, parvocelular reticular y reticular lateral de la médula.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué información sensitiva llega por la vía espino-reticular?</summary>
+          <div class="fc__r">Termoalgésica, propioceptiva consciente, posicional, vibratoria, táctil protopática y visceral, por los fascículos espinotalámicos, espinorreticulares y el lemnisco medial.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Por qué la estimulación de la sustancia gris periacueductal produce analgesia?</summary>
+          <div class="fc__r">La periacueductal <strong>facilita al rafe bulbar</strong>, y el rafe <strong>inhibe a las neuronas espinotalámicas</strong> del asta dorsal.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Cuál es la eferencia que forma el SARA y qué hace?</summary>
+          <div class="fc__r">La <strong>retículo-talámica</strong>: va a los <strong>núcleos inespecíficos del tálamo</strong>, que activan amplias zonas de la corteza. Mantiene el <strong>estado de conciencia normal</strong>.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Cómo participa la formación reticular en el control motor?</summary>
+          <div class="fc__r">Con el aparato vestibular mantiene el <strong>tono antigravitatorio</strong>; por los tractos reticuloespinal y reticulobulbar influye sobre las <strong>motoneuronas alfa y gamma</strong> y el patrón central del movimiento.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>Efecto de estimular los núcleos reticulares mediales y laterales del bulbo.</summary>
+          <div class="fc__r"><strong>Mediales</strong>: inspiración y efecto depresor (baja FC y PA). <strong>Laterales</strong>: espiración y acción presora (sube FC y PA).</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué núcleos forman el centro neumotáxico?</summary>
+          <div class="fc__r">Los <strong>núcleos parabraquiales de la protuberancia</strong>: regulan el ritmo respiratorio.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>Elementos del SARA.</summary>
+          <div class="fc__r">1) <strong>Corteza cerebral</strong>; 2) <strong>diencéfalo</strong> (núcleos inespecíficos del tálamo, hipotálamo, subtálamo); 3) <strong>formación reticular del tallo</strong>. Con retroalimentación cortical constante.</div>
+        </details>
+
+        <details class="fc s-importantes">
+          <summary>¿Qué produce la destrucción del SARA?</summary>
+          <div class="fc__r"><strong>Somnolencia o coma</strong>. Su estimulación, en cambio, mejora el aprendizaje.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Por qué el SARA es tan adecuado para el despertar?</summary>
+          <div class="fc__r">Por la <strong>convergencia</strong> de muchas aferencias, sus <strong>conexiones multisinápticas</strong> y la <strong>divergencia</strong> de sus proyecciones a toda la corteza.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Dónde está y qué funciones tiene el sistema colinérgico reticular?</summary>
+          <div class="fc__r">Sobre todo en el <strong>núcleo pedunculopontino</strong> (columna lateral bulbar y protuberancial). Controla el <strong>movimiento</strong> y el <strong>ciclo sueño-vigilia</strong>.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>Las tres vías dopaminérgicas y su correlato clínico.</summary>
+          <div class="fc__r"><strong>Nigroestriada</strong> (A9 → estriado): Parkinson. <strong>Mesolímbica</strong> (tegmental ventral → límbico): alucinaciones esquizofrénicas. <strong>Mesocortical</strong> (tegmental ventral → prefrontal): déficit cognitivo en el Parkinson.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Qué es el grupo A6 y qué modula su sistema?</summary>
+          <div class="fc__r">El <strong>núcleo cerúleo</strong>, noradrenérgico. Modula la <strong>atención, el ciclo sueño-vigilia y el ánimo</strong>, y las funciones simpáticas.</div>
+        </details>
+
+        <details class="fc s-fisiopatologia">
+          <summary>¿Dónde están las neuronas serotoninérgicas y qué causa su destrucción?</summary>
+          <div class="fc__r">Grupos <strong>B1 a B9</strong>, sobre todo en el <strong>rafe protuberancial y bulbar</strong>. Su destrucción o la inhibición de la síntesis causa <strong>insomnio</strong>.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ RELAMPAGO ============ -->
+    <section class="relampago" id="relampago" aria-labelledby="relampago-titulo">
+      <p class="relampago__cab" id="relampago-titulo">⚡ Ficha de Repaso Relámpago</p>
+      <dl>
+        <dt class="r-triada">Triada clave</dt>
+        <dd><strong>Centro del tallo + tres columnas + SARA.</strong> Rafe (serotonina) y medial magnocelular (noradrenalina, acetilcolina): <strong>efectoras</strong>. Lateral parvocelular (pedunculopontino, parabraquial): <strong>afectora</strong>. Funciones: motora, sensitiva, autónoma, endocrina y de la conciencia.</dd>
+
+        <dt class="r-gold">Circuito central</dt>
+        <dd><strong>Formación reticular → núcleos inespecíficos del tálamo → corteza</strong>, con retroalimentación cortical. Convergencia de aferencias sensitivas, conexiones multisinápticas y divergencia a toda la corteza: despertar, atención, alerta.</dd>
+
+        <dt class="r-tto">Sistemas químicos</dt>
+        <dd>Colinérgico: <strong>pedunculopontino</strong>, movimiento y sueño-vigilia. Dopaminérgico: <strong>A8-A10</strong>, vías nigroestriada, mesolímbica y mesocortical. Noradrenérgico: <strong>cerúleo (A6)</strong> y A1-A7, atención, sueño, ánimo y simpático. Serotoninérgico: <strong>B1-B9 en el rafe</strong>, sueño y ánimo.</dd>
+
+        <dt class="r-alerta">Criterio de alerta</dt>
+        <dd>Destrucción del SARA = <strong>somnolencia o coma</strong>. Nigroestriada = <strong>Parkinson</strong>; mesolímbica hiperactiva = <strong>alucinaciones</strong>; rafe destruido = <strong>insomnio</strong>. Periacueductal estimulada = <strong>analgesia</strong>.</dd>
+      </dl>
+    </section>
+
+    <p class="pie">Cuadernillo generado con el sistema Wordmed a partir del apunte «Formación reticular» del Prof. Juan Pablo Peñaloza (Facultad de Medicina, Universidad de Los Andes, Mérida, Venezuela), material de la clase «SARA» de Neurología. Nomenclatura de los grupos catecolaminérgicos según Hay-Schmidt y col. (2001) y Rodríguez y col. (2001); origen de las fibras reticuloespinales según Snell, <em>Neuroanatomía clínica</em>. Material de estudio: no reemplaza el criterio clínico ni el protocolo institucional vigente.</p>
+
+  </main>
+</div>
+
+<script>
+(function(){
+
+  // ---- Tema claro / oscuro ----
+  // Sin eleccion estampada manda el sistema; el boton la estampa y la guarda.
+  var raiz = document.documentElement;
+  var boton = document.getElementById('tema');
+
+  function temaActual(){
+    var estampado = raiz.getAttribute('data-theme');
+    if (estampado) return estampado;
+    return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+
+  if (boton){
+    var rotular = function(){
+      var actual = temaActual();
+      boton.setAttribute('aria-pressed', actual === 'dark' ? 'true' : 'false');
+      boton.setAttribute('aria-label', actual === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+    };
+    boton.addEventListener('click', function(){
+      var nuevo = temaActual() === 'dark' ? 'light' : 'dark';
+      raiz.setAttribute('data-theme', nuevo);
+      try { localStorage.setItem('wordmed-tema', nuevo); } catch (e) { /* sin persistencia */ }
+      rotular();
+    });
+    rotular();
+  }
+
+  var barra = document.getElementById('barra');
+  var secciones = Array.prototype.slice.call(document.querySelectorAll('.seccion, .relampago'));
+  var enlaces = Array.prototype.slice.call(document.querySelectorAll('.indice__link, .ir-link'));
+
+  // Devuelve TODOS los enlaces al ancla: la misma seccion figura en el indice
+  // lateral y en el compacto, y los dos tienen que encenderse juntos.
+  function porMeta(hash){
+    return enlaces.filter(function(l){ return l.getAttribute('href') === '#' + hash; });
+  }
+
+  function alDesplazar(){
+    var alto = document.documentElement.scrollHeight - window.innerHeight;
+    barra.style.width = (alto > 0 ? Math.min(100, (window.scrollY / alto) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+  window.addEventListener('resize', alDesplazar);
+  alDesplazar();
+
+  if ('IntersectionObserver' in window){
+    var observador = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(e){
+        var activos = porMeta(e.target.id);
+        if (!activos.length) return;
+        if (e.isIntersecting) {
+          enlaces.forEach(function(l){ l.removeAttribute('aria-current'); });
+          activos.forEach(function(l){ l.setAttribute('aria-current', 'true'); });
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    secciones.forEach(function(s){ if (s.id) observador.observe(s); });
+  }
+})();
+</script>
+<script>
+(function(){
+  "use strict";
+  var clave = document.body.dataset.clave || "";
+  var enApp = typeof window.WordmedApp !== "undefined";
+  var MEM = "wordmed:progreso";
+
+  function leer(){ try{ return JSON.parse(localStorage.getItem(MEM)) || {}; }catch(e){ return {}; } }
+  function guardar(m){ try{ localStorage.setItem(MEM, JSON.stringify(m)); }catch(e){} }
+
+  function alto(){
+    return Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+  }
+
+  /* retomar donde quedó */
+  if (clave) {
+    var m = leer()[clave];
+    if (m && m.y > 0) {
+      window.addEventListener("load", function(){
+        window.scrollTo(0, Math.min(m.y, alto()));
+      });
+    }
+  }
+
+  /* anotar el avance, sin ahogar el scroll */
+  var pendiente = false;
+  window.addEventListener("scroll", function(){
+    if (pendiente || !clave) return;
+    pendiente = true;
+    requestAnimationFrame(function(){
+      pendiente = false;
+      var y = window.scrollY;
+      var pct = Math.round((y / alto()) * 100);
+      pct = Math.max(0, Math.min(100, pct));
+      var m = leer();
+      m[clave] = { y: y, pct: pct, ts: Date.now() };
+      guardar(m);
+      if (enApp && window.WordmedApp.progreso) window.WordmedApp.progreso(clave, pct, y);
+    });
+  }, { passive: true });
+
+  /* volver: solo cuando vinimos de la cáscara web */
+  if (!enApp && document.referrer && document.referrer.indexOf(location.origin) === 0) {
+    var b = document.createElement("button");
+    b.className = "volver";
+    b.type = "button";
+    b.setAttribute("aria-label", "Volver");
+    b.innerHTML = '<svg class="volver__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg>';
+    b.addEventListener("click", function(){ history.back(); });
+    document.body.appendChild(b);
+  }
+})();
+</script>
+</body>
+</html>
